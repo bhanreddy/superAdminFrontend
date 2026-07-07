@@ -1,0 +1,61 @@
+{
+  "expo": {
+    "name": "NexSyrus Super Admin",
+    "slug": "nexsyrus-superadmin",
+    "scheme": "nexsyrussuperadmin",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/logo.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0A0A0F"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/logo.png",
+        "backgroundColor": "#0A0A0F"
+      },
+      "permissions": [
+        "android.permission.DETECT_SCREEN_CAPTURE"
+      ],
+      "package": "com.bhan_reddy.nexsyrussuperadmin"
+    },
+    "web": {
+      "favicon": "./assets/logo.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
+            "kotlinVersion": "1.9.24"
+          }
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "3a85ce64-95a9-4a03-b3a6-ec3dbcafc804"
+      }
+    }
+  }
+}

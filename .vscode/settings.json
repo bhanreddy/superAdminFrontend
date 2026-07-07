@@ -1,0 +1,6 @@
+{
+  "java.import.excludes": [
+    "**/node_modules/**",
+    "**/.expo/**"
+  ]
+}

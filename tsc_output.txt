@@ -1,0 +1,2 @@
+﻿app/(app)/schools/add.tsx(76,43): error TS2345: Argument of type '`/schools/${number}`' is not assignable to parameter of type 'StaticRoutes | RelativePathString | `${string}:${string}`'.
+app/(app)/schools/index.tsx(36,50): error TS2345: Argument of type '`/schools/${number}`' is not assignable to parameter of type 'StaticRoutes | RelativePathString | `${string}:${string}`'.
