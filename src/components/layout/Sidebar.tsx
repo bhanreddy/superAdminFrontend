@@ -35,6 +35,9 @@ import {
   Server,
   FileText,
   Sparkles,
+  ContactRound,
+  MessageCircle,
+  Network,
 } from 'lucide-react-native';
 import { useTheme, clayStyle } from '../../contexts/ThemeContext';
 import { useAuth } from '../../hooks/useAuth';
@@ -123,6 +126,25 @@ const NAV_GROUPS: NavGroup[] = [
     title: 'BUSINESS',
     items: [
       {
+        key: 'messenger',
+        label: 'Messenger',
+        icon: (c, s) => <MessageCircle size={s} color={c} strokeWidth={1.8} />,
+        route: '/(app)/messenger/',
+      },
+      {
+        key: 'crm',
+        label: 'CRM',
+        icon: (c, s) => <ContactRound size={s} color={c} strokeWidth={1.8} />,
+        route: '/(app)/console/crm',
+      },
+      {
+        key: 'tenant-assignments',
+        label: 'Tenant Assignments',
+        icon: (c, s) => <Network size={s} color={c} strokeWidth={1.8} />,
+        route: '/(app)/console/tenant-assignments',
+        requiresSuperAdmin: true,
+      },
+      {
         key: 'console',
         label: 'Console',
         icon: (c, s) => <BarChart3 size={s} color={c} strokeWidth={1.8} />,
@@ -143,12 +165,6 @@ const NAV_GROUPS: NavGroup[] = [
         label: 'Expenses',
         icon: (c, s) => <Receipt size={s} color={c} strokeWidth={1.8} />,
         route: '/(app)/console/expenses',
-      },
-      {
-        key: 'collections',
-        label: 'Collections',
-        icon: (c, s) => <Wallet size={s} color={c} strokeWidth={1.8} />,
-        route: '/(app)/console/collections',
       },
       {
         key: 'enquiries',

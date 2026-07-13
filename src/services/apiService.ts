@@ -298,6 +298,10 @@ export const founderApi = {
     const response = await superAdminClient.get('/api/super-admin/founder/collections', { params });
     return response.data;
   },
+  getFinancialSummary: async (params: { period: string; business_unit_id?: string }) => {
+    const response = await superAdminClient.get('/api/super-admin/founder/financial-summary', { params });
+    return response.data;
+  },
   createCollection: async (payload: any) => {
     const response = await superAdminClient.post('/api/super-admin/founder/collections', payload);
     return response.data;

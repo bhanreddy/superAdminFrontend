@@ -13,6 +13,7 @@ import {
   Animated,
   Pressable,
   Dimensions,
+  useWindowDimensions,
 } from 'react-native';
 import { pressableWebStyles } from '../../utils/webPressable';
 import { safePressHandler } from '../../utils/safePressHandler';
@@ -26,7 +27,7 @@ import * as founderDb from '../../services/founderSupabase';
 import type { ExpenseListFilters } from '../../services/founderSupabase';
 import type { ExpenseCategory, ExpenseRow, ExpenseStatus } from '../../types/founder';
 import { ConsoleAmbientBackground, bottomTabPad } from './founderUi';
-import { Check, X, Receipt, ChevronRight, Upload, Banknote, ArrowUpRight, Plus } from 'lucide-react-native';
+import { Check, X, Receipt, ChevronRight, Upload, Banknote, ArrowUpRight, Plus, WalletCards, Clock3, BadgeCheck, Files } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
@@ -231,6 +232,37 @@ const SummaryBar = React.memo(function SummaryBar({ expenses }: { expenses: Expe
   );
 });
 
+function ExpenseHero({ expenses, compact, onAdd, approvalsOnly }: { expenses: ExpenseRow[]; compact: boolean; onAdd: () => void; approvalsOnly: boolean }) {
+  const { colors, isDark } = useTheme();
+  const total = expenses.reduce((sum, row) => sum + Number(row.amount), 0);
+  const pending = expenses.filter((row) => row.status === 'PENDING').reduce((sum, row) => sum + Number(row.amount), 0);
+  const approved = expenses.filter((row) => row.status === 'APPROVED').reduce((sum, row) => sum + Number(row.amount), 0);
+  const metrics = [
+    { icon: WalletCards, label: 'Total logged', value: founderDb.formatInr(total, 0), color: '#8B5CF6' },
+    { icon: Clock3, label: 'Awaiting approval', value: founderDb.formatInr(pending, 0), color: '#F0B429' },
+    { icon: BadgeCheck, label: 'Approved', value: founderDb.formatInr(approved, 0), color: '#10D9A0' },
+    { icon: Files, label: 'Entries', value: String(expenses.length), color: '#38BDF8' },
+  ];
+  return (
+    <View style={[styles.heroShell, compact && styles.heroShellCompact, { borderColor: isDark ? 'rgba(129,140,248,0.3)' : 'rgba(79,70,229,0.18)' }]}>
+      <LinearGradient colors={isDark ? ['#1D2342', '#111425'] : ['#F8FAFF', '#ECEFFF']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.heroGradient, compact && styles.heroGradientCompact]}>
+        <View style={[styles.heroOrb, compact && styles.heroOrbCompact]} />
+        <View style={[styles.heroHead, compact && { flexDirection: 'column', alignItems: 'stretch' }]}>
+          <View style={{ flex: 1 }}>
+            <View style={[styles.heroKicker, compact && { marginBottom: 8 }]}><View style={[styles.heroKickerIcon, compact && { width: 30, height: 30, borderRadius: 10 }]}><Banknote size={compact ? 15 : 17} color="#FFF" /></View><Text style={[styles.heroKickerText, compact && { fontSize: 9 }]}>OPERATING EXPENSES</Text></View>
+            <Text style={[styles.heroTitle, compact && styles.heroTitleCompact, { color: colors.textPrimary }]}>{approvalsOnly ? 'Review every spend with confidence.' : 'Know where every rupee goes.'}</Text>
+            <Text style={[styles.heroSub, compact && styles.heroSubCompact, { color: colors.textSecondary }]}>Capture receipts, classify spend and keep approvals moving from one clean ledger.</Text>
+          </View>
+          {!approvalsOnly && <Pressable onPress={onAdd} style={({ pressed }) => [styles.heroCta, compact && styles.heroCtaCompact, { opacity: pressed ? 0.86 : 1 }]}><Plus size={18} color="#FFF" /><Text style={styles.heroCtaText}>New expense</Text><ChevronRight size={16} color="rgba(255,255,255,0.8)" /></Pressable>}
+        </View>
+        <View style={[styles.heroMetrics, compact && styles.heroMetricsCompact]}>
+          {metrics.map(({ icon: Icon, label, value, color }) => <View key={label} style={[styles.heroMetric, compact && styles.heroMetricCompact, { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.82)', borderColor: isDark ? `${color}28` : `${color}20` }]}><View style={[styles.heroMetricIcon, compact && { width: 30, height: 30, borderRadius: 10 }, { backgroundColor: `${color}1F` }]}><Icon size={compact ? 15 : 17} color={color} /></View><View style={{ flex: 1, minWidth: 0 }}><Text style={[styles.heroMetricLabel, compact && { fontSize: 8 }, { color: colors.textSecondary }]}>{label}</Text><Text style={[styles.heroMetricValue, compact && { fontSize: 14 }, { color: colors.textPrimary }]} numberOfLines={1}>{value}</Text></View></View>)}
+        </View>
+      </LinearGradient>
+    </View>
+  );
+}
+
 // ─── Status Badge ─────────────────────────────────────────────────────────────
 function StatusBadge({ status }: { status: ExpenseStatus }) {
   const { isDark } = useTheme();
@@ -251,6 +283,7 @@ function ExpenseCard({
   onApprove,
   onReject,
   onReceipt,
+  compact,
 }: {
   item: ExpenseRow;
   canApprove: boolean;
@@ -258,6 +291,7 @@ function ExpenseCard({
   onApprove: () => void;
   onReject: () => void;
   onReceipt: () => void;
+  compact: boolean;
 }) {
   const { colors, isDark } = useTheme();
   const scale = useRef(new Animated.Value(1)).current;
@@ -307,7 +341,7 @@ function ExpenseCard({
 
           <View style={styles.cardBody}>
             {/* Top */}
-            <View style={styles.cardTop}>
+            <View style={[styles.cardTop, compact && { alignItems: 'flex-start' }]}>
               {/* Category icon */}
               <LinearGradient colors={cat.gradient} style={styles.catBubble}>
                 <Text style={styles.catEmoji}>{cat.icon}</Text>
@@ -320,7 +354,7 @@ function ExpenseCard({
               </View>
 
               {/* Amount + badge */}
-              <View style={{ alignItems: 'flex-end', gap: 7 }}>
+              <View style={{ alignItems: 'flex-end', gap: 7, maxWidth: compact ? 120 : undefined }}>
                 <Text style={[styles.cardAmt, { color: colors.textPrimary }]}>{founderDb.formatInr(Number(item.amount), 2)}</Text>
 
                 <StatusBadge status={item.status as ExpenseStatus} />
@@ -409,7 +443,7 @@ const EmptyState = React.memo(function EmptyState({ onAddExpense }: { onAddExpen
   }, []);
 
   return (
-    <Animated.View style={[styles.emptyWrap, { opacity: fade }]}>
+    <Animated.View style={[styles.emptyWrap, { opacity: fade, borderColor: isDark ? 'rgba(139,92,246,0.14)' : colors.border, backgroundColor: isDark ? 'rgba(15,13,26,0.32)' : 'rgba(255,255,255,0.62)' }]}>
       <View style={styles.emptyBackdrop}>
         <LinearGradient
           colors={['rgba(139,92,246,0.14)', 'transparent']}
@@ -470,6 +504,8 @@ const EmptyState = React.memo(function EmptyState({ onAddExpense }: { onAddExpen
 export default function ExpensesScreen({ approvalsOnly = false }: { approvalsOnly?: boolean }) {
   const router = useRouter();
   const { colors, isDark } = useTheme();
+  const { width, height } = useWindowDimensions();
+  const compact = width < 700;
   const { founder, canApproveReject } = useFounderAuth();
   const { expenses, loading, filters, setFilters, refresh } = useExpenses(
     approvalsOnly ? { status: 'PENDING' } : undefined,
@@ -494,10 +530,6 @@ export default function ExpensesScreen({ approvalsOnly = false }: { approvalsOnl
   const [viewerUrl, setViewerUrl] = useState<string | null>(null);
   const [rejectId, setRejectId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState('');
-
-  const btnScale = useRef(new Animated.Value(1)).current;
-  const pressBtnIn = () => Animated.spring(btnScale, { toValue: 0.96, useNativeDriver: true, speed: 50 }).start();
-  const pressBtnOut = () => Animated.spring(btnScale, { toValue: 1, useNativeDriver: true, speed: 50 }).start();
 
   const pickImage = async () => {
     const res = await DocumentPicker.getDocumentAsync({ type: 'image/*', copyToCacheDirectory: true });
@@ -573,53 +605,10 @@ export default function ExpensesScreen({ approvalsOnly = false }: { approvalsOnl
 
       <View style={styles.root}>
 
-        {/* ── Add Button ── */}
-        {!approvalsOnly && (
-        <Animated.View style={{ transform: [{ scale: btnScale }], marginBottom: 20 }}>
-          <Pressable onPressIn={pressBtnIn} onPressOut={pressBtnOut} onPress={() => setModalOpen(true)}>
-            <View style={[styles.addBtnOuter, !isDark && styles.addBtnOuterLight]}>
-              <LinearGradient
-                colors={['rgba(139,92,246,0.35)', 'rgba(124,58,237,0.08)']}
-                style={StyleSheet.absoluteFill}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              />
-              <LinearGradient
-                colors={['#5B21B6', '#6D28D9', '#9333EA', '#A78BFA']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.addBtn}
-              >
-                <View style={styles.addBtnShimmer} />
-                <LinearGradient
-                  colors={['rgba(255,255,255,0.12)', 'transparent']}
-                  style={styles.addBtnGloss}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                />
-                <View style={styles.addBtnLeft}>
-                  <View style={styles.addBtnIconBox}>
-                    <Plus size={22} color="#fff" strokeWidth={2.5} />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.addBtnTxt}>New expense</Text>
-                    <Text style={styles.addBtnSub}>Log amount, category & receipt</Text>
-                  </View>
-                </View>
-                <View style={styles.addBtnArrow}>
-                  <ChevronRight color="rgba(255,255,255,0.85)" size={20} strokeWidth={2.5} />
-                </View>
-              </LinearGradient>
-            </View>
-          </Pressable>
-        </Animated.View>
-        )}
-
-        {/* ── Summary Bar ── */}
-        {!loading && expenses.length > 0 && <SummaryBar expenses={expenses} />}
+        <ExpenseHero expenses={expenses} compact={compact} approvalsOnly={approvalsOnly} onAdd={() => setModalOpen(true)} />
 
         {/* ── Filters (glass panel) ── */}
-        <View style={[styles.filterPanel, !isDark && { borderColor: colors.border, backgroundColor: 'rgba(255,255,255,0.65)' }]}>
+        <View style={[styles.filterPanel, compact && { paddingHorizontal: 12, paddingVertical: 13, borderRadius: 18 }, !isDark && { borderColor: 'rgba(99,102,241,0.14)', backgroundColor: 'rgba(248,250,255,0.9)' }]}>
           {isDark ? (
             <BlurView intensity={22} tint="dark" style={StyleSheet.absoluteFill} pointerEvents="none" />
           ) : null}
@@ -628,18 +617,17 @@ export default function ExpensesScreen({ approvalsOnly = false }: { approvalsOnl
             style={[StyleSheet.absoluteFill, { borderRadius: 22 }, Platform.OS === 'web' ? { pointerEvents: 'none' } : null]}
             pointerEvents="none"
           />
-          <FilterSectionLabel text="STATUS" colors={colors} />
+          <View style={[styles.filterGroups, compact && { flexDirection: 'column' }]}><View style={styles.filterGroup}><FilterSectionLabel text="STATUS" colors={colors} />
           <PremiumFilterRow
             options={STATUS_FILTERS}
             value={filters.status}
             onChange={(k) => setFilters((f: ExpenseListFilters) => ({ ...f, status: k }))}
-          />
-          <FilterSectionLabel text="CATEGORY" colors={colors} marginTop={16} />
+          /></View><View style={styles.filterGroup}><FilterSectionLabel text="CATEGORY" colors={colors} marginTop={compact ? 16 : 0} />
           <PremiumFilterRow
             options={CAT_FILTERS}
             value={filters.category}
             onChange={(k) => setFilters((f: ExpenseListFilters) => ({ ...f, category: k }))}
-          />
+          /></View></View>
         </View>
 
         <View style={[styles.listDivider, !isDark && { backgroundColor: colors.border }]} />
@@ -678,6 +666,7 @@ export default function ExpensesScreen({ approvalsOnly = false }: { approvalsOnl
                   onApprove={() => onApprove(e.id)}
                   onReject={() => setRejectId(e.id)}
                   onReceipt={() => openReceipt(e)}
+                  compact={compact}
                 />
               ))}
           </ScrollView>
@@ -696,7 +685,7 @@ export default function ExpensesScreen({ approvalsOnly = false }: { approvalsOnl
             style={StyleSheet.absoluteFill}
             pointerEvents={Platform.OS === 'web' ? 'none' : 'auto'}
           />
-          <View style={[styles.sheet, !isDark && { backgroundColor: colors.background }]}>
+          <View style={[styles.sheet, compact && { width: '100%', maxWidth: '100%', maxHeight: height * 0.94, borderBottomLeftRadius: 0, borderBottomRightRadius: 0 }, !isDark && { backgroundColor: colors.background }]}>
             {/* Handle */}
             <View style={[styles.sheetHandle, !isDark && { backgroundColor: colors.border }]} />
 
@@ -929,6 +918,31 @@ export default function ExpensesScreen({ approvalsOnly = false }: { approvalsOnl
 const styles = StyleSheet.create({
   root: { flex: 1, paddingHorizontal: 0, paddingTop: 8 },
 
+  heroShell: { borderRadius: 28, overflow: 'hidden', borderWidth: 1, marginBottom: 16, shadowColor: '#6D28D9', shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.18, shadowRadius: 26, elevation: 8 },
+  heroShellCompact: { borderRadius: 22, marginBottom: 12, shadowOpacity: 0.1, shadowRadius: 18 },
+  heroGradient: { padding: 20, overflow: 'hidden' },
+  heroGradientCompact: { padding: 14 },
+  heroOrb: { position: 'absolute', width: 230, height: 230, borderRadius: 115, right: -72, top: -112, backgroundColor: 'rgba(139,92,246,0.17)' },
+  heroOrbCompact: { width: 150, height: 150, borderRadius: 75, right: -54, top: -70, backgroundColor: 'rgba(79,70,229,0.12)' },
+  heroHead: { flexDirection: 'row', alignItems: 'flex-start', gap: 18 },
+  heroKicker: { flexDirection: 'row', alignItems: 'center', gap: 9, marginBottom: 11 },
+  heroKickerIcon: { width: 34, height: 34, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: '#7C3AED', shadowColor: '#7C3AED', shadowOpacity: 0.4, shadowRadius: 12, shadowOffset: { width: 0, height: 5 } },
+  heroKickerText: { color: '#9B87F5', fontSize: 10, fontWeight: '900', letterSpacing: 1.2 },
+  heroTitle: { fontSize: 25, lineHeight: 31, fontWeight: '900', letterSpacing: -0.75, maxWidth: 570 },
+  heroTitleCompact: { fontSize: 21, lineHeight: 26, letterSpacing: -0.5 },
+  heroSub: { fontSize: 13, lineHeight: 19, marginTop: 7, maxWidth: 580 },
+  heroSubCompact: { fontSize: 12, lineHeight: 17, marginTop: 5 },
+  heroCta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 46, paddingHorizontal: 16, borderRadius: 15, backgroundColor: '#7C3AED', shadowColor: '#6D28D9', shadowOpacity: 0.3, shadowRadius: 14, shadowOffset: { width: 0, height: 7 } },
+  heroCtaCompact: { minHeight: 42, marginTop: 12, borderRadius: 13 },
+  heroCtaText: { color: '#FFF', fontSize: 13, fontWeight: '900' },
+  heroMetrics: { flexDirection: 'row', gap: 10, marginTop: 22 },
+  heroMetricsCompact: { flexWrap: 'wrap', gap: 8, marginTop: 14 },
+  heroMetric: { flex: 1, minWidth: 130, flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, paddingVertical: 12, borderRadius: 16, borderWidth: 1 },
+  heroMetricCompact: { flexBasis: '46%', minWidth: 130, paddingHorizontal: 9, paddingVertical: 9, borderRadius: 14, gap: 8 },
+  heroMetricIcon: { width: 34, height: 34, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
+  heroMetricLabel: { fontSize: 9, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.35 },
+  heroMetricValue: { fontSize: 15, fontWeight: '900', letterSpacing: -0.3, marginTop: 2 },
+
   // Add button (hero)
   addBtnOuter: {
     borderRadius: 22,
@@ -1038,6 +1052,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     position: 'relative',
   },
+  filterGroups: { flexDirection: 'row', gap: 20 },
+  filterGroup: { flex: 1, minWidth: 0 },
   filterSectionLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 },
   filterSectionAccent: { width: 3, height: 14, borderRadius: 2 },
   filterLabel: { color: T.textDim, fontSize: 10, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8 },
@@ -1085,6 +1101,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     minHeight: 360,
     position: 'relative',
+    borderWidth: 1,
+    borderRadius: 24,
+    overflow: 'hidden',
   },
   emptyBackdrop: {
     ...StyleSheet.absoluteFillObject,

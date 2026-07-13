@@ -239,6 +239,22 @@ export async function listCollections(
   return { rows: (data.rows || []) as CollectionRow[], total: data.total ?? 0 };
 }
 
+export interface FinancialSummary {
+  period: CollectionPeriodFilter;
+  business_unit_id: string;
+  revenue: number;
+  business_unit_collections: number;
+  client_billing_collected: number;
+  expenses: number;
+  net_profit: number;
+  profit_margin: number | null;
+  expenses_scope: 'platform';
+}
+
+export async function getFinancialSummary(params: { period: CollectionPeriodFilter; business_unit_id?: string }): Promise<FinancialSummary> {
+  return founderApi.getFinancialSummary(params) as Promise<FinancialSummary>;
+}
+
 export async function createCollection(payload: {
   business_unit_id: string;
   amount: number;

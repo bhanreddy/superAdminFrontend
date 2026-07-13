@@ -7,15 +7,16 @@ import { Platform } from 'react-native';
 function resolveWithWebRewrite(primaryEnv: string | undefined, webOverrideEnv: string | undefined): string {
   const primary = (primaryEnv || '').trim();
   if (Platform.OS !== 'web') {
-    return primary;
+    return primary.replace(/\/+$/, '');
   }
   const webOnly = (webOverrideEnv || '').trim();
   if (webOnly) {
-    return webOnly;
+    return webOnly.replace(/\/+$/, '');
   }
   return primary
     .replace(/10\.0\.2\.2/g, '127.0.0.1')
-    .replace(/10\.0\.3\.2/g, '127.0.0.1');
+    .replace(/10\.0\.3\.2/g, '127.0.0.1')
+    .replace(/\/+$/, '');
 }
 
 export function resolveSchoolApiBaseUrl(): string {

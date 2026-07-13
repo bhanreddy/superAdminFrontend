@@ -22,6 +22,7 @@ export const DashboardLayout = React.memo(function DashboardLayout({
   const { colors, layout: layoutTokens, isDark, zIndex, clayShadows } = useTheme();
   const { width: screenWidth } = useWindowDimensions();
   const isMobile = screenWidth < layoutTokens.mobileBreakpoint;
+  const isCompactMobile = screenWidth < 480;
 
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -88,7 +89,7 @@ export const DashboardLayout = React.memo(function DashboardLayout({
             styles.scroller,
             {
               paddingTop: isMobile ? 16 : layoutTokens.topbarHeight + 28,
-              paddingHorizontal: isMobile ? 16 : 40,
+              paddingHorizontal: isCompactMobile ? 12 : isMobile ? 16 : 40,
               paddingBottom: 48,
             },
           ]}

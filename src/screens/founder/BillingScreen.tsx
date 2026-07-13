@@ -11,8 +11,12 @@ import {
   Alert,
   Share,
   KeyboardAvoidingView,
+  useWindowDimensions,
+  TextInput,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
+import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import {
   FileText,
   Plus,
@@ -22,6 +26,16 @@ import {
   Ban,
   RefreshCw,
   Settings2,
+  Send,
+  Save,
+  Building2,
+  IndianRupee,
+  ReceiptText,
+  Search,
+  ChevronDown,
+  CheckCircle2,
+  WalletCards,
+  Stethoscope,
 } from 'lucide-react-native';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { Input } from '../../components/ui/Input';
@@ -42,7 +56,9 @@ import type {
   IssueDocumentInput,
   LineItemInput,
   PreviewResult,
+  BillingClient,
 } from '../../api/billing';
+import { CollectionsTab } from './CollectionsScreen';
 
 /* ── Helpers ──────────────────────────────────────────────────────────────── */
 const money = (n: number | string | null | undefined) => {
@@ -128,13 +144,32 @@ function DetailMetric({ label, value }: { label: string; value: string }) {
   );
 }
 
+function HeroMetric({ icon: Icon, label, value, tone, compact }: { icon: any; label: string; value: string; tone: string; compact: boolean }) {
+  const { colors, isDark } = useTheme();
+  return (
+    <View style={[st.heroMetric, compact && st.heroMetricCompact, { backgroundColor: isDark ? 'rgba(255,255,255,0.055)' : 'rgba(255,255,255,0.72)', borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(103,86,187,0.12)' }]}>
+      <View style={[st.metricIcon, { backgroundColor: `${tone}20` }]}><Icon size={17} color={tone} /></View>
+      <View style={{ flex: 1, minWidth: 0 }}>
+        <Text style={[st.metricLabel, { color: colors.textSecondary }]}>{label}</Text>
+        <Text style={[st.metricValue, { color: colors.textPrimary }]} numberOfLines={1}>{value}</Text>
+      </View>
+    </View>
+  );
+}
+
 /* ── Screen ───────────────────────────────────────────────────────────────── */
 export default function BillingScreen() {
   const { colors, isDark } = useTheme();
   const router = useRouter();
+  const { tab } = useLocalSearchParams<{ tab?: string }>();
+  const { width } = useWindowDimensions();
+  const compact = width < 700;
 
   const [config, setConfig] = useState<BillingConfig | null>(null);
   const [docs, setDocs] = useState<BillingDocument[]>([]);
+  const [clients, setClients] = useState<BillingClient[]>([]);
+  const [clientsLoading, setClientsLoading] = useState(true);
+  const [clientsWarning, setClientsWarning] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [listError, setListError] = useState<string | null>(null);
 
@@ -144,6 +179,8 @@ export default function BillingScreen() {
   const [showCreate, setShowCreate] = useState(false);
   const [showConfig, setShowConfig] = useState(false);
   const [detail, setDetail] = useState<BillingDocument | null>(null);
+  const [section, setSection] = useState<'subscriptions' | 'documents' | 'collections'>(tab === 'collections' ? 'collections' : 'subscriptions');
+  const [clientSearch, setClientSearch] = useState('');
 
   const loadList = useCallback(async () => {
     setLoading(true);
@@ -166,6 +203,25 @@ export default function BillingScreen() {
     loadList();
   }, [loadList]);
 
+  const loadClients = useCallback(async () => {
+    setClientsLoading(true);
+    try {
+      const result = await billing.listClients();
+      setClients(result.data);
+      setClientsWarning(result.cluster_unreachable ? 'Some clusters could not be reached. The visible list may be incomplete.' : null);
+    } catch (err) {
+      setClientsWarning(billing.toBillingError(err).message);
+    } finally {
+      setClientsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { loadClients(); }, [loadClients]);
+
+  useEffect(() => {
+    if (tab === 'collections') setSection('collections');
+  }, [tab]);
+
   useEffect(() => {
     billing
       .getConfig()
@@ -178,6 +234,17 @@ export default function BillingScreen() {
   }, []);
 
   const supplierReady = Boolean(config?.supplier_gstin && config?.supplier_state_code);
+  const activeClients = useMemo(() => clients.filter((client) => client.is_active), [clients]);
+  const schoolCount = useMemo(() => clients.filter((client) => client.kind === 'school').length, [clients]);
+  const medicalCount = useMemo(() => clients.filter((client) => client.kind === 'medical').length, [clients]);
+  const configuredClients = useMemo(() => clients.filter((client) => client.monthly_fee !== null), [clients]);
+  const monthlyRevenue = useMemo(() => activeClients.reduce((sum, client) => sum + Number(client.monthly_fee || 0), 0), [activeClients]);
+  const issuedRevenue = useMemo(() => docs.filter((doc) => doc.status === 'issued').reduce((sum, doc) => sum + Number(doc.total_amount || 0), 0), [docs]);
+  const visibleClients = useMemo(() => {
+    const query = clientSearch.trim().toLowerCase();
+    if (!query) return clients;
+    return clients.filter((client) => `${client.name} ${client.code || ''} ${client.cluster_id}`.toLowerCase().includes(query));
+  }, [clients, clientSearch]);
 
   const onIssued = useCallback(
     (doc: BillingDocument) => {
@@ -220,10 +287,38 @@ export default function BillingScreen() {
               >
                 <Settings2 size={18} color={colors.textSecondary} />
               </Pressable>
-              <PrimaryGradientButton label="New Document" onPress={() => setShowCreate(true)} />
+              {!compact && <PrimaryGradientButton label="New Document" onPress={() => setShowCreate(true)} />}
             </View>
           }
         />
+
+        <Animated.View entering={FadeInDown.duration(500)} style={st.heroShell}>
+          <LinearGradient
+            colors={isDark ? ['#28243A', '#171625'] : ['#FFFFFF', '#EEEAFE']}
+            start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={st.heroGradient}
+          >
+            <View style={[st.heroOrb, { backgroundColor: isDark ? 'rgba(124,111,255,0.22)' : 'rgba(124,111,255,0.16)' }]} />
+            <View style={[st.heroTop, compact && { flexDirection: 'column', alignItems: 'stretch' }]}>
+              <View style={{ flex: 1 }}>
+                <View style={st.heroKickerRow}>
+                  <View style={st.heroIcon}><WalletCards size={18} color="#FFFFFF" /></View>
+                  <Text style={[st.heroKicker, { color: isDark ? '#B8B1FF' : '#6255D9' }]}>FINANCIAL COMMAND CENTER</Text>
+                </View>
+                <Text style={[st.heroTitle, { color: colors.textPrimary }]}>Subscriptions, billing and collections—together.</Text>
+                <Text style={[st.heroSubtitle, { color: colors.textSecondary }]}>Manage every school’s monthly plan and send payment links without leaving Founder Console.</Text>
+              </View>
+              <Pressable onPress={() => setShowCreate(true)} style={({ pressed }) => [st.heroAction, { opacity: pressed ? 0.86 : 1 }]}>
+                <Plus size={18} color="#FFFFFF" /><Text style={st.heroActionText}>New document</Text>
+              </Pressable>
+            </View>
+            <View style={[st.metricGrid, compact && st.metricGridCompact]}>
+              <HeroMetric icon={Building2} label="Active clients" value={String(activeClients.length)} tone="#7C6FFF" compact={compact} />
+              <HeroMetric icon={IndianRupee} label="Monthly recurring" value={money(monthlyRevenue)} tone="#10B981" compact={compact} />
+              <HeroMetric icon={CheckCircle2} label="Plans configured" value={`${configuredClients.length}/${clients.length}`} tone="#38BDF8" compact={compact} />
+              <HeroMetric icon={ReceiptText} label="Issued value" value={money(issuedRevenue)} tone="#F59E0B" compact={compact} />
+            </View>
+          </LinearGradient>
+        </Animated.View>
 
         {!supplierReady && (
           <GlassCard style={{ marginBottom: 16, borderColor: 'rgba(251,146,60,0.4)' }}>
@@ -241,6 +336,44 @@ export default function BillingScreen() {
           </GlassCard>
         )}
 
+        <View style={[st.sectionSwitch, { backgroundColor: isDark ? 'rgba(255,255,255,0.045)' : 'rgba(102,84,200,0.07)', borderColor: colors.clayBorderColor }]}>
+          {(['subscriptions', 'documents', 'collections'] as const).map((key) => (
+            <Pressable key={key} onPress={() => setSection(key)} style={[st.sectionSwitchBtn, section === key && { backgroundColor: isDark ? 'rgba(124,111,255,0.22)' : '#FFFFFF' }]}>
+              {key === 'subscriptions' ? <Building2 size={16} color={section === key ? colors.primary : colors.textSecondary} /> : key === 'documents' ? <ReceiptText size={16} color={section === key ? colors.primary : colors.textSecondary} /> : <WalletCards size={16} color={section === key ? colors.primary : colors.textSecondary} />}
+              <Text style={{ color: section === key ? colors.textPrimary : colors.textSecondary, fontWeight: '800', fontSize: 13 }}>{key === 'subscriptions' ? 'Subscriptions' : key === 'documents' ? 'Documents' : 'Collections'}</Text>
+            </Pressable>
+          ))}
+        </View>
+
+        {section === 'subscriptions' && <>
+        <View style={st.sectionHeadingRow}>
+          <View><Text style={[st.sectionHeading, { color: colors.textPrimary }]}>Client subscriptions</Text><Text style={[st.sectionSub, { color: colors.textSecondary }]}>{schoolCount} schools · {medicalCount} medical shops</Text></View>
+          <Badge label={`${clients.length} clients`} color="#7C6FFF" bg="rgba(124,111,255,0.14)" />
+        </View>
+        <View style={[st.searchShell, { borderColor: colors.clayBorderColor, backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : '#FFFFFF' }]}>
+          <Search size={17} color={colors.textSecondary} />
+          <TextInput value={clientSearch} onChangeText={setClientSearch} placeholder="Search school, medical shop or cluster" placeholderTextColor={colors.textTertiary ?? colors.textSecondary} style={[st.searchInput, { color: colors.textPrimary }]} />
+          {clientSearch.length > 0 && <Pressable onPress={() => setClientSearch('')}><X size={16} color={colors.textSecondary} /></Pressable>}
+        </View>
+        {clientsWarning && <Text style={{ color: '#FB923C', fontSize: 12, marginBottom: 10 }}>{clientsWarning}</Text>}
+        {clientsLoading ? (
+          <View style={{ paddingVertical: 24, alignItems: 'center' }}><ActivityIndicator color={colors.primary} /></View>
+        ) : clients.length === 0 ? (
+          <GlassCard style={{ marginBottom: 18 }}>
+            <Text style={{ color: colors.textSecondary, textAlign: 'center' }}>No school or medical clients were returned by the active clusters.</Text>
+          </GlassCard>
+        ) : (
+          <View style={{ gap: compact ? 12 : 14, marginBottom: 22 }}>
+            {visibleClients.map((client, index) => (
+              <Animated.View key={`${client.cluster_id}:${client.id}`} entering={FadeInUp.delay(Math.min(index, 8) * 45).duration(420)}>
+                <SubscriptionClientCard client={client} onChanged={loadClients} compact={compact} />
+              </Animated.View>
+            ))}
+          </View>
+        )}
+        </>}
+
+        {section === 'documents' && <>
         {/* Filters */}
         <View style={{ gap: 10, marginBottom: 16 }}>
           <Segmented
@@ -318,6 +451,9 @@ export default function BillingScreen() {
             ))}
           </View>
         )}
+        </>}
+
+        {section === 'collections' && <CollectionsTab />}
       </ScrollView>
 
       {showCreate && (
@@ -345,6 +481,78 @@ export default function BillingScreen() {
         />
       )}
     </ConsoleAmbientBackground>
+  );
+}
+
+function SubscriptionClientCard({ client, onChanged, compact }: { client: BillingClient; onChanged: () => void; compact: boolean }) {
+  const { colors, isDark, clayShadows } = useTheme();
+  const [fee, setFee] = useState(client.monthly_fee == null ? '' : String(client.monthly_fee));
+  const [link, setLink] = useState(client.payment_link || '');
+  const [busy, setBusy] = useState<'save' | 'send' | null>(null);
+  const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    setFee(client.monthly_fee == null ? '' : String(client.monthly_fee));
+    setLink(client.payment_link || '');
+  }, [client.monthly_fee, client.payment_link]);
+
+  const save = async () => {
+    const amount = fee.trim() === '' ? null : Number(fee);
+    if (amount !== null && (!Number.isFinite(amount) || amount < 0)) return Alert.alert('Invalid fee', 'Enter zero or a positive monthly fee.');
+    setBusy('save');
+    try {
+      await billing.updateClient(client, amount, link.trim() || null);
+      onChanged();
+    } catch (err) { Alert.alert('Could not save', billing.toBillingError(err).message); }
+    finally { setBusy(null); }
+  };
+
+  const send = async () => {
+    if (client.kind !== 'school') return Alert.alert('Messaging unavailable', 'Medical shop messaging is not connected yet. The subscription and payment link can still be saved here.');
+    if (!/^https:\/\//i.test(link.trim())) return Alert.alert('Payment link required', 'Enter a secure https payment link first.');
+    setBusy('send');
+    try {
+      const amount = fee.trim() === '' ? null : Number(fee);
+      await billing.updateClient(client, amount, link.trim());
+      await billing.sendPaymentLink(client, link.trim());
+      Alert.alert('Sent', `Payment link sent to the admin of ${client.name}. It is now visible in Messages.`);
+      onChanged();
+    } catch (err) { Alert.alert('Could not send', billing.toBillingError(err).message); }
+    finally { setBusy(null); }
+  };
+
+  return (
+    <View style={[st.clientCard, { borderColor: colors.clayBorderColor, backgroundColor: isDark ? 'rgba(34,32,48,0.88)' : '#F8F6FC' }, Platform.OS === 'web' ? { boxShadow: clayShadows.clayElevated.web } as any : null]}>
+      <Pressable onPress={() => setExpanded((value) => !value)} style={({ pressed }) => [st.clientSummary, { opacity: pressed ? 0.82 : 1 }]}>
+        <View style={[st.schoolAvatar, { backgroundColor: client.kind === 'medical' ? 'rgba(16,185,129,0.14)' : client.is_active ? 'rgba(124,111,255,0.16)' : 'rgba(148,163,184,0.14)' }]}>
+          {client.kind === 'medical' ? <Stethoscope size={20} color="#10B981" /> : <Text style={{ color: client.is_active ? '#7C6FFF' : colors.textSecondary, fontSize: 17, fontWeight: '900' }}>{client.name.slice(0, 2).toUpperCase()}</Text>}
+        </View>
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text style={[st.schoolName, { color: colors.textPrimary }]} numberOfLines={1}>{client.name}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 3 }}><Text style={{ color: client.kind === 'medical' ? '#10B981' : colors.textSecondary, fontSize: 11, fontWeight: '700' }}>{client.kind === 'medical' ? 'Medical shop' : 'School'}</Text><View style={[st.metaDot, { backgroundColor: colors.textSecondary }]} /><Text style={{ color: colors.textSecondary, fontSize: 11 }} numberOfLines={1}>{client.code || 'No code'} · {client.cluster_id}</Text></View>
+        </View>
+        {!compact && <View style={{ alignItems: 'flex-end' }}><Text style={[st.feeValue, { color: colors.textPrimary }]}>{money(client.monthly_fee)}</Text><Text style={{ color: colors.textSecondary, fontSize: 10 }}>per month</Text></View>}
+        <Badge label={client.is_active ? 'Active' : 'Inactive'} color={client.is_active ? '#10D9A0' : '#F43F5E'} bg={client.is_active ? 'rgba(16,217,160,0.15)' : 'rgba(244,63,94,0.15)'} />
+        <View style={[st.chevron, { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : '#FFFFFF' }]}><ChevronDown size={16} color={colors.textSecondary} style={{ transform: [{ rotate: expanded ? '180deg' : '0deg' }] }} /></View>
+      </Pressable>
+      {compact && <View style={[st.mobileFeeStrip, { borderColor: colors.border }]}><Text style={{ color: colors.textSecondary, fontSize: 11 }}>Monthly plan</Text><Text style={[st.feeValue, { color: colors.textPrimary }]}>{money(client.monthly_fee)}</Text></View>}
+      {expanded && <Animated.View entering={FadeInDown.duration(260)} style={[st.clientEditor, { borderTopColor: colors.border }]}>
+        <Text style={[st.editorHint, { color: colors.textSecondary }]}>{client.kind === 'school' ? 'Update the subscription, then send the secure link straight to the school admin.' : 'Update this medical shop subscription and keep its secure payment link on file.'}</Text>
+        <View style={[st.clientFields, compact && { flexDirection: 'column' }]}>
+          <Input containerStyle={compact ? { width: '100%' } : { flex: 0.7, minWidth: 150 }} label="Monthly fee (₹)" keyboardType="decimal-pad" value={fee} onChangeText={setFee} placeholder="Set fee" />
+          <Input containerStyle={compact ? { width: '100%' } : { flex: 1.3, minWidth: 240 }} label="Secure payment link" autoCapitalize="none" value={link} onChangeText={setLink} placeholder="https://..." />
+        </View>
+        <View style={[st.cardActions, compact && { flexDirection: 'column-reverse' }]}>
+          <Pressable disabled={busy !== null} onPress={save} style={[st.outlineBtn, compact && { width: '100%' }, { borderColor: colors.border, opacity: busy ? 0.6 : 1 }]}>
+            <Save size={15} color={colors.textSecondary} /><Text style={{ color: colors.textSecondary, fontWeight: '700' }}>{busy === 'save' ? 'Saving…' : 'Save changes'}</Text>
+          </Pressable>
+          {client.kind === 'school' && <Pressable disabled={busy !== null} onPress={send} style={[st.sendBtn, compact && { width: '100%' }, { opacity: busy ? 0.6 : 1 }]}>
+            <LinearGradient colors={['#8B7CFF', '#6554E8']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+            <Send size={15} color="#FFF" /><Text style={{ color: '#FFF', fontWeight: '800' }}>{busy === 'send' ? 'Sending…' : 'Send payment link'}</Text>
+          </Pressable>}
+        </View>
+      </Animated.View>}
+    </View>
   );
 }
 
@@ -925,6 +1133,44 @@ function DocumentDetailModal({
 }
 
 const st = StyleSheet.create({
+  heroShell: { borderRadius: 28, overflow: 'hidden', marginBottom: 18, borderWidth: 1, borderColor: 'rgba(124,111,255,0.18)' },
+  heroGradient: { padding: 20, minHeight: 250, overflow: 'hidden' },
+  heroOrb: { position: 'absolute', width: 220, height: 220, borderRadius: 110, right: -60, top: -90 },
+  heroTop: { flexDirection: 'row', alignItems: 'flex-start', gap: 18 },
+  heroKickerRow: { flexDirection: 'row', alignItems: 'center', gap: 9, marginBottom: 12 },
+  heroIcon: { width: 34, height: 34, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: '#7567F1', shadowColor: '#6554E8', shadowOpacity: 0.35, shadowRadius: 12, shadowOffset: { width: 0, height: 5 } },
+  heroKicker: { fontSize: 10, fontWeight: '900', letterSpacing: 1.1 },
+  heroTitle: { fontSize: 24, lineHeight: 30, fontWeight: '900', letterSpacing: -0.7, maxWidth: 580 },
+  heroSubtitle: { fontSize: 13, lineHeight: 19, marginTop: 7, maxWidth: 570 },
+  heroAction: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#6F5FEA', borderRadius: 15, paddingHorizontal: 16, paddingVertical: 13, overflow: 'hidden' },
+  heroActionText: { color: '#FFFFFF', fontSize: 13, fontWeight: '900' },
+  metricGrid: { flexDirection: 'row', gap: 10, marginTop: 24 },
+  metricGridCompact: { flexWrap: 'wrap', marginTop: 20 },
+  heroMetric: { flex: 1, minWidth: 130, flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderRadius: 16, paddingHorizontal: 12, paddingVertical: 12 },
+  heroMetricCompact: { flexBasis: '46%', minWidth: 135 },
+  metricIcon: { width: 34, height: 34, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
+  metricLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 0.3, textTransform: 'uppercase' },
+  metricValue: { fontSize: 15, fontWeight: '900', letterSpacing: -0.25, marginTop: 2 },
+  sectionSwitch: { flexDirection: 'row', padding: 4, borderWidth: 1, borderRadius: 16, marginBottom: 22, gap: 4 },
+  sectionSwitchBtn: { flex: 1, minHeight: 44, borderRadius: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  sectionHeadingRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
+  sectionHeading: { fontSize: 19, fontWeight: '900', letterSpacing: -0.45 },
+  sectionSub: { fontSize: 12, marginTop: 3 },
+  searchShell: { height: 48, borderRadius: 15, borderWidth: 1, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, gap: 10, marginBottom: 14 },
+  searchInput: { flex: 1, height: '100%', fontSize: 14, outlineStyle: 'none' } as any,
+  clientCard: { borderWidth: 1, borderRadius: 20, overflow: 'hidden' },
+  clientSummary: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 },
+  schoolAvatar: { width: 46, height: 46, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
+  schoolName: { fontSize: 15, fontWeight: '900', letterSpacing: -0.2 },
+  metaDot: { width: 3, height: 3, borderRadius: 2, opacity: 0.5 },
+  feeValue: { fontSize: 15, fontWeight: '900', letterSpacing: -0.2 },
+  chevron: { width: 30, height: 30, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  mobileFeeStrip: { marginHorizontal: 14, paddingVertical: 10, borderTopWidth: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  clientEditor: { borderTopWidth: 1, padding: 14 },
+  editorHint: { fontSize: 11, lineHeight: 16, marginBottom: 8 },
+  clientFields: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  cardActions: { flexDirection: 'row', gap: 8, justifyContent: 'flex-end', marginTop: 2 },
+  sendBtn: { position: 'relative', overflow: 'hidden', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 13, borderRadius: 14 },
   badge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
   badgeText: { fontSize: 10, fontWeight: '800', letterSpacing: 0.3, textTransform: 'uppercase' },
   segWrap: { flexDirection: 'row', borderWidth: 1, borderRadius: 12, padding: 3, gap: 3 },

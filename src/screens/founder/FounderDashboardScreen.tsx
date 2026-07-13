@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -104,6 +104,25 @@ const ROW_ACCENTS = [
   '#7C6FFF', '#38C8F4', '#00D4AD', '#FFB020',
   '#FF6B7A', '#A78BFA', '#34D399', '#F472B6',
 ];
+
+function FinancialSummaryGrid({ summary, colors, isDark }: { summary: founderDb.FinancialSummary; colors: any; isDark: boolean }) {
+  const cards = [
+    { label: 'Total collected', value: founderDb.formatInr(summary.revenue), color: '#00D4AD' },
+    { label: 'Client billing collected', value: founderDb.formatInr(summary.client_billing_collected), color: '#7C6FFF' },
+    { label: 'Platform expenses', value: founderDb.formatInr(summary.expenses), color: '#FF6B7A' },
+    { label: 'Net profit', value: founderDb.formatInr(summary.net_profit), color: summary.net_profit >= 0 ? '#7C6FFF' : '#FF6B7A' },
+    { label: 'Profit margin', value: summary.profit_margin == null ? '—' : `${summary.profit_margin.toFixed(1)}%`, color: '#38C8F4' },
+  ];
+  return (
+    <View style={[styles.financialGrid, { borderColor: colors.clayBorderColor, backgroundColor: isDark ? 'rgba(18,20,34,0.68)' : 'rgba(250,251,255,0.85)' }]}>
+      <View style={styles.financialGridHead}>
+        <View><Text style={[styles.financialGridTitle, { color: colors.textPrimary }]}>Financial Summary</Text><Text style={[styles.financialGridSub, { color: colors.textSecondary }]}>Total collected includes Business Unit collections and issued client billing documents. Expenses are platform-wide.</Text></View>
+        <View style={[styles.financialScope, { backgroundColor: 'rgba(124,111,255,0.12)' }]}><Text style={{ color: '#7C6FFF', fontSize: 10, fontWeight: '800' }}>LIVE</Text></View>
+      </View>
+      <View style={styles.financialCards}>{cards.map((card) => <View key={card.label} style={[styles.financialCard, { borderColor: `${card.color}28`, backgroundColor: `${card.color}0C` }]}><Text style={[styles.financialCardLabel, { color: colors.textSecondary }]}>{card.label}</Text><Text style={[styles.financialCardValue, { color: card.color }]} numberOfLines={1}>{card.value}</Text></View>)}</View>
+    </View>
+  );
+}
 
 // - GradientDivider -
 
@@ -780,6 +799,10 @@ export default function FounderDashboardScreen() {
   const [cplRows, setCplRows] = useState<Record<string, unknown>[]>([]);
   const [enquiriesToday, setEnquiriesToday] = useState(0);
   const [unassignedCount, setUnassignedCount] = useState(0);
+  const [financialPeriod, setFinancialPeriod] = useState<founderDb.CollectionPeriodFilter>('ALL');
+  const [financialUnitId, setFinancialUnitId] = useState('ALL');
+  const [financialUnits, setFinancialUnits] = useState<{ id: string; name: string }[]>([]);
+  const [financialSummary, setFinancialSummary] = useState<founderDb.FinancialSummary | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -819,6 +842,18 @@ export default function FounderDashboardScreen() {
       load();
     }, [load]),
   );
+
+  useEffect(() => {
+    founderDb.listBusinessUnits(true)
+      .then((units) => setFinancialUnits(units.map((unit) => ({ id: unit.id, name: unit.name }))))
+      .catch(() => setFinancialUnits([]));
+  }, []);
+
+  useEffect(() => {
+    founderDb.getFinancialSummary({ period: financialPeriod, business_unit_id: financialUnitId })
+      .then(setFinancialSummary)
+      .catch(() => setFinancialSummary(null));
+  }, [financialPeriod, financialUnitId]);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -896,7 +931,7 @@ export default function FounderDashboardScreen() {
           { label: 'Collection approvals', sub: 'Pending collections', route: '/(app)/console/collection-approvals' as const, gradient: founderGradients.info, icon: '*' },
         ] as const)
         : []),
-      { label: 'Collections', sub: 'Units & approvals', route: '/(app)/console/collections', gradient: founderGradients.success, icon: '*' },
+      { label: 'Collections', sub: 'Units & approvals', route: '/(app)/console/billing?tab=collections', gradient: founderGradients.success, icon: '*' },
       { label: 'Enquiries', sub: 'Pipeline & deals', route: '/(app)/console/enquiries', gradient: founderGradients.info, icon: '*' },
       { label: 'Analytics', sub: 'Sources & leaderboard', route: '/(app)/console/analytics', gradient: founderGradients.warning, icon: '*' },
       { label: 'Business units', sub: 'Units directory', route: '/(app)/console/units', gradient: founderGradients.primary, icon: '*' },
@@ -978,6 +1013,21 @@ export default function FounderDashboardScreen() {
           <QuickActionRow colors={colors} isDark={isDark} />
         </Animated.View>
 
+        <View style={[styles.financialFilters, { borderColor: colors.clayBorderColor, backgroundColor: isDark ? 'rgba(255,255,255,0.035)' : 'rgba(255,255,255,0.78)' }]}>
+          <View style={styles.financialFilterGroup}>
+            <Text style={[styles.financialFilterLabel, { color: colors.textSecondary }]}>Period</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.financialFilterScroll}>
+              {(['THIS_MONTH', 'LAST_MONTH', 'THIS_YEAR', 'ALL'] as founderDb.CollectionPeriodFilter[]).map((period) => <Pressable key={period} onPress={() => setFinancialPeriod(period)} style={[styles.financialFilterChip, { borderColor: financialPeriod === period ? '#7C6FFF' : colors.border, backgroundColor: financialPeriod === period ? 'rgba(124,111,255,0.14)' : 'transparent' }]}><Text style={{ color: financialPeriod === period ? '#7C6FFF' : colors.textSecondary, fontSize: 11, fontWeight: '800' }}>{period.replace('_', ' ')}</Text></Pressable>)}
+            </ScrollView>
+          </View>
+          <View style={styles.financialFilterGroup}>
+            <Text style={[styles.financialFilterLabel, { color: colors.textSecondary }]}>Business unit</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.financialFilterScroll}>
+              {[{ id: 'ALL', name: 'All units' }, ...financialUnits].map((unit) => <Pressable key={unit.id} onPress={() => setFinancialUnitId(unit.id)} style={[styles.financialFilterChip, { borderColor: financialUnitId === unit.id ? '#00D4AD' : colors.border, backgroundColor: financialUnitId === unit.id ? 'rgba(0,212,173,0.12)' : 'transparent' }]}><Text style={{ color: financialUnitId === unit.id ? '#00A88A' : colors.textSecondary, fontSize: 11, fontWeight: '800' }}>{unit.name}</Text></Pressable>)}
+            </ScrollView>
+          </View>
+        </View>
+
         {/* - LOADING - */}
         {loading && !refreshing ? (
           <View style={styles.loader}>
@@ -991,26 +1041,7 @@ export default function FounderDashboardScreen() {
         ) : (
           <>
             {/* - CASH FINANCIALS - */}
-            <PremiumSectionTitle
-              title="Cash-based financials"
-              accent="#00D4AD"
-              icon={<TrendingUp size={14} color="#00D4AD" />}
-              colors={colors}
-            />
-            <View style={[styles.kpiGrid, IS_WEB && styles.kpiGridWeb]}>
-              <KpiTile label="Approved income" value={founderDb.formatInr(m.approvedIncomeThisMonth)} gradient={founderGradients.success} delay={80} icon={<TrendingUp size={16} color="#FFF" />} sparklineData={incomeSparkline} />
-              <KpiTile label="Pending collections" value={founderDb.formatInr(m.pendingCollectionsAmount)} gradient={founderGradients.warning} delay={120} icon={<ClipboardCheck size={16} color="#FFF" />} />
-              <KpiTile label="Approved expenses" value={founderDb.formatInr(m.approvedExpensesThisMonth)} gradient={founderGradients.danger} delay={160} icon={<TrendingDown size={16} color="#FFF" />} sparklineData={expenseSparkline} />
-            </View>
-
-            {/* Financial Summary Banner */}
-            <FinancialSummaryBanner
-              netProfit={m.collectionsNetProfit}
-              netProfitFormatted={founderDb.formatInr(m.collectionsNetProfit)}
-              incomeFormatted={founderDb.formatInr(m.approvedIncomeThisMonth)}
-              expenseFormatted={founderDb.formatInr(m.approvedExpensesThisMonth)}
-              delay={220}
-            />
+            {financialSummary ? <FinancialSummaryGrid summary={financialSummary} colors={colors} isDark={isDark} /> : <View style={styles.summaryLoading}><ActivityIndicator color="#7C6FFF" /><Text style={[styles.summaryLoadingText, { color: colors.textSecondary }]}>Syncing financial summary…</Text></View>}
 
             {/* Top paying unit - full-width stat pill */}
             <Animated.View entering={FadeInDown.delay(240).springify()}>
@@ -1244,6 +1275,22 @@ const styles = StyleSheet.create({
     width: '100%' as any,
     paddingHorizontal: 32,
   },
+  financialFilters: { borderWidth: 1, borderRadius: 18, padding: 14, gap: 12, marginBottom: 18 },
+  financialFilterGroup: { gap: 7 },
+  financialFilterLabel: { fontSize: 10, fontWeight: '900', letterSpacing: 0.9, textTransform: 'uppercase' as any },
+  financialFilterScroll: { gap: 8, paddingRight: 8 },
+  financialFilterChip: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 11, paddingVertical: 8 },
+  financialGrid: { borderWidth: 1, borderRadius: 20, padding: 16, marginBottom: 18 },
+  financialGridHead: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 14 },
+  financialGridTitle: { fontSize: 17, fontWeight: '900', letterSpacing: -0.35 },
+  financialGridSub: { fontSize: 11, lineHeight: 16, marginTop: 3, maxWidth: 440 },
+  financialScope: { borderRadius: 9, paddingHorizontal: 8, paddingVertical: 5 },
+  financialCards: { flexDirection: 'row', flexWrap: 'wrap', gap: 9 },
+  financialCard: { flexGrow: 1, flexBasis: '44%', minWidth: 138, borderWidth: 1, borderRadius: 14, padding: 12 },
+  financialCardLabel: { fontSize: 9, fontWeight: '800', textTransform: 'uppercase' as any, letterSpacing: 0.5 },
+  financialCardValue: { fontSize: 17, fontWeight: '900', letterSpacing: -0.35, marginTop: 5 },
+  summaryLoading: { minHeight: 164, borderRadius: 20, alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 18 },
+  summaryLoadingText: { fontSize: 12, fontWeight: '700' },
 
   // - header -
   header: {

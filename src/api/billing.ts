@@ -25,6 +25,13 @@ export interface BillingConfig {
   updated_at: string;
 }
 
+export interface BillingClient {
+  id: string; kind: 'school' | 'medical'; cluster_id: string; name: string; code: string | null;
+  address: string | null; is_active: boolean; created_at: string;
+  monthly_fee: number | string | null; payment_link: string | null;
+  subscription_updated_at: string | null;
+}
+
 export interface LineItemInput {
   description: string;
   sac_code?: string | null;
@@ -141,6 +148,18 @@ export async function getConfig(): Promise<BillingConfig> {
 export async function updateConfig(patch: Partial<BillingConfig>): Promise<BillingConfig> {
   const res = await superAdminClient.put(`${BASE}/config`, patch);
   return res.data;
+}
+
+export async function listClients(): Promise<{ data: BillingClient[]; cluster_unreachable: boolean }> {
+  return (await superAdminClient.get(`${BASE}/clients`)).data;
+}
+
+export async function updateClient(client: BillingClient, monthly_fee: number | null, payment_link: string | null) {
+  return (await superAdminClient.put(`${BASE}/clients/${client.kind}/${encodeURIComponent(client.cluster_id)}/${encodeURIComponent(client.id)}`, { monthly_fee, payment_link })).data;
+}
+
+export async function sendPaymentLink(client: BillingClient, payment_link?: string | null) {
+  return (await superAdminClient.post(`${BASE}/clients/${client.kind}/${encodeURIComponent(client.cluster_id)}/${encodeURIComponent(client.id)}/send-payment-link`, { payment_link })).data;
 }
 
 export async function previewDocument(input: IssueDocumentInput): Promise<PreviewResult> {

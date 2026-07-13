@@ -11,8 +11,8 @@ let _currentBaseUrl = resolveSuperAdminApiBaseUrl();
  * selected cluster changes.
  */
 export function setGlobalBackendUrl(url: string): void {
-  _currentBaseUrl = url;
-  superAdminClient.defaults.baseURL = url;
+  _currentBaseUrl = url.trim().replace(/\/+$/, '');
+  superAdminClient.defaults.baseURL = _currentBaseUrl;
 }
 
 export const superAdminClient = axios.create({

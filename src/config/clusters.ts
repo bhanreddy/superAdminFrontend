@@ -41,12 +41,13 @@ export interface ClusterConfig {
  */
 function resolveEnvBackendUrl(): string {
   const primary = (process.env.EXPO_PUBLIC_SUPERADMIN_API_URL || '').trim();
-  if (Platform.OS !== 'web') return primary;
+  if (Platform.OS !== 'web') return primary.replace(/\/+$/, '');
   const webOverride = (process.env.EXPO_PUBLIC_SUPERADMIN_API_URL_WEB || '').trim();
-  if (webOverride) return webOverride;
+  if (webOverride) return webOverride.replace(/\/+$/, '');
   return primary
     .replace(/10\.0\.2\.2/g, '127.0.0.1')
-    .replace(/10\.0\.3\.2/g, '127.0.0.1');
+    .replace(/10\.0\.3\.2/g, '127.0.0.1')
+    .replace(/\/+$/, '');
 }
 
 // ── Cluster Definitions ──────────────────────────────────────────────────────

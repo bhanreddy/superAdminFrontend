@@ -29,6 +29,7 @@ export const TopBar = React.memo(function TopBar({ onMenuPress, showMenu }: TopB
   const { width: winW } = useWindowDimensions();
   const hideBreadcrumb = winW < 480;
   const isMobileShell = winW < layoutTokens.mobileBreakpoint;
+  const compactMobile = winW < 480;
 
   const userName = currentAdmin?.full_name || founder?.full_name || 'Admin';
   const userEmail = currentAdmin?.email || founder?.email || '';
@@ -40,6 +41,7 @@ export const TopBar = React.memo(function TopBar({ onMenuPress, showMenu }: TopB
         {
           height: layoutTokens.topbarHeight,
           zIndex: zIndex.topbar,
+          paddingHorizontal: compactMobile ? 12 : 20,
           ...(Platform.OS === 'web' && !isMobileShell
             ? {
                 position: 'absolute' as any,
@@ -95,6 +97,7 @@ export const TopBar = React.memo(function TopBar({ onMenuPress, showMenu }: TopB
             onPress={() => router.push('/cluster-selector' as any)}
             style={({ pressed, hovered }: any) => [
               styles.clusterBadge,
+              compactMobile && styles.clusterBadgeCompact,
               {
                 backgroundColor: hovered
                   ? `${colors.primary}20`
@@ -105,14 +108,12 @@ export const TopBar = React.memo(function TopBar({ onMenuPress, showMenu }: TopB
             ]}
           >
             <View style={[styles.clusterDot, { backgroundColor: colors.success }]} />
-            <Text style={[styles.clusterLabel, { color: colors.primary }]} numberOfLines={1}>
-              {selectedCluster.label}
-            </Text>
+            {!compactMobile && <Text style={[styles.clusterLabel, { color: colors.primary }]} numberOfLines={1}>{selectedCluster.label}</Text>}
           </Pressable>
         )}
       </View>
 
-      <View style={[styles.right, { flexShrink: 0 }]}>
+      <View style={[styles.right, { flexShrink: 0 }, compactMobile && { gap: 3 }]}>
         {/* Theme toggle */}
         <Pressable
           onPress={toggleTheme}
@@ -148,12 +149,12 @@ export const TopBar = React.memo(function TopBar({ onMenuPress, showMenu }: TopB
         </Pressable>
 
         {/* Separator — soft gradient */}
-        <View style={[styles.sep, { backgroundColor: colors.divider }]} />
+        {!compactMobile && <View style={[styles.sep, { backgroundColor: colors.divider }]} />}
 
         {/* User info */}
-        <View style={styles.userArea}>
+        <View style={[styles.userArea, compactMobile && { paddingHorizontal: 1 }]}>
           <Avatar name={userName} size="sm" />
-          {Platform.OS === 'web' && (
+          {Platform.OS === 'web' && !compactMobile && (
             <View style={styles.userText}>
               <Text style={[styles.userName, { color: colors.textPrimary }]} numberOfLines={1}>
                 {userName}
@@ -250,6 +251,14 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     ...(Platform.OS === 'web' ? { cursor: 'pointer', transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)' } : {}),
   } as any,
+  clusterBadgeCompact: {
+    width: 36,
+    height: 36,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+    justifyContent: 'center',
+    marginLeft: 0,
+  },
   clusterDot: {
     width: 6,
     height: 6,

@@ -17,6 +17,7 @@ import { BlurView } from 'expo-blur';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react-native';
 import { useTheme, clayStyle } from '../../contexts/ThemeContext';
+import { ClayView, PressScale, clayTokens } from '../../components/ui/ClayPrimitives';
 
 const { width: W } = Dimensions.get('window');
 
@@ -249,29 +250,10 @@ export const KpiTile = React.memo(function KpiTile({
   sparklineData?: number[];
   changePercent?: number;
 }) {
-  const { colors, isDark, clayShadows } = useTheme();
+  const { colors, isDark } = useTheme();
   const { width: screenWidth } = useWindowDimensions();
   const isDesktop = screenWidth >= 1024;
   const isTablet = screenWidth >= 768 && screenWidth < 1024;
-
-  // Shimmer animation for accent strip
-  const shimmer = useRef(new RNAnimated.Value(0)).current;
-  useEffect(() => {
-    const anim = RNAnimated.loop(
-      RNAnimated.timing(shimmer, {
-        toValue: 1,
-        duration: 2400,
-        useNativeDriver: Platform.OS !== 'web',
-      }),
-    );
-    anim.start();
-    return () => anim.stop();
-  }, [shimmer]);
-
-  const shimmerTranslate = shimmer.interpolate({
-    inputRange: [0, 1],
-    outputRange: [-80, 200],
-  });
 
   const tileWidth = isDesktop
     ? (screenWidth - 240 - 80 - 36) / 4
@@ -284,101 +266,84 @@ export const KpiTile = React.memo(function KpiTile({
     : null;
 
   return (
-    <Animated.View entering={FadeInDown.delay(delay).duration(420).springify()} style={[styles.kpiWrap, { width: tileWidth }]}>
-      <Pressable style={({ hovered, pressed }: any) => [
-        styles.kpiCard,
-        {
-          backgroundColor: colors.card,
-          borderColor: hovered ? gradient[0] + '55' : colors.clayBorderColor,
-          transform: [{ scale: pressed ? 0.97 : hovered ? 1.02 : 1 }],
-        },
-        clayStyle(clayShadows.clay),
-        Platform.OS === 'web' ? {
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          cursor: 'pointer',
-        } as any : {},
-      ] as any}>
-        {/* Accent strip with shimmer */}
-        <View style={styles.kpiTopGlow}>
+    <Animated.View entering={FadeInDown.delay(delay).duration(420).springify()} style={{ width: tileWidth, marginBottom: 12 }}>
+      <PressScale style={{ width: '100%', height: 130 }}>
+        <ClayView 
+          isDark={isDark} 
+          color={isDark ? 'rgba(255,255,255,0.03)' : colors.card} 
+          radius={24} 
+          style={{ padding: 18, flex: 1, overflow: 'hidden' }}
+        >
+          {/* Top colored edge accent */}
           <LinearGradient
             colors={[gradient[0], gradient[1]]}
             start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-            style={StyleSheet.absoluteFill}
+            style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, opacity: isDark ? 0.8 : 0.6 }}
           />
-          {Platform.OS === 'web' && (
-            <RNAnimated.View
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: 60,
-                height: '100%',
-                backgroundColor: 'rgba(255,255,255,0.35)',
-                transform: [{ translateX: shimmerTranslate }],
-                borderRadius: 2,
-              } as any}
-            />
-          )}
-        </View>
 
-        {/* Top row: icon + sparkline */}
-        <View style={styles.kpiTopRow}>
-          {icon && (
-            <LinearGradient
-              colors={[gradient[0] + '22', gradient[1] + '0A']}
-              style={[
-                styles.kpiIconWrap,
-                Platform.OS === 'web' ? {
-                  boxShadow: isDark
-                    ? 'inset 2px 2px 4px rgba(0,0,0,0.2), inset -2px -2px 4px rgba(255,255,255,0.02)'
-                    : 'inset 2px 2px 4px rgba(0,0,0,0.03), inset -2px -2px 4px rgba(255,255,255,0.5)',
-                } as any : {},
-              ]}
-            >
-              {icon}
-            </LinearGradient>
-          )}
-          {sparklineData && sparklineData.length >= 2 && (
-            <View style={styles.kpiSparklineWrap}>
-              <SparklineMini data={sparklineData} color={gradient[0]} />
-            </View>
-          )}
-        </View>
+          {/* Top row: icon + sparkline */}
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            {icon && (
+              <View
+                style={[
+                  {
+                    width: 36, height: 36, borderRadius: 12,
+                    alignItems: 'center', justifyContent: 'center',
+                    backgroundColor: isDark ? gradient[0] + '33' : gradient[0] + '22',
+                  },
+                ]}
+              >
+                {React.cloneElement(icon as any, { color: isDark ? '#FFF' : gradient[0] })}
+              </View>
+            )}
+            {sparklineData && sparklineData.length >= 2 && (
+              <View style={{ width: 60, height: 24, opacity: 0.8 }}>
+                <SparklineMini data={sparklineData} color={gradient[0]} />
+              </View>
+            )}
+          </View>
 
-        <View style={{ flex: 1 }} />
+          <View style={{ flex: 1 }} />
 
-        {/* Value + Change row */}
-        <View style={styles.kpiValueRow}>
-          <Text style={[styles.kpiValue, { color: colors.textPrimary }]} numberOfLines={1}>{value}</Text>
-          {changeDir && (
-            <View style={[
-              styles.kpiChangeBadge,
-              {
+          {/* Value + Change row */}
+          <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8 }}>
+            <Text style={{ fontSize: 24, fontWeight: '900', color: colors.textPrimary, letterSpacing: -0.5 }} numberOfLines={1}>
+              {value}
+            </Text>
+            {changeDir && (
+              <View style={{
+                flexDirection: 'row', alignItems: 'center', gap: 2, paddingHorizontal: 6, paddingVertical: 2,
+                borderRadius: 8,
                 backgroundColor: changeDir === 'up'
                   ? (isDark ? 'rgba(0,212,173,0.15)' : 'rgba(0,212,173,0.1)')
                   : changeDir === 'down'
                     ? (isDark ? 'rgba(255,107,122,0.15)' : 'rgba(255,107,122,0.1)')
                     : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)'),
-              },
-            ]}>
-              {changeDir === 'up' && <TrendingUp size={9} color="#00D4AD" strokeWidth={2.5} />}
-              {changeDir === 'down' && <TrendingDown size={9} color="#FF6B7A" strokeWidth={2.5} />}
-              {changeDir === 'flat' && <Minus size={9} color={colors.textSecondary} strokeWidth={2.5} />}
-              <Text style={[
-                styles.kpiChangeText,
-                {
-                  color: changeDir === 'up' ? '#00D4AD'
-                    : changeDir === 'down' ? '#FF6B7A'
-                      : colors.textSecondary,
-                },
-              ]}>
-                {changePercent !== undefined ? `${Math.abs(changePercent).toFixed(1)}%` : ''}
-              </Text>
-            </View>
-          )}
-        </View>
-        <Text style={[styles.kpiLabel, { color: colors.textSecondary }]} numberOfLines={1}>{label}</Text>
-      </Pressable>
+              }}>
+                {changeDir === 'up' && <TrendingUp size={10} color="#00D4AD" strokeWidth={2.5} />}
+                {changeDir === 'down' && <TrendingDown size={10} color="#FF6B7A" strokeWidth={2.5} />}
+                {changeDir === 'flat' && <Minus size={10} color={colors.textSecondary} strokeWidth={2.5} />}
+                <Text style={{
+                    fontSize: 11, fontWeight: '700',
+                    color: changeDir === 'up' ? '#00D4AD'
+                      : changeDir === 'down' ? '#FF6B7A'
+                        : colors.textSecondary,
+                  }}>
+                  {changePercent !== undefined ? `${Math.abs(changePercent).toFixed(1)}%` : ''}
+                </Text>
+              </View>
+            )}
+          </View>
+          <Text style={{ fontSize: 12, fontWeight: '700', color: colors.textSecondary, letterSpacing: 0.5, marginTop: 4, textTransform: 'uppercase' }} numberOfLines={1}>
+            {label}
+          </Text>
+
+          {/* Large subtle background icon */}
+          <View style={{ position: 'absolute', right: -10, bottom: -15, opacity: isDark ? 0.05 : 0.03, transform: [{ scale: 3.5 }] }} pointerEvents="none">
+             {React.cloneElement(icon as any, { color: colors.textPrimary })}
+          </View>
+        </ClayView>
+      </PressScale>
     </Animated.View>
   );
 });

@@ -28,7 +28,7 @@ export const ScreenHeader = React.memo(function ScreenHeader({
   const stackActions = winW < 520;
 
   return (
-    <View style={[styles.container, stackActions && styles.containerStacked]}>
+    <View style={[styles.container, compact && styles.containerCompact, stackActions && styles.containerStacked]}>
       <View style={[styles.left, { minWidth: 0 }, stackActions && styles.leftStacked]}>
         {showBack && (
           <Pressable
@@ -51,14 +51,14 @@ export const ScreenHeader = React.memo(function ScreenHeader({
         )}
         <View style={[styles.titleBlock, { minWidth: 0 }]}>
           <Text
-            style={[styles.title, { color: colors.textPrimary }, compact && { fontSize: 22 }]}
+            style={[styles.title, { color: colors.textPrimary }, compact && { fontSize: 21, lineHeight: 26 }]}
             numberOfLines={2}
           >
             {title}
           </Text>
           {subtitle && (
             <Text
-              style={[styles.subtitle, { color: subtitleColor ?? colors.textTertiary }]}
+              style={[styles.subtitle, { color: subtitleColor ?? colors.textTertiary }, compact && { fontSize: 13, marginTop: 3 }]}
               numberOfLines={1}
             >
               {subtitle}
@@ -87,6 +87,10 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'stretch',
     gap: 14,
+  },
+  containerCompact: {
+    marginBottom: 16,
+    paddingTop: 2,
   },
   left: {
     flexDirection: 'row',

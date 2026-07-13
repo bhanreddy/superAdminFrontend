@@ -8,12 +8,14 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTheme } from '../../../src/contexts/ThemeContext';
 import { ScreenHeader } from '../../../src/components/ui/ScreenHeader';
 import { Input } from '../../../src/components/ui/Input';
 import { Button } from '../../../src/components/ui/Button';
 import { superAdminClient } from '../../../src/api/superAdminClient';
+import { crmService } from '../../../src/services/crmService';
+import { updateEnquiry } from '../../../src/services/founderSupabase';
 import { Building2, FileText, Phone, MapPin, ShieldCheck, Server, Key } from 'lucide-react-native';
 import { getMedicalClusterAssignment } from '../../../src/services/medicalOnboardingService';
 import { ClusterConfig } from '../../../src/config/clusters';
@@ -24,20 +26,29 @@ export default function AddMedicalShopScreen() {
   const { colors, isDark } = useTheme();
   const { showToast } = useToast();
 
+  // Pre-fill params when onboarding an accepted CRM enquiry.
+  const params = useLocalSearchParams<{
+    name?: string; email?: string; phone?: string; organization?: string;
+    address?: string; enquiryId?: string; accountId?: string;
+  }>();
+  const asStr = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) || '';
+  const enquiryId = asStr(params.enquiryId);
+  const accountId = asStr(params.accountId);
+
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    medical_name: '',
-    owner_name: '',
-    email: '',
+    medical_name: asStr(params.organization) || asStr(params.name),
+    owner_name: asStr(params.name),
+    email: asStr(params.email),
     password: '',
     gst_number: '',
     drug_license_number: '',
-    address_line_1: '',
+    address_line_1: asStr(params.address),
     address_line_2: '',
     city: '',
     state: '',
     pincode: '',
-    phone_number: '',
+    phone_number: asStr(params.phone),
     logo_url: '',
     plan: 'trial',
     amount_paid: '0',
@@ -104,6 +115,25 @@ export default function AddMedicalShopScreen() {
         timeout: 60000,
       });
       if (response.data?.success) {
+        // Close the CRM loop for accepted enquiries (best-effort).
+        const shopId = response.data.data?.id;
+        if (accountId) {
+          try {
+            await crmService.linkAccountToTenant(accountId, {
+              external_client_id: shopId ? String(shopId) : undefined,
+              cluster_id: assignedCluster?.cluster_id,
+            });
+          } catch (linkErr) {
+            console.warn('CRM account link failed:', linkErr);
+          }
+        }
+        if (enquiryId) {
+          try {
+            await updateEnquiry(enquiryId, { status: 'CLOSED' });
+          } catch (closeErr) {
+            console.warn('Enquiry close failed:', closeErr);
+          }
+        }
         showToast('Medical shop registered successfully!', 'success', 3000);
         router.replace(`/(app)/medical/${response.data.data.id}/build-config`);
       } else {

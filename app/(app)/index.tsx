@@ -25,7 +25,7 @@ import {
   PiggyBank, CircleDollarSign, BarChart3, Sparkles, ArrowUpRight, Plus,
   BookOpen, Settings, Building2, Megaphone, ScrollText, Cpu, ChevronRight,
   Store, Zap, Activity, AlertCircle, Bell, Clock, Flame, Eye, ArrowDown,
-  ArrowUp, Filter, Layers,
+  ArrowUp, Filter, Layers, CalendarDays,
 } from 'lucide-react-native';
 import { useAuth } from '../../src/hooks/useAuth';
 import { useFounderAuth } from '../../src/hooks/useFounderAuth';
@@ -321,11 +321,11 @@ const AttentionItem = React.memo(function AttentionItem({
 
 // - Primary Metric Hero Card (NEW - V+2) -
 const PrimaryMetricCard = React.memo(function PrimaryMetricCard({
-  label, value, delta, sparkline, accentColor, icon, onPress,
+  label, value, delta, sparkline, accentColor, icon, onPress, hint = 'This month . MoM', showDelta = true,
 }: {
   label: string; value: string; delta: number;
   sparkline: number[]; accentColor: string;
-  icon: React.ReactNode; onPress?: () => void;
+  icon: React.ReactNode; onPress?: () => void; hint?: string; showDelta?: boolean;
 }) {
   const { colors, isDark, clayShadows } = useTheme();
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -366,9 +366,9 @@ const PrimaryMetricCard = React.memo(function PrimaryMetricCard({
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[s.primaryLabel, { color: `${accentColor}DD` }]}>{label}</Text>
-              <Text style={[s.primaryHint, { color: colors.textTertiary }]}>This month . MoM</Text>
+              <Text style={[s.primaryHint, { color: colors.textTertiary }]}>{hint}</Text>
             </View>
-            <DeltaPill value={delta} size="md" />
+            {showDelta && <DeltaPill value={delta} size="md" />}
           </View>
 
           <View style={s.primaryBottomRow}>
@@ -461,10 +461,10 @@ const PremiumStatCard = React.memo(function PremiumStatCard({
 
 // - Quick Action (kept, minor polish) -
 const QuickAction = React.memo(function QuickAction({
-  label, subtitle, icon, accentColor, onPress,
+  label, subtitle, icon, accentColor, onPress, desktopWide,
 }: {
   label: string; subtitle?: string; icon: React.ReactNode;
-  accentColor: string; onPress: () => void; index?: number;
+  accentColor: string; onPress: () => void; index?: number; desktopWide?: boolean;
 }) {
   const { colors, isDark, clayShadows } = useTheme();
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -486,7 +486,12 @@ const QuickAction = React.memo(function QuickAction({
   const glowOpacity = glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 0.25] });
 
   return (
-    <Pressable onPress={onPress} onPressIn={pressIn} onPressOut={pressOut} style={s.qaCardWrap}>
+    <Pressable
+      onPress={onPress}
+      onPressIn={pressIn}
+      onPressOut={pressOut}
+      style={[s.qaCardWrap, desktopWide && s.qaCardWrapDesktopWide]}
+    >
       <Animated.View style={[
         s.qaCard,
         {
@@ -892,7 +897,7 @@ const SuperAdminCard = React.memo(function SuperAdminCard({
 });
 
 // - Premium Avatar -
-const PremiumAvatar = React.memo(function PremiumAvatar({ name }: { name: string }) {
+const PremiumAvatar = React.memo(function PremiumAvatar({ name, compact = false }: { name: string; compact?: boolean }) {
   const { colors, isDark, clayShadows } = useTheme();
   const initials = name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -905,16 +910,17 @@ const PremiumAvatar = React.memo(function PremiumAvatar({ name }: { name: string
     ).start();
   }, []);
   return (
-    <View style={s.avatarWrap}>
-      <Animated.View style={[s.avatarPulse, { borderColor: `${colors.primary}40`, transform: [{ scale: pulseAnim }] }]} />
+    <View style={[s.avatarWrap, compact && s.avatarWrapCompact]}>
+      <Animated.View style={[s.avatarPulse, compact && s.avatarPulseCompact, { borderColor: `${colors.primary}40`, transform: [{ scale: pulseAnim }] }]} />
       <LinearGradient
         colors={[colors.primary, `${colors.primary}90`]}
         style={[
           s.avatar,
+          compact && s.avatarCompact,
           clayStyle(clayShadows.subtle),
         ]}
       >
-        <Text style={s.avatarText}>{initials}</Text>
+        <Text style={[s.avatarText, compact && { fontSize: 16 }]}>{initials}</Text>
       </LinearGradient>
       <View style={[s.avatarOnline, { backgroundColor: colors.success, borderColor: colors.background }]} />
     </View>
@@ -932,6 +938,7 @@ export default function DashboardScreen() {
   const { colors, isDark, clayShadows } = useTheme();
   const { width: screenWidth } = useWindowDimensions();
   const isDesktop = screenWidth >= 1024;
+  const isCompact = screenWidth < 560;
 
   const roleLabel =
     founder?.role === 'APPROVER' ? 'Approver'
@@ -957,6 +964,7 @@ export default function DashboardScreen() {
   const [cplRows, setCplRows] = useState<Record<string, unknown>[]>([]);
   const [enquiriesToday, setEnquiriesToday] = useState(0);
   const [unassignedCount, setUnassignedCount] = useState(0);
+  const [financialSummary, setFinancialSummary] = useState<founderDb.FinancialSummary | null>(null);
 
   // - Data fetching (preserved) -
   const fetchAdminStats = async () => {
@@ -966,16 +974,18 @@ export default function DashboardScreen() {
   const fetchFounderMetrics = useCallback(async () => {
     if (!hasFounderAccess) { setFounderLoading(false); return; }
     try {
-      const [pm, inc, exp, enq, closed, expRoi, conv, cpl, todayN, unas] = await Promise.all([
+      const [pm, inc, exp, enq, closed, expRoi, conv, cpl, todayN, unas, summary] = await Promise.all([
         founderDb.fetchPendingMetricsSummary(), founderDb.fetchMonthlyIncomeSummary(),
         founderDb.fetchMonthlyExpenseSummaryV2(), founderDb.fetchMonthlyEnquirySummary(),
         founderDb.fetchMonthlyClosedDeals(), founderDb.fetchMonthlyExpenseSummaryRoi(),
         founderDb.fetchConversionRateSeries(), founderDb.fetchCostPerLeadSeries(),
         founderDb.countEnquiriesCreatedToday(), founderDb.countUnassignedEnquiries(),
+        founderDb.getFinancialSummary({ period: 'ALL', business_unit_id: 'ALL' }),
       ]);
       setPending(pm); setIncomeRows(inc); setExpenseRows(exp); setEnquiryRows(enq);
       setClosedRows(closed); setExpenseRoiRows(expRoi); setConvRows(conv); setCplRows(cpl);
       setEnquiriesToday(todayN); setUnassignedCount(unas);
+      setFinancialSummary(summary);
     } catch { } finally { setFounderLoading(false); }
   }, [hasFounderAccess]);
 
@@ -1007,6 +1017,7 @@ export default function DashboardScreen() {
   const pendingCollections = founderMetrics.pendingCollectionsAmount;
   const approvedExpenses = founderMetrics.approvedExpensesThisMonth;
   const netProfit = founderMetrics.collectionsNetProfit;
+  const totalCollected = financialSummary?.revenue ?? 0;
   const conversionPct = founderMetrics.conversionRate;
   const cpl = founderMetrics.costPerLead;
   const enquirySummaryCount = founderMetrics.totalEnquiriesMonth;
@@ -1085,7 +1096,7 @@ export default function DashboardScreen() {
     }
     if (enquiriesToday > 0) {
       items.push({
-        count: enquiriesToday, label: 'New leads today',
+        count: enquiriesToday, label: 'New leads\ntoday',
         color: colors.success, icon: <Flame size={16} color={colors.success} strokeWidth={2.5} />,
         route: '/(app)/console/enquiries',
       });
@@ -1176,38 +1187,95 @@ export default function DashboardScreen() {
       }
     >
 
+      {/* Ambient clay field: depth without putting the page back inside a box. */}
+      <View pointerEvents="none" style={s.ambientField}>
+        <View style={[s.ambientOrb, s.ambientOrbPrimary, { backgroundColor: `${colors.primary}${isDark ? '16' : '0D'}` }]} />
+        <View style={[s.ambientOrb, s.ambientOrbAccent, { backgroundColor: `${colors.accent}${isDark ? '12' : '0A'}` }]} />
+      </View>
+
       {/* = COMMAND CENTER HERO = */}
       <FadeIn delay={0}>
         <LinearGradient
           colors={isDark
             ? [`${colors.primary}28`, `${colors.primary}08`, 'transparent']
             : [`${colors.primary}14`, `${colors.primary}04`, 'transparent']}
-          style={s.heroGradient}
+          style={[
+            s.heroGradient,
+            isCompact && s.heroGradientCompact,
+            { borderColor: colors.clayBorderColor },
+            clayStyle(clayShadows.clayElevated),
+          ]}
           start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
         >
-          <View style={s.heroRow}>
-            <PremiumAvatar name={adminName} />
-            <View style={s.heroText}>
+          <View style={[s.heroRow, isCompact && s.heroRowCompact]}>
+            <PremiumAvatar name={adminName} compact={isCompact} />
+            <View style={[s.heroText, isCompact && s.heroTextCompact]}>
               <View style={s.greetingRow}>
                 <Sparkles size={12} color={colors.primary} strokeWidth={2} />
                 <Text style={[s.greeting, { color: colors.textTertiary }]}>{greeting}</Text>
               </View>
-              <Text style={[s.adminName, { color: colors.textPrimary }]}>{adminName}</Text>
+              <Text style={[s.adminName, isCompact && s.adminNameCompact, { color: colors.textPrimary }]} numberOfLines={isCompact ? 2 : 1}>{adminName}</Text>
               <Text style={[s.adminRole, { color: `${colors.primary}CC` }]}>NexSyrus Platform</Text>
             </View>
-            <View style={[s.roleBadgeWrap, {
+            {!isCompact && <View style={[s.roleBadgeWrap, {
               backgroundColor: `${colors.primary}18`,
               borderColor: `${colors.primary}30`,
             }]}>
               <Zap size={10} color={colors.primary} fill={colors.primary} />
               <Text style={[s.roleBadgeText, { color: colors.primary }]}>{roleLabel}</Text>
+            </View>}
+          </View>
+          {isCompact && <View style={[s.roleBadgeWrap, s.roleBadgeCompact, { backgroundColor: `${colors.primary}18`, borderColor: `${colors.primary}30` }]}><Zap size={10} color={colors.primary} fill={colors.primary} /><Text style={[s.roleBadgeText, { color: colors.primary }]}>{roleLabel}</Text></View>}
+
+          <View style={[s.heroSignalGrid, isCompact && s.heroSignalGridCompact]}>
+            <View style={[s.heroSignal, isCompact && s.heroSignalCompact, {
+              backgroundColor: isDark ? 'rgba(255,255,255,0.055)' : 'rgba(255,255,255,0.62)',
+              borderColor: colors.clayBorderColor,
+            }, clayStyle(clayShadows.clayInset)]}>
+              <View style={[s.heroSignalIcon, isCompact && s.heroSignalIconCompact, { backgroundColor: `${colors.primary}1E` }]}>
+                <Layers size={15} color={colors.primary} strokeWidth={2.4} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[s.heroSignalValue, { color: colors.textPrimary }]}>{dashboardStats.total_schools.toLocaleString('en-IN')}</Text>
+                <Text style={[s.heroSignalLabel, { color: colors.textTertiary }]}>School network</Text>
+              </View>
             </View>
+            <View style={[s.heroSignal, isCompact && s.heroSignalCompact, {
+              backgroundColor: isDark ? 'rgba(255,255,255,0.055)' : 'rgba(255,255,255,0.62)',
+              borderColor: colors.clayBorderColor,
+            }, clayStyle(clayShadows.clayInset)]}>
+              <View style={[s.heroSignalIcon, isCompact && s.heroSignalIconCompact, { backgroundColor: `${colors.success}1E` }]}>
+                <Activity size={15} color={colors.success} strokeWidth={2.4} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[s.heroSignalValue, { color: colors.textPrimary }]}>{dashboardStats.active_schools.toLocaleString('en-IN')}</Text>
+                <Text style={[s.heroSignalLabel, { color: colors.textTertiary }]}>Active now</Text>
+              </View>
+            </View>
+            {!isCompact && (
+              <View style={[s.heroSignal, {
+                backgroundColor: isDark ? 'rgba(255,255,255,0.055)' : 'rgba(255,255,255,0.62)',
+                borderColor: colors.clayBorderColor,
+              }, clayStyle(clayShadows.clayInset)]}>
+                <View style={[s.heroSignalIcon, { backgroundColor: `${colors.warning}1E` }]}>
+                  <CalendarDays size={15} color={colors.warning} strokeWidth={2.4} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[s.heroSignalValue, { color: colors.textPrimary }]}>
+                    {new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                  </Text>
+                  <Text style={[s.heroSignalLabel, { color: colors.textTertiary }]}>Today</Text>
+                </View>
+              </View>
+            )}
           </View>
 
           {/* Live strip */}
           <View style={[s.liveStrip, { backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)', borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' }]}>
             <View style={[s.liveDot, { backgroundColor: colors.success }]} />
-            <Text style={[s.liveText, { color: colors.textTertiary }]}>Platform live . All systems operational</Text>
+            <Text style={[s.liveText, { color: colors.textTertiary }]} numberOfLines={1}>
+              {isCompact ? 'All systems operational' : 'Platform live  •  All systems operational'}
+            </Text>
             <Activity size={12} color={colors.success} style={{ marginLeft: 'auto' }} />
           </View>
         </LinearGradient>
@@ -1234,19 +1302,22 @@ export default function DashboardScreen() {
       ) : (
         <>
           {isDesktop ? (
+            <>
             <View style={{ flexDirection: 'row', gap: 28, alignItems: 'flex-start', marginTop: 12 }}>
               {/* Left Column (flex: 1.6) */}
               <View style={{ flex: 1.6, gap: 24, minWidth: 0 }}>
-                {/* Net Profit Card */}
+                {/* Total collected from approved collections + issued client billing. */}
                 {hasFounderAccess && (
                   <FadeIn delay={60}>
                     <PrimaryMetricCard
-                      label="Net Profit"
-                      value={founderDb.formatInr(netProfit)}
-                      delta={netProfitDelta}
-                      sparkline={netSpark}
+                      label="Total Collected"
+                      value={founderDb.formatInr(totalCollected)}
+                      delta={0}
+                      sparkline={incomeSpark}
                       accentColor={colors.primary}
                       icon={<PiggyBank size={22} color={colors.primary} strokeWidth={2} />}
+                      hint="All issued billing + approved collections"
+                      showDelta={false}
                       onPress={() => handleRoutePress('/(app)/console/analytics')}
                     />
                     {heroInsight && (
@@ -1476,63 +1547,66 @@ export default function DashboardScreen() {
                         delta={expenseDelta}
                       />
                       <FinTile
-                        label="Net Profit"
-                        value={founderDb.formatInr(netProfit)}
+                        label="Total Collected"
+                        value={founderDb.formatInr(totalCollected)}
                         accentColor={colors.primary}
                         isGradient
                         gradientColors={founderGradients.primary}
                         icon={<PiggyBank size={17} color="rgba(255,255,255,0.9)" />}
-                        delta={netProfitDelta}
+                        delta={0}
                       />
                     </View>
                   </FadeIn>
                 )}
 
-                {/* Quick Actions */}
-                <FadeIn delay={520}>
-                  <SectionLabel title="Quick Actions" subtitle="Operations" />
-                  <View style={{ gap: 12 }}>
-                    {adminActions.map((a, i) => (
-                      <QuickAction
-                        key={i} index={i}
-                        label={a.label} subtitle={a.subtitle}
-                        icon={a.icon} accentColor={a.accentColor}
-                        onPress={() => handleRoutePress(a.route)}
-                      />
-                    ))}
-                  </View>
-                </FadeIn>
-
-                {/* Founder Console actions */}
-                {hasFounderAccess && founderActions.length > 0 && (
-                  <FadeIn delay={580}>
-                    <SectionLabel title="Founder Console" badge="Pro" badgeVariant="primary" subtitle="Ops & finance" />
-                    <View style={{ gap: 12 }}>
-                      {founderActions.map((a, i) => (
-                        <QuickAction
-                          key={`f-${i}`} index={i}
-                          label={a.label} subtitle={a.subtitle}
-                          icon={a.icon} accentColor={a.accentColor}
-                          onPress={() => handleRoutePress(a.route)}
-                        />
-                      ))}
-                    </View>
-                  </FadeIn>
-                )}
               </View>
             </View>
+
+            {/* Full-width operations deck keeps the analytics columns balanced. */}
+            <FadeIn delay={520}>
+              <SectionLabel title="Operations Deck" subtitle="Everything you need, without the endless side rail" />
+              <View style={s.qaGrid}>
+                {adminActions.map((a, i) => (
+                  <QuickAction
+                    key={i} index={i} desktopWide
+                    label={a.label} subtitle={a.subtitle}
+                    icon={a.icon} accentColor={a.accentColor}
+                    onPress={() => handleRoutePress(a.route)}
+                  />
+                ))}
+              </View>
+            </FadeIn>
+
+            {hasFounderAccess && founderActions.length > 0 && (
+              <FadeIn delay={580}>
+                <SectionLabel title="Founder Console" badge="Pro" badgeVariant="primary" subtitle="Finance, pipeline and business controls" />
+                <View style={s.qaGrid}>
+                  {founderActions.map((a, i) => (
+                    <QuickAction
+                      key={`f-${i}`} index={i} desktopWide
+                      label={a.label} subtitle={a.subtitle}
+                      icon={a.icon} accentColor={a.accentColor}
+                      onPress={() => handleRoutePress(a.route)}
+                    />
+                  ))}
+                </View>
+              </FadeIn>
+            )}
+            </>
           ) : (
             <>
               {/* = V+2: PRIMARY METRIC HERO CARD = */}
               {hasFounderAccess && (
                 <FadeIn delay={60}>
                   <PrimaryMetricCard
-                    label="Net Profit"
-                    value={founderDb.formatInr(netProfit)}
-                    delta={netProfitDelta}
-                    sparkline={netSpark}
+                    label="Total Collected"
+                    value={founderDb.formatInr(totalCollected)}
+                    delta={0}
+                    sparkline={incomeSpark}
                     accentColor={colors.primary}
                     icon={<PiggyBank size={22} color={colors.primary} strokeWidth={2} />}
+                    hint="All issued billing + approved collections"
+                    showDelta={false}
                     onPress={() => handleRoutePress('/(app)/console/analytics')}
                   />
                   {heroInsight && (
@@ -1657,13 +1731,13 @@ export default function DashboardScreen() {
                       delta={expenseDelta}
                     />
                     <FinTile
-                      label="Net Profit"
-                      value={founderDb.formatInr(netProfit)}
+                      label="Total Collected"
+                      value={founderDb.formatInr(totalCollected)}
                       accentColor={colors.primary}
                       isGradient
                       gradientColors={founderGradients.primary}
                       icon={<PiggyBank size={17} color="rgba(255,255,255,0.9)" />}
-                      delta={netProfitDelta}
+                      delta={0}
                     />
                   </View>
                 </FadeIn>
@@ -1832,26 +1906,63 @@ export default function DashboardScreen() {
 // =
 const s = StyleSheet.create({
   root: { flex: 1 },
-  content: { paddingHorizontal: 0, paddingBottom: 64 },
+  content: { paddingHorizontal: 0, paddingBottom: 64, position: 'relative' },
   skeletonWrap: { paddingTop: 10 },
+
+  // Ambient page depth. These stay decorative and never become a content wrapper.
+  ambientField: {
+    ...StyleSheet.absoluteFillObject,
+    overflow: 'hidden',
+  },
+  ambientOrb: { position: 'absolute' },
+  ambientOrbPrimary: {
+    width: 420, height: 420, borderRadius: 210,
+    top: -190, right: -110,
+    transform: [{ scaleX: 1.25 }, { rotate: '-12deg' }],
+  },
+  ambientOrbAccent: {
+    width: 340, height: 340, borderRadius: 170,
+    top: 620, left: -220,
+    transform: [{ scaleY: 1.3 }, { rotate: '18deg' }],
+  },
 
   // Hero
   heroGradient: {
-    borderRadius: 24, marginBottom: 32,
-    padding: 22, gap: 18, overflow: 'hidden',
+    borderRadius: 30, marginBottom: 32, borderWidth: 1,
+    padding: 26, gap: 18, overflow: 'hidden',
   },
-  heroRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+  heroGradientCompact: { borderRadius: 22, padding: 14, gap: 12, marginBottom: 18 },
+  heroRow: { flexDirection: 'row', alignItems: 'center', gap: 16, position: 'relative' },
+  heroRowCompact: { flexWrap: 'nowrap', gap: 12, alignItems: 'flex-start', paddingRight: 0 },
   heroText: { flex: 1, gap: 3 },
+  heroTextCompact: { minWidth: 0, paddingTop: 1, paddingRight: 0 },
   greetingRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   greeting: { fontSize: 12.5, fontWeight: '500', letterSpacing: 0.2 },
   adminName: { fontSize: 24, fontWeight: '800', letterSpacing: -0.5, marginTop: 2 },
+  adminNameCompact: { fontSize: 21, lineHeight: 25, letterSpacing: -0.35 },
   adminRole: { fontSize: 12.5, fontWeight: '500', marginTop: 1 },
   roleBadgeWrap: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     paddingHorizontal: 12, paddingVertical: 7,
     borderRadius: 22, borderWidth: 1,
   },
+  roleBadgeCompact: { alignSelf: 'flex-start', marginLeft: 58, marginTop: -6, paddingHorizontal: 10, paddingVertical: 6 },
   roleBadgeText: { fontSize: 11, fontWeight: '700', letterSpacing: 0.3 },
+  heroSignalGrid: { flexDirection: 'row', gap: 12 },
+  heroSignalGridCompact: { gap: 8 },
+  heroSignal: {
+    flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center',
+    gap: 10, paddingHorizontal: 13, paddingVertical: 12,
+    borderRadius: 18, borderWidth: 1,
+  },
+  heroSignalCompact: { gap: 8, paddingHorizontal: 10, paddingVertical: 10, borderRadius: 15 },
+  heroSignalIcon: {
+    width: 34, height: 34, borderRadius: 12,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  heroSignalIconCompact: { width: 30, height: 30, borderRadius: 10 },
+  heroSignalValue: { fontSize: 15, fontWeight: '800', letterSpacing: -0.25 },
+  heroSignalLabel: { fontSize: 10.5, fontWeight: '500', marginTop: 1 },
   liveStrip: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     paddingHorizontal: 16, paddingVertical: 10,
@@ -1861,18 +1972,21 @@ const s = StyleSheet.create({
     width: 8, height: 8, borderRadius: 4,
     shadowOpacity: 0.8, shadowRadius: 5, shadowOffset: { width: 0, height: 0 },
   } as any,
-  liveText: { fontSize: 11.5, fontWeight: '500' },
+  liveText: { flexShrink: 1, fontSize: 11.5, fontWeight: '500' },
 
   // Avatar
   avatarWrap: { position: 'relative', width: 56, height: 56 },
+  avatarWrapCompact: { width: 46, height: 46, marginTop: 4 },
   avatarPulse: {
     position: 'absolute', top: -4, left: -4,
     width: 64, height: 64, borderRadius: 32, borderWidth: 1.5,
   },
+  avatarPulseCompact: { top: -3, left: -3, width: 52, height: 52, borderRadius: 26 },
   avatar: {
     width: 56, height: 56, borderRadius: 28,
     alignItems: 'center', justifyContent: 'center',
   },
+  avatarCompact: { width: 46, height: 46, borderRadius: 23 },
   avatarText: { fontSize: 20, fontWeight: '800', color: '#fff', letterSpacing: -0.5 },
   avatarOnline: {
     position: 'absolute', bottom: 1, right: 1,
@@ -1928,7 +2042,7 @@ const s = StyleSheet.create({
 
   // V+2: Attention Strip
   attnRow: { gap: 14, paddingRight: 10 },
-  attnItemWrap: { width: 138 },
+  attnItemWrap: { width: 148 },
   attnItem: {
     borderRadius: 20, borderWidth: 1, padding: 16,
     overflow: 'hidden', position: 'relative', minHeight: 118,
@@ -2091,6 +2205,9 @@ const s = StyleSheet.create({
   },
   qaCardWrap: {
     width: '47.5%', flexGrow: 1, flexShrink: 0, minWidth: 155,
+  },
+  qaCardWrapDesktopWide: {
+    width: '23%', minWidth: 210,
   },
   qaCard: {
     borderRadius: 22, borderWidth: 1, padding: 18, paddingBottom: 20,

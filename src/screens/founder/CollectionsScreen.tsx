@@ -45,6 +45,7 @@ import {
 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
+import { ClayView, PressScale, clayTokens } from '../../components/ui/ClayPrimitives';
 
 // ─── Breakpoints ──────────────────────────────────────────────────────────────
 
@@ -154,30 +155,19 @@ function CollectionCardSkeleton({ delay, isDark, colors }: { delay: number; isDa
   const blockColor = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(15,23,42,0.06)';
 
   return (
-    <View
-      style={[
-        styles.card,
-        {
-          backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : colors.card,
-          borderColor: isDark ? 'rgba(255,255,255,0.06)' : colors.border,
-          marginBottom: 10,
-        },
-      ]}
-    >
-      <View style={[styles.cardAccent, { backgroundColor: blockColor }]} />
-      <View style={styles.cardInner}>
-        <View style={styles.cardTop}>
-          <View style={{ flex: 1, gap: 8 }}>
-            <Animated.View style={{ opacity, width: '60%', height: 14, borderRadius: 6, backgroundColor: blockColor }} />
-            <Animated.View style={{ opacity, width: '40%', height: 10, borderRadius: 5, backgroundColor: blockColor }} />
-          </View>
-          <View style={{ alignItems: 'flex-end', gap: 8 }}>
-            <Animated.View style={{ opacity, width: 80, height: 16, borderRadius: 6, backgroundColor: blockColor }} />
-            <Animated.View style={{ opacity, width: 64, height: 18, borderRadius: 9, backgroundColor: blockColor }} />
-          </View>
+    <ClayView isDark={isDark} color={colors.card} radius={24} style={{ marginBottom: 12, padding: 20 }}>
+      <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+        <Animated.View style={{ opacity, width: 44, height: 44, borderRadius: 14, backgroundColor: blockColor }} />
+        <View style={{ flex: 1, gap: 8 }}>
+          <Animated.View style={{ opacity, width: '60%', height: 16, borderRadius: 8, backgroundColor: blockColor }} />
+          <Animated.View style={{ opacity, width: '40%', height: 12, borderRadius: 6, backgroundColor: blockColor }} />
+        </View>
+        <View style={{ alignItems: 'flex-end', gap: 8 }}>
+          <Animated.View style={{ opacity, width: 80, height: 20, borderRadius: 10, backgroundColor: blockColor }} />
+          <Animated.View style={{ opacity, width: 64, height: 22, borderRadius: 11, backgroundColor: blockColor }} />
         </View>
       </View>
-    </View>
+    </ClayView>
   );
 }
 
@@ -580,27 +570,12 @@ function PayModeSelector({
 
 // ─── Summary Banner ───────────────────────────────────────────────────────────
 
-const SummaryBanner = React.memo(function SummaryBanner({
-  total,
-  rows,
-  isLG,
-  isMD,
-  isSM,
-  isXS,
-}: {
-  total: number;
-  rows: CollectionRow[];
-  isLG: boolean;
-  isMD: boolean;
-  isSM: boolean;
-  isXS: boolean;
-}) {
+const SummaryBanner = React.memo(function SummaryBanner({ total, rows, isLG, isMD, isSM, isXS }: any) {
   const { colors, isDark } = useTheme();
-
   const { pending, approved, totalAmt } = useMemo(() => {
-    const p = rows.filter((r) => r.status === 'PENDING').length;
-    const ap = rows.filter((r) => r.status === 'APPROVED').length;
-    const ta = rows.reduce((s, r) => s + Number(r.amount), 0);
+    const p = rows.filter((r: any) => r.status === 'PENDING').length;
+    const ap = rows.filter((r: any) => r.status === 'APPROVED').length;
+    const ta = rows.reduce((s: number, r: any) => s + Number(r.amount), 0);
     return { pending: p, approved: ap, totalAmt: ta };
   }, [rows]);
 
@@ -610,132 +585,46 @@ const SummaryBanner = React.memo(function SummaryBanner({
   const tealAccent = a('teal', isDark);
   const amberAccent = a('amber', isDark);
 
-  // ─── isSM: single horizontal pill bar ───
   if (isSM) {
     return (
-      <View
-        style={[
-          styles.summaryPillBar,
-          {
-            backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : colors.surface,
-            borderColor: isDark ? 'rgba(255,255,255,0.07)' : colors.border,
-          },
-        ]}
-      >
-        <View style={styles.summaryPillSection}>
-          <TrendingUp color={tealAccent} size={13} />
-          <Text style={[styles.summaryPillVal, { color: colors.textPrimary }]} numberOfLines={1}>
-            {formattedTotal}
-          </Text>
+      <ClayView isDark={isDark} color={colors.surface} radius={20} style={{ padding: 12, marginBottom: 16 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center' }}>
+          <View style={{ alignItems: 'center' }}>
+            <Text style={{ color: colors.textSecondary, fontSize: 11, fontWeight: '700', textTransform: 'uppercase' }}>Total</Text>
+            <Text style={{ color: colors.textPrimary, fontSize: 15, fontWeight: '800' }}>{formattedTotal}</Text>
+          </View>
+          <View style={{ width: 1, height: 24, backgroundColor: colors.border }} />
+          <View style={{ alignItems: 'center' }}>
+            <Text style={{ color: colors.textSecondary, fontSize: 11, fontWeight: '700', textTransform: 'uppercase' }}>Pending</Text>
+            <Text style={{ color: amberAccent, fontSize: 15, fontWeight: '800' }}>{pending}</Text>
+          </View>
+          <View style={{ width: 1, height: 24, backgroundColor: colors.border }} />
+          <View style={{ alignItems: 'center' }}>
+            <Text style={{ color: colors.textSecondary, fontSize: 11, fontWeight: '700', textTransform: 'uppercase' }}>Approved</Text>
+            <Text style={{ color: tealAccent, fontSize: 15, fontWeight: '800' }}>{approved}</Text>
+          </View>
         </View>
-        <View style={[styles.summaryPillDivider, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : colors.border }]} />
-        <View style={styles.summaryPillSection}>
-          {!isXS && <View style={[styles.summaryDot, { backgroundColor: amberAccent }]} />}
-          <Text style={[styles.summaryPillTxt, { color: colors.textSecondary }]} numberOfLines={1}>
-            {pending}
-            {!isXS && ' pending'}
-          </Text>
-        </View>
-        <View style={styles.summaryPillSection}>
-          {!isXS && <View style={[styles.summaryDot, { backgroundColor: tealAccent }]} />}
-          <Text style={[styles.summaryPillTxt, { color: colors.textSecondary }]} numberOfLines={1}>
-            {approved}
-            {!isXS && ' approved'}
-          </Text>
-        </View>
-      </View>
+      </ClayView>
     );
   }
-
-  // ─── isLG: three cards ───
-  if (isLG) {
-    return (
-      <View style={styles.summaryRow}>
-        <LinearGradient
-          colors={isDark ? ['rgba(20,184,166,0.14)', 'rgba(14,165,233,0.10)'] : ['rgba(20,184,166,0.18)', 'rgba(14,165,233,0.12)']}
-          style={[styles.summaryCard, { borderColor: `${tealAccent}30` }]}
-        >
-          <TrendingUp color={tealAccent} size={16} />
-          <Text style={[styles.summaryVal, { color: colors.textPrimary }]}>{formattedTotal}</Text>
-          <Text style={[styles.summaryLbl, { color: colors.textSecondary }]}>Page total</Text>
-        </LinearGradient>
-
-        <View
-          style={[
-            styles.summaryCard,
-            {
-              backgroundColor: aBg('amber'),
-              borderColor: `${amberAccent}30`,
-              flex: 1,
-            },
-          ]}
-        >
-          <View style={[styles.summaryDot, { backgroundColor: amberAccent }]} />
-          <Text style={[styles.summaryVal, { color: colors.textPrimary }]}>{pending}</Text>
-          <Text style={[styles.summaryLbl, { color: colors.textSecondary }]}>Pending</Text>
-        </View>
-
-        <View
-          style={[
-            styles.summaryCard,
-            {
-              backgroundColor: aBg('teal'),
-              borderColor: `${tealAccent}30`,
-              flex: 1,
-            },
-          ]}
-        >
-          <Check color={tealAccent} size={16} />
-          <Text style={[styles.summaryVal, { color: colors.textPrimary }]}>{approved}</Text>
-          <Text style={[styles.summaryLbl, { color: colors.textSecondary }]}>Approved</Text>
-        </View>
-      </View>
-    );
-  }
-
-  // ─── isMD: two cards with status mix bar ───
-  const totalCount = pending + approved || 1;
-  const pendingFrac = pending / totalCount;
-  const approvedFrac = approved / totalCount;
 
   return (
-    <View style={styles.summaryRow}>
-      <LinearGradient
-        colors={isDark ? ['rgba(20,184,166,0.14)', 'rgba(14,165,233,0.10)'] : ['rgba(20,184,166,0.18)', 'rgba(14,165,233,0.12)']}
-        style={[styles.summaryCard, { borderColor: `${tealAccent}30`, flex: 1.3 }]}
-      >
-        <TrendingUp color={tealAccent} size={16} />
-        <Text style={[styles.summaryVal, { color: colors.textPrimary }]}>{formattedTotal}</Text>
-        <Text style={[styles.summaryLbl, { color: colors.textSecondary }]}>Page total</Text>
-      </LinearGradient>
-
-      <View
-        style={[
-          styles.summaryCard2,
-          {
-            backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : colors.surface,
-            borderColor: isDark ? 'rgba(255,255,255,0.07)' : colors.border,
-          },
-        ]}
-      >
-        <View style={styles.summaryMini}>
-          <View style={[styles.summaryDot, { backgroundColor: amberAccent }]} />
-          <Text style={[styles.summaryMiniTxt, { color: colors.textSecondary }]}>{pending} pending</Text>
-        </View>
-        <View style={styles.summaryMini}>
-          <View style={[styles.summaryDot, { backgroundColor: tealAccent }]} />
-          <Text style={[styles.summaryMiniTxt, { color: colors.textSecondary }]}>{approved} approved</Text>
-        </View>
-        {/* Status mix bar */}
-        <View style={[styles.statusMixBar, { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : colors.border }]}>
-          {pending > 0 && (
-            <View style={[styles.statusMixSeg, { flex: pendingFrac, backgroundColor: amberAccent }]} />
-          )}
-          {approved > 0 && (
-            <View style={[styles.statusMixSeg, { flex: approvedFrac, backgroundColor: tealAccent }]} />
-          )}
-        </View>
-      </View>
+    <View style={{ flexDirection: 'row', gap: 12, marginBottom: 20 }}>
+      <ClayView isDark={isDark} color={aBg('teal')} radius={clayTokens.radius.card} style={{ flex: 1.5, padding: 16 }}>
+        <TrendingUp color={tealAccent} size={18} />
+        <Text style={{ color: colors.textPrimary, fontSize: 22, fontWeight: '800', marginTop: 8 }}>{formattedTotal}</Text>
+        <Text style={{ color: colors.textSecondary, fontSize: 12, fontWeight: '700', textTransform: 'uppercase' }}>Page Total</Text>
+      </ClayView>
+      <ClayView isDark={isDark} color={aBg('amber')} radius={clayTokens.radius.card} style={{ flex: 1, padding: 16 }}>
+        <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: amberAccent, marginBottom: 4 }} />
+        <Text style={{ color: colors.textPrimary, fontSize: 22, fontWeight: '800', marginTop: 4 }}>{pending}</Text>
+        <Text style={{ color: colors.textSecondary, fontSize: 12, fontWeight: '700', textTransform: 'uppercase' }}>Pending</Text>
+      </ClayView>
+      <ClayView isDark={isDark} color={aBg('teal')} radius={clayTokens.radius.card} style={{ flex: 1, padding: 16 }}>
+        <Check color={tealAccent} size={18} />
+        <Text style={{ color: colors.textPrimary, fontSize: 22, fontWeight: '800', marginTop: 8 }}>{approved}</Text>
+        <Text style={{ color: colors.textSecondary, fontSize: 12, fontWeight: '700', textTransform: 'uppercase' }}>Approved</Text>
+      </ClayView>
     </View>
   );
 });
@@ -836,133 +725,28 @@ function NewCollectionHero({
 
 // ─── Empty State ──────────────────────────────────────────────────────────────
 
-const CollectionsEmptyState = React.memo(function CollectionsEmptyState({
-  onAdd,
-  onClearFilters,
-  colors,
-  isDark,
-  compact,
-  isXS,
-  filterActive,
-}: {
-  onAdd: () => void;
-  onClearFilters: () => void;
-  colors: ThemeColors;
-  isDark: boolean;
-  compact?: boolean;
-  isXS: boolean;
-  filterActive: boolean;
-}) {
-  const fade = useRef(new Animated.Value(0)).current;
-  const bob = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.timing(fade, { toValue: 1, duration: 500, useNativeDriver: true }).start();
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(bob, { toValue: -5, duration: 2000, useNativeDriver: true }),
-        Animated.timing(bob, { toValue: 0, duration: 2000, useNativeDriver: true }),
-      ]),
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [bob, fade]);
-
-  const ringSize = isXS ? 72 : 88;
-  const tealAccent = a('teal', isDark);
-
+const CollectionsEmptyState = React.memo(function CollectionsEmptyState({ onAdd, onClearFilters, colors, isDark, compact, isXS, filterActive }: any) {
   return (
-    <Animated.View style={[styles.emptyWrap, { opacity: fade }, compact && styles.emptyWrapCompact]}>
-      <View
-        style={[
-          styles.emptyPanel,
-          compact && styles.emptyPanelCompact,
-          isXS && styles.emptyPanelXS,
-          { borderColor: isDark ? 'rgba(20,184,166,0.15)' : colors.border },
-        ]}
-      >
-        <LinearGradient
-          colors={isDark ? ['rgba(20,184,166,0.12)', 'transparent'] : ['rgba(14,165,233,0.08)', 'transparent']}
-          style={[StyleSheet.absoluteFill, { borderRadius: 24 }]}
-        />
-        <Animated.View style={{ transform: [{ translateY: bob }], alignItems: 'center' }}>
-          <View style={styles.emptyIconRing}>
-            <LinearGradient
-              colors={['rgba(20,184,166,0.35)', 'rgba(14,165,233,0.2)']}
-              style={[
-                styles.emptyIconGrad,
-                {
-                  width: ringSize,
-                  height: ringSize,
-                  borderColor: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(14,165,233,0.25)',
-                },
-              ]}
-            >
-              {filterActive ? (
-                <FilterIcon color={isDark ? '#99F6E4' : tealAccent} size={isXS ? 28 : 36} strokeWidth={1.5} />
-              ) : (
-                <Mailbox color={isDark ? '#99F6E4' : tealAccent} size={isXS ? 28 : 36} strokeWidth={1.5} />
-              )}
-            </LinearGradient>
-            <View
-              style={[
-                styles.emptyCornerBadge,
-                {
-                  backgroundColor: isDark ? 'rgba(8,12,22,0.92)' : colors.surface,
-                  borderColor: isDark ? 'rgba(103,232,249,0.45)' : 'rgba(14,165,233,0.35)',
-                },
-              ]}
-            >
-              <IndianRupee size={11} color={isDark ? '#67E8F9' : '#0EA5E9'} strokeWidth={2.5} />
-            </View>
+    <View style={{ alignItems: 'center', paddingVertical: 20 }}>
+      <ClayView isDark={isDark} color={isDark ? 'rgba(255,255,255,0.02)' : colors.surface} radius={32} style={{ width: '100%', maxWidth: 400, padding: 32, alignItems: 'center', borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.05)' : colors.border }}>
+        <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: isDark ? 'rgba(20,184,166,0.15)' : 'rgba(20,184,166,0.1)', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+          <Mailbox color={isDark ? '#5EEAD4' : '#0F766E'} size={32} />
+        </View>
+        <Text style={{ fontSize: 22, fontWeight: '800', color: colors.textPrimary, marginBottom: 8, textAlign: 'center' }}>
+          {filterActive ? 'No matches' : 'No collections yet'}
+        </Text>
+        <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textSecondary, textAlign: 'center', marginBottom: 24, lineHeight: 22 }}>
+          {filterActive ? 'No records match the current filters. Try clearing them.' : 'Record money received from each business unit.'}
+        </Text>
+        <PressScale onPress={filterActive ? onClearFilters : onAdd} style={{ width: '100%' }}>
+          <View style={{ backgroundColor: a('teal', isDark), paddingVertical: 14, borderRadius: clayTokens.radius.button, alignItems: 'center' }}>
+            <Text style={{ color: '#fff', fontSize: 15, fontWeight: '800' }}>
+              {filterActive ? 'Clear filters' : 'Record a collection'}
+            </Text>
           </View>
-        </Animated.View>
-        <Text style={[styles.emptyKicker, { color: isDark ? '#5EEAD4' : tealAccent, fontSize: isXS ? 10 : 11 }]}>
-          {filterActive ? 'No matches' : 'Cash in'}
-        </Text>
-        <Text
-          style={[
-            styles.emptyTitle,
-            { color: colors.textPrimary, fontSize: isXS ? 18 : 21 },
-            compact && styles.emptyTitleCompact,
-          ]}
-        >
-          {filterActive ? 'Nothing matches' : 'No collections yet'}
-        </Text>
-        <Text
-          style={[
-            styles.emptySub,
-            { color: isDark ? 'rgba(255,255,255,0.7)' : colors.textSecondary },
-            compact && styles.emptySubCompact,
-          ]}
-        >
-          {filterActive
-            ? 'No records match the current filters. Try clearing them or adjusting the period.'
-            : compact
-            ? 'Record what each business unit received for a month, then get approvals as needed.'
-            : 'Log money received from each business unit for a month and year. Approvers can confirm pending entries from here.'}
-        </Text>
-        <Pressable
-          onPress={filterActive ? onClearFilters : onAdd}
-          style={({ pressed }) => [...pressableWebStyles(pressed, { pressedOpacity: 0.9 })]}
-        >
-          <LinearGradient colors={['#0D9488', '#0EA5E9']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.emptyCta}>
-            {filterActive ? (
-              <>
-                <X color="#fff" size={18} strokeWidth={2.5} />
-                <Text style={styles.emptyCtaTxt}>Clear filters</Text>
-              </>
-            ) : (
-              <>
-                <Plus color="#fff" size={18} strokeWidth={2.5} />
-                <Text style={styles.emptyCtaTxt}>Record a collection</Text>
-              </>
-            )}
-          </LinearGradient>
-        </Pressable>
-        {!filterActive && <Text style={[styles.emptyHint, { color: colors.textSecondary }]}>Or tap the + button below</Text>}
-      </View>
-    </Animated.View>
+        </PressScale>
+      </ClayView>
+    </View>
   );
 });
 
@@ -1093,7 +877,7 @@ function FilterSummaryPill({
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 
-export default function CollectionsScreen({ approvalsOnly = false }: { approvalsOnly?: boolean }) {
+export default function CollectionsScreen({ approvalsOnly = false, embedded = false }: { approvalsOnly?: boolean; embedded?: boolean }) {
   const router = useRouter();
   const { isXS, isSM, isMD, isLG } = useResponsive();
   const { colors, isDark } = useTheme();
@@ -1116,7 +900,7 @@ export default function CollectionsScreen({ approvalsOnly = false }: { approvals
 
   useEffect(() => {
     if (approvalsOnly && !canApproveReject) {
-      router.replace('/(app)/console/collections' as any);
+      router.replace('/(app)/console/billing?tab=collections' as any);
     }
   }, [approvalsOnly, canApproveReject, router]);
 
@@ -1264,11 +1048,11 @@ export default function CollectionsScreen({ approvalsOnly = false }: { approvals
   const sheetHandleMargin = isXS ? 14 : 20;
 
   return (
-    <ConsoleAmbientBackground>
+    <View style={{ flex: 1, backgroundColor: "transparent" }}>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
 
       {/* ─── Header ─── */}
-      <Animated.View
+      {!embedded && <Animated.View
         style={{
           opacity: headerAnim,
           transform: [{ translateY: headerAnim.interpolate({ inputRange: [0, 1], outputRange: [-8, 0] }) }],
@@ -1279,7 +1063,7 @@ export default function CollectionsScreen({ approvalsOnly = false }: { approvals
           subtitle={approvalsOnly ? `Pending queue · ${total} records` : `${total} records`}
           subtitleColor={isDark ? 'rgba(255,255,255,0.65)' : colors.textSecondary}
         />
-      </Animated.View>
+      </Animated.View>}
 
       <View style={[styles.root, isSM && styles.rootMobile]}>
         {/* ─── Hero CTA (isMD+ only) ─── */}
@@ -1307,29 +1091,15 @@ export default function CollectionsScreen({ approvalsOnly = false }: { approvals
                 colors={colors}
               />
             ) : (
-              <View
-                style={[
-                  styles.filterPanel,
-                  isSM && styles.filterPanelMobile,
-                  {
-                    borderColor: isDark ? 'rgba(20,184,166,0.14)' : colors.border,
-                    backgroundColor: isDark ? 'rgba(8,12,22,0.45)' : colors.surface,
-                  },
-                ]}
-              >
-                {isDark && Platform.OS !== 'web' && (
-                  <BlurView intensity={24} tint="dark" style={StyleSheet.absoluteFill} pointerEvents="none" />
-                )}
-                <LinearGradient
-                  colors={isDark ? ['rgba(20,184,166,0.06)', 'transparent'] : ['rgba(14,165,233,0.06)', 'transparent']}
-                  style={[
-                    StyleSheet.absoluteFill,
-                    { borderRadius: 22 },
-                    isSM && { borderRadius: 16 },
-                    Platform.OS === 'web' ? { pointerEvents: 'none' as any } : null,
-                  ]}
-                  pointerEvents="none"
-                />
+              <ClayView
+    isDark={isDark}
+    color={colors.surface}
+    radius={24}
+    style={[
+      { padding: isSM ? 16 : 24, marginBottom: 20 },
+      isDark ? { backgroundColor: 'rgba(255,255,255,0.03)' } : {}
+    ]}
+  >
 
                 {/* Collapse button on mobile */}
                 {filtersCollapsible && (
@@ -1452,7 +1222,7 @@ export default function CollectionsScreen({ approvalsOnly = false }: { approvals
                     </ScrollView>
                   </>
                 )}
-              </View>
+              </ClayView>
             )}
           </>
         )}
@@ -1783,8 +1553,13 @@ export default function CollectionsScreen({ approvalsOnly = false }: { approvals
           </View>
         </View>
       </Modal>
-    </ConsoleAmbientBackground>
+    </View>
   );
+}
+
+/** Claymorphic collections ledger embedded in the Billing page. */
+export function CollectionsTab() {
+  return <CollectionsScreen embedded />;
 }
 
 // ─── Styles ───────────────────────────────────────────────────────────────────

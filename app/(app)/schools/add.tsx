@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, Switch, StatusBar, ActivityIndicator } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Shield, Server } from 'lucide-react-native';
 import { Input } from '../../../src/components/ui/Input';
 import { Button } from '../../../src/components/ui/Button';
 import { useTheme } from '../../../src/contexts/ThemeContext';
 import { superAdminApi } from '../../../src/services/apiService';
+import { crmService } from '../../../src/services/crmService';
+import { updateEnquiry } from '../../../src/services/founderSupabase';
 import { getClusterAssignment } from '../../../src/services/schoolOnboardingService';
 import type { ClusterConfig } from '../../../src/config/clusters';
 import { useToast } from '../../../src/components/ui/Toast';
@@ -24,9 +26,19 @@ export default function AddSchoolScreen() {
   const router = useRouter();
   const { showToast } = useToast();
 
-  const [name, setName] = useState('');
+  // Pre-fill params arrive when onboarding an accepted CRM enquiry. enquiryId /
+  // accountId let us close the loop (link the tenant, close the lead) on create.
+  const params = useLocalSearchParams<{
+    name?: string; email?: string; phone?: string; organization?: string;
+    address?: string; enquiryId?: string; accountId?: string;
+  }>();
+  const asStr = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) || '';
+  const enquiryId = asStr(params.enquiryId);
+  const accountId = asStr(params.accountId);
+
+  const [name, setName] = useState(asStr(params.name) || asStr(params.organization));
   const [code, setCode] = useState('');
-  const [address, setAddress] = useState('');
+  const [address, setAddress] = useState(asStr(params.address));
   const [logoUrl, setLogoUrl] = useState('');
   
   // App Config
@@ -79,7 +91,7 @@ export default function AddSchoolScreen() {
   const [seedAdmin, setSeedAdmin] = useState(false);
   const [adminFirstName, setAdminFirstName] = useState('');
   const [adminLastName, setAdminLastName] = useState('');
-  const [adminEmail, setAdminEmail] = useState('');
+  const [adminEmail, setAdminEmail] = useState(asStr(params.email));
   const [adminPassword, setAdminPassword] = useState('');
 
   const [loading, setLoading] = useState(false);
@@ -131,6 +143,27 @@ export default function AddSchoolScreen() {
         } catch (adminErr: any) {
           console.error('First admin creation failed after school creation:', adminErr);
           setupWarnings.push(getApiErrorMessage(adminErr, 'First admin account could not be provisioned automatically.'));
+        }
+      }
+
+      // Close the CRM loop when this school came from an accepted enquiry:
+      // link the account to the provisioned tenant and close the lead. Both are
+      // best-effort — a failure here must not block the school setup flow.
+      if (accountId) {
+        try {
+          await crmService.linkAccountToTenant(accountId, {
+            external_client_id: String(newSchool.id),
+            cluster_id: assignedCluster?.cluster_id,
+          });
+        } catch (linkErr) {
+          console.warn('CRM account link failed:', linkErr);
+        }
+      }
+      if (enquiryId) {
+        try {
+          await updateEnquiry(enquiryId, { status: 'CLOSED' });
+        } catch (closeErr) {
+          console.warn('Enquiry close failed:', closeErr);
         }
       }
 
