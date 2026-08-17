@@ -9,7 +9,24 @@ export interface LoginResult {
   isSuperAdmin: boolean;
   admin: SuperAdmin | null;
   founder: FounderRow | null;
-  error: any;
+  error: { message: string } | null;
+}
+
+/** Coerce API / Axios / Supabase error payloads into a renderable string. */
+function toErrorMessage(value: unknown, fallback = 'Login failed'): string {
+  if (value == null) return fallback;
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    return trimmed || fallback;
+  }
+  if (typeof value === 'object') {
+    const obj = value as Record<string, unknown>;
+    if (typeof obj.message === 'string' && obj.message.trim()) return obj.message.trim();
+    if (typeof obj.error === 'string' && obj.error.trim()) return obj.error.trim();
+    if (typeof obj.details === 'string' && obj.details.trim()) return obj.details.trim();
+    if (obj.error != null && obj.error !== obj) return toErrorMessage(obj.error, fallback);
+  }
+  return fallback;
 }
 
 export const authService = {
@@ -32,7 +49,11 @@ export const authService = {
         error: null,
       };
     } catch (err: any) {
-      const msg = err.response?.data?.error || err.message || 'Login failed';
+      const payload = err.response?.data;
+      const msg = toErrorMessage(
+        payload?.error ?? payload?.message ?? payload ?? err.message,
+        'Login failed',
+      );
       return {
         user: null,
         session: null,
