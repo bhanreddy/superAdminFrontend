@@ -925,6 +925,7 @@ export default function FounderDashboardScreen() {
   const navItems = useMemo(
     () => [
       { label: 'Expenses', sub: 'Track & receipts', route: '/(app)/console/expenses', gradient: founderGradients.danger, icon: 'INR' },
+      { label: 'People & payroll', sub: 'Salaries & HR docs', route: '/(app)/console/payroll', gradient: founderGradients.primary, icon: 'HR' },
       ...(canApproveReject
         ? ([
           { label: 'Expense approvals', sub: 'Pending queue', route: '/(app)/console/expense-approvals' as const, gradient: founderGradients.warning, icon: 'ok' },

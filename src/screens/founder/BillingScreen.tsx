@@ -460,6 +460,8 @@ export default function BillingScreen() {
       {showCreate && (
         <CreateDocumentModal
           config={config}
+          clients={clients}
+          clientsLoading={clientsLoading}
           supplierReady={supplierReady}
           onClose={() => setShowCreate(false)}
           onIssued={onIssued}
@@ -722,11 +724,15 @@ function ConfigModal({
 /* ── Create modal ─────────────────────────────────────────────────────────── */
 function CreateDocumentModal({
   config,
+  clients,
+  clientsLoading,
   supplierReady,
   onClose,
   onIssued,
 }: {
   config: BillingConfig | null;
+  clients: BillingClient[];
+  clientsLoading: boolean;
   supplierReady: boolean;
   onClose: () => void;
   onIssued: (doc: BillingDocument) => void;
@@ -737,6 +743,9 @@ function CreateDocumentModal({
   const [legalName, setLegalName] = useState('');
   const [address, setAddress] = useState('');
   const [gstin, setGstin] = useState('');
+  const [selectedClient, setSelectedClient] = useState<BillingClient | null>(null);
+  const [nameFocused, setNameFocused] = useState(false);
+  const nameBlurTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [gstRate, setGstRate] = useState(String(config?.default_gst_rate ?? '18'));
   const [items, setItems] = useState<LineItemInput[]>([emptyLine()]);
 
@@ -750,7 +759,38 @@ function CreateDocumentModal({
     if (config?.default_gst_rate != null) setGstRate(String(config.default_gst_rate));
   }, [config?.default_gst_rate]);
 
+  useEffect(() => () => {
+    if (nameBlurTimer.current) clearTimeout(nameBlurTimer.current);
+  }, []);
+
   const gstinValid = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(gstin.trim());
+
+  const nameSuggestions = useMemo(() => {
+    const query = legalName.trim().toLowerCase();
+    const ranked = query
+      ? clients.filter((client) =>
+          `${client.name} ${client.code || ''} ${client.cluster_id} ${client.kind}`.toLowerCase().includes(query),
+        )
+      : clients;
+    return ranked.slice(0, 8);
+  }, [clients, legalName]);
+
+  const showNameSuggestions = nameFocused && (legalName.trim().length > 0 || clients.length > 0);
+
+  const onLegalNameChange = (value: string) => {
+    setLegalName(value);
+    if (selectedClient && value.trim().toLowerCase() !== selectedClient.name.trim().toLowerCase()) {
+      setSelectedClient(null);
+    }
+  };
+
+  const pickClient = (client: BillingClient) => {
+    if (nameBlurTimer.current) clearTimeout(nameBlurTimer.current);
+    setSelectedClient(client);
+    setLegalName(client.name);
+    setAddress(client.address || '');
+    setNameFocused(false);
+  };
 
   const itemsValid = items.length > 0 && items.every(
     (it) => it.description.trim() && Number(it.quantity) > 0 && Number(it.rate) >= 0,
@@ -769,6 +809,9 @@ function CreateDocumentModal({
         legal_name: legalName.trim(),
         billing_address: address.trim(),
         gstin: gstin.trim() ? gstin.trim().toUpperCase() : null,
+        id: selectedClient?.id ?? null,
+        kind: selectedClient?.kind ?? null,
+        cluster_id: selectedClient?.cluster_id ?? null,
       },
       line_items: items.map((it) => ({
         description: it.description.trim(),
@@ -778,7 +821,7 @@ function CreateDocumentModal({
     };
     if (docType === 'tax_invoice') input.gst_rate = Number(gstRate);
     return input;
-  }, [docType, legalName, address, gstin, items, gstRate]);
+  }, [docType, legalName, address, gstin, items, gstRate, selectedClient]);
 
   // Debounced live preview (server-side computation is the source of truth).
   useEffect(() => {
@@ -844,7 +887,11 @@ function CreateDocumentModal({
             </Pressable>
           </View>
 
-          <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
+          <ScrollView
+            contentContainerStyle={{ padding: 18, paddingBottom: 32 }}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
             <Text style={[st.fieldLabel, { color: colors.textSecondary }]}>Document Type</Text>
             <Segmented
               value={docType}
@@ -861,7 +908,117 @@ function CreateDocumentModal({
             </Text>
 
             <View style={{ height: 18 }} />
-            <Input label="Client legal / billing name" required value={legalName} onChangeText={setLegalName} placeholder="Acme Schools Pvt Ltd" />
+            <View style={{ zIndex: 20 }}>
+              <Input
+                label="Client legal / billing name"
+                required
+                value={legalName}
+                onChangeText={onLegalNameChange}
+                placeholder="Search school or medical shop"
+                autoCorrect={false}
+                autoComplete="off"
+                onFocus={() => {
+                  if (nameBlurTimer.current) clearTimeout(nameBlurTimer.current);
+                  setNameFocused(true);
+                }}
+                onBlur={() => {
+                  if (nameBlurTimer.current) clearTimeout(nameBlurTimer.current);
+                  nameBlurTimer.current = setTimeout(() => setNameFocused(false), 180);
+                }}
+                containerStyle={showNameSuggestions || selectedClient ? { marginBottom: 8 } : undefined}
+              />
+              {showNameSuggestions && (
+                <View
+                  style={[
+                    st.suggestPanel,
+                    {
+                      borderColor: colors.border,
+                      backgroundColor: isDark ? '#1C1A28' : '#FFFFFF',
+                    },
+                  ]}
+                >
+                  {clientsLoading ? (
+                    <View style={st.suggestEmpty}>
+                      <ActivityIndicator size="small" color={colors.primary} />
+                      <Text style={{ color: colors.textSecondary, fontSize: 12 }}>Loading clients…</Text>
+                    </View>
+                  ) : nameSuggestions.length === 0 ? (
+                    <View style={st.suggestEmpty}>
+                      <Text style={{ color: colors.textSecondary, fontSize: 12, textAlign: 'center' }}>
+                        No matching clients. You can still enter a custom billing name.
+                      </Text>
+                    </View>
+                  ) : (
+                    <ScrollView
+                      nestedScrollEnabled
+                      keyboardShouldPersistTaps="handled"
+                      style={{ maxHeight: 240 }}
+                    >
+                    {nameSuggestions.map((client) => {
+                      const active =
+                        selectedClient?.id === client.id &&
+                        selectedClient?.cluster_id === client.cluster_id &&
+                        selectedClient?.kind === client.kind;
+                      return (
+                        <Pressable
+                          key={`${client.kind}:${client.cluster_id}:${client.id}`}
+                          onPressIn={() => pickClient(client)}
+                          style={({ pressed }) => [
+                            st.suggestRow,
+                            {
+                              backgroundColor: active
+                                ? isDark
+                                  ? 'rgba(124,111,255,0.18)'
+                                  : 'rgba(124,111,255,0.10)'
+                                : pressed
+                                  ? isDark
+                                    ? 'rgba(255,255,255,0.05)'
+                                    : 'rgba(103,86,187,0.06)'
+                                  : 'transparent',
+                            },
+                            Platform.OS === 'web' ? ({ cursor: 'pointer' } as any) : null,
+                          ]}
+                        >
+                          <View
+                            style={[
+                              st.suggestAvatar,
+                              {
+                                backgroundColor:
+                                  client.kind === 'medical' ? 'rgba(16,185,129,0.14)' : 'rgba(124,111,255,0.16)',
+                              },
+                            ]}
+                          >
+                            {client.kind === 'medical' ? (
+                              <Stethoscope size={14} color="#10B981" />
+                            ) : (
+                              <Text style={{ color: '#7C6FFF', fontSize: 11, fontWeight: '900' }}>
+                                {client.name.slice(0, 2).toUpperCase()}
+                              </Text>
+                            )}
+                          </View>
+                          <View style={{ flex: 1, minWidth: 0 }}>
+                            <Text style={{ color: colors.textPrimary, fontSize: 13, fontWeight: '800' }} numberOfLines={1}>
+                              {client.name}
+                            </Text>
+                            <Text style={{ color: colors.textSecondary, fontSize: 11, marginTop: 2 }} numberOfLines={1}>
+                              {client.kind === 'medical' ? 'Medical shop' : 'School'}
+                              {client.code ? ` · ${client.code}` : ''} · {client.cluster_id}
+                            </Text>
+                          </View>
+                        </Pressable>
+                      );
+                    })}
+                    </ScrollView>
+                  )}
+                </View>
+              )}
+              {selectedClient ? (
+                <Text style={{ color: colors.textTertiary ?? colors.textSecondary, fontSize: 11, marginBottom: 16 }}>
+                  Linked to {selectedClient.kind === 'medical' ? 'medical shop' : 'school'} {selectedClient.name}
+                  {selectedClient.address ? ' · address filled' : ''}
+                </Text>
+              ) : null}
+            </View>
             <Input label="Billing address" required value={address} onChangeText={setAddress} placeholder="Street, City, State, PIN" multiline />
 
             {docType === 'tax_invoice' && (
@@ -1271,6 +1428,37 @@ const st = StyleSheet.create({
   },
   modalTitle: { fontSize: 18, fontWeight: '800', letterSpacing: -0.3 },
   fieldLabel: { fontSize: 12, fontWeight: '700', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
+  suggestPanel: {
+    borderWidth: 1,
+    borderRadius: 14,
+    overflow: 'hidden',
+    marginBottom: 16,
+    maxHeight: 260,
+  },
+  suggestRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(148,163,184,0.22)',
+  },
+  suggestAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  suggestEmpty: {
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
   addBtn: {
     flexDirection: 'row',
     alignItems: 'center',
