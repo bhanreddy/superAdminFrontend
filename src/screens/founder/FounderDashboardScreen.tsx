@@ -162,6 +162,7 @@ function PremiumSectionTitle({
 // - QuickActionRow -
 
 const QUICK_ACTIONS = [
+  { label: '11-Day Sprint', icon: Zap, route: '/(app)/console/sprint', gradient: ['#38BDF8', '#2563EB'] },
   { label: 'Add Expense', icon: Plus, route: '/(app)/console/expenses', gradient: ['#FF6B7A', '#DC2626'] },
   { label: 'Enquiries', icon: MessageCircle, route: '/(app)/console/enquiries', gradient: ['#38C8F4', '#2563EB'] },
   { label: 'Analytics', icon: BarChart2, route: '/(app)/console/analytics', gradient: ['#FFB020', '#D97706'] },
@@ -1013,6 +1014,57 @@ export default function FounderDashboardScreen() {
           <QuickActionRow colors={colors} isDark={isDark} />
         </Animated.View>
 
+        {/* ── 11-DAY SPRINT COMMAND CENTER HERO BANNER ── */}
+        <Animated.View entering={FadeInDown.delay(150).duration(400)}>
+          <Pressable
+            onPress={() => router.push('/(app)/console/sprint' as any)}
+            style={({ pressed, hovered }: any) => [
+              styles.sprintHeroBanner,
+              {
+                backgroundColor: isDark ? 'rgba(17, 24, 39, 0.88)' : 'rgba(255, 255, 255, 0.95)',
+                borderColor: hovered ? '#38bdf8' : (isDark ? 'rgba(56, 189, 248, 0.35)' : 'rgba(56, 189, 248, 0.45)'),
+                transform: [{ scale: pressed ? 0.99 : hovered ? 1.006 : 1 }],
+              },
+              Platform.OS === 'web' ? {
+                cursor: 'pointer',
+                boxShadow: hovered ? '0 12px 28px rgba(56, 189, 248, 0.22)' : '0 4px 16px rgba(0,0,0,0.15)',
+                transition: 'all 0.2s ease',
+              } as any : {},
+            ]}
+          >
+            <LinearGradient
+              colors={['rgba(56, 189, 248, 0.16)', 'rgba(37, 99, 235, 0.07)', 'transparent']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={StyleSheet.absoluteFillObject}
+            />
+            <View style={styles.sprintHeroLeft}>
+              <View style={styles.sprintHeroBadgeRow}>
+                <View style={styles.sprintZapPill}>
+                  <Zap size={12} color="#38bdf8" />
+                  <Text style={styles.sprintZapPillText}>WAR ROOM ACTIVE</Text>
+                </View>
+                <View style={styles.sprintTargetPill}>
+                  <Sparkles size={11} color="#fca5a5" style={{ marginRight: 4 }} />
+                  <Text style={styles.sprintTargetText}>Target: Oct 1, 2026</Text>
+                </View>
+              </View>
+              <Text style={[styles.sprintHeroTitle, { color: colors.textPrimary }]}>
+                11-Day Sprint Command Center — 100 Mission-Critical Deliverables
+              </Text>
+              <Text style={[styles.sprintHeroSub, { color: colors.textSecondary }]}>
+                Live multi-founder blueprint & progress tracker across Tech, Academics, Content & Sales leads.
+              </Text>
+            </View>
+            <View style={styles.sprintHeroRight}>
+              <View style={styles.sprintEnterBtn}>
+                <Text style={styles.sprintEnterBtnText}>Open Cockpit</Text>
+                <ArrowRight size={14} color="#ffffff" style={{ marginLeft: 6 }} />
+              </View>
+            </View>
+          </Pressable>
+        </Animated.View>
+
         <View style={[styles.financialFilters, { borderColor: colors.clayBorderColor, backgroundColor: isDark ? 'rgba(255,255,255,0.035)' : 'rgba(255,255,255,0.78)' }]}>
           <View style={styles.financialFilterGroup}>
             <Text style={[styles.financialFilterLabel, { color: colors.textSecondary }]}>Period</Text>
@@ -1613,4 +1665,88 @@ const styles = StyleSheet.create({
   footerSep: { width: 1, height: 12, borderRadius: 1, opacity: 0.3 },
   footerDot: { width: 6, height: 6, borderRadius: 3 },
   footerTxt: { fontSize: 11, fontWeight: '700', letterSpacing: 0.3 },
+
+  // - sprint hero banner -
+  sprintHeroBanner: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 16,
+    marginBottom: 16,
+    flexDirection: 'row' as any,
+    justifyContent: 'space-between' as any,
+    alignItems: 'center' as any,
+    flexWrap: 'wrap' as any,
+    gap: 12,
+    overflow: 'hidden' as any,
+    position: 'relative' as any,
+  },
+  sprintHeroLeft: {
+    flex: 1,
+    minWidth: 260,
+  },
+  sprintHeroBadgeRow: {
+    flexDirection: 'row' as any,
+    alignItems: 'center' as any,
+    gap: 8,
+    marginBottom: 6,
+    flexWrap: 'wrap' as any,
+  },
+  sprintZapPill: {
+    flexDirection: 'row' as any,
+    alignItems: 'center' as any,
+    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(56, 189, 248, 0.3)',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 999,
+    gap: 4,
+  },
+  sprintZapPillText: {
+    color: '#38bdf8',
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.4,
+  },
+  sprintTargetPill: {
+    flexDirection: 'row' as any,
+    alignItems: 'center' as any,
+    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.3)',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 999,
+  },
+  sprintTargetText: {
+    color: '#fca5a5',
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  sprintHeroTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    letterSpacing: -0.2,
+  },
+  sprintHeroSub: {
+    fontSize: 12,
+    marginTop: 3,
+    lineHeight: 16,
+  },
+  sprintHeroRight: {
+    alignItems: 'flex-end' as any,
+  },
+  sprintEnterBtn: {
+    backgroundColor: '#2563eb',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
+    flexDirection: 'row' as any,
+    alignItems: 'center' as any,
+  },
+  sprintEnterBtnText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '700',
+  },
 });

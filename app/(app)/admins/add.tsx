@@ -237,7 +237,7 @@ const rp = StyleSheet.create({
 });
 
 // ─── Confirmation Sheet ──────────────────────────────────────────────────────────
-const ConfirmSheet = ({ visible, onHide, onConfirm, data, loading }: any) => {
+const ConfirmSheet = ({ visible, onHide, onConfirm, data, loading, error }: any) => {
   const { colors, isDark } = useTheme();
   const slide = useRef(new Animated.Value(height)).current;
   const fade = useRef(new Animated.Value(0)).current;
@@ -300,6 +300,13 @@ const ConfirmSheet = ({ visible, onHide, onConfirm, data, loading }: any) => {
             </View>
           </View>
 
+          {error ? (
+            <View style={cs.modalErrBox}>
+              <AlertTriangle size={15} color={C.red} />
+              <Text style={cs.modalErrText}>{error}</Text>
+            </View>
+          ) : null}
+
           <View style={cs.actions}>
             <Pressable
               style={({ pressed }) => [
@@ -354,6 +361,23 @@ const cs = StyleSheet.create({
   label: { fontSize: 10, fontWeight: '700', letterSpacing: 0.5, marginBottom: 2 },
   value: { fontSize: 14, fontWeight: '600' },
   line: { height: 1 },
+  modalErrBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    padding: 12,
+    backgroundColor: 'rgba(239,68,68,0.1)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(239,68,68,0.25)',
+    marginBottom: 16,
+  },
+  modalErrText: {
+    color: C.red,
+    fontSize: 13,
+    fontWeight: '500',
+    flex: 1,
+  },
   actions: { flexDirection: 'row', gap: 12 },
   btnSub: { flex: 1, height: 54, borderRadius: 16, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   btnSubTxt: { fontSize: 15, fontWeight: '600' },
@@ -380,19 +404,28 @@ export default function AddAdminScreen() {
     Animated.timing(formFade, { toValue: 1, duration: 600, useNativeDriver: true }).start();
   }, []);
 
-  const passValid = getStrength(password).score >= 3;
+  const passValid = password.length >= 8 && getStrength(password).score >= 3;
   const match = password && password === confirmPassword;
-  const canContinue = fullName.length > 2 && email.includes('@') && passValid && match;
+  const canContinue = fullName.trim().length >= 2 && email.includes('@') && passValid && match;
 
   const handleCreate = async () => {
     setLoading(true);
     setError(null);
     try {
-      await superAdminApi.createSuperAdmin({ full_name: fullName, email, password });
+      await superAdminApi.createSuperAdmin({
+        full_name: fullName.trim(),
+        email: email.trim(),
+        password,
+      });
       setShowConfirm(false);
       router.back();
     } catch (err: any) {
-      setError(err.message || 'Failed to create admin');
+      const errorMsg =
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        err.message ||
+        'Failed to create admin';
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -490,7 +523,10 @@ export default function AddAdminScreen() {
             ...pressableWebStyles(pressed, { disabled: !canContinue, pressedOpacity: 0.9 }),
           ]}
           disabled={!canContinue}
-          onPress={() => setShowConfirm(true)}
+          onPress={() => {
+            setError(null);
+            setShowConfirm(true);
+          }}
         >
           <Text style={[s.submitText, { color: isDark ? 'black' : 'white' }]}>Initialize Provisioning</Text>
           <Zap size={18} color={isDark ? 'black' : 'white'} />
@@ -499,10 +535,14 @@ export default function AddAdminScreen() {
 
       <ConfirmSheet
         visible={showConfirm}
-        onHide={() => setShowConfirm(false)}
+        onHide={() => {
+          setShowConfirm(false);
+          setError(null);
+        }}
         onConfirm={handleCreate}
         data={{ fullName, email }}
         loading={loading}
+        error={error}
       />
     </View>
   );

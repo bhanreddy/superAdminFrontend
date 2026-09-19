@@ -38,6 +38,8 @@ import {
   ContactRound,
   MessageCircle,
   Network,
+  Database,
+  Zap,
 } from 'lucide-react-native';
 import { useTheme, clayStyle } from '../../contexts/ThemeContext';
 import { useAuth } from '../../hooks/useAuth';
@@ -126,6 +128,12 @@ const NAV_GROUPS: NavGroup[] = [
     title: 'BUSINESS',
     items: [
       {
+        key: 'sprint',
+        label: '11-Day Sprint',
+        icon: (c, s) => <Zap size={s} color={c} strokeWidth={1.8} />,
+        route: '/(app)/console/sprint',
+      },
+      {
         key: 'messenger',
         label: 'Messenger',
         icon: (c, s) => <MessageCircle size={s} color={c} strokeWidth={1.8} />,
@@ -177,6 +185,18 @@ const NAV_GROUPS: NavGroup[] = [
         label: 'Festival Posters',
         icon: (c, s) => <Sparkles size={s} color={c} strokeWidth={1.8} />,
         route: '/(app)/console/festival-posters',
+        requiresSuperAdmin: true,
+      },
+    ],
+  },
+  {
+    title: 'INFRASTRUCTURE',
+    items: [
+      {
+        key: 'backups',
+        label: 'Database Backups',
+        icon: (c, s) => <Database size={s} color={c} strokeWidth={1.8} />,
+        route: '/(app)/console/backups',
         requiresSuperAdmin: true,
       },
     ],

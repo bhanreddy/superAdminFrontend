@@ -36,13 +36,13 @@ import {
 
 const TEMPLATE_HEADERS = [
   'First Name', 'Last Name (optional)', 'Middle Name', 'Admission Number', 'PEN Number', 'APAR Number', 'Admission Date',
-  'Class', 'Section', 'Gender', 'Date of Birth', 'Email', 'Phone', 'Password',
+  'Class', 'Section', 'Gender', 'Date of Birth', 'Village', 'Email', 'Phone', 'Password',
   'Academic Year', 'Status', 'Category', 'Religion', 'Blood Group',
   'Father First Name', 'Father Last Name', 'Father Phone', 'Father Occupation',
   'Mother First Name', 'Mother Last Name', 'Mother Phone', 'Mother Occupation',
 ];
 const TEMPLATE_EXAMPLE = [
-  'Ravi', 'Kumar', '', 'ADM-2025-001', 'PEN2025001', '', '2025-06-01', '10', 'A', 'Male', '2010-03-15',
+  'Ravi', 'Kumar', '', 'ADM-2025-001', 'PEN2025001', '', '2025-06-01', '10', 'A', 'Male', '2010-03-15', 'Rampur',
   'ravi.kumar@example.com', '9876543210', 'student123', '2025-26', 'active',
   'General', 'Hindu', 'B+', 'Suresh', 'Kumar', '9876543200', 'Business',
   'Lakshmi', 'Kumar', '9876543201', 'Teacher',
@@ -59,7 +59,7 @@ const COLUMN_GROUPS = [
   },
   {
     label: 'Optional', color: '#3B82F6', rgb: '59,130,246',
-    columns: 'Last Name (optional), Middle Name, PEN Number, APAR Number, Date of Birth, Status, Category, Religion, Blood Group'
+    columns: 'Last Name (optional), Middle Name, PEN Number, APAR Number, Village, Date of Birth, Status, Category, Religion, Blood Group'
   },
   {
     label: 'Parent', color: '#10B981', rgb: '16,185,129',
@@ -535,7 +535,7 @@ export default function ImportStudentsScreen() {
               </LinearGradient>
               <View style={{ flex: 1 }}>
                 <Text style={[styles.templateTitle, { color: heading }]}>Download Template</Text>
-                <Text style={[styles.templateDesc, { color: sub }]}>CSV · 27 columns · 1 sample row</Text>
+                <Text style={[styles.templateDesc, { color: sub }]}>CSV · 28 columns · 1 sample row</Text>
               </View>
               <ChevronRight size={15} color={sub} />
             </Pressable>

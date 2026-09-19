@@ -6,13 +6,70 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_SUPERADMIN_API_URL": "https://superadminbackend-8ulw.onrender.com",
+        "EXPO_PUBLIC_SUPERADMIN_API_URL_WEB": "https://superadminbackend-8ulw.onrender.com",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://jztckbupiepiqfrxhszt.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6dGNrYnVwaWVwaXFmcnhoc3p0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxMzgyMTYsImV4cCI6MjA4ODcxNDIxNn0.TC6mwwLezkwMmPxkIzRnR7NPyworRVzQ_vXCkRmnz4o",
+        "EXPO_PUBLIC_MEDICAL_SUPABASE_URL": "https://mlbdrcdsalbrpcwyidqw.supabase.co",
+        "EXPO_PUBLIC_MEDICAL_SUPABASE_ANON_KEY": "sb_publishable_ynxMj5a1o0qHPfcju77OkA_I6SXKO59",
+        "EXPO_PUBLIC_API_URL": "",
+        "EXPO_PUBLIC_API_URL_WEB": "",
+        "EXPO_PUBLIC_MEDICAL_API_URL": "",
+        "EXPO_PUBLIC_MEDICAL_API_URL_WEB": ""
+      }
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_SUPERADMIN_API_URL": "https://superadminbackend-8ulw.onrender.com",
+        "EXPO_PUBLIC_SUPERADMIN_API_URL_WEB": "https://superadminbackend-8ulw.onrender.com",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://jztckbupiepiqfrxhszt.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6dGNrYnVwaWVwaXFmcnhoc3p0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxMzgyMTYsImV4cCI6MjA4ODcxNDIxNn0.TC6mwwLezkwMmPxkIzRnR7NPyworRVzQ_vXCkRmnz4o",
+        "EXPO_PUBLIC_MEDICAL_SUPABASE_URL": "https://mlbdrcdsalbrpcwyidqw.supabase.co",
+        "EXPO_PUBLIC_MEDICAL_SUPABASE_ANON_KEY": "sb_publishable_ynxMj5a1o0qHPfcju77OkA_I6SXKO59",
+        "EXPO_PUBLIC_API_URL": "",
+        "EXPO_PUBLIC_API_URL_WEB": "",
+        "EXPO_PUBLIC_MEDICAL_API_URL": "",
+        "EXPO_PUBLIC_MEDICAL_API_URL_WEB": ""
+      }
+    },
+    "apk": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_SUPERADMIN_API_URL": "https://superadminbackend-8ulw.onrender.com",
+        "EXPO_PUBLIC_SUPERADMIN_API_URL_WEB": "https://superadminbackend-8ulw.onrender.com",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://jztckbupiepiqfrxhszt.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6dGNrYnVwaWVwaXFmcnhoc3p0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxMzgyMTYsImV4cCI6MjA4ODcxNDIxNn0.TC6mwwLezkwMmPxkIzRnR7NPyworRVzQ_vXCkRmnz4o",
+        "EXPO_PUBLIC_MEDICAL_SUPABASE_URL": "https://mlbdrcdsalbrpcwyidqw.supabase.co",
+        "EXPO_PUBLIC_MEDICAL_SUPABASE_ANON_KEY": "sb_publishable_ynxMj5a1o0qHPfcju77OkA_I6SXKO59",
+        "EXPO_PUBLIC_API_URL": "",
+        "EXPO_PUBLIC_API_URL_WEB": "",
+        "EXPO_PUBLIC_MEDICAL_API_URL": "",
+        "EXPO_PUBLIC_MEDICAL_API_URL_WEB": ""
+      }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_SUPERADMIN_API_URL": "https://superadminbackend-8ulw.onrender.com",
+        "EXPO_PUBLIC_SUPERADMIN_API_URL_WEB": "https://superadminbackend-8ulw.onrender.com",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://jztckbupiepiqfrxhszt.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6dGNrYnVwaWVwaXFmcnhoc3p0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxMzgyMTYsImV4cCI6MjA4ODcxNDIxNn0.TC6mwwLezkwMmPxkIzRnR7NPyworRVzQ_vXCkRmnz4o",
+        "EXPO_PUBLIC_MEDICAL_SUPABASE_URL": "https://mlbdrcdsalbrpcwyidqw.supabase.co",
+        "EXPO_PUBLIC_MEDICAL_SUPABASE_ANON_KEY": "sb_publishable_ynxMj5a1o0qHPfcju77OkA_I6SXKO59",
+        "EXPO_PUBLIC_API_URL": "",
+        "EXPO_PUBLIC_API_URL_WEB": "",
+        "EXPO_PUBLIC_MEDICAL_API_URL": "",
+        "EXPO_PUBLIC_MEDICAL_API_URL_WEB": ""
+      }
     }
   },
   "submit": {
