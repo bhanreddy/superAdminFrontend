@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState, useMemo, useRef } from 'react';
-import { View, Text, StyleSheet, Pressable, Platform, Animated, Easing, ScrollView, useWindowDimensions } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Platform, Animated, Easing, ScrollView, useWindowDimensions, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
@@ -192,8 +192,20 @@ export default function SchoolsListScreen() {
       setDeleteModalVisible(false);
       setSchoolToDelete(null);
       fetchSchools();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to delete school:', err);
+      const message =
+        err?.response?.data?.error ||
+        err?.message ||
+        'Failed to delete school';
+      if (Platform.OS === 'web') {
+        // Alert.alert is a no-op on RN web
+        // eslint-disable-next-line no-alert
+        window.alert(`Delete failed\n\n${message}`);
+      } else {
+        Alert.alert('Delete failed', message);
+      }
+      throw err;
     }
   };
 

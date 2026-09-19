@@ -29,6 +29,11 @@ export interface BillingClient {
   id: string; kind: 'school' | 'medical'; cluster_id: string; name: string; code: string | null;
   address: string | null; is_active: boolean; created_at: string;
   monthly_fee: number | string | null; payment_link: string | null;
+  plan_name: string; billing_cycle: 'monthly' | 'quarterly' | 'annual' | 'custom';
+  subscription_status: 'trial' | 'active' | 'past_due' | 'paused' | 'cancelled';
+  current_period_start: string | null; current_period_end: string | null;
+  next_due_date: string | null; amount_due: number | string; currency: string;
+  reminder_enabled: boolean; reminder_message: string | null; last_paid_at: string | null;
   subscription_updated_at: string | null;
 }
 
@@ -108,6 +113,9 @@ export interface BillingDocument {
   pdf_url: string | null;
   issued_at: string | null;
   created_at: string;
+  /** Present when a local SuperAdmin action could not mirror to SchoolIMS. */
+  portal_sync_warning?: string;
+  portal_synced?: boolean;
 }
 
 export interface DocumentListResult {
@@ -154,8 +162,26 @@ export async function listClients(): Promise<{ data: BillingClient[]; cluster_un
   return (await superAdminClient.get(`${BASE}/clients`)).data;
 }
 
-export async function updateClient(client: BillingClient, monthly_fee: number | null, payment_link: string | null) {
-  return (await superAdminClient.put(`${BASE}/clients/${client.kind}/${encodeURIComponent(client.cluster_id)}/${encodeURIComponent(client.id)}`, { monthly_fee, payment_link })).data;
+export async function updateClient(
+  client: BillingClient,
+  monthly_fee: number | null,
+  payment_link: string | null,
+  patch: Partial<Pick<BillingClient, 'plan_name' | 'billing_cycle' | 'subscription_status' | 'current_period_start' | 'current_period_end' | 'next_due_date' | 'amount_due' | 'reminder_enabled' | 'reminder_message'>> = {},
+) {
+  return (await superAdminClient.put(`${BASE}/clients/${client.kind}/${encodeURIComponent(client.cluster_id)}/${encodeURIComponent(client.id)}`, {
+    monthly_fee,
+    payment_link,
+    plan_name: client.plan_name,
+    billing_cycle: client.billing_cycle,
+    subscription_status: client.subscription_status,
+    current_period_start: client.current_period_start,
+    current_period_end: client.current_period_end,
+    next_due_date: client.next_due_date,
+    amount_due: client.amount_due,
+    reminder_enabled: client.reminder_enabled,
+    reminder_message: client.reminder_message,
+    ...patch,
+  })).data;
 }
 
 export async function sendPaymentLink(client: BillingClient, payment_link?: string | null) {

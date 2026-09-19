@@ -51,6 +51,7 @@ export default function ConsoleStackLayout() {
       <Stack.Screen name="notifications" />
       <Stack.Screen name="audit-logs" />
       <Stack.Screen name="festival-posters" />
+      <Stack.Screen name="payroll" />
       <Stack.Screen name="settings" />
     </Stack>
   );
