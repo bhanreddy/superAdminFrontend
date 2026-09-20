@@ -23,6 +23,7 @@ import { Avatar } from '../../../src/components/ui/Avatar';
 import { useToast } from '../../../src/components/ui/Toast';
 import { Card } from '../../../src/components/ui/Card';
 import { EmptyState } from '../../../src/components/ui/EmptyState';
+import { RouteGuard } from '../../../src/components/auth/RouteGuard';
 
 const COMPACT_BREAKPOINT = 640;
 
@@ -153,9 +154,10 @@ export default function AdminsListScreen() {
   ];
 
   return (
-    <View style={{ flex: 1, backgroundColor: 'transparent' }}>
-      <View style={{ flex: 1, paddingHorizontal: 0 }}>
-      <ScreenHeader
+    <RouteGuard requiredPermission="admins.manage">
+      <View style={{ flex: 1, backgroundColor: 'transparent' }}>
+        <View style={{ flex: 1, paddingHorizontal: 0 }}>
+        <ScreenHeader
         title="Super Admins"
         subtitle={`${admins.length} user${admins.length === 1 ? '' : 's'} with access`}
         subtitleColor={colors.textSecondary}
@@ -327,8 +329,9 @@ export default function AdminsListScreen() {
           )}
         </ScrollView>
       )}
+        </View>
       </View>
-    </View>
+    </RouteGuard>
   );
 }
 

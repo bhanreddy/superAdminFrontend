@@ -162,7 +162,7 @@ function PremiumSectionTitle({
 // - QuickActionRow -
 
 const QUICK_ACTIONS = [
-  { label: '11-Day Sprint', icon: Zap, route: '/(app)/console/sprint', gradient: ['#38BDF8', '#2563EB'] },
+  { label: '10-Day RED ALERT', icon: Zap, route: '/(app)/console/sprint', gradient: ['#EF4444', '#991B1B'] },
   { label: 'Add Expense', icon: Plus, route: '/(app)/console/expenses', gradient: ['#FF6B7A', '#DC2626'] },
   { label: 'Enquiries', icon: MessageCircle, route: '/(app)/console/enquiries', gradient: ['#38C8F4', '#2563EB'] },
   { label: 'Analytics', icon: BarChart2, route: '/(app)/console/analytics', gradient: ['#FFB020', '#D97706'] },
@@ -1023,18 +1023,18 @@ export default function FounderDashboardScreen() {
               styles.sprintHeroBanner,
               {
                 backgroundColor: isDark ? 'rgba(17, 24, 39, 0.88)' : 'rgba(255, 255, 255, 0.95)',
-                borderColor: hovered ? '#38bdf8' : (isDark ? 'rgba(56, 189, 248, 0.35)' : 'rgba(56, 189, 248, 0.45)'),
+                borderColor: hovered ? '#ef4444' : (isDark ? 'rgba(239, 68, 68, 0.35)' : 'rgba(220, 38, 38, 0.35)'),
                 transform: [{ scale: pressed ? 0.99 : hovered ? 1.006 : 1 }],
               },
               Platform.OS === 'web' ? {
                 cursor: 'pointer',
-                boxShadow: hovered ? '0 12px 28px rgba(56, 189, 248, 0.22)' : '0 4px 16px rgba(0,0,0,0.15)',
+                boxShadow: hovered ? '0 12px 28px rgba(239, 68, 68, 0.22)' : '0 4px 16px rgba(0,0,0,0.15)',
                 transition: 'all 0.2s ease',
               } as any : {},
             ]}
           >
             <LinearGradient
-              colors={['rgba(56, 189, 248, 0.16)', 'rgba(37, 99, 235, 0.07)', 'transparent']}
+              colors={['rgba(239, 68, 68, 0.18)', 'rgba(153, 27, 27, 0.08)', 'transparent']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={StyleSheet.absoluteFillObject}
@@ -1042,19 +1042,19 @@ export default function FounderDashboardScreen() {
             <View style={styles.sprintHeroLeft}>
               <View style={styles.sprintHeroBadgeRow}>
                 <View style={styles.sprintZapPill}>
-                  <Zap size={12} color="#38bdf8" />
-                  <Text style={styles.sprintZapPillText}>WAR ROOM ACTIVE</Text>
+                  <Zap size={12} color="#ef4444" />
+                  <Text style={styles.sprintZapPillText}>RED ALERT ACTIVE</Text>
                 </View>
                 <View style={styles.sprintTargetPill}>
                   <Sparkles size={11} color="#fca5a5" style={{ marginRight: 4 }} />
-                  <Text style={styles.sprintTargetText}>Target: Oct 1, 2026</Text>
+                  <Text style={styles.sprintTargetText}>10 DAYS</Text>
                 </View>
               </View>
               <Text style={[styles.sprintHeroTitle, { color: colors.textPrimary }]}>
-                11-Day Sprint Command Center — 100 Mission-Critical Deliverables
+                NexSyrus RED ALERT — 100 Hard Deliverables
               </Text>
               <Text style={[styles.sprintHeroSub, { color: colors.textSecondary }]}>
-                Live multi-founder blueprint & progress tracker across Tech, Academics, Content & Sales leads.
+                Live execution control across Tech, Curriculum Research, Sales Strategy, and Sales Scale owners.
               </Text>
             </View>
             <View style={styles.sprintHeroRight}>
@@ -1695,16 +1695,16 @@ const styles = StyleSheet.create({
   sprintZapPill: {
     flexDirection: 'row' as any,
     alignItems: 'center' as any,
-    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+    backgroundColor: 'rgba(239, 68, 68, 0.15)',
     borderWidth: 1,
-    borderColor: 'rgba(56, 189, 248, 0.3)',
+    borderColor: 'rgba(239, 68, 68, 0.3)',
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 999,
     gap: 4,
   },
   sprintZapPillText: {
-    color: '#38bdf8',
+    color: '#ef4444',
     fontSize: 10,
     fontWeight: '800',
     letterSpacing: 0.4,

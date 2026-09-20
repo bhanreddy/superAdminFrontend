@@ -2,14 +2,32 @@ import { superAdminClient } from '../api/superAdminClient';
 import { storeTokens, clearTokens, getStoredAccessToken } from './apiService';
 import { SuperAdmin } from '../types/superAdmin';
 import { FounderRow } from '../types/founder';
+import { InternalUser, Session, User } from '../types/auth';
+import { Role } from '../constants/rbac';
 
 export interface LoginResult {
-  user: { id: string; email: string; user_metadata?: any } | null;
-  session: { access_token: string; refresh_token: string; expires_at?: number; expires_in?: number } | null;
+  user: User | null;
+  session: Session | null;
+  internalUser: InternalUser | null;
+  role: Role | null;
+  employeeId: string | null;
+  permissions: string[];
+  assignedSchools: number[];
+  status: string | null;
   isSuperAdmin: boolean;
   admin: SuperAdmin | null;
   founder: FounderRow | null;
   error: { message: string } | null;
+}
+
+export interface ProfileResult {
+  user: any;
+  role: Role;
+  permissions: string[];
+  assignedSchools: number[];
+  isSuperAdmin: boolean;
+  admin: SuperAdmin | null;
+  founder: FounderRow | null;
 }
 
 /** Coerce API / Axios / Supabase error payloads into a renderable string. */
@@ -30,20 +48,38 @@ function toErrorMessage(value: unknown, fallback = 'Login failed'): string {
 }
 
 export const authService = {
-  /** Sign in via the backend (server-side Supabase auth) */
-  async signIn(email: string, password: string): Promise<LoginResult> {
+  /**
+   * Sign in via the backend with Email, Phone, or Employee ID.
+   */
+  async signIn(identifier: string, password: string): Promise<LoginResult> {
     try {
-      const response = await superAdminClient.post('/api/super-admin/auth/login', { email, password });
+      const response = await superAdminClient.post('/api/super-admin/auth/login', {
+        identifier,
+        email: identifier, // backwards compatibility
+        password,
+      });
       const data = response.data;
 
       if (data.session) {
         await storeTokens(data.session.access_token, data.session.refresh_token);
       }
 
+      const userData = data.user || null;
+      const role = (data.role || userData?.role || null) as Role | null;
+      const employeeId = userData?.employee_id || userData?.employeeId || null;
+      const permissions = Array.isArray(data.permissions) ? data.permissions : [];
+      const assignedSchools = Array.isArray(data.assignedSchools) ? data.assignedSchools : [];
+
       return {
-        user: data.user || null,
+        user: userData,
         session: data.session || null,
-        isSuperAdmin: data.isSuperAdmin ?? false,
+        internalUser: userData,
+        role,
+        employeeId,
+        permissions,
+        assignedSchools,
+        status: userData?.status || 'ACTIVE',
+        isSuperAdmin: Boolean(data.isSuperAdmin),
         admin: data.admin || null,
         founder: data.founder || null,
         error: null,
@@ -57,6 +93,12 @@ export const authService = {
       return {
         user: null,
         session: null,
+        internalUser: null,
+        role: null,
+        employeeId: null,
+        permissions: [],
+        assignedSchools: [],
+        status: null,
         isSuperAdmin: false,
         admin: null,
         founder: null,
@@ -65,9 +107,15 @@ export const authService = {
     }
   },
 
-  /** Sign out — clear local tokens */
+  /** Sign out — clear local tokens and notify backend */
   async signOut(): Promise<void> {
-    await clearTokens();
+    try {
+      await superAdminClient.post('/api/super-admin/auth/logout');
+    } catch {
+      // ignore
+    } finally {
+      await clearTokens();
+    }
   },
 
   /** Check if we have a stored session (token exists) */
@@ -77,7 +125,17 @@ export const authService = {
     return { access_token: token };
   },
 
-  /** Verify if the current user is a super admin and get admin+founder info */
+  /** Fetch current authenticated profile & effective permissions from the backend */
+  async getProfile(): Promise<ProfileResult | null> {
+    try {
+      const response = await superAdminClient.get('/api/super-admin/auth/me');
+      return response.data;
+    } catch {
+      return null;
+    }
+  },
+
+  /** Legacy helper */
   async isSuperAdmin(
     _userId: string,
     _jwt: string,
@@ -103,7 +161,7 @@ export const authService = {
     }
   },
 
-  /** No-op — token refresh is handled by the school HTTP client 401 interceptor */
+  /** Token refresh */
   async refreshSession(): Promise<{ access_token: string } | null> {
     const token = await getStoredAccessToken();
     return token ? { access_token: token } : null;

@@ -8,6 +8,7 @@ import { Server, Edit2, ShieldAlert, CheckCircle2, Activity, Link as LinkIcon, S
 import { LinearGradient } from 'expo-linear-gradient';
 import { pressableWebStyles } from '../../../src/utils/webPressable';
 import { useCluster } from '../../../src/contexts/ClusterContext';
+import { RouteGuard } from '../../../src/components/auth/RouteGuard';
 
 type ClusterWithHealth = ClusterConfig & {
   health?: { school_reachable: boolean; latency_ms: number; status: 'loading' | 'success' | 'error' };
@@ -113,9 +114,10 @@ export default function ClustersScreen() {
   }
 
   return (
-    <View style={[styles.root, { backgroundColor: 'transparent' }]}>
-      <View style={[styles.header, { borderBottomColor: colors.border, backgroundColor: colors.surface }]}>
-        <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>Cluster Management</Text>
+    <RouteGuard requiredPermission="clusters.manage">
+      <View style={[styles.root, { backgroundColor: 'transparent' }]}>
+        <View style={[styles.header, { borderBottomColor: colors.border, backgroundColor: colors.surface }]}>
+          <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>Cluster Management</Text>
         <Pressable
           style={({ pressed }) => [styles.addBtn, { backgroundColor: colors.primary }, ...pressableWebStyles(pressed)]}
           onPress={() => router.push('/(app)/clusters/add' as any)}
@@ -206,8 +208,9 @@ export default function ClustersScreen() {
             </LinearGradient>
           );
         })}
-      </ScrollView>
-    </View>
+        </ScrollView>
+      </View>
+    </RouteGuard>
   );
 }
 

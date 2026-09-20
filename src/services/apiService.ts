@@ -23,6 +23,7 @@ export {
 } from '../api/tokens';
 
 import { superAdminClient } from '../api/superAdminClient';
+import { checklistApi } from './checklistService';
 
 /** @deprecated Prefer importing `superAdminClient` from `../api/superAdminClient` */
 export const apiService = superAdminClient;
@@ -250,6 +251,126 @@ export const superAdminApi = {
       `/api/super-admin/dcgd/programs/${programId}/content/reorder`,
       { ordered_ids },
     );
+    return response.data;
+  },
+
+  // --- RBAC Internal Users ---
+  getInternalUsers: async (params?: { role?: string; status?: string; manager_id?: string; search?: string }) => {
+    const response = await superAdminClient.get('/api/super-admin/users', { params });
+    return response.data;
+  },
+  getUserHierarchy: async () => {
+    const response = await superAdminClient.get('/api/super-admin/users/hierarchy');
+    return response.data;
+  },
+  createInternalUser: async (payload: {
+    full_name: string;
+    email: string;
+    phone?: string;
+    role: string;
+    employee_id?: string;
+    manager_id?: string;
+    territory?: string;
+    password?: string;
+    status?: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | 'INVITED';
+    assigned_schools?: number[];
+  }) => {
+    const response = await superAdminClient.post('/api/super-admin/users', payload);
+    return response.data;
+  },
+  getInternalUser: async (id: string) => {
+    const response = await superAdminClient.get(`/api/super-admin/users/${id}`);
+    return response.data;
+  },
+  updateInternalUser: async (id: string, payload: any) => {
+    const response = await superAdminClient.patch(`/api/super-admin/users/${id}`, payload);
+    return response.data;
+  },
+  assignSchoolsToUser: async (id: string, school_ids: number[]) => {
+    const response = await superAdminClient.post(`/api/super-admin/users/${id}/schools`, { school_ids });
+    return response.data;
+  },
+  resetUserPassword: async (id: string, new_password: string) => {
+    const response = await superAdminClient.post(`/api/super-admin/users/${id}/reset-password`, { new_password });
+    return response.data;
+  },
+  getPermissionCatalog: async () => {
+    const response = await superAdminClient.get('/api/super-admin/users/permissions/catalog');
+    return response.data;
+  },
+  getUserPermissions: async (id: string) => {
+    const response = await superAdminClient.get(`/api/super-admin/users/${id}/permissions`);
+    return response.data;
+  },
+  updateUserPermissions: async (id: string, overrides: { permission: string; effect: 'GRANT' | 'DENY' }[]) => {
+    const response = await superAdminClient.put(`/api/super-admin/users/${id}/permissions`, { overrides });
+    return response.data;
+  },
+  toggleUserStatus: async (id: string, status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED') => {
+    const response = await superAdminClient.patch(`/api/super-admin/users/${id}`, { status });
+    return response.data;
+  },
+
+  // --- School Requirements ---
+  getRequirements: async (params?: { school_id?: number; status?: string; category?: string }) => {
+    const response = await superAdminClient.get('/api/super-admin/requirements', { params });
+    return response.data;
+  },
+  createRequirement: async (payload: {
+    school_id: number;
+    title: string;
+    description?: string;
+    category?: string;
+    priority?: string;
+    attachments?: string[];
+  }) => {
+    const response = await superAdminClient.post('/api/super-admin/requirements', payload);
+    return response.data;
+  },
+  updateRequirement: async (id: string, payload: {
+    status?: string;
+    feasibility_status?: string;
+    resolution_notes?: string;
+    priority?: string;
+  }) => {
+    const response = await superAdminClient.patch(`/api/super-admin/requirements/${id}`, payload);
+    return response.data;
+  },
+
+  // --- Onboarding Checklist ---
+  ...checklistApi,
+
+  // --- Support / Complaints Desk ---
+  getSupportTickets: async (params?: { school_id?: number; status?: string; priority?: string; assigned_to?: string }) => {
+    const response = await superAdminClient.get('/api/super-admin/support/tickets', { params });
+    return response.data;
+  },
+  getSupportTicket: async (id: string) => {
+    const response = await superAdminClient.get(`/api/super-admin/support/tickets/${id}`);
+    return response.data;
+  },
+  createSupportTicket: async (payload: {
+    school_id: number;
+    title: string;
+    description: string;
+    category?: string;
+    priority?: string;
+    assigned_to?: string;
+  }) => {
+    const response = await superAdminClient.post('/api/super-admin/support/tickets', payload);
+    return response.data;
+  },
+  updateSupportTicket: async (id: string, payload: {
+    status?: string;
+    priority?: string;
+    assigned_to?: string | null;
+    resolution?: string;
+  }) => {
+    const response = await superAdminClient.patch(`/api/super-admin/support/tickets/${id}`, payload);
+    return response.data;
+  },
+  addTicketNote: async (id: string, payload: { note: string; is_internal?: boolean }) => {
+    const response = await superAdminClient.post(`/api/super-admin/support/tickets/${id}/notes`, payload);
     return response.data;
   },
 };

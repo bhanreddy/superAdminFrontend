@@ -1,4 +1,4 @@
-export type SprintRole = 'tech' | 'acad' | 'content' | 'sales';
+export type SprintRole = 'tech' | 'curr' | 'sales' | 'scale';
 export type SprintTaskStatus = 'todo' | 'doing' | 'blocked' | 'done';
 export type SprintGateStatus = 'pending' | 'in_progress' | 'passed' | 'blocked';
 
@@ -23,6 +23,7 @@ export interface SprintTask {
   role: SprintRole;
   num: number;
   title: string;
+  category?: string | null;
   day: number;
   orig_day_label?: string;
   status: SprintTaskStatus;
@@ -76,7 +77,23 @@ export interface SprintMember {
   role: string;
 }
 
+export interface SprintRoleDefinition {
+  name: string;
+  subtitle: string;
+  category: string;
+}
+
+export interface SprintDefinition {
+  version: string;
+  name: string;
+  duration_days: number;
+  total_deliverables: number;
+  operating_rule: string;
+  roles: Record<SprintRole, SprintRoleDefinition>;
+}
+
 export interface SprintStateResponse {
+  definition: SprintDefinition;
   days: SprintDay[];
   tasks: SprintTask[];
   metrics: SprintMetrics;

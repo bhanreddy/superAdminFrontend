@@ -36,6 +36,12 @@ import { useTheme, clayStyle } from '../../src/contexts/ThemeContext';
 import { founderGradients } from '../../src/screens/founder/founderUi';
 import { Badge } from '../../src/components/ui/Badge';
 import { Skeleton } from '../../src/components/ui/Skeleton';
+import SalesManagerDashboard from '../../src/screens/dashboards/SalesManagerDashboard';
+import SalesExecutiveDashboard from '../../src/screens/dashboards/SalesExecutiveDashboard';
+import ImplementationDashboard from '../../src/screens/dashboards/ImplementationDashboard';
+import SupportDashboard from '../../src/screens/dashboards/SupportDashboard';
+import GenericRoleDashboard from '../../src/screens/dashboards/GenericRoleDashboard';
+import { isFounderOrSuperAdmin } from '../../src/constants/rbac';
 
 // - Helpers -
 function n(v: unknown): number { const x = Number(v); return Number.isFinite(x) ? x : 0; }
@@ -927,10 +933,32 @@ const PremiumAvatar = React.memo(function PremiumAvatar({ name, compact = false 
   );
 });
 
-// =
-// MAIN DASHBOARD - V3
-// =
+// ============================================================
+// MAIN DASHBOARD ROUTER - MULTI-ROLE ADAPTIVE
+// ============================================================
 export default function DashboardScreen() {
+  const { role } = useAuth();
+
+  if (isFounderOrSuperAdmin(role)) {
+    return <FounderDashboardScreen />;
+  }
+  if (role === 'SALES_MANAGER') {
+    return <SalesManagerDashboard />;
+  }
+  if (role === 'SALES_EXECUTIVE') {
+    return <SalesExecutiveDashboard />;
+  }
+  if (role === 'IMPLEMENTATION_MANAGER' || role === 'IMPLEMENTATION_EXECUTIVE') {
+    return <ImplementationDashboard />;
+  }
+  if (role === 'SUPPORT_MANAGER' || role === 'SUPPORT_EXECUTIVE' || role === 'TECHNICAL_SUPPORT') {
+    return <SupportDashboard />;
+  }
+
+  return <GenericRoleDashboard />;
+}
+
+function FounderDashboardScreen() {
   const { currentAdmin, founder, isSuperAdmin } = useAuth();
   const { isApprover, canApproveReject } = useFounderAuth();
   const hasFounderAccess = Boolean(founder || isSuperAdmin);

@@ -15,6 +15,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useCluster } from '../../contexts/ClusterContext';
 import { Avatar } from '../ui/Avatar';
 import { Breadcrumb } from '../ui/Breadcrumb';
+import { ROLE_BADGE_COLORS } from '../../constants/rbac';
 
 interface TopBarProps {
   onMenuPress?: () => void;
@@ -23,7 +24,7 @@ interface TopBarProps {
 
 export const TopBar = React.memo(function TopBar({ onMenuPress, showMenu }: TopBarProps) {
   const { colors, layout: layoutTokens, isDark, toggleTheme, zIndex, clayShadows } = useTheme();
-  const { currentAdmin, founder, signOut } = useAuth();
+  const { currentAdmin, founder, signOut, role, roleLabel, employeeId, assignedSchools, isFounder } = useAuth();
   const { selectedCluster } = useCluster();
   const router = useRouter();
   const { width: winW } = useWindowDimensions();
@@ -33,6 +34,11 @@ export const TopBar = React.memo(function TopBar({ onMenuPress, showMenu }: TopB
 
   const userName = currentAdmin?.full_name || founder?.full_name || 'Admin';
   const userEmail = currentAdmin?.email || founder?.email || '';
+  const badgeStyle = (role && ROLE_BADGE_COLORS[role]) || {
+    bg: 'rgba(10, 132, 255, 0.15)',
+    text: '#0A84FF',
+    border: 'rgba(10, 132, 255, 0.3)',
+  };
 
   return (
     <View
@@ -156,9 +162,35 @@ export const TopBar = React.memo(function TopBar({ onMenuPress, showMenu }: TopB
           <Avatar name={userName} size="sm" />
           {Platform.OS === 'web' && !compactMobile && (
             <View style={styles.userText}>
-              <Text style={[styles.userName, { color: colors.textPrimary }]} numberOfLines={1}>
-                {userName}
-              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Text style={[styles.userName, { color: colors.textPrimary }]} numberOfLines={1}>
+                  {userName}
+                </Text>
+                {employeeId && (
+                  <Text style={[styles.empId, { color: colors.textTertiary }]}>
+                    ({employeeId})
+                  </Text>
+                )}
+              </View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                <View
+                  style={[
+                    styles.roleBadge,
+                    { backgroundColor: badgeStyle.bg, borderColor: badgeStyle.border },
+                  ]}
+                >
+                  <Text style={[styles.roleBadgeText, { color: badgeStyle.text }]} numberOfLines={1}>
+                    {roleLabel}
+                  </Text>
+                </View>
+                {!isFounder && assignedSchools.length > 0 && (
+                  <View style={styles.schoolPill}>
+                    <Text style={styles.schoolPillText}>
+                      {assignedSchools.length} {assignedSchools.length === 1 ? 'School' : 'Schools'}
+                    </Text>
+                  </View>
+                )}
+              </View>
             </View>
           )}
         </View>
@@ -234,12 +266,38 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
   },
   userText: {
-    maxWidth: 120,
+    maxWidth: 260,
   },
   userName: {
-    fontSize: 13.5,
-    fontWeight: '500',
+    fontSize: 13,
+    fontWeight: '600',
     letterSpacing: 0.1,
+  },
+  empId: {
+    fontSize: 11,
+    fontWeight: '500',
+  },
+  roleBadge: {
+    paddingVertical: 2,
+    paddingHorizontal: 7,
+    borderRadius: 6,
+    borderWidth: 1,
+  },
+  roleBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.2,
+  },
+  schoolPill: {
+    paddingVertical: 2,
+    paddingHorizontal: 6,
+    borderRadius: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  schoolPillText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: 'rgba(245, 245, 247, 0.65)',
   },
   clusterBadge: {
     flexDirection: 'row',

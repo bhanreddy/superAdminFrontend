@@ -38,6 +38,7 @@ import type {
   SprintMetrics,
   SprintActivityLog,
   SprintMember,
+  SprintDefinition,
 } from '../../types/sprint';
 
 const IS_WEB = Platform.OS === 'web';
@@ -55,6 +56,7 @@ export default function SprintCommandCenterScreen() {
   const [metrics, setMetrics] = useState<SprintMetrics | null>(null);
   const [activities, setActivities] = useState<SprintActivityLog[]>([]);
   const [members, setMembers] = useState<SprintMember[]>([]);
+  const [definition, setDefinition] = useState<SprintDefinition | null>(null);
 
   // Navigation & View state
   const [activeDay, setActiveDay] = useState<number>(1);
@@ -80,35 +82,43 @@ export default function SprintCommandCenterScreen() {
   const roleThemes = useMemo(() => {
     return {
       tech: {
-        name: 'Tech Lead',
-        icon: '👨‍💻',
-        color: isDark ? '#38bdf8' : '#0284C7',
-        bg: isDark ? 'rgba(56, 189, 248, 0.12)' : 'rgba(2, 132, 199, 0.08)',
-        border: isDark ? 'rgba(56, 189, 248, 0.3)' : 'rgba(2, 132, 199, 0.25)',
+        name: definition?.roles.tech.name || 'Member 1 — Tech Lead',
+        shortName: 'Tech',
+        subtitle: definition?.roles.tech.subtitle || 'Cross-functional technical strike force',
+        icon: '🛠️',
+        color: isDark ? '#38bdf8' : '#0369A1',
+        bg: isDark ? 'rgba(56, 189, 248, 0.12)' : 'rgba(3, 105, 161, 0.08)',
+        border: isDark ? 'rgba(56, 189, 248, 0.3)' : 'rgba(3, 105, 161, 0.25)',
       },
-      acad: {
-        name: 'Academic Lead',
+      curr: {
+        name: definition?.roles.curr.name || 'Member 2 — Curriculum Research Lead',
+        shortName: 'Curriculum',
+        subtitle: definition?.roles.curr.subtitle || 'Academic architecture, validation, evidence',
         icon: '📚',
         color: isDark ? '#818cf8' : '#6366F1',
         bg: isDark ? 'rgba(129, 140, 248, 0.12)' : 'rgba(99, 102, 241, 0.08)',
         border: isDark ? 'rgba(129, 140, 248, 0.3)' : 'rgba(99, 102, 241, 0.25)',
       },
-      content: {
-        name: 'Content Lead',
-        icon: '🎬',
-        color: isDark ? '#fbbf24' : '#D97706',
-        bg: isDark ? 'rgba(251, 191, 36, 0.12)' : 'rgba(217, 119, 6, 0.08)',
-        border: isDark ? 'rgba(251, 191, 36, 0.3)' : 'rgba(217, 119, 6, 0.25)',
-      },
       sales: {
-        name: 'Sales Lead',
+        name: definition?.roles.sales.name || 'Member 3 — Sales Strategy & Field Lead',
+        shortName: 'Sales',
+        subtitle: definition?.roles.sales.subtitle || 'Pipeline, positioning, demos, commercial execution',
         icon: '📈',
         color: isDark ? '#34d399' : '#059669',
         bg: isDark ? 'rgba(52, 211, 153, 0.12)' : 'rgba(5, 150, 105, 0.08)',
         border: isDark ? 'rgba(52, 211, 153, 0.3)' : 'rgba(5, 150, 105, 0.25)',
       },
+      scale: {
+        name: definition?.roles.scale.name || 'Member 4 — Sales Scale & Hiring Lead',
+        shortName: 'Scale',
+        subtitle: definition?.roles.scale.subtitle || 'Brochure, hiring, training, enablement, operations',
+        icon: '🚀',
+        color: isDark ? '#fbbf24' : '#B45309',
+        bg: isDark ? 'rgba(251, 191, 36, 0.12)' : 'rgba(180, 83, 9, 0.08)',
+        border: isDark ? 'rgba(251, 191, 36, 0.3)' : 'rgba(180, 83, 9, 0.25)',
+      },
     };
-  }, [isDark]);
+  }, [definition, isDark]);
 
   const statusColors = useMemo(() => {
     return {
@@ -133,6 +143,7 @@ export default function SprintCommandCenterScreen() {
     try {
       if (!silent) setLoading(true);
       const data = await sprintService.fetchSprintState();
+      setDefinition(data.definition || null);
       setDays(data.days);
       setTasks(data.tasks);
       setMetrics(data.metrics);
@@ -169,6 +180,14 @@ export default function SprintCommandCenterScreen() {
       return;
     }
 
+    if (newStatus === 'done' && !task.notes?.trim()) {
+      setEditingTask({ ...task, status: 'done' });
+      setEditBlockerReason('');
+      setEditNotes('');
+      setEditAssigneeId(task.assignee_id || null);
+      return;
+    }
+
     const prevTasks = [...tasks];
     setTasks((prev) =>
       prev.map((t) => (t.id === task.id ? { ...t, status: newStatus, blocker_reason: null } : t))
@@ -199,6 +218,11 @@ export default function SprintCommandCenterScreen() {
         : editingTask.status === 'blocked'
         ? 'doing'
         : editingTask.status;
+
+      if (newStatus === 'done' && !editNotes.trim()) {
+        Alert.alert('Evidence required', 'Add a deliverable link or evidence note before marking this task done.');
+        return;
+      }
 
       const res = await sprintService.updateSprintTask(editingTask.id, {
         status: newStatus,
@@ -301,6 +325,8 @@ export default function SprintCommandCenterScreen() {
   const doneCount = metrics?.done || 0;
   const totalCount = metrics?.total || 100;
   const progressPct = metrics?.completionPct || 0;
+  const doingCount = metrics?.doing || 0;
+  const blockedCount = metrics?.blocked || 0;
 
   return (
     <ConsoleAmbientBackground>
@@ -315,18 +341,18 @@ export default function SprintCommandCenterScreen() {
             style={[
               styles.topBar,
               {
-                backgroundColor: isDark ? 'rgba(24, 24, 34, 0.75)' : 'rgba(255, 255, 255, 0.85)',
-                borderColor: colors.clayBorderColor,
+                backgroundColor: isDark ? 'rgba(45, 12, 18, 0.88)' : 'rgba(255, 247, 247, 0.96)',
+                borderColor: isDark ? 'rgba(239, 68, 68, 0.42)' : 'rgba(220, 38, 38, 0.25)',
               },
               clayStyle(clayShadows.clay),
             ]}
           >
             <View style={styles.brand}>
               <View style={styles.brandTitleRow}>
-                <View style={[styles.zapBadge, { backgroundColor: isDark ? 'rgba(10, 132, 255, 0.15)' : 'rgba(0, 122, 255, 0.1)' }]}>
-                  <Zap size={16} color={colors.primary} />
+                <View style={[styles.zapBadge, { backgroundColor: isDark ? 'rgba(239, 68, 68, 0.18)' : 'rgba(220, 38, 38, 0.1)' }]}>
+                  <Zap size={16} color={colors.error} />
                 </View>
-                <Text style={[styles.brandH1, { color: colors.textPrimary }]}>NexSyrus + SchoolIMS</Text>
+                <Text style={[styles.brandH1, { color: colors.textPrimary }]}>NexSyrus RED ALERT</Text>
                 <View
                   style={[
                     styles.deadlineTag,
@@ -337,11 +363,15 @@ export default function SprintCommandCenterScreen() {
                   ]}
                 >
                   <Sparkles size={11} color={colors.error} style={{ marginRight: 3 }} />
-                  <Text style={[styles.deadlineTagText, { color: colors.error }]}>Target: Oct 1, 2026</Text>
+                  <Text style={[styles.deadlineTagText, { color: colors.error }]}>10 DAYS</Text>
                 </View>
               </View>
               <Text style={[styles.brandP, { color: colors.textSecondary }]}>
-                11-Day Rapid Sprint Cockpit — 100 Mission-Critical Deliverables
+                100 hard deliverables. 4 owners. Technical work belongs only to the Tech Lead. No task closes without evidence.
+              </Text>
+              <Text style={[styles.operatingRule, { color: isDark ? '#FECACA' : '#991B1B' }]}>
+                <Text style={{ fontWeight: '800' }}>Operating rule: </Text>
+                {definition?.operating_rule || 'Every task must end in an artifact, validated decision, logged activity, working build, or measurable result.'}
               </Text>
             </View>
 
@@ -360,7 +390,7 @@ export default function SprintCommandCenterScreen() {
                       styles.progressBarFill,
                       {
                         width: `${progressPct}%`,
-                        backgroundColor: colors.primary,
+                        backgroundColor: colors.error,
                       },
                     ]}
                   />
@@ -372,6 +402,16 @@ export default function SprintCommandCenterScreen() {
                 <Text style={[styles.metricVal, { color: colors.textPrimary }]}>
                   {doneCount} <Text style={{ color: colors.textTertiary, fontSize: 13, fontWeight: '600' }}>/ {totalCount}</Text>
                 </Text>
+              </View>
+
+              <View style={styles.metricBox}>
+                <Text style={[styles.metricLbl, { color: colors.textSecondary }]}>In motion</Text>
+                <Text style={[styles.metricVal, { color: isDark ? '#38BDF8' : '#0369A1' }]}>{doingCount}</Text>
+              </View>
+
+              <View style={styles.metricBox}>
+                <Text style={[styles.metricLbl, { color: colors.textSecondary }]}>Blocked</Text>
+                <Text style={[styles.metricVal, { color: colors.error }]}>{blockedCount}</Text>
               </View>
             </View>
 
@@ -509,7 +549,7 @@ export default function SprintCommandCenterScreen() {
                     },
                   ]}
                 >
-                  War Room (Day)
+                  Day View
                 </Text>
               </Pressable>
               <Pressable
@@ -531,7 +571,7 @@ export default function SprintCommandCenterScreen() {
                     },
                   ]}
                 >
-                  All 100 Tasks
+                  All Deliverables
                 </Text>
               </Pressable>
             </View>
@@ -541,8 +581,9 @@ export default function SprintCommandCenterScreen() {
           {currentView === 'room' && currentDay && (
             <View
               style={[
-                styles.dayBrief,
-                {
+              styles.dayBrief,
+              !isLargeScreen && ({ gridTemplateColumns: '1fr' } as any),
+              {
                   backgroundColor: isDark ? 'rgba(24, 24, 34, 0.75)' : 'rgba(255, 255, 255, 0.9)',
                   borderColor: colors.clayBorderColor,
                 },
@@ -670,7 +711,7 @@ export default function SprintCommandCenterScreen() {
 
               <View style={styles.filterRow}>
                 <Text style={[styles.filterLbl, { color: colors.textSecondary }]}>Role:</Text>
-                {(['all', 'tech', 'acad', 'content', 'sales'] as const).map((r) => (
+                {(['all', 'tech', 'curr', 'sales', 'scale'] as const).map((r) => (
                   <Pressable
                     key={r}
                     onPress={() => setSelectedRoleFilter(r)}
@@ -694,7 +735,7 @@ export default function SprintCommandCenterScreen() {
                         },
                       ]}
                     >
-                      {r === 'all' ? 'All Roles' : roleThemes[r].name.split(' ')[0]}
+                      {r === 'all' ? 'All Owners' : roleThemes[r].shortName}
                     </Text>
                   </Pressable>
                 ))}
@@ -746,7 +787,7 @@ export default function SprintCommandCenterScreen() {
               gap: 14,
             } as any}
           >
-            {(['tech', 'acad', 'content', 'sales'] as SprintRole[]).map((role) => {
+            {(['tech', 'curr', 'sales', 'scale'] as SprintRole[]).map((role) => {
               const rMeta = roleThemes[role];
               const rTasks = filteredTasks.filter((t) => t.role === role);
               const rDone = rTasks.filter((t) => t.status === 'done').length;
@@ -774,17 +815,22 @@ export default function SprintCommandCenterScreen() {
                   >
                     <View style={styles.roleInfo}>
                       <Text style={{ fontSize: 14 }}>{rMeta.icon}</Text>
-                      <View
-                        style={[
-                          styles.roleBadge,
-                          {
-                            backgroundColor: rMeta.bg,
-                            borderColor: rMeta.border,
-                          },
-                        ]}
-                      >
-                        <Text style={[styles.roleBadgeText, { color: rMeta.color }]}>
-                          {rMeta.name}
+                      <View style={styles.roleCopy}>
+                        <View
+                          style={[
+                            styles.roleBadge,
+                            {
+                              backgroundColor: rMeta.bg,
+                              borderColor: rMeta.border,
+                            },
+                          ]}
+                        >
+                          <Text style={[styles.roleBadgeText, { color: rMeta.color }]}>
+                            {rMeta.name}
+                          </Text>
+                        </View>
+                        <Text style={[styles.roleSubtitle, { color: colors.textTertiary }]} numberOfLines={2}>
+                          {rMeta.subtitle}
                         </Text>
                       </View>
                     </View>
@@ -793,7 +839,12 @@ export default function SprintCommandCenterScreen() {
                     </Text>
                   </View>
 
-                  <View style={styles.taskStack}>
+                  <View
+                    style={[
+                      styles.taskStack,
+                      currentView === 'matrix' && IS_WEB && ({ maxHeight: '70vh', overflowY: 'auto' } as any),
+                    ]}
+                  >
                     {rTasks.length === 0 ? (
                       <Text style={[styles.emptyColText, { color: colors.textTertiary }]}>
                         No scheduled tasks for this day.
@@ -1012,14 +1063,14 @@ export default function SprintCommandCenterScreen() {
                 {/* Notes & Deliverable Links */}
                 <View style={styles.fieldWrap}>
                   <Text style={[styles.fieldLbl, { color: colors.textSecondary }]}>
-                    Deliverable Proof / Notes / PR Link:
+                    Deliverable Proof / Notes / PR Link{editingTask.status === 'done' ? ' (required to close)' : ''}:
                   </Text>
                   <TextInput
                     style={[
                       styles.fieldInput,
                       {
                         backgroundColor: isDark ? '#0F0F14' : '#F5F5F7',
-                        borderColor: colors.border,
+                        borderColor: editingTask.status === 'done' && !editNotes.trim() ? colors.error : colors.border,
                         color: colors.textPrimary,
                         height: 70,
                       },
@@ -1219,7 +1270,7 @@ function TaskCard({ task, isDark, colors, clayShadows, statusColor, onSetStatus,
       {/* Card Actions Footer: orig timeline + native select */}
       <View style={[styles.cardActions, { borderTopColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }]}>
         <Text style={[styles.origDay, { color: colors.textTertiary }]}>
-          {task.orig_day_label || `Day ${task.day}`}
+          {task.category || task.orig_day_label || `Day ${task.day}`}
         </Text>
 
         {IS_WEB ? (
@@ -1309,6 +1360,9 @@ const styles = StyleSheet.create({
   },
   brand: {
     gap: 4,
+    flex: 1,
+    minWidth: 300,
+    maxWidth: 580,
   },
   brandTitleRow: {
     flexDirection: 'row',
@@ -1342,11 +1396,18 @@ const styles = StyleSheet.create({
   },
   brandP: {
     fontSize: 12,
+    lineHeight: 18,
+  },
+  operatingRule: {
+    fontSize: 10,
+    lineHeight: 15,
+    marginTop: 4,
   },
   topMetrics: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 20,
+    flexWrap: 'wrap',
   },
   metricBox: {
     alignItems: 'flex-end',
@@ -1375,6 +1436,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
     alignItems: 'center',
+    flexWrap: 'wrap',
   },
   btn: {
     borderWidth: 1,
@@ -1562,23 +1624,34 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    gap: 8,
   },
   roleInfo: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: 8,
+    flex: 1,
+  },
+  roleCopy: {
+    flex: 1,
+    gap: 5,
   },
   roleBadge: {
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 4,
     borderWidth: 1,
+    alignSelf: 'flex-start',
   },
   roleBadgeText: {
     fontSize: 10,
     fontWeight: '800',
     textTransform: 'uppercase',
+  },
+  roleSubtitle: {
+    fontSize: 10,
+    lineHeight: 14,
   },
   roleProgress: {
     fontSize: 11,
@@ -1663,7 +1736,9 @@ const styles = StyleSheet.create({
   },
   origDay: {
     fontSize: 10,
-    fontStyle: 'italic',
+    fontWeight: '600',
+    flex: 1,
+    marginRight: 8,
   },
   statusPillNative: {
     borderWidth: 1,

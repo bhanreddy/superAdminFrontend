@@ -9,6 +9,8 @@ import {
 import { superAdminApi } from '../../../src/services/apiService';
 import { School as SchoolType } from '../../../src/types/school';
 import { useTheme, clayStyle } from '../../../src/contexts/ThemeContext';
+import { useAuth } from '../../../src/hooks/useAuth';
+import { PERMISSIONS } from '../../../src/constants/rbac';
 import { Badge } from '../../../src/components/ui/Badge';
 import { Button } from '../../../src/components/ui/Button';
 import { DataTable, Column } from '../../../src/components/ui/DataTable';
@@ -143,6 +145,7 @@ function StatCard({ title, value, badge, icon, accent, description, compact = fa
 /* ─── Main ────────────────────────────────────────────────────────────────── */
 export default function SchoolsListScreen() {
   const { colors, isDark, clayShadows } = useTheme();
+  const { can } = useAuth();
   const { width } = useWindowDimensions();
   const [schools, setSchools] = useState<SchoolType[]>([]);
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending_build' | 'live' | 'suspended'>('all');
@@ -326,10 +329,12 @@ export default function SchoolsListScreen() {
           )}
           <KebabMenu items={[
             { label: 'View Details', icon: <Eye size={14} color={colors.textSecondary} />, onPress: () => goToSchool(item) },
-            { label: 'Build Config', icon: <Terminal size={14} color={colors.textSecondary} />, onPress: () => goToBuildConfig(item) },
-            { label: 'App Config', icon: <Settings size={14} color={colors.textSecondary} />, onPress: () => goToAppConfig(item) },
-            { label: item.is_active ? 'Deactivate' : 'Activate', icon: <Power size={14} color={item.is_active ? colors.error : colors.success} />, onPress: () => handleToggle(item), danger: item.is_active },
-            {
+            ...((can(PERMISSIONS.SCHOOLS_UPDATE_ASSIGNED) || can(PERMISSIONS.SCHOOLS_UPDATE_ALL)) ? [
+              { label: 'Build Config', icon: <Terminal size={14} color={colors.textSecondary} />, onPress: () => goToBuildConfig(item) },
+              { label: 'App Config', icon: <Settings size={14} color={colors.textSecondary} />, onPress: () => goToAppConfig(item) },
+              { label: item.is_active ? 'Deactivate' : 'Activate', icon: <Power size={14} color={item.is_active ? colors.error : colors.success} />, onPress: () => handleToggle(item), danger: item.is_active },
+            ] : []),
+            ...(can(PERMISSIONS.SCHOOLS_DELETE) ? [{
               label: 'Delete School',
               icon: <Trash2 size={14} color={colors.error} />,
               onPress: () => {
@@ -337,7 +342,7 @@ export default function SchoolsListScreen() {
                 setDeleteModalVisible(true);
               },
               danger: true
-            }
+            }] : [])
           ]} />
         </View>
       ),
@@ -356,13 +361,15 @@ export default function SchoolsListScreen() {
           }
           subtitleColor={colors.textSecondary}
           rightAction={
-            <Button
-              title="Add School"
-              leftIcon={<Plus size={15} color="#fff" strokeWidth={2.5} />}
-              size="sm"
-              style={[st.addButton, isPhone && st.addButtonPhone]}
-              onPress={() => router.push('/(app)/schools/add')}
-            />
+            can(PERMISSIONS.SCHOOLS_CREATE) ? (
+              <Button
+                title="Add School"
+                leftIcon={<Plus size={15} color="#fff" strokeWidth={2.5} />}
+                size="sm"
+                style={[st.addButton, isPhone && st.addButtonPhone]}
+                onPress={() => router.push('/(app)/schools/add')}
+              />
+            ) : undefined
           }
         />
 

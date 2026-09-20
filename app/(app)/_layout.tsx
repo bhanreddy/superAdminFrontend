@@ -1,6 +1,7 @@
 import React from 'react';
 import { Stack } from 'expo-router';
 import { DashboardLayout } from '../../src/components/layout/DashboardLayout';
+import { AppRouteGuard } from '../../src/components/auth/AppRouteGuard';
 
 /**
  * The (app) group layout.
@@ -14,7 +15,9 @@ import { DashboardLayout } from '../../src/components/layout/DashboardLayout';
 export default function AppLayout() {
   return (
     <DashboardLayout>
-      <Stack screenOptions={{ headerShown: false, animation: 'none', contentStyle: { backgroundColor: 'transparent' } }} />
+      <AppRouteGuard>
+        <Stack screenOptions={{ headerShown: false, animation: 'none', contentStyle: { backgroundColor: 'transparent' } }} />
+      </AppRouteGuard>
     </DashboardLayout>
   );
 }

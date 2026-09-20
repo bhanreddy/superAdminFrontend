@@ -9,7 +9,16 @@ import React, {
 } from 'react';
 import { authService } from '../services/authService';
 import { getStoredAccessToken, clearTokens } from '../services/apiService';
+import { setAuthInvalidationHandler } from '../api/superAdminClient';
 import { AuthState } from '../types/auth';
+import {
+  Role,
+  ROLE_LABELS,
+  isFounderOrSuperAdmin,
+  isSalesRole,
+  isImplementationRole,
+  isSupportRole,
+} from '../constants/rbac';
 import { useCluster } from './ClusterContext';
 
 const initialState: AuthState = {
@@ -19,6 +28,12 @@ const initialState: AuthState = {
   isSuperAdmin: false,
   currentAdmin: null,
   founder: null,
+  internalUser: null,
+  role: null,
+  employeeId: null,
+  permissions: [],
+  assignedSchools: [],
+  status: null,
 };
 
 const loggedOutState: AuthState = {
@@ -28,11 +43,24 @@ const loggedOutState: AuthState = {
   isSuperAdmin: false,
   currentAdmin: null,
   founder: null,
+  internalUser: null,
+  role: null,
+  employeeId: null,
+  permissions: [],
+  assignedSchools: [],
+  status: null,
 };
 
-type AuthContextValue = AuthState & {
+export type AuthContextValue = AuthState & {
   signOut: () => Promise<void>;
   refreshSessionProfile: () => Promise<void>;
+  can: (permission: string) => boolean;
+  canAccessSchool: (schoolId: number | string) => boolean;
+  isFounder: boolean;
+  isSales: boolean;
+  isImplementation: boolean;
+  isSupport: boolean;
+  roleLabel: string;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -43,42 +71,55 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const mountedRef = useRef(true);
 
   /**
-   * Validate an existing access token by calling the backend /verify then /me
-   * endpoints.  Returns null when the token is invalid / expired.
+   * Validate an existing access token by calling the backend /auth/me
+   * endpoint. Returns null when the token is invalid / expired or user deactivated.
    */
   const validateAndBuildState = useCallback(
     async (accessToken: string): Promise<AuthState | null> => {
       try {
-        // isSuperAdmin calls GET /api/super-admin/verify via authService
-        const { isSuperAdmin, admin } = await authService.isSuperAdmin('', '');
-        const founder = await authService.fetchFounderByUserId('');
-        const founderOk = founder && founder.is_active === true;
-
-        if (!isSuperAdmin && !founderOk) {
-          return null; // not authorized
+        const profile = await authService.getProfile();
+        if (!profile || !profile.user) {
+          return null;
         }
 
-        const userObj = admin
-          ? {
-              id: admin.id,
-              email: admin.email,
-              user_metadata: { full_name: admin.full_name },
-            }
-          : founder
-          ? {
-              id: founder.user_id || founder.id,
-              email: founder.email || '',
-              user_metadata: { full_name: founder.full_name },
-            }
-          : null;
+        const rawUser = profile.user;
+        const status = rawUser.status || 'ACTIVE';
+        if (status !== 'ACTIVE') {
+          return null;
+        }
+
+        const role = (profile.role || rawUser.role || null) as Role | null;
+        if (!role) return null;
+        const employeeId = rawUser.employeeId || rawUser.employee_id || null;
+        const permissions = Array.isArray(profile.permissions) ? profile.permissions : [];
+        const assignedSchools = Array.isArray(profile.assignedSchools) ? profile.assignedSchools : [];
+        const isFounder = isFounderOrSuperAdmin(role);
 
         return {
-          user: userObj as any,
-          session: { access_token: accessToken, user: userObj } as any,
+          user: {
+            id: rawUser.id,
+            email: rawUser.email,
+            user_metadata: { full_name: rawUser.fullName || rawUser.full_name },
+          },
+          session: {
+            access_token: accessToken,
+            user: rawUser,
+          },
           loading: false,
-          isSuperAdmin,
-          currentAdmin: admin,
-          founder: founderOk ? founder : null,
+          isSuperAdmin: isFounder,
+          currentAdmin: profile.admin || {
+            id: rawUser.id,
+            email: rawUser.email,
+            full_name: rawUser.fullName || rawUser.full_name,
+            is_active: true,
+          } as any,
+          founder: profile.founder,
+          internalUser: rawUser,
+          role,
+          employeeId,
+          permissions,
+          assignedSchools,
+          status,
         };
       } catch {
         return null;
@@ -87,7 +128,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [],
   );
 
-  /** Restore session from the locally stored JWT.  Called on mount. */
+  /** Restore session from the locally stored JWT. Called on mount. */
   const restoreSession = useCallback(async () => {
     const token = await getStoredAccessToken();
     if (!token) {
@@ -101,7 +142,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (resolved) {
       setState(resolved);
     } else {
-      // Token was invalid / user not authorized – clean up silently
       await clearTokens();
       setState(loggedOutState);
     }
@@ -113,7 +153,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [restoreSession]);
 
   const signOut = useCallback(async () => {
-    await clearTokens();
+    await authService.signOut();
     setState(loggedOutState);
   }, []);
 
@@ -126,18 +166,72 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, [restoreSession, selectedCluster?.cluster_id]);
 
+  useEffect(() => {
+    setAuthInvalidationHandler(() => {
+      if (mountedRef.current) setState(loggedOutState);
+    });
+    return () => setAuthInvalidationHandler(null);
+  }, []);
+
+  // Centralized permission check helper: can("students.import")
+  const can = useCallback(
+    (permission: string): boolean => {
+      if (!state.role) return false;
+      if (isFounderOrSuperAdmin(state.role)) return true;
+      return state.permissions.includes(permission);
+    },
+    [state.role, state.permissions],
+  );
+
+  // Centralized school tenant access check: canAccessSchool(schoolId)
+  const canAccessSchool = useCallback(
+    (schoolId: number | string): boolean => {
+      if (!state.role) return false;
+      if (isFounderOrSuperAdmin(state.role) || state.permissions.includes('schools.read.all')) {
+        return true;
+      }
+      return state.assignedSchools.includes(Number(schoolId));
+    },
+    [state.role, state.permissions, state.assignedSchools],
+  );
+
+  const isFounder = useMemo(() => isFounderOrSuperAdmin(state.role), [state.role]);
+  const isSales = useMemo(() => isSalesRole(state.role), [state.role]);
+  const isImplementation = useMemo(() => isImplementationRole(state.role), [state.role]);
+  const isSupport = useMemo(() => isSupportRole(state.role), [state.role]);
+  const roleLabel = useMemo(
+    () => (state.role ? ROLE_LABELS[state.role] || state.role : 'Authorized User'),
+    [state.role],
+  );
+
   const value = useMemo<AuthContextValue>(
     () => ({
       ...state,
       signOut,
       refreshSessionProfile,
+      can,
+      canAccessSchool,
+      isFounder,
+      isSales,
+      isImplementation,
+      isSupport,
+      roleLabel,
     }),
-    [state, signOut, refreshSessionProfile],
+    [
+      state,
+      signOut,
+      refreshSessionProfile,
+      can,
+      canAccessSchool,
+      isFounder,
+      isSales,
+      isImplementation,
+      isSupport,
+      roleLabel,
+    ],
   );
 
-  return (
-    <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth(): AuthContextValue {

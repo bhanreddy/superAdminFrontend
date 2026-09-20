@@ -1,7 +1,24 @@
 import { SuperAdmin } from './superAdmin';
 import { FounderRow } from './founder';
+import { Role } from '../constants/rbac';
 
-// Minimal local types replacing @supabase/supabase-js Session & User
+export interface InternalUser {
+  id: string;
+  employee_id: string;
+  employeeId?: string;
+  full_name: string;
+  fullName?: string;
+  email: string;
+  phone?: string | null;
+  role: Role;
+  status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | 'INVITED';
+  manager_id?: string | null;
+  territory?: string | null;
+  created_at?: string;
+  updated_at?: string;
+  last_login?: string | null;
+}
+
 export interface User {
   id: string;
   email?: string;
@@ -23,4 +40,10 @@ export interface AuthState {
   isSuperAdmin: boolean;
   currentAdmin: SuperAdmin | null;
   founder: FounderRow | null;
+  internalUser: InternalUser | null;
+  role: Role | null;
+  employeeId: string | null;
+  permissions: string[];
+  assignedSchools: number[];
+  status: string | null;
 }

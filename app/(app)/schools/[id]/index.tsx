@@ -51,6 +51,8 @@ import { useTheme } from '../../../../src/contexts/ThemeContext';
 import { INPUT_PLACEHOLDER_COLOR } from '../../../../src/theme/styles';
 import { Button } from '../../../../src/components/ui/Button';
 import { Badge } from '../../../../src/components/ui/Badge';
+import { useAuth } from '../../../../src/hooks/useAuth';
+import { PERMISSIONS } from '../../../../src/constants/rbac';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -122,10 +124,10 @@ const TABS: { id: TabId; label: string; icon: React.FC<any> }[] = [
   { id: 'system', label: 'System', icon: Zap },
 ];
 
-function TabBar({ active, onChange, colors }: { active: TabId; onChange: (t: TabId) => void; colors: any }) {
+function TabBar({ active, onChange, colors, tabs }: { active: TabId; onChange: (t: TabId) => void; colors: any; tabs: typeof TABS }) {
   return (
     <View style={[tabStyles.row, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
-      {TABS.map(tab => {
+      {tabs.map(tab => {
         const isActive = tab.id === active;
         const Icon = tab.icon;
         return (
@@ -344,6 +346,7 @@ const hcStyles = StyleSheet.create({
 
 export default function SchoolDetailScreen() {
   const { colors, isDark, toggleTheme } = useTheme();
+  const { can } = useAuth();
   const { id } = useLocalSearchParams();
   const rawId = Array.isArray(id) ? id[0] : id;
   const schoolId = Number(rawId);
@@ -525,6 +528,7 @@ export default function SchoolDetailScreen() {
       </Animated.View>
 
       {/* Student Management */}
+      {can(PERMISSIONS.STUDENTS_IMPORT) && (
       <Animated.View entering={FadeInDown.delay(100).springify()} style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <SectionHeader icon={GraduationCap} title="Student Management" subtitle="Add or modify student data" color={colors.primary} colors={colors} />
         <Button
@@ -534,6 +538,7 @@ export default function SchoolDetailScreen() {
           style={{ marginTop: 10, alignSelf: 'flex-start' }}
         />
       </Animated.View>
+      )}
 
       {/* Status card */}
       <Animated.View entering={FadeInDown.delay(120).springify()} style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -547,39 +552,39 @@ export default function SchoolDetailScreen() {
         </View>
 
         <View style={styles.actionRow}>
-          <Button
+          {can(PERMISSIONS.BUILDS_READ) && <Button
             title="Build Config"
             variant="secondary"
             onPress={() => router.push(`/(app)/schools/${school.id}/build-config` as any)}
             style={styles.halfBtn}
-          />
-          <Button
+          />}
+          {can(PERMISSIONS.CONFIGS_READ) && <Button
             title="Setup Guide"
             variant="secondary"
             onPress={() => router.push(`/(app)/schools/${school.id}/setup-guide` as any)}
             style={styles.halfBtn}
-          />
-          <Button
+          />}
+          {can(PERMISSIONS.CONFIGS_MODIFY) && <Button
             title="App Config"
             variant="secondary"
             onPress={() => router.push(`/(app)/schools/${school.id}/app-config` as any)}
             style={styles.halfBtn}
-          />
-          <Button
+          />}
+          {can(PERMISSIONS.CONFIGS_MODIFY) && <Button
             title="Feature Flags"
             variant="secondary"
             onPress={() => router.push(`/(app)/schools/${school.id}/features` as any)}
             style={styles.halfBtn}
-          />
+          />}
         </View>
 
-        <Button
+        {(can(PERMISSIONS.SCHOOLS_UPDATE_ASSIGNED) || can(PERMISSIONS.SCHOOLS_UPDATE_ALL)) && <Button
           title={school.is_active ? 'Disable School' : 'Enable School'}
           variant={school.is_active ? 'danger' : 'primary'}
           onPress={handleToggleActive}
           loading={actionLoading}
           style={{ marginTop: 10 }}
-        />
+        />}
       </Animated.View>
     </Animated.View>
   );
@@ -742,7 +747,12 @@ export default function SchoolDetailScreen() {
       </View>
 
       {/* Tabs */}
-      <TabBar active={activeTab} onChange={setActiveTab} colors={colors} />
+      <TabBar
+        active={activeTab}
+        onChange={setActiveTab}
+        colors={colors}
+        tabs={can(PERMISSIONS.CONFIGS_MODIFY) ? TABS : TABS.filter((tab) => tab.id === 'overview')}
+      />
 
       {/* Content */}
       <ScrollView

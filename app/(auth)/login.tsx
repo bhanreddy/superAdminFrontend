@@ -31,7 +31,7 @@ function asErrorText(value: unknown, fallback: string): string {
 }
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -44,9 +44,12 @@ export default function LoginScreen() {
     };
   }, []);
 
-  const handleLogin = async () => {
-    if (!email.trim() || !password) {
-      setErrorMsg('Please enter both email and password.');
+  const handleLogin = async (overrideId?: string, overridePwd?: string) => {
+    const idToUse = (overrideId || identifier).trim();
+    const pwdToUse = overridePwd || password;
+
+    if (!idToUse || !pwdToUse) {
+      setErrorMsg('Please enter both Email / Employee ID and password.');
       return;
     }
 
@@ -54,26 +57,17 @@ export default function LoginScreen() {
     setErrorMsg('');
 
     try {
-      const { user, session, error, isSuperAdmin, founder } = await authService.signIn(
-        email.trim(),
-        password,
-      );
+      const res = await authService.signIn(idToUse, pwdToUse);
 
       if (!mounted.current) return;
 
-      if (error) {
-        setErrorMsg(asErrorText(error.message ?? error, 'Login failed.'));
+      if (res.error) {
+        setErrorMsg(asErrorText(res.error.message ?? res.error, 'Login failed.'));
         return;
       }
 
-      if (user && session) {
-        const founderOk = Boolean(founder && founder.is_active);
-        if (!isSuperAdmin && !founderOk) {
-          await authService.signOut();
-          if (mounted.current) {
-            setErrorMsg('Access denied. Super admin or active founder access required.');
-          }
-        } else if (mounted.current) {
+      if (res.user && res.session) {
+        if (mounted.current) {
           await refreshSessionProfile();
         }
       }
@@ -90,7 +84,7 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.outerContainer}>
-      {/* Static ambient base — Mode B glass world */}
+      {/* Ambient gradient base */}
       <LinearGradient
         colors={['#07080F', '#0C1020', '#0A0B12']}
         start={{ x: 0.1, y: 0 }}
@@ -98,7 +92,6 @@ export default function LoginScreen() {
         style={StyleSheet.absoluteFill}
       />
 
-      {/* Soft ambient orbs — painted once, never animated */}
       <View pointerEvents="none" style={styles.glowOrb1} />
       <View pointerEvents="none" style={styles.glowOrb2} />
       <View pointerEvents="none" style={styles.glowOrb3} />
@@ -114,7 +107,7 @@ export default function LoginScreen() {
           bounces={false}
         >
           <View style={styles.content}>
-            {/* Brand */}
+            {/* Header / Brand */}
             <Animated.View entering={FadeInDown.duration(320)} style={styles.header}>
               <View style={styles.logoShell}>
                 <LinearGradient
@@ -134,7 +127,7 @@ export default function LoginScreen() {
               </View>
 
               <Text style={styles.title}>NexSyrus</Text>
-              <Text style={styles.subtitle}>Super Admin Console</Text>
+              <Text style={styles.subtitle}>SuperAdmin Management Console</Text>
 
               <LinearGradient
                 colors={['transparent', 'rgba(10, 132, 255, 0.55)', 'transparent']}
@@ -144,7 +137,7 @@ export default function LoginScreen() {
               />
             </Animated.View>
 
-            {/* Fake-glass login card */}
+            {/* Glass Login Card */}
             <Animated.View entering={FadeInUp.duration(340).delay(80)} style={styles.formCard}>
               <LinearGradient
                 colors={['rgba(255,255,255,0.12)', 'rgba(255,255,255,0.03)']}
@@ -155,22 +148,19 @@ export default function LoginScreen() {
               />
 
               <View style={styles.formBody}>
-                <Text style={styles.formTitle}>Sign in to continue</Text>
+                <Text style={styles.formTitle}>Sign in to your role dashboard</Text>
 
                 <Input
                   tone="dark"
-                  label="Email Address"
-                  placeholder="admin@nexsyrus.com"
-                  value={email}
+                  label="Email / Phone / Employee ID"
+                  placeholder="e.g. admin@nexsyrus.com or SE-011"
+                  value={identifier}
                   onChangeText={(t) => {
-                    setEmail(t);
+                    setIdentifier(t);
                     if (errorMsg) setErrorMsg('');
                   }}
-                  keyboardType="email-address"
                   autoCapitalize="none"
                   autoCorrect={false}
-                  autoComplete="email"
-                  textContentType="emailAddress"
                   returnKeyType="next"
                 />
 
@@ -187,7 +177,7 @@ export default function LoginScreen() {
                   autoComplete="password"
                   textContentType="password"
                   returnKeyType="go"
-                  onSubmitEditing={handleLogin}
+                  onSubmitEditing={() => handleLogin()}
                 />
 
                 {errorMsg ? (
@@ -199,18 +189,18 @@ export default function LoginScreen() {
                 <Button
                   title="Sign In"
                   size="lg"
-                  onPress={handleLogin}
+                  onPress={() => handleLogin()}
                   loading={loading}
                   style={styles.button}
                 />
 
-                <Text style={styles.footerText}>Authorized access only</Text>
+                <Text style={styles.footerText}>Single Source of Truth · Multi-Role RBAC</Text>
               </View>
             </Animated.View>
 
             <Animated.View entering={FadeIn.delay(220).duration(280)} style={styles.bottomBrand}>
               <View style={styles.bottomDot} />
-              <Text style={styles.bottomBrandText}>Powered by NexSyrus</Text>
+              <Text style={styles.bottomBrandText}>Powered by NexSyrus Cloud</Text>
             </Animated.View>
           </View>
         </ScrollView>
@@ -234,12 +224,12 @@ const styles = StyleSheet.create({
   },
   content: {
     width: '100%',
-    maxWidth: IS_WEB ? 440 : undefined,
+    maxWidth: IS_WEB ? 460 : undefined,
     alignSelf: 'center',
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 24,
-    paddingVertical: 40,
+    paddingVertical: 36,
   },
 
   glowOrb1: {
@@ -272,13 +262,13 @@ const styles = StyleSheet.create({
 
   header: {
     alignItems: 'center',
-    marginBottom: 28,
+    marginBottom: 24,
   },
   logoShell: {
-    width: 88,
-    height: 88,
-    borderRadius: 26,
-    marginBottom: 18,
+    width: 84,
+    height: 84,
+    borderRadius: 24,
+    marginBottom: 16,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.16)',
@@ -299,35 +289,35 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
   },
   logoInner: {
-    width: 72,
-    height: 72,
-    borderRadius: 20,
+    width: 68,
+    height: 68,
+    borderRadius: 18,
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
   },
   logoImage: {
-    width: 44,
-    height: 44,
+    width: 42,
+    height: 42,
   },
   title: {
-    fontSize: 34,
+    fontSize: 32,
     fontWeight: '800',
     color: colors.textPrimary,
     letterSpacing: -0.6,
   },
   subtitle: {
-    fontSize: 13,
+    fontSize: 12.5,
     fontWeight: '600',
     color: colors.primaryHover,
-    marginTop: 8,
-    letterSpacing: 1.8,
+    marginTop: 6,
+    letterSpacing: 1.6,
     textTransform: 'uppercase',
   },
   decorLine: {
     width: 96,
     height: 2,
-    marginTop: 16,
+    marginTop: 14,
     borderRadius: 2,
   },
 
@@ -337,7 +327,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.14)',
-    backgroundColor: 'rgba(16, 18, 30, 0.78)',
+    backgroundColor: 'rgba(16, 18, 30, 0.82)',
     ...(Platform.OS === 'web'
       ? { boxShadow: '0 24px 64px rgba(0,0,0,0.45)' }
       : {
@@ -352,15 +342,15 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
   },
   formBody: {
-    paddingHorizontal: 28,
-    paddingTop: 28,
-    paddingBottom: 26,
+    paddingHorizontal: 26,
+    paddingTop: 26,
+    paddingBottom: 24,
   },
   formTitle: {
-    fontSize: 15,
+    fontSize: 14.5,
     fontWeight: '500',
-    color: 'rgba(245,245,247,0.72)',
-    marginBottom: 22,
+    color: 'rgba(245,245,247,0.75)',
+    marginBottom: 20,
     textAlign: 'center',
     letterSpacing: 0.2,
   },
@@ -384,19 +374,20 @@ const styles = StyleSheet.create({
     marginTop: 4,
     width: '100%',
   },
+
   footerText: {
-    fontSize: 12,
+    fontSize: 11.5,
     fontWeight: '500',
-    color: 'rgba(245,245,247,0.48)',
+    color: 'rgba(245,245,247,0.4)',
     textAlign: 'center',
-    marginTop: 18,
-    letterSpacing: 0.4,
+    marginTop: 20,
+    letterSpacing: 0.3,
   },
 
   bottomBrand: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 28,
+    marginTop: 24,
     gap: 8,
   },
   bottomDot: {

@@ -14,7 +14,7 @@ import AppSplash from '../src/components/ui/AppSplash';
 
 function RootLayoutInner() {
   const { colors, isDark } = useTheme();
-  const { session, loading, isSuperAdmin, founder } = useAuth();
+  const { session, loading, isSuperAdmin, founder, role, status } = useAuth();
 
   // Expo Router wraps screens in a React Navigation navigator that paints its own
   // background from the *navigation* theme (default: light rgb(242,242,242)). Left
@@ -29,7 +29,8 @@ function RootLayoutInner() {
   const router = useRouter();
   const [splashDone, setSplashDone] = useState(false);
 
-  const hasAppAccess = Boolean(isSuperAdmin || founder);
+  // Any authenticated active internal role has access
+  const hasAppAccess = Boolean(session && status === 'ACTIVE' && (role || isSuperAdmin || founder));
 
   useEffect(() => {
     if (loading || !splashDone || !isClusterReady) return;

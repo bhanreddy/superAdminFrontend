@@ -34,6 +34,7 @@ import {
 import { superAdminApi, SchoolFeature } from '../../../../src/services/apiService';
 import { useFounderAuth } from '../../../../src/hooks/useFounderAuth';
 import { useAuth } from '../../../../src/hooks/useAuth';
+import { PERMISSIONS } from '../../../../src/constants/rbac';
 import { useTheme } from '../../../../src/contexts/ThemeContext';
 import { ScreenHeader } from '../../../../src/components/ui/ScreenHeader';
 import { Badge } from '../../../../src/components/ui/Badge';
@@ -88,10 +89,10 @@ export default function SchoolFeatureFlagsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const schoolId = Number(id);
-  const { isFounderOnly, isApprover } = useFounderAuth();
-  const { isSuperAdmin } = useAuth();
+  const { isApprover } = useFounderAuth();
+  const { can } = useAuth();
   const { colors, isDark } = useTheme();
-  const canWrite = isSuperAdmin || isFounderOnly; // Founder/super-admin write; Approver read-only
+  const canWrite = can(PERMISSIONS.CONFIGS_MODIFY);
 
   const [features, setFeatures] = useState<SchoolFeature[]>([]);
   const [loading, setLoading] = useState(true);
