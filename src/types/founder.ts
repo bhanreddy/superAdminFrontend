@@ -75,6 +75,7 @@ export interface EnquiryRow {
   assigned_to: string | null;
   deal_value: number | null;
   notes: string | null;
+  account_id?: string | null;
   created_at: string;
   updated_at?: string;
 }

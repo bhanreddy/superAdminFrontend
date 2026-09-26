@@ -15,7 +15,8 @@ const isConfigSection = (value: string | undefined): value is ConfigSection =>
   value === 'env' || value === 'appjson' || value === 'easjson';
 
 export default function BuildConfigScreen() {
-  const { id, section } = useLocalSearchParams<{ id: string; section?: string }>();
+  const { id, section, cluster_id: clusterParam } = useLocalSearchParams<{ id: string; section?: string; cluster_id?: string }>();
+  const clusterId = Array.isArray(clusterParam) ? clusterParam[0] : clusterParam;
   const { colors, isDark } = useTheme();
   const router = useRouter();
   const scrollRef = useRef<ScrollView>(null);
@@ -36,8 +37,8 @@ export default function BuildConfigScreen() {
     async function loadData() {
       try {
         const [configData, schoolData] = await Promise.all([
-          getBuildConfig(id),
-          superAdminApi.getSchool(parseInt(id, 10))
+          getBuildConfig(id, clusterId),
+          superAdminApi.getSchool(parseInt(id, 10), clusterId)
         ]);
         setConfig(configData);
         setSchool(schoolData);
@@ -50,7 +51,7 @@ export default function BuildConfigScreen() {
       }
     }
     loadData();
-  }, [id]);
+  }, [id, clusterId]);
 
   const targetSection = isConfigSection(section) ? section : undefined;
 

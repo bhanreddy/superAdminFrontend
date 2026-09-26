@@ -7,7 +7,6 @@ import { Button } from '../../../src/components/ui/Button';
 import { useTheme } from '../../../src/contexts/ThemeContext';
 import { superAdminApi } from '../../../src/services/apiService';
 import { crmService } from '../../../src/services/crmService';
-import { updateEnquiry } from '../../../src/services/founderSupabase';
 import { getClusterAssignment } from '../../../src/services/schoolOnboardingService';
 import type { ClusterConfig } from '../../../src/config/clusters';
 import { useToast } from '../../../src/components/ui/Toast';
@@ -96,6 +95,8 @@ export default function AddSchoolScreen() {
 
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [handoff, setHandoff] = useState<any>(null);
+  const idempotencyKey = enquiryId ? `school-onboard-${enquiryId}` : '';
 
   const handleCreate = async () => {
     if (!name || !code) {
@@ -118,6 +119,41 @@ export default function AddSchoolScreen() {
     setErrorMsg('');
 
     try {
+      if (enquiryId) {
+        const operation = await crmService.startOnboarding({
+          idempotency_key: idempotencyKey,
+          enquiry_id: enquiryId,
+          account_id: accountId || undefined,
+          cluster_id: assignedCluster.cluster_id,
+          vertical: 'SCHOOL',
+          name,
+          code,
+          address: address || undefined,
+          logo_url: logoUrl || undefined,
+          android_package: androidPackage || undefined,
+          ios_bundle_id: iosBundleId || undefined,
+          primary_color: primaryColor || undefined,
+          admin: seedAdmin ? {
+            email: adminEmail,
+            password: adminPassword,
+            first_name: adminFirstName,
+            last_name: adminLastName,
+            gender_id: 1,
+            dob: '1990-01-01',
+          } : undefined,
+        });
+        setHandoff(operation);
+        if (operation.status === 'SUCCEEDED' && operation.target_school_id) {
+          showToast(`School handoff completed for ${name}.`, 'success', 5000);
+          router.replace(`/(app)/schools/${operation.target_school_id}/build-config?cluster_id=${encodeURIComponent(operation.cluster_id || assignedCluster.cluster_id)}` as any);
+          return;
+        }
+        const reason = operation.failure_reason || 'Onboarding is waiting to resume.';
+        setErrorMsg(reason);
+        showToast(reason, 'warning', 6000);
+        return;
+      }
+
       const newSchool = await superAdminApi.createSchool({
         name,
         code,
@@ -143,27 +179,6 @@ export default function AddSchoolScreen() {
         } catch (adminErr: any) {
           console.error('First admin creation failed after school creation:', adminErr);
           setupWarnings.push(getApiErrorMessage(adminErr, 'First admin account could not be provisioned automatically.'));
-        }
-      }
-
-      // Close the CRM loop when this school came from an accepted enquiry:
-      // link the account to the provisioned tenant and close the lead. Both are
-      // best-effort — a failure here must not block the school setup flow.
-      if (accountId) {
-        try {
-          await crmService.linkAccountToTenant(accountId, {
-            external_client_id: String(newSchool.id),
-            cluster_id: assignedCluster?.cluster_id,
-          });
-        } catch (linkErr) {
-          console.warn('CRM account link failed:', linkErr);
-        }
-      }
-      if (enquiryId) {
-        try {
-          await updateEnquiry(enquiryId, { status: 'CLOSED' });
-        } catch (closeErr) {
-          console.warn('Enquiry close failed:', closeErr);
         }
       }
 
@@ -353,6 +368,40 @@ export default function AddSchoolScreen() {
           )}
 
           {errorMsg ? <Text style={[styles.errorText, { color: colors.error }]}>{errorMsg}</Text> : null}
+          {handoff && handoff.status !== 'SUCCEEDED' ? (
+            <Button
+              title={loading ? 'Resuming…' : 'Resume handoff'}
+              variant="secondary"
+              disabled={loading}
+              onPress={async () => {
+                setLoading(true);
+                setErrorMsg('');
+                try {
+                  const operation = await crmService.retryOnboarding(handoff.id, {
+                    admin: seedAdmin ? {
+                      email: adminEmail,
+                      password: adminPassword,
+                      first_name: adminFirstName,
+                      last_name: adminLastName,
+                      gender_id: 1,
+                      dob: '1990-01-01',
+                    } : undefined,
+                  });
+                  setHandoff(operation);
+                  if (operation.status === 'SUCCEEDED' && operation.target_school_id) {
+                    showToast(`School handoff completed for ${name}.`, 'success', 5000);
+                    router.replace(`/(app)/schools/${operation.target_school_id}/build-config?cluster_id=${encodeURIComponent(operation.cluster_id || assignedCluster?.cluster_id || '')}` as any);
+                    return;
+                  }
+                  setErrorMsg(operation.failure_reason || 'Handoff is still incomplete.');
+                } catch (err: any) {
+                  setErrorMsg(getApiErrorMessage(err, 'Could not resume the handoff.'));
+                } finally {
+                  setLoading(false);
+                }
+              }}
+            />
+          ) : null}
 
           <View style={styles.buttonGroup}>
             <Button

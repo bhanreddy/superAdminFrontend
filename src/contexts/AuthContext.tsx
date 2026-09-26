@@ -20,6 +20,8 @@ import {
   isSupportRole,
 } from '../constants/rbac';
 import { useCluster } from './ClusterContext';
+import { setAnalyticsActor } from '../services/founderSupabase';
+import { clearSalesCommandCache } from '../hooks/useSalesCommand';
 
 const initialState: AuthState = {
   user: null,
@@ -153,9 +155,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [restoreSession]);
 
   const signOut = useCallback(async () => {
+    setAnalyticsActor(null);
+    clearSalesCommandCache();
     await authService.signOut();
     setState(loggedOutState);
   }, []);
+
+  useEffect(() => {
+    setAnalyticsActor(state.user?.id || null);
+    if (!state.user) clearSalesCommandCache();
+  }, [state.user?.id]);
 
   // On mount + on cluster change – restore session
   useEffect(() => {

@@ -41,15 +41,36 @@ function num(v: unknown): number {
 // Internal cache for the batched analytics call
 let _cachedAnalytics: any = null;
 let _cacheTs = 0;
+let _cacheActor = '';
+let _inflight: Promise<any> | null = null;
 const CACHE_TTL = 30_000; // 30 seconds
+
+export function setAnalyticsActor(actorId: string | null) {
+  const next = actorId || '';
+  if (next !== _cacheActor) {
+    _cachedAnalytics = null;
+    _cacheTs = 0;
+    _inflight = null;
+  }
+  _cacheActor = next;
+}
 
 async function getAnalyticsData() {
   if (_cachedAnalytics && Date.now() - _cacheTs < CACHE_TTL) {
     return _cachedAnalytics;
   }
-  _cachedAnalytics = await founderApi.getAnalytics();
-  _cacheTs = Date.now();
-  return _cachedAnalytics;
+  if (_inflight) return _inflight;
+  const actorAtStart = _cacheActor;
+  _inflight = founderApi.getAnalytics().then((data) => {
+    if (actorAtStart === _cacheActor) {
+      _cachedAnalytics = data;
+      _cacheTs = Date.now();
+    }
+    return data;
+  }).finally(() => {
+    _inflight = null;
+  });
+  return _inflight;
 }
 
 /** Invalidate the analytics cache (call after mutations) */
@@ -289,6 +310,9 @@ export interface EnquiryListFilters {
   source: string | 'ALL';
   category: string | 'ALL';
   assignedTo: string | 'ALL' | 'UNASSIGNED';
+  q?: string;
+  limit?: number;
+  cursor?: string;
 }
 
 export async function countEnquiriesCreatedToday(): Promise<number> {
@@ -307,8 +331,12 @@ export async function listEnquiries(filters: EnquiryListFilters): Promise<Enquir
     source: filters.source !== 'ALL' ? filters.source : undefined,
     category: filters.category !== 'ALL' ? filters.category : undefined,
     assignedTo: filters.assignedTo !== 'ALL' ? filters.assignedTo : undefined,
+    q: filters.q || undefined,
+    limit: filters.limit,
+    cursor: filters.cursor,
   });
-  return (data || []) as EnquiryRow[];
+  if (Array.isArray(data)) return data as EnquiryRow[];
+  return ((data && data.data) || []) as EnquiryRow[];
 }
 
 export async function updateEnquiry(

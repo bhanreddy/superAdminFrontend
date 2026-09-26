@@ -16,14 +16,19 @@ export async function getClusterAssignment(): Promise<ClusterConfig> {
   return response.data;
 }
 
-export async function getBuildConfig(school_id: string): Promise<BuildConfig> {
-  const response = await superAdminClient.get(`/api/super-admin/schools/${school_id}/build-config`);
+export async function getBuildConfig(school_id: string, clusterId?: string): Promise<BuildConfig> {
+  const response = await superAdminClient.get(`/api/super-admin/schools/${school_id}/build-config`, {
+    params: clusterId ? { cluster_id: clusterId } : undefined,
+  });
   return response.data;
 }
 
 export async function updateOnboardingStatus(
   school_id: string,
-  status: OnboardingStatus
+  status: OnboardingStatus,
+  clusterId?: string,
 ): Promise<void> {
-  await superAdminClient.patch(`/api/super-admin/schools/${school_id}/onboarding-status`, { status });
+  await superAdminClient.patch(`/api/super-admin/schools/${school_id}/onboarding-status`, { status }, {
+    params: clusterId ? { cluster_id: clusterId } : undefined,
+  });
 }

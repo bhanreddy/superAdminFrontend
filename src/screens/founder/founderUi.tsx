@@ -119,12 +119,35 @@ export const GlassCard = React.memo(function GlassCard({
   children,
   style,
   noPad,
+  variant = 'regular',
 }: {
   children: React.ReactNode;
   style?: object;
   noPad?: boolean;
+  variant?: 'regular' | 'lightweight';
 }) {
   const { colors, isDark, clayShadows } = useTheme();
+  if (variant === 'lightweight') {
+    return (
+      <View
+        style={[
+          styles.glassOuter,
+          {
+            borderColor: colors.glassBorder,
+            backgroundColor: colors.glassLightweight,
+            borderWidth: StyleSheet.hairlineWidth,
+          },
+          style,
+        ]}
+      >
+        <LinearGradient
+          colors={isDark ? ['rgba(255,255,255,0.08)', 'rgba(255,255,255,0)'] : ['rgba(255,255,255,0.7)', 'rgba(255,255,255,0)']}
+          style={[StyleSheet.absoluteFill, { pointerEvents: 'none' }]}
+        />
+        <View style={[styles.glassContent, noPad ? { padding: 0 } : null]}>{children}</View>
+      </View>
+    );
+  }
   return (
     <View
       style={[
@@ -241,6 +264,9 @@ export const KpiTile = React.memo(function KpiTile({
   icon,
   sparklineData,
   changePercent,
+  onPress,
+  width,
+  accessibilityLabel,
 }: {
   label: string;
   value: string;
@@ -249,17 +275,20 @@ export const KpiTile = React.memo(function KpiTile({
   icon?: React.ReactNode;
   sparklineData?: number[];
   changePercent?: number;
+  onPress?: () => void;
+  width?: number;
+  accessibilityLabel?: string;
 }) {
   const { colors, isDark } = useTheme();
   const { width: screenWidth } = useWindowDimensions();
   const isDesktop = screenWidth >= 1024;
   const isTablet = screenWidth >= 768 && screenWidth < 1024;
 
-  const tileWidth = isDesktop
+  const tileWidth = width ?? (isDesktop
     ? (screenWidth - 240 - 80 - 36) / 4
     : isTablet
       ? (screenWidth - 40 - 12) / 2
-      : (W - 40 - 12) / 2;
+      : (W - 40 - 12) / 2);
 
   const changeDir = changePercent !== undefined
     ? changePercent > 0 ? 'up' : changePercent < 0 ? 'down' : 'flat'
@@ -267,7 +296,7 @@ export const KpiTile = React.memo(function KpiTile({
 
   return (
     <Animated.View entering={FadeInDown.delay(delay).duration(420).springify()} style={{ width: tileWidth, marginBottom: 12 }}>
-      <PressScale style={{ width: '100%', height: 130 }}>
+      <PressScale accessibilityRole={onPress ? 'button' : undefined} accessibilityLabel={accessibilityLabel || label} onPress={onPress} style={{ width: '100%', height: 130 }}>
         <ClayView 
           isDark={isDark} 
           color={isDark ? 'rgba(255,255,255,0.03)' : colors.card} 
@@ -283,7 +312,7 @@ export const KpiTile = React.memo(function KpiTile({
 
           {/* Top row: icon + sparkline */}
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            {icon && (
+            {React.isValidElement(icon) && (
               <View
                 style={[
                   {
@@ -293,7 +322,7 @@ export const KpiTile = React.memo(function KpiTile({
                   },
                 ]}
               >
-                {React.cloneElement(icon as any, { color: isDark ? '#FFF' : gradient[0] })}
+                {React.cloneElement(icon as React.ReactElement<{ color?: string }>, { color: isDark ? '#FFF' : gradient[0] })}
               </View>
             )}
             {sparklineData && sparklineData.length >= 2 && (
@@ -339,9 +368,11 @@ export const KpiTile = React.memo(function KpiTile({
           </Text>
 
           {/* Large subtle background icon */}
-          <View style={{ position: 'absolute', right: -10, bottom: -15, opacity: isDark ? 0.05 : 0.03, transform: [{ scale: 3.5 }] }} pointerEvents="none">
-             {React.cloneElement(icon as any, { color: colors.textPrimary })}
-          </View>
+          {React.isValidElement(icon) ? (
+            <View style={{ position: 'absolute', right: -10, bottom: -15, opacity: isDark ? 0.05 : 0.03, transform: [{ scale: 3.5 }] }} pointerEvents="none">
+              {React.cloneElement(icon as React.ReactElement<{ color?: string }>, { color: colors.textPrimary })}
+            </View>
+          ) : null}
         </ClayView>
       </PressScale>
     </Animated.View>

@@ -28,6 +28,7 @@ import {
   MessageCircle,
   Network,
   Database,
+  QrCode,
   Zap,
   Server,
   PlusCircle,
@@ -38,6 +39,7 @@ import {
   Headphones,
   UserCheck,
   ClipboardList,
+  ScrollText,
 } from 'lucide-react-native';
 import { useTheme, clayStyle } from '../../contexts/ThemeContext';
 import { useAuth } from '../../hooks/useAuth';
@@ -57,6 +59,7 @@ interface NavItem {
   icon: (color: string, size: number) => React.ReactNode;
   route: string;
   badge?: number;
+  requiresSuperAdmin?: boolean;
 }
 
 interface NavGroup {
@@ -182,6 +185,49 @@ function getNavGroupsForRole(
             label: 'Enquiries',
             icon: (c, s) => <ClipboardList size={s} color={c} strokeWidth={1.8} />,
             route: '/(app)/console/enquiries',
+          },
+          {
+            key: 'field-feedback',
+            label: 'Field Feedback',
+            icon: (c, s) => <ClipboardList size={s} color={c} strokeWidth={1.8} />,
+            route: '/(app)/console/field-feedback',
+          },
+          {
+            key: 'sales-command',
+            label: 'Sales Command',
+            icon: (c, s) => <BarChart3 size={s} color={c} strokeWidth={1.8} />,
+            route: '/(app)/console/sales-command',
+          },
+          {
+            key: 'tracking-links',
+            label: 'Tracking Links',
+            icon: (c, s) => <QrCode size={s} color={c} strokeWidth={1.8} />,
+            route: '/(app)/console/tracking-links',
+          },
+          {
+            key: 'school-prospects',
+            label: 'School Prospects',
+            icon: (c, s) => <School size={s} color={c} strokeWidth={1.8} />,
+            route: '/(app)/console/school-prospects',
+          },
+          {
+            key: 'school-import',
+            label: 'Import Schools',
+            icon: (c, s) => <FileText size={s} color={c} strokeWidth={1.8} />,
+            route: '/(app)/console/school-import',
+          },
+          {
+            key: 'import-history',
+            label: 'Import History',
+            icon: (c, s) => <ScrollText size={s} color={c} strokeWidth={1.8} />,
+            route: '/(app)/console/import-history',
+          },
+          {
+            key: 'tenant-assignments',
+            label: 'Tenant Assignments',
+            icon: (c, s) => <Network size={s} color={c} strokeWidth={1.8} />,
+            route: '/(app)/console/tenant-assignments',
+            requiresSuperAdmin: true,
           },
           {
             key: 'festival-posters',
@@ -585,7 +631,7 @@ interface SidebarProps {
 
 export const Sidebar = React.memo(function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const { colors, layout: layoutTokens, isDark, clayShadows } = useTheme();
-  const { role, isFounder, isSales, isImplementation, isSupport, can } = useAuth();
+  const { role, isFounder, isSales, isImplementation, isSupport, can, isSuperAdmin } = useAuth();
   const router = useRouter();
   const segments = useSegments();
   const widthAnim = useRef(
@@ -696,6 +742,7 @@ export const Sidebar = React.memo(function Sidebar({ collapsed, onToggle }: Side
               <View style={[styles.groupDivider, { backgroundColor: colors.sidebarBorder }]} />
             )}
             {group.items.map((item) => {
+              if (item.requiresSuperAdmin && !isSuperAdmin) return null;
               const active = isActiveRoute(segments, item.route);
               return (
                 <Pressable

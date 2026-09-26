@@ -24,6 +24,7 @@ export {
 
 import { superAdminClient } from '../api/superAdminClient';
 import { checklistApi } from './checklistService';
+import { crmClient } from '../api/crmClient';
 
 /** @deprecated Prefer importing `superAdminClient` from `../api/superAdminClient` */
 export const apiService = superAdminClient;
@@ -55,8 +56,10 @@ export const superAdminApi = {
     return response.data;
   },
 
-  getSchool: async (id: number): Promise<School> => {
-    const response = await superAdminClient.get(`/api/super-admin/schools/${id}`);
+  getSchool: async (id: number, clusterId?: string): Promise<School> => {
+    const response = await superAdminClient.get(`/api/super-admin/schools/${id}`, {
+      params: clusterId ? { cluster_id: clusterId } : undefined,
+    });
     return response.data;
   },
 
@@ -437,16 +440,16 @@ export const founderApi = {
   },
 
   // --- Enquiries ---
-  listEnquiries: async (filters: { status?: string; source?: string; category?: string; assignedTo?: string }) => {
-    const response = await superAdminClient.get('/api/super-admin/founder/enquiries', { params: filters });
+  listEnquiries: async (filters: { status?: string; source?: string; category?: string; assignedTo?: string; q?: string; limit?: number; cursor?: string }) => {
+    const response = await crmClient.get('/api/super-admin/founder/enquiries', { params: filters });
     return response.data;
   },
   getEnquiryStats: async () => {
-    const response = await superAdminClient.get('/api/super-admin/founder/enquiries/stats');
+    const response = await crmClient.get('/api/super-admin/founder/enquiries/stats');
     return response.data;
   },
   updateEnquiry: async (id: string, patch: any) => {
-    const response = await superAdminClient.patch(`/api/super-admin/founder/enquiries/${id}`, patch);
+    const response = await crmClient.patch(`/api/super-admin/founder/enquiries/${id}`, patch);
     return response.data;
   },
 

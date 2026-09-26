@@ -36,6 +36,21 @@ interface DataTableProps<T> {
    * horizontally scrollable table so values (phone, address) are not truncated.
    */
   narrowLayout?: 'table' | 'cards';
+  /**
+   * When set, the current `data` array is one server page. Client search, sort,
+   * and slicing stay off so a large import is not loaded into this table.
+   */
+  serverPagination?: {
+    page: number;
+    pageCount: number;
+    onPageChange: (page: number) => void;
+  };
+  cursorPagination?: {
+    hasMore: boolean;
+    onNext: () => void;
+    total?: number | null;
+    loading?: boolean;
+  };
 }
 
 type SortDir = 'asc' | 'desc' | null;
@@ -57,6 +72,8 @@ export function DataTable<T extends Record<string, any>>({
   headerRight,
   onRowPress,
   narrowLayout = 'table',
+  serverPagination,
+  cursorPagination,
 }: DataTableProps<T>) {
   const { colors, isDark, clayShadows } = useTheme();
   const { width: screenW } = useWindowDimensions();
@@ -77,6 +94,7 @@ export function DataTable<T extends Record<string, any>>({
   const [searchFocused, setSearchFocused] = useState(false);
 
   const filtered = useMemo(() => {
+    if (serverPagination) return data;
     if (!search.trim()) return data;
     const q = search.toLowerCase();
     const keys = searchKeys || columns.map((c) => c.key);
@@ -86,10 +104,10 @@ export function DataTable<T extends Record<string, any>>({
         return val !== undefined && val !== null && String(val).toLowerCase().includes(q);
       }),
     );
-  }, [data, search, searchKeys, columns]);
+  }, [data, search, searchKeys, columns, serverPagination]);
 
   const sorted = useMemo(() => {
-    if (!sortKey || !sortDir) return filtered;
+    if (serverPagination || !sortKey || !sortDir) return filtered;
     return [...filtered].sort((a, b) => {
       const av = a[sortKey];
       const bv = b[sortKey];
@@ -102,10 +120,15 @@ export function DataTable<T extends Record<string, any>>({
       const sb = String(bv).toLowerCase();
       return sortDir === 'asc' ? sa.localeCompare(sb) : sb.localeCompare(sa);
     });
-  }, [filtered, sortKey, sortDir]);
+  }, [filtered, sortKey, sortDir, serverPagination]);
 
-  const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
-  const pageData = sorted.slice(page * pageSize, (page + 1) * pageSize);
+  const currentPage = serverPagination ? serverPagination.page : page;
+  const totalPages = serverPagination ? Math.max(1, serverPagination.pageCount) : Math.max(1, Math.ceil(sorted.length / pageSize));
+  const pageData = serverPagination ? data : sorted.slice(page * pageSize, (page + 1) * pageSize);
+  const goToPage = (next: number) => {
+    if (serverPagination) serverPagination.onPageChange(next);
+    else setPage(next);
+  };
 
   const handleSort = (key: string) => {
     if (sortKey === key) {
@@ -392,7 +415,7 @@ export function DataTable<T extends Record<string, any>>({
                     {columns.map((col) => (
                       <View key={col.key} style={[s.cell, isPhone && s.cellPhone, col.flex ? { flex: col.flex, minWidth: 0 } : col.width ? { width: col.width as any, minWidth: col.width as any, flexShrink: 0 } : { flex: 1, minWidth: 0 }]}>
                         {col.render ? (
-                          col.render(item, page * pageSize + ri)
+                          col.render(item, currentPage * pageSize + ri)
                         ) : (
                           <Text style={[s.cellText, { color: colors.textPrimary }]} numberOfLines={1}>
                             {item[col.key] !== undefined && item[col.key] !== null ? String(item[col.key]) : '-'}
@@ -408,20 +431,31 @@ export function DataTable<T extends Record<string, any>>({
         </View>
       )}
 
-      {/* - Pagination - */}
-      {sorted.length > pageSize && (
+      {cursorPagination ? (
+        <View style={[s.pagination, isPhone && s.paginationPhone]}>
+          <Text style={[s.pageInfo, { color: colors.textTertiary }]}>
+            {data.length} shown{cursorPagination.total != null ? ` of ${cursorPagination.total}` : ''}
+          </Text>
+          {cursorPagination.hasMore ? (
+            <Pressable accessibilityRole="button" accessibilityLabel="Load more" onPress={cursorPagination.onNext} disabled={cursorPagination.loading} style={s.pageBtn}>
+              <Text style={{ color: colors.textPrimary, fontWeight: '700' }}>{cursorPagination.loading ? 'Loading' : 'Load more'}</Text>
+            </Pressable>
+          ) : null}
+        </View>
+      ) : null}
+      {!cursorPagination && (serverPagination ? serverPagination.pageCount > 1 : sorted.length > pageSize) && (
         <View style={[s.pagination, isPhone && s.paginationPhone]}>
           <Text style={[s.pageInfo, { color: colors.textTertiary }]}>
             Showing{' '}
             <Text style={{ color: colors.textPrimary, fontWeight: '600' }}>
-              {page * pageSize + 1}–{Math.min((page + 1) * pageSize, sorted.length)}
+              {currentPage * pageSize + 1}–{Math.min((currentPage + 1) * pageSize, serverPagination ? data.length : sorted.length)}
             </Text>{' '}
-            of {sorted.length}
+            of {serverPagination ? 'this page' : sorted.length}
           </Text>
           <View style={s.pageActions}>
             {[
-              { icon: ChevronsLeft, onPress: () => setPage(0), disabled: page === 0 },
-              { icon: ChevronLeft, onPress: () => setPage((p) => Math.max(0, p - 1)), disabled: page === 0 },
+              { icon: ChevronsLeft, onPress: () => goToPage(0), disabled: currentPage === 0 },
+              { icon: ChevronLeft, onPress: () => goToPage(Math.max(0, currentPage - 1)), disabled: currentPage === 0 },
             ].map(({ icon: Icon, onPress, disabled }, i) => (
               <Pressable
                 key={`l${i}`}
@@ -457,11 +491,11 @@ export function DataTable<T extends Record<string, any>>({
               backgroundColor: `${colors.primary}10`,
               borderColor: `${colors.primary}20`,
             }]}>
-              <Text style={[s.pageNum, { color: colors.primary }]}>{page + 1} / {totalPages}</Text>
+              <Text style={[s.pageNum, { color: colors.primary }]}>{currentPage + 1} / {totalPages}</Text>
             </View>
             {[
-              { icon: ChevronRight, onPress: () => setPage((p) => Math.min(totalPages - 1, p + 1)), disabled: page >= totalPages - 1 },
-              { icon: ChevronsRight, onPress: () => setPage(totalPages - 1), disabled: page >= totalPages - 1 },
+              { icon: ChevronRight, onPress: () => goToPage(Math.min(totalPages - 1, currentPage + 1)), disabled: currentPage >= totalPages - 1 },
+              { icon: ChevronsRight, onPress: () => goToPage(totalPages - 1), disabled: currentPage >= totalPages - 1 },
             ].map(({ icon: Icon, onPress, disabled }, i) => (
               <Pressable
                 key={`r${i}`}

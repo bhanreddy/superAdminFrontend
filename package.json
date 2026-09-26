@@ -11,8 +11,10 @@
     "deploy": "npm run build:web && npx wrangler deploy",
     "preview:cloudflare": "npm run build:web && npx wrangler dev",
     "postinstall": "patch-package && node scripts/cloudflare-postinstall.cjs",
+    "typecheck": "tsc --noEmit --pretty false",
     "test": "node --test tests/*.test.cjs",
-    "test:checklist": "node --test tests/checklist.test.cjs"
+    "test:checklist": "node --test tests/checklist.test.cjs",
+    "test:sales-command": "node test/sales-command.contract.test.cjs"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "1.21.0",

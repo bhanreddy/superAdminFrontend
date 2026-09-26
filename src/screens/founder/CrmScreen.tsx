@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { AlertTriangle, Building2, CheckCircle2, ChevronRight, CircleDollarSign, Clock3, ContactRound, ListTodo, UserRoundPlus } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -22,14 +22,33 @@ export default function CrmScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [work, setWork] = useState<any>(null);
+  const [catalog, setCatalog] = useState<any>(null);
+  const [catalogError, setCatalogError] = useState<string | null>(null);
+  const [reviewCount, setReviewCount] = useState<number | null>(null);
+  const [territoryCode, setTerritoryCode] = useState('');
+  const [territoryName, setTerritoryName] = useState('');
 
   const load = useCallback(async () => {
     setError(null);
     try {
-      const [o, a, t] = await Promise.all([
-        crmService.getOverview(), crmService.listAccounts(), crmService.listTasks({ status: 'OPEN' }),
+      const [o, a, t, w] = await Promise.all([
+        crmService.getOverview(), crmService.listAccounts(), crmService.listTasks({ status: 'OPEN' }), crmService.myWork(),
       ]);
-      setOverview(o); setAccounts(a); setTasks(t);
+      setOverview(o); setAccounts(a); setTasks(t); setWork(w);
+      try {
+        setCatalog(await crmService.catalog());
+        setCatalogError(null);
+      } catch (catalogErr: any) {
+        setCatalog(null);
+        setCatalogError(catalogErr?.response?.status === 403 ? 'Stage, territory, source, and reason configuration is limited to SuperAdmin.' : null);
+      }
+      try {
+        const reviewRows = await crmService.reviewQueue();
+        setReviewCount(Array.isArray(reviewRows) ? reviewRows.length : 0);
+      } catch {
+        setReviewCount(null);
+      }
     } catch (e: any) {
       setError(e?.response?.data?.error || e?.message || 'Failed to load CRM');
     } finally { setLoading(false); setRefreshing(false); }
@@ -89,6 +108,23 @@ export default function CrmScreen() {
               ))}
             </View>
 
+            <GlassCard variant="lightweight" style={{ marginTop: 16, padding: 20 }}>
+              <Text style={[st.sectionText, { color: colors.textPrimary }]}>School prospecting</Text>
+              <View style={st.linkRow}>
+                {[
+                  ['Sales Command', '/(app)/console/sales-command'],
+                  ['School prospects', '/(app)/console/school-prospects'],
+                  ['Import schools', '/(app)/console/school-import'],
+                  ['Import history', '/(app)/console/import-history'],
+                ].map(([label, href]) => (
+                  <Pressable key={href} accessibilityRole="button" onPress={() => router.push(href as never)} style={[st.linkChip, { borderColor: colors.border, backgroundColor: `${colors.primary}10` }]}>
+                    <Text style={{ color: colors.primary, fontWeight: '700' }}>{label}</Text>
+                    <ChevronRight size={15} color={colors.primary} />
+                  </Pressable>
+                ))}
+              </View>
+            </GlassCard>
+
             <View style={[st.columns, !desktop && st.columnsStack]}>
               <View style={st.mainColumn}>
                 <SectionTitle title="Pipeline" action="Open enquiries" onPress={() => router.push('/(app)/console/enquiries' as any)} />
@@ -97,7 +133,9 @@ export default function CrmScreen() {
                     const pct = pipelineTotal ? Math.max(4, Number(row.count) / pipelineTotal * 100) : 4;
                     return <View key={row.status} style={st.pipelineRow}>
                       <View style={st.rowBetween}><Text style={[st.rowTitle, { color: colors.textPrimary }]}>{row.status}</Text><Text style={[st.rowValue, { color: colors.textPrimary }]}>{row.count}</Text></View>
-                      <View style={[st.track, { backgroundColor: colors.borderSubtle }]}><LinearGradient colors={[colors.primary, colors.accent]} style={[st.fill, { width: `${pct}%` }]} /></View>
+                      <View style={[st.track, { backgroundColor: colors.borderSubtle }]}>
+                        <View style={[st.fill, { width: `${pct}%`, backgroundColor: colors.primary }]} />
+                      </View>
                     </View>;
                   })}
                   {!overview.pipeline.length ? <Text style={{ color: colors.textTertiary }}>No leads in the pipeline yet.</Text> : null}
@@ -117,6 +155,44 @@ export default function CrmScreen() {
               </View>
 
               <View style={st.sideColumn}>
+                <SectionTitle title="My work" />
+                <GlassCard>
+                  {['overdue', 'today', 'upcoming', 'missing_action', 'expired_exceptions'].map((key) => (
+                    <Text key={key} style={{ color: colors.textSecondary, marginBottom: 6 }}>
+                      {key.replace('_', ' ')}: {(work?.[key] || []).length}
+                    </Text>
+                  ))}
+                  {(work?.overdue || []).slice(0, 8).map((row: any) => (
+                    <Pressable key={row.id} accessibilityRole="button" accessibilityLabel={`Open overdue lead ${row.enquiry_name || row.title || ''}`} onPress={() => router.push(`/(app)/console/lead/${row.enquiry_id}` as any)}>
+                      <Text style={{ color: colors.textPrimary, marginTop: 8 }}>{row.enquiry_name || row.title}</Text>
+                    </Pressable>
+                  ))}
+                </GlassCard>
+                {catalog ? (
+                  <GlassCard style={{ marginTop: 16 }}>
+                    <Text style={[st.rowTitle, { color: colors.textPrimary }]}>Configuration</Text>
+                    {reviewCount != null ? <Text style={{ color: colors.textSecondary, marginTop: 6 }}>Open review queue: {reviewCount}</Text> : null}
+                    <Text style={{ color: colors.textSecondary, marginTop: 6 }}>Stages: {(catalog.stages || []).map((stage: any) => stage.code).join(' → ')}</Text>
+                    <Text style={{ color: colors.textSecondary, marginTop: 6 }}>Territories: {(catalog.territories || []).map((row: any) => row.code).join(', ') || 'None'}</Text>
+                    <Text style={{ color: colors.textSecondary, marginTop: 6 }}>Sources: {(catalog.channels || []).map((row: any) => row.code).join(', ')}</Text>
+                    <TextInput accessibilityLabel="Territory code" value={territoryCode} onChangeText={setTerritoryCode} placeholder="Territory code" placeholderTextColor={colors.textTertiary} style={{ color: colors.textPrimary, borderWidth: 1, borderColor: colors.border, borderRadius: 12, minHeight: 44, paddingHorizontal: 12, marginTop: 12 }} />
+                    <TextInput accessibilityLabel="Territory name" value={territoryName} onChangeText={setTerritoryName} placeholder="Territory name" placeholderTextColor={colors.textTertiary} style={{ color: colors.textPrimary, borderWidth: 1, borderColor: colors.border, borderRadius: 12, minHeight: 44, paddingHorizontal: 12, marginTop: 8 }} />
+                    <Pressable accessibilityRole="button" accessibilityLabel="Create territory" onPress={async () => {
+                      try {
+                        await crmService.createTerritory({ code: territoryCode, name: territoryName });
+                        setTerritoryCode('');
+                        setTerritoryName('');
+                        setCatalogError(null);
+                        load();
+                      } catch (err: any) {
+                        setCatalogError(err?.response?.data?.error || 'Territory was not created.');
+                      }
+                    }} style={{ marginTop: 10, minHeight: 44, justifyContent: 'center' }}>
+                      <Text style={{ color: colors.primary, fontWeight: '700' }}>Create territory</Text>
+                    </Pressable>
+                  </GlassCard>
+                ) : null}
+                {catalogError ? <Text style={{ color: colors.textTertiary, marginTop: 8 }}>{catalogError}</Text> : null}
                 <SectionTitle title="Work queue" />
                 <GlassCard noPad>
                   {tasks.slice(0, 10).map((task, index) => (
@@ -142,13 +218,15 @@ function SectionTitle({ title, action, onPress }: { title: string; action?: stri
 }
 
 const st = StyleSheet.create({
-  content: { paddingBottom: 60 },
-  hero: { borderWidth: 1, borderRadius: 28, padding: 24, flexDirection: 'row', flexWrap: 'wrap', gap: 20, alignItems: 'center', overflow: 'hidden' },
+  content: { paddingBottom: 60, width: '100%', maxWidth: '100%' },
+  hero: { borderWidth: 1, borderRadius: 28, padding: 24, flexDirection: 'row', flexWrap: 'wrap', gap: 20, alignItems: 'center', overflow: 'hidden', width: '100%' },
   eyebrow: { fontSize: 10, fontWeight: '800', letterSpacing: 1.4 }, heroTitle: { fontSize: 27, lineHeight: 34, fontWeight: '850' as any, letterSpacing: -0.8, maxWidth: 620, marginTop: 7 }, heroSub: { fontSize: 13, marginTop: 7 },
   valuePill: { minWidth: 190, flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 18, borderWidth: 1 }, valueLabel: { fontSize: 10 }, valueText: { fontSize: 18, fontWeight: '800', marginTop: 2 },
-  metricGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginTop: 18 }, metricCard: { flex: 1, minWidth: 150 }, icon: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginBottom: 14 }, metricValue: { fontSize: 27, fontWeight: '800', letterSpacing: -0.7 }, metricLabel: { fontSize: 12, marginTop: 3 },
-  columns: { flexDirection: 'row', gap: 22, alignItems: 'flex-start' }, columnsStack: { flexDirection: 'column' }, mainColumn: { flex: 1.65, minWidth: 0 }, sideColumn: { flex: 1, minWidth: 280 }, sectionTitle: { marginTop: 28, marginBottom: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }, sectionText: { fontSize: 18, fontWeight: '800', letterSpacing: -0.35 }, action: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  pipelineRow: { gap: 8, marginBottom: 18 }, rowBetween: { flexDirection: 'row', justifyContent: 'space-between' }, rowTitle: { fontSize: 13, fontWeight: '700' }, rowValue: { fontSize: 13, fontWeight: '800' }, track: { height: 8, borderRadius: 8, overflow: 'hidden' }, fill: { height: '100%', borderRadius: 8 },
+  metricGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginTop: 18, width: '100%' }, metricCard: { flexGrow: 1, flexShrink: 1, flexBasis: 160, minWidth: 150, maxWidth: '100%' }, icon: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginBottom: 14 }, metricValue: { fontSize: 27, fontWeight: '800', letterSpacing: -0.7 }, metricLabel: { fontSize: 12, marginTop: 3 },
+  linkRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 14 },
+  linkChip: { minHeight: 44, paddingHorizontal: 14, borderRadius: 14, borderWidth: 1, flexDirection: 'row', alignItems: 'center', gap: 4 },
+  columns: { width: '100%', maxWidth: '100%', flexDirection: 'row', flexWrap: 'wrap', gap: 22, alignItems: 'flex-start' }, columnsStack: { flexDirection: 'column' }, mainColumn: { flexGrow: 1, flexShrink: 1, flexBasis: 480, minWidth: 0, maxWidth: '100%', overflow: 'hidden' }, sideColumn: { flexGrow: 1, flexShrink: 1, flexBasis: 280, minWidth: 240, maxWidth: '100%' }, sectionTitle: { marginTop: 28, marginBottom: 12, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8 }, sectionText: { fontSize: 18, fontWeight: '800', letterSpacing: -0.35 }, action: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  pipelineRow: { gap: 8, marginBottom: 18, width: '100%', maxWidth: '100%' }, rowBetween: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 }, rowTitle: { fontSize: 13, fontWeight: '700', flexShrink: 1 }, rowValue: { fontSize: 13, fontWeight: '800' }, track: { height: 8, width: '100%', maxWidth: '100%', borderRadius: 8, overflow: 'hidden' }, fill: { height: 8, maxWidth: '100%', borderRadius: 8 },
   listRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16 }, avatar: { width: 40, height: 40, borderRadius: 13, alignItems: 'center', justifyContent: 'center' }, rowMeta: { fontSize: 10.5, marginTop: 3 }, count: { fontSize: 11, fontWeight: '650' as any }, empty: { padding: 20, textAlign: 'center' },
   taskRow: { flexDirection: 'row', alignItems: 'center', gap: 11, padding: 15 }, check: { width: 32, height: 32, borderRadius: 11, borderWidth: 1, alignItems: 'center', justifyContent: 'center' }, taskTitle: { fontSize: 12.5, fontWeight: '700' }, emptyState: { padding: 28, gap: 10, alignItems: 'center' },
 });

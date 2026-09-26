@@ -75,6 +75,15 @@ export interface ThemeColors {
   headerGradientEnd: string;
   glassBackground: string;
   glassBorder: string;
+  glassLightweight: string;
+  salesNow: string;
+  salesEvent: string;
+  salesUnknown: string;
+  importNew: string;
+  importExact: string;
+  importPossible: string;
+  importConflict: string;
+  importInvalid: string;
 
   // ─── Claymorphism-specific tokens ──────────────────────────────────────────
   clayHighlight: string;      // Inner top-left light reflection
@@ -330,6 +339,15 @@ export const darkTheme = {
     headerGradientEnd: '#121216',
     glassBackground: 'rgba(255, 255, 255, 0.04)',
     glassBorder: 'rgba(255, 255, 255, 0.1)',
+    glassLightweight: 'rgba(255, 255, 255, 0.06)',
+    salesNow: '#FFD60A',
+    salesEvent: '#64D2FF',
+    salesUnknown: '#98989D',
+    importNew: '#30D158',
+    importExact: '#64D2FF',
+    importPossible: '#FFD60A',
+    importConflict: '#FF453A',
+    importInvalid: '#98989D',
 
     clayHighlight: 'rgba(255, 255, 255, 0.08)',
     clayBorderColor: 'rgba(255, 255, 255, 0.06)',
@@ -401,6 +419,15 @@ export const lightTheme = {
     headerGradientEnd: '#F5F5F7',
     glassBackground: 'rgba(0, 0, 0, 0.02)',
     glassBorder: 'rgba(0, 0, 0, 0.06)',
+    glassLightweight: 'rgba(255, 255, 255, 0.72)',
+    salesNow: '#8A5A00',
+    salesEvent: '#004A99',
+    salesUnknown: '#3A3A3C',
+    importNew: '#248A3D',
+    importExact: '#0071E3',
+    importPossible: '#B25000',
+    importConflict: '#D70015',
+    importInvalid: '#6E6E73',
 
     clayHighlight: 'rgba(255, 255, 255, 0.9)',
     clayBorderColor: 'rgba(0, 0, 0, 0.04)',

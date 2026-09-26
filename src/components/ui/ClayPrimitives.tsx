@@ -69,7 +69,7 @@ export function ClayView({ children, color = '#EEF1F8', radius = 24, style, flat
   );
 }
 
-export function PressScale({ children, onPress, style, disabled }: any) {
+export function PressScale({ children, onPress, style, disabled, accessibilityLabel, accessibilityRole }: any) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const handlePressIn = () => {
@@ -87,6 +87,8 @@ export function PressScale({ children, onPress, style, disabled }: any) {
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         disabled={disabled}
+        accessibilityLabel={accessibilityLabel}
+        accessibilityRole={accessibilityRole}
       >
         {children}
       </Pressable>

@@ -23,7 +23,7 @@ import {
   Users, Target, TrendingUp, TrendingDown, IndianRupee, School,
   GraduationCap, Briefcase, ShieldCheck, CheckCircle2, Wallet, Receipt,
   PiggyBank, CircleDollarSign, BarChart3, Sparkles, ArrowUpRight, Plus,
-  BookOpen, Settings, Building2, Megaphone, ScrollText, Cpu, ChevronRight,
+  BookOpen, Settings, Building2, Megaphone, ScrollText, Cpu, ChevronRight, ClipboardList,
   Store, Zap, Activity, AlertCircle, Bell, Clock, Flame, Eye, ArrowDown,
   ArrowUp, Filter, Layers, CalendarDays,
 } from 'lucide-react-native';
@@ -1047,6 +1047,7 @@ function FounderDashboardScreen() {
   const netProfit = founderMetrics.collectionsNetProfit;
   const totalCollected = financialSummary?.revenue ?? 0;
   const conversionPct = founderMetrics.conversionRate;
+  const conversionText = founderMetrics.conversionMonthly && conversionPct != null ? `${conversionPct.toFixed(1)}%` : '—';
   const cpl = founderMetrics.costPerLead;
   const enquirySummaryCount = founderMetrics.totalEnquiriesMonth;
 
@@ -1151,9 +1152,10 @@ function FounderDashboardScreen() {
     if (!hasFounderAccess || incomeRows.length < 2) return null;
     if (netProfitDelta >= 15) return { tone: 'success' as const, text: `Strong month - net profit up ${netProfitDelta.toFixed(1)}% MoM. Highest in recent history.` };
     if (netProfitDelta <= -10) return { tone: 'warning' as const, text: `Net profit down ${Math.abs(netProfitDelta).toFixed(1)}% MoM. Review expenses & pending collections.` };
-    if (conversionPct >= 25) return { tone: 'success' as const, text: `Conversion at ${conversionPct.toFixed(1)}% - well above industry average. Sales engine is humming.` };
-    return { tone: 'info' as const, text: `${enquirySummaryCount} enquiries this month . ${conversionPct.toFixed(1)}% conversion . ${founderDb.formatInr(netProfit)} net.` };
-  }, [hasFounderAccess, incomeRows, netProfitDelta, conversionPct, enquirySummaryCount, netProfit]);
+    if (founderMetrics.conversionMonthly && conversionPct != null && conversionPct >= 25) return { tone: 'success' as const, text: `Conversion at ${conversionText} - well above industry average. Sales engine is humming.` };
+    if (!founderMetrics.conversionMonthly) return { tone: 'info' as const, text: `Monthly sales series is unavailable. Open Sales Command for school sales. ${founderDb.formatInr(netProfit)} net.` };
+    return { tone: 'info' as const, text: `${enquirySummaryCount} enquiries this month . ${conversionText} conversion . ${founderDb.formatInr(netProfit)} net.` };
+  }, [hasFounderAccess, incomeRows, netProfitDelta, conversionPct, conversionText, founderMetrics.conversionMonthly, enquirySummaryCount, netProfit]);
 
   // - Chart data -
   const { sortedKeys, incomeByKey, expenseByKey, maxTrend } = useMemo(() => {
@@ -1187,6 +1189,7 @@ function FounderDashboardScreen() {
     ] : []),
     { label: 'Collections', subtitle: 'Units & approvals', icon: <Wallet size={18} color={colors.success} strokeWidth={2} />, accentColor: colors.success, route: '/(app)/console/collections' },
     { label: 'Enquiries', subtitle: 'Pipeline & deals', icon: <Users size={18} color={colors.primary} strokeWidth={2} />, accentColor: colors.primary, route: '/(app)/console/enquiries' },
+    { label: 'Field feedback', subtitle: 'Capture and route', icon: <ClipboardList size={18} color={colors.primary} strokeWidth={2} />, accentColor: colors.primary, route: '/(app)/console/field-feedback' },
     { label: 'Analytics', subtitle: 'Sources & leaderboard', icon: <BarChart3 size={18} color={colors.warning} strokeWidth={2} />, accentColor: colors.warning, route: '/(app)/console/analytics' },
     { label: 'Business Units', subtitle: 'Units directory', icon: <Building2 size={18} color={colors.primary} strokeWidth={2} />, accentColor: colors.primary, route: '/(app)/console/units' },
     { label: 'Notifications', subtitle: 'Alerts & updates', icon: <Megaphone size={18} color={colors.success} strokeWidth={2} />, accentColor: colors.success, route: '/(app)/console/notifications' },
@@ -1425,7 +1428,7 @@ function FounderDashboardScreen() {
                   <FadeIn delay={400}>
                     <SectionLabel
                       title="Pipeline Funnel"
-                      badge={`${conversionPct.toFixed(1)}% conv`}
+                      badge={`${conversionText} conv`}
                       badgeVariant="primary"
                       subtitle="Enquiries -> Pipeline -> Closed"
                     />
@@ -1449,10 +1452,10 @@ function FounderDashboardScreen() {
                         />
                         <KpiMini
                           icon={<TrendingUp size={17} color={colors.success} />}
-                          value={`${conversionPct.toFixed(1)}%`}
-                          label="Conversion rate"
+                          value={conversionText}
+                          label={founderMetrics.conversionMonthly ? 'Conversion rate' : 'Sales series unavailable'}
                           accentColor={colors.success}
-                          trend={conversionPct >= 20 ? 'up' : conversionPct < 10 ? 'down' : null}
+                          trend={conversionPct != null && conversionPct >= 20 ? 'up' : conversionPct != null && conversionPct < 10 ? 'down' : null}
                         />
                         <KpiMini
                           icon={<IndianRupee size={17} color={colors.primary} />}
@@ -1787,7 +1790,7 @@ function FounderDashboardScreen() {
                 <FadeIn delay={400}>
                   <SectionLabel
                     title="Pipeline Funnel"
-                    badge={`${conversionPct.toFixed(1)}% conv`}
+                    badge={`${conversionText} conv`}
                     badgeVariant="primary"
                     subtitle="Enquiries -> Pipeline -> Closed"
                   />
@@ -1811,10 +1814,10 @@ function FounderDashboardScreen() {
                       />
                       <KpiMini
                         icon={<TrendingUp size={17} color={colors.success} />}
-                        value={`${conversionPct.toFixed(1)}%`}
-                        label="Conversion rate"
+                        value={conversionText}
+                        label={founderMetrics.conversionMonthly ? 'Conversion rate' : 'Sales series unavailable'}
                         accentColor={colors.success}
-                        trend={conversionPct >= 20 ? 'up' : conversionPct < 10 ? 'down' : null}
+                        trend={conversionPct != null && conversionPct >= 20 ? 'up' : conversionPct != null && conversionPct < 10 ? 'down' : null}
                       />
                       <KpiMini
                         icon={<IndianRupee size={17} color={colors.primary} />}

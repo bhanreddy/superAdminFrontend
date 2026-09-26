@@ -46,6 +46,12 @@ export default function ConsoleStackLayout() {
       <Stack.Screen name="backups" />
       <Stack.Screen name="enquiries" />
       <Stack.Screen name="crm" />
+      <Stack.Screen name="field-feedback" />
+      <Stack.Screen name="sales-command" />
+      <Stack.Screen name="school-prospects/index" />
+      <Stack.Screen name="school-prospects/[id]" />
+      <Stack.Screen name="school-import" />
+      <Stack.Screen name="import-history" />
       <Stack.Screen name="analytics" />
       <Stack.Screen name="units" />
       <Stack.Screen name="notifications" />

@@ -9,6 +9,8 @@ export function useEnquiries(initial?: Partial<EnquiryListFilters>) {
     source: initial?.source ?? 'ALL',
     category: initial?.category ?? 'ALL',
     assignedTo: initial?.assignedTo ?? 'ALL',
+    q: initial?.q ?? '',
+    limit: initial?.limit ?? 50,
   });
   const [enquiries, setEnquiries] = useState<EnquiryRow[]>([]);
   const [loading, setLoading] = useState(true);

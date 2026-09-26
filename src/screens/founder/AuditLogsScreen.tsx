@@ -5,6 +5,7 @@ import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../hooks/useAuth';
 import { useFounderAuth } from '../../hooks/useFounderAuth';
+import { crmService } from '../../services/crmService';
 import * as founderDb from '../../services/founderSupabase';
 import type { ActivityLogRow } from '../../types/founder';
 import {
@@ -20,6 +21,7 @@ export default function AuditLogsScreen() {
   const { isSuperAdmin } = useAuth();
   const { isApprover } = useFounderAuth();
   const canViewAudit = isApprover || isSuperAdmin;
+  const [source, setSource] = useState<'platform' | 'crm'>('platform');
   const [entity, setEntity] = useState<string | 'ALL'>('ALL');
   const [action, setAction] = useState<string | 'ALL'>('ALL');
   const [all, setAll] = useState<ActivityLogRow[]>([]);
@@ -35,15 +37,20 @@ export default function AuditLogsScreen() {
     if (!canViewAudit) return;
     setLoading(true);
     try {
-      const list = await founderDb.listActivityLogs({
-        entity_type: 'ALL',
-        action: 'ALL',
-      });
-      setAll(list);
+      if (source === 'crm') {
+        const result = await crmService.listCrmAuditLogs();
+        setAll((result.data || []) as unknown as ActivityLogRow[]);
+      } else {
+        const list = await founderDb.listActivityLogs({
+          entity_type: 'ALL',
+          action: 'ALL',
+        });
+        setAll(list);
+      }
     } finally {
       setLoading(false);
     }
-  }, [canViewAudit]);
+  }, [canViewAudit, source]);
 
   useEffect(() => {
     load();
@@ -90,8 +97,14 @@ export default function AuditLogsScreen() {
 
   return (
     <ConsoleAmbientBackground>
-      <ScreenHeader title="Audit logs" subtitle="Activity trail" />
+      <ScreenHeader title="Audit logs" subtitle={source === 'crm' ? 'CRM database' : 'Platform and finance activity'} />
       <View style={styles.pad}>
+        <Text style={[styles.h, { color: colors.textSecondary }]}>Source</Text>
+        <FilterChips<string>
+          options={[{ key: 'platform', label: 'Platform' }, { key: 'crm', label: 'CRM' }]}
+          value={source}
+          onChange={(key) => setSource(key as 'platform' | 'crm')}
+        />
         <Text style={[styles.h, { color: colors.textSecondary }]}>Entity</Text>
         <FilterChips<string> options={entityChips} value={entity} onChange={setEntity} />
         <Text style={[styles.h, { color: colors.textSecondary }]}>Action</Text>

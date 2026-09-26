@@ -23,13 +23,25 @@ export interface FounderDashboardMetrics {
   revenueThisMonth: number;
   expenseThisMonthRoi: number;
   netProfitRoi: number;
-  conversionRate: number;
+  conversionRate: number | null;
+  conversionMonthly: boolean;
+  enquiryMonthly: boolean;
   costPerLead: number;
 }
 
 function num(v: unknown): number {
   const x = Number(v);
   return Number.isFinite(x) ? x : 0;
+}
+
+function hasCalendarMonth(rows: Record<string, unknown>[]): boolean {
+  return rows.some((row) => {
+    if (typeof row.month === 'string' && /^\d{4}-\d{2}/.test(row.month)) return true;
+    const year = num(row.year ?? row.period_year);
+    const monthValue = typeof row.month === 'number' ? row.month : row.period_month;
+    const month = num(monthValue);
+    return year > 0 && month >= 1 && month <= 12;
+  });
 }
 
 function pick(row: Record<string, unknown> | null | undefined, keys: string[]): number {
@@ -164,7 +176,9 @@ export function computeFounderDashboardMetrics(input: {
 
   const currentClosed = pickSeriesRowForMonthPrefix(input.monthlyClosedDeals, monthPrefix);
   const currentExpenseRoi = pickSeriesRowForMonthPrefix(input.monthlyExpenseRoi, monthPrefix);
-  const currentConversion = pickSeriesRowForMonthPrefix(input.conversionRows, monthPrefix);
+  const conversionMonthly = hasCalendarMonth(input.conversionRows);
+  const enquiryMonthly = hasCalendarMonth(input.enquiryRows);
+  const currentConversion = conversionMonthly ? pickSeriesRowForMonthPrefix(input.conversionRows, monthPrefix) : null;
   const currentCpl = pickSeriesRowForMonthPrefix(input.costPerLeadRows, monthPrefix);
 
   const revenueThisMonth = pick(currentClosed, [
@@ -182,13 +196,13 @@ export function computeFounderDashboardMetrics(input: {
     'sum',
   ]);
 
-  let conversionRate = pick(currentConversion, [
+  let conversionRate: number | null = conversionMonthly ? pick(currentConversion, [
     'conversion_ratio',
     'conversion_rate',
     'rate',
     'pct',
-  ]);
-  if (conversionRate > 0 && conversionRate < 1) {
+  ]) : null;
+  if (conversionRate != null && conversionRate > 0 && conversionRate < 1) {
     conversionRate *= 100;
   }
 
@@ -215,6 +229,8 @@ export function computeFounderDashboardMetrics(input: {
     expenseThisMonthRoi,
     netProfitRoi: revenueThisMonth - expenseThisMonthRoi,
     conversionRate,
+    conversionMonthly,
+    enquiryMonthly,
     costPerLead,
   };
 }

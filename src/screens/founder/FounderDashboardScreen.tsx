@@ -935,6 +935,7 @@ export default function FounderDashboardScreen() {
         : []),
       { label: 'Collections', sub: 'Units & approvals', route: '/(app)/console/billing?tab=collections', gradient: founderGradients.success, icon: '*' },
       { label: 'Enquiries', sub: 'Pipeline & deals', route: '/(app)/console/enquiries', gradient: founderGradients.info, icon: '*' },
+      { label: 'Field feedback', sub: 'Capture and route', route: '/(app)/console/field-feedback', gradient: founderGradients.primary, icon: '*' },
       { label: 'Analytics', sub: 'Sources & leaderboard', route: '/(app)/console/analytics', gradient: founderGradients.warning, icon: '*' },
       { label: 'Business units', sub: 'Units directory', route: '/(app)/console/units', gradient: founderGradients.primary, icon: '*' },
       { label: 'Notifications', sub: 'Alerts & updates', route: '/(app)/console/notifications', gradient: founderGradients.success, icon: '*' },
@@ -1146,7 +1147,7 @@ export default function FounderDashboardScreen() {
               <KpiTile label="Revenue (month)" value={founderDb.formatInr(m.revenueThisMonth)} gradient={founderGradients.success} delay={60} icon={<Wallet size={16} color="#FFF" />} sparklineData={incomeSparkline} />
               <KpiTile label="Expense (ROI view)" value={founderDb.formatInr(m.expenseThisMonthRoi)} gradient={founderGradients.danger} delay={90} icon={<TrendingDown size={16} color="#FFF" />} sparklineData={expenseSparkline} />
               <KpiTile label="Net profit (projected)" value={founderDb.formatInr(m.netProfitRoi)} gradient={m.netProfitRoi >= 0 ? founderGradients.primary : founderGradients.danger} delay={120} icon={<Activity size={16} color="#FFF" />} />
-              <KpiTile label="Conversion %" value={`${m.conversionRate.toFixed(1)}%`} gradient={founderGradients.info} delay={150} icon={<Target size={16} color="#FFF" />} />
+              <KpiTile label={m.conversionMonthly && m.conversionRate != null ? 'Conversion %' : 'Sales Command'} value={m.conversionMonthly && m.conversionRate != null ? `${m.conversionRate.toFixed(1)}%` : 'Open'} gradient={founderGradients.info} delay={150} icon={<Target size={16} color="#FFF" />} onPress={m.conversionMonthly ? undefined : () => router.push('/(app)/console/sales-command' as never)} accessibilityLabel={m.conversionMonthly ? 'Monthly conversion' : 'Open Sales Command. Monthly sales series is not available.'} />
               <KpiTile label="Cost per lead" value={founderDb.formatInr(m.costPerLead, m.costPerLead % 1 === 0 ? 0 : 2)} gradient={founderGradients.warning} delay={180} icon={<Users size={16} color="#FFF" />} sparklineData={enquirySparkline} />
             </View>
 
@@ -1174,7 +1175,7 @@ export default function FounderDashboardScreen() {
             <PipelineFunnel
               steps={[
                 { label: 'New today', value: m.newEnquiriesToday, accent: '#7C6FFF', icon: <Sparkles size={16} color="#7C6FFF" /> },
-                { label: 'Total (month)', value: m.totalEnquiriesMonth, accent: '#38C8F4', icon: <Users size={16} color="#38C8F4" /> },
+                { label: m.enquiryMonthly ? 'Total (month)' : 'Month total unavailable', value: m.enquiryMonthly ? m.totalEnquiriesMonth : 0, accent: '#38C8F4', icon: <Users size={16} color="#38C8F4" /> },
                 { label: 'Unassigned', value: m.unassignedEnquiries, accent: '#FFB020', icon: <Target size={16} color="#FFB020" /> },
               ]}
               colors={colors}

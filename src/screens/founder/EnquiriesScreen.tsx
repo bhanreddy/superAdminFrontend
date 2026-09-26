@@ -13,7 +13,8 @@ import {
   TextInput,
   useWindowDimensions,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { SalesMetricList } from './SalesCommandScreen';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { pressableWebStyles } from '../../utils/webPressable';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
@@ -84,7 +85,7 @@ function formatRelative(iso?: string): string {
   return new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
 }
 
-export default function EnquiriesScreen() {
+function LegacyEnquiryBrowser() {
   const { colors } = useTheme();
   const router = useRouter();
   const { width } = useWindowDimensions();
@@ -116,16 +117,15 @@ export default function EnquiriesScreen() {
     return map;
   }, [founders]);
 
-  // Client-side search over the already-filtered server result.
-  const visible = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return enquiries;
-    return enquiries.filter((e) => {
-      const hay = [e.name, e.email, e.phone, e.category, e.source, (e as any).organization]
-        .filter(Boolean).join(' ').toLowerCase();
-      return hay.includes(q);
-    });
-  }, [enquiries, query]);
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      const next = query.trim();
+      setFilters((current) => (current.q === next ? current : { ...current, q: next }));
+    }, 350);
+    return () => clearTimeout(handle);
+  }, [query, setFilters]);
+
+  const visible = enquiries;
 
   // Summary counts for the stat strip (reflect the current server filter set).
   const stats = useMemo(() => {
@@ -379,7 +379,7 @@ export default function EnquiriesScreen() {
                   style={{ width: desktop ? '48.5%' : '100%' }}
                 >
                   <Pressable
-                    onPress={() => setDetail(e)}
+                    onPress={() => router.push(`/(app)/console/lead/${e.id}` as any)}
                     style={({ pressed }) => [
                       styles.card,
                       { borderColor: colors.clayBorderColor, backgroundColor: isDark ? 'rgba(33,31,45,0.66)' : 'rgba(255,255,255,0.72)', transform: [{ scale: pressed ? 0.985 : 1 }] },
@@ -406,6 +406,7 @@ export default function EnquiriesScreen() {
                         <Text numberOfLines={1} style={[styles.cardMeta, { color: colors.textTertiary }]}>
                           {(e.source || '—')} · {(e.category || '—')}{e.email ? ` · ${e.email}` : ''}
                         </Text>
+                        {e.account_id ? <Text style={{ color: colors.primary, fontSize: 12 }}>Linked school prospect</Text> : <Text style={{ color: colors.textTertiary, fontSize: 12 }}>Not linked to a school prospect</Text>}
                         <View style={styles.chipRow}>
                           <View style={[styles.miniChip, { borderColor: colors.clayBorderColor, backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)' }]}>
                             {e.assigned_to ? <UserRoundCheck size={11} color={colors.primary} /> : <UserRound size={11} color={colors.textTertiary} />}
@@ -833,3 +834,22 @@ const styles = StyleSheet.create({
   saveBtn: { paddingVertical: 15, borderRadius: 14, alignItems: 'center' },
   saveTxt: { color: '#fff', fontWeight: '800', fontSize: 15 },
 });
+
+function firstParam(value: string | string[] | undefined): string {
+  return Array.isArray(value) ? value[0] || '' : value || '';
+}
+
+export default function EnquiriesScreen() {
+  const params = useLocalSearchParams<{ metric?: string; period?: string; timezone?: string; label?: string; stage?: string }>();
+  const metric = firstParam(params.metric);
+  if (!metric) return <LegacyEnquiryBrowser />;
+  return (
+    <SalesMetricList
+      metric={metric}
+      period={firstParam(params.period) || 'month'}
+      timezone={firstParam(params.timezone) || 'Asia/Kolkata'}
+      label={firstParam(params.label) || metric}
+      stage={firstParam(params.stage) || undefined}
+    />
+  );
+}
