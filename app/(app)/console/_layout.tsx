@@ -50,6 +50,8 @@ export default function ConsoleStackLayout() {
       <Stack.Screen name="sales-command" />
       <Stack.Screen name="school-prospects/index" />
       <Stack.Screen name="school-prospects/[id]" />
+      <Stack.Screen name="school-intake/index" />
+      <Stack.Screen name="school-intake/[id]" />
       <Stack.Screen name="school-import" />
       <Stack.Screen name="import-history" />
       <Stack.Screen name="analytics" />

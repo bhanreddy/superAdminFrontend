@@ -12,6 +12,8 @@ import type { ClusterConfig } from '../../../src/config/clusters';
 import { useToast } from '../../../src/components/ui/Toast';
 import { ScreenHeader } from '../../../src/components/ui/ScreenHeader';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useAuth } from '../../../src/hooks/useAuth';
+import SchoolIntakeComposerScreen from '../../../src/screens/schools/SchoolIntakeComposerScreen';
 
 const getApiErrorMessage = (err: any, fallback: string) => (
   err?.response?.data?.error
@@ -21,6 +23,12 @@ const getApiErrorMessage = (err: any, fallback: string) => (
 );
 
 export default function AddSchoolScreen() {
+  const { role } = useAuth();
+  if (role === 'SALES_EXECUTIVE') return <SchoolIntakeComposerScreen />;
+  return <DirectSchoolCreateScreen />;
+}
+
+function DirectSchoolCreateScreen() {
   const { colors, isDark } = useTheme();
   const router = useRouter();
   const { showToast } = useToast();
@@ -38,31 +46,6 @@ export default function AddSchoolScreen() {
   const [name, setName] = useState(asStr(params.name) || asStr(params.organization));
   const [code, setCode] = useState('');
   const [address, setAddress] = useState(asStr(params.address));
-  const [logoUrl, setLogoUrl] = useState('');
-  
-  // App Config
-  const [androidPackage, setAndroidPackage] = useState('');
-  const [iosBundleId, setIosBundleId] = useState('');
-  const [primaryColor, setPrimaryColor] = useState('#1A73E8');
-
-  // Auto-fill logic
-  useEffect(() => {
-    if (name && !androidPackage) {
-      const sanitized = name.toLowerCase().replace(/[^a-z0-9]/g, '');
-      if (sanitized) {
-        const pkg = `com.nexsyrus.schoolims.${sanitized}`;
-        setAndroidPackage(pkg);
-        setIosBundleId(pkg);
-      }
-    }
-  }, [name]);
-
-  const handleAndroidPackageChange = (text: string) => {
-    setAndroidPackage(text);
-    if (iosBundleId === androidPackage) {
-      setIosBundleId(text);
-    }
-  };
 
   // Cluster Assignment
   const [assignedCluster, setAssignedCluster] = useState<ClusterConfig | null>(null);
@@ -129,10 +112,6 @@ export default function AddSchoolScreen() {
           name,
           code,
           address: address || undefined,
-          logo_url: logoUrl || undefined,
-          android_package: androidPackage || undefined,
-          ios_bundle_id: iosBundleId || undefined,
-          primary_color: primaryColor || undefined,
           admin: seedAdmin ? {
             email: adminEmail,
             password: adminPassword,
@@ -158,10 +137,6 @@ export default function AddSchoolScreen() {
         name,
         code,
         address: address || undefined,
-        logo_url: logoUrl || undefined,
-        android_package: androidPackage || undefined,
-        ios_bundle_id: iosBundleId || undefined,
-        primary_color: primaryColor || undefined,
       });
 
       const setupWarnings: string[] = [];
@@ -197,7 +172,8 @@ export default function AddSchoolScreen() {
       }
 
       // Navigate to the new school's build config
-      router.replace(`/(app)/schools/${newSchool.id}/build-config` as any);
+      const createdCluster = newSchool.cluster_id || assignedCluster?.cluster_id || '';
+      router.replace(`/(app)/schools/${newSchool.id}/build-config?cluster_id=${encodeURIComponent(createdCluster)}` as any);
     } catch (err: any) {
       const msg = getApiErrorMessage(err, 'Failed to create school.');
       setErrorMsg(msg);
@@ -264,39 +240,6 @@ export default function AddSchoolScreen() {
             containerStyle={{ marginBottom: 16 }}
           />
           <Input
-            label="Android Package Name"
-            placeholder="com.nexsyrus.schoolims.schoolname"
-            value={androidPackage}
-            onChangeText={handleAndroidPackageChange}
-            autoCapitalize="none"
-            containerStyle={{ marginBottom: 16 }}
-          />
-          <Input
-            label="iOS Bundle ID"
-            placeholder="com.nexsyrus.schoolims.schoolname"
-            value={iosBundleId}
-            onChangeText={setIosBundleId}
-            autoCapitalize="none"
-            containerStyle={{ marginBottom: 16 }}
-          />
-          <Input
-            label="Brand Color"
-            placeholder="#1A73E8"
-            value={primaryColor}
-            onChangeText={setPrimaryColor}
-            autoCapitalize="characters"
-            containerStyle={{ marginBottom: 16 }}
-          />
-          <Input
-            label="Logo URL"
-            placeholder="https://example.com/logo.png"
-            value={logoUrl}
-            onChangeText={setLogoUrl}
-            keyboardType="url"
-            autoCapitalize="none"
-            containerStyle={{ marginBottom: 16 }}
-          />
-          <Input
             label="Address"
             placeholder="123 Education Lane"
             value={address}
@@ -305,6 +248,9 @@ export default function AddSchoolScreen() {
             numberOfLines={3}
             containerStyle={{ marginBottom: 16 }}
           />
+          <Text style={{ color: colors.textSecondary, fontSize: 13, marginBottom: 16, lineHeight: 18 }}>
+            Package name, colors, and logo are collected in the school setup wizard after this school exists.
+          </Text>
 
           {/* ── Seed First Admin Toggle ── */}
           <View style={[styles.toggleSection, { backgroundColor: colors.surface, borderColor: colors.border }]}>

@@ -710,7 +710,7 @@ export default function SetupGuideScreen() {
                   </View>
                   <Text style={[styles.fileChangeText, { color: colors.textSecondary }]}>All school environment values</Text>
                   <Text style={[styles.fileChangeText, { color: colors.textSecondary }]}>
-                    Create a .env file in the Expo project root. These values are baked in at build time.
+                    Generate the school package from the setup wizard, then apply the ZIP. The preview below is the live configuration, not a second template.
                   </Text>
                   <Pressable
                     style={styles.inlineCheckRow}

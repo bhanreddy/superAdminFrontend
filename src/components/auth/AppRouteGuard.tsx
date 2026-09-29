@@ -17,6 +17,7 @@ type RoutePolicy =
  * fail closed to Founder access until a policy is explicitly added.
  */
 const ROUTE_POLICIES: RoutePolicy[] = [
+  { pattern: /^\/field(?:\/.*)?$/, allowedRoles: [...SALES_ROLES] },
   { pattern: /^\/sales\/(?:playbook|training)\/?$/, allowedRoles: [...SALES_ROLES] },
   { pattern: /^\/$/, publicForAuthenticated: true },
   { pattern: /^\/schools\/add\/?$/, permission: PERMISSIONS.SCHOOLS_CREATE },

@@ -87,6 +87,7 @@ export const PERMISSIONS = {
   COMPLAINTS_MANAGE: 'complaints.manage',
   CHECKLIST_READ: 'checklist.read',
   CHECKLIST_UPDATE: 'checklist.update',
+  CHECKLIST_DELEGATE: 'checklist.delegate',
   CONFIGS_READ: 'configs.read',
   CONFIGS_MODIFY: 'configs.modify',
   CONFIGS_APPROVE: 'configs.approve',
@@ -123,4 +124,19 @@ export function isSupportRole(role: string | null | undefined): boolean {
   if (!role) return false;
   const norm = role.trim().toUpperCase();
   return norm === 'SUPPORT_MANAGER' || norm === 'SUPPORT_EXECUTIVE';
+}
+
+export function canManageRole(managerRole: string | null | undefined, targetRole: string | null | undefined): boolean {
+  if (!managerRole || !targetRole) return false;
+  const m = managerRole.trim().toUpperCase();
+  const t = targetRole.trim().toUpperCase();
+  if (m === 'FOUNDER' || m === 'SUPER_ADMIN') {
+    return t !== 'FOUNDER' && t !== 'SUPER_ADMIN';
+  }
+  if (m === 'SALES_MANAGER') return t === 'SALES_EXECUTIVE';
+  if (m === 'IMPLEMENTATION_MANAGER') return t === 'IMPLEMENTATION_EXECUTIVE';
+  if (m === 'SUPPORT_MANAGER') return t === 'SUPPORT_EXECUTIVE' || t === 'TECHNICAL_SUPPORT';
+  if (m === 'OPERATIONS_MANAGER') return t === 'ACCOUNTS_MANAGER' || t === 'VIEW_ONLY_ADMIN';
+  if (m === 'DEPLOYMENT_MANAGER') return t === 'QA';
+  return false;
 }

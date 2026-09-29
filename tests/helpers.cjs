@@ -101,6 +101,7 @@ async function checklistServer() {
   const axios = require('axios');
   const client = axios.create({ baseURL: `http://127.0.0.1:${server.address().port}`, headers: { Authorization: 'Bearer FOUNDER' } });
   const load = loader({
+    'react-native': { Platform: { OS: 'ios' } },
     [path.join(frontend, 'src/api/superAdminClient.ts')]: { superAdminClient: client },
     [path.join(frontend, 'src/api/tokens.ts')]: {},
   });

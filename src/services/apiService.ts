@@ -271,6 +271,7 @@ export const superAdminApi = {
     email: string;
     phone?: string;
     role: string;
+    job_title?: string;
     employee_id?: string;
     manager_id?: string;
     territory?: string;
@@ -311,6 +312,57 @@ export const superAdminApi = {
   },
   toggleUserStatus: async (id: string, status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED') => {
     const response = await superAdminClient.patch(`/api/super-admin/users/${id}`, { status });
+    return response.data;
+  },
+  getUserImpact: async (id: string) => {
+    const response = await superAdminClient.get(`/api/super-admin/users/${id}/impact`);
+    return response.data;
+  },
+  deactivateUser: async (
+    id: string,
+    payload: {
+      reassign_reports_to?: string;
+      reassign_schools_to?: string;
+      reassign_tasks_to?: string;
+      reassign_supervision_to?: string;
+      reason?: string;
+    },
+  ) => {
+    const response = await superAdminClient.post(`/api/super-admin/users/${id}/deactivate`, payload);
+    return response.data;
+  },
+  getWorkspaceSummary: async () => {
+    const response = await superAdminClient.get('/api/super-admin/workspace/summary');
+    return response.data;
+  },
+  delegateChecklistItem: async (
+    schoolId: number,
+    itemId: number,
+    payload: {
+      assigned_to: string;
+      supervising_manager_id?: string;
+      due_date?: string;
+      priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+      instructions?: string;
+    },
+  ) => {
+    const response = await superAdminClient.post(
+      `/api/super-admin/checklist/${schoolId}/items/${itemId}/delegate`,
+      payload,
+    );
+    return response.data;
+  },
+  updateSchoolContacts: async (
+    schoolId: number,
+    payload: {
+      contact_name?: string | null;
+      contact_phone?: string | null;
+      contact_email?: string | null;
+      contact_designation?: string | null;
+      address?: string | null;
+    },
+  ) => {
+    const response = await superAdminClient.patch(`/api/super-admin/schools/${schoolId}`, payload);
     return response.data;
   },
 

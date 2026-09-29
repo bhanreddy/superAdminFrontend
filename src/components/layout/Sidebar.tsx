@@ -19,6 +19,7 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  Calendar,
   LayoutDashboard,
   BarChart3,
   Receipt,
@@ -122,6 +123,12 @@ function getNavGroupsForRole(
         title: 'OPERATIONS',
         items: [
           {
+            key: 'school-intake',
+            label: 'School Intake',
+            icon: (c, s) => <ClipboardList size={s} color={c} strokeWidth={1.8} />,
+            route: '/(app)/console/school-intake',
+          },
+          {
             key: 'checklist',
             label: 'Onboarding Checklist',
             icon: (c, s) => <CheckSquare size={s} color={c} strokeWidth={1.8} />,
@@ -191,6 +198,12 @@ function getNavGroupsForRole(
             label: 'Field Feedback',
             icon: (c, s) => <ClipboardList size={s} color={c} strokeWidth={1.8} />,
             route: '/(app)/console/field-feedback',
+          },
+          {
+            key: 'field-board',
+            label: 'Field Visits',
+            icon: (c, s) => <Network size={s} color={c} strokeWidth={1.8} />,
+            route: '/(app)/field/today',
           },
           {
             key: 'sales-command',
@@ -328,6 +341,35 @@ function getNavGroupsForRole(
         ],
       },
       {
+        title: 'FIELD SALES',
+        items: [
+          {
+            key: 'field-planner',
+            label: 'Planner',
+            icon: (c, s) => <Calendar size={s} color={c} strokeWidth={1.8} />,
+            route: '/(app)/field/planner',
+          },
+          {
+            key: 'field-today',
+            label: 'Today',
+            icon: (c, s) => <LayoutDashboard size={s} color={c} strokeWidth={1.8} />,
+            route: '/(app)/field/today',
+          },
+          {
+            key: 'field-route',
+            label: 'Route',
+            icon: (c, s) => <Network size={s} color={c} strokeWidth={1.8} />,
+            route: '/(app)/field/route',
+          },
+          {
+            key: 'field-performance',
+            label: 'Performance',
+            icon: (c, s) => <BarChart3 size={s} color={c} strokeWidth={1.8} />,
+            route: '/(app)/field/performance',
+          },
+        ],
+      },
+      {
         title: 'MY PIPELINE',
         items: [
           {
@@ -338,7 +380,7 @@ function getNavGroupsForRole(
           },
           {
             key: 'new-school',
-            label: 'New School Request',
+            label: 'School Onboarding',
             icon: (c, s) => <PlusCircle size={s} color={c} strokeWidth={1.8} />,
             route: '/(app)/schools/add',
           },

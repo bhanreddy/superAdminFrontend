@@ -30,6 +30,7 @@ import {
 import { useTheme, clayStyle } from '../../contexts/ThemeContext';
 import { useAuth } from '../../hooks/useAuth';
 import { superAdminApi } from '../../services/apiService';
+import { INTAKE_STATUS, schoolIntakeApi, type IntakeStatus, type SchoolIntake } from '../../services/schoolIntakeService';
 import { ConsoleAmbientBackground, GlassCard, bottomTabPad } from '../founder/founderUi';
 
 interface SchoolItem {
@@ -55,14 +56,19 @@ export default function SalesExecutiveDashboard() {
   const router = useRouter();
 
   const [schools, setSchools] = useState<SchoolItem[]>([]);
+  const [intakes, setIntakes] = useState<SchoolIntake[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const loadData = useCallback(async () => {
     try {
-      const res: any = await superAdminApi.getSchools();
-      const list = Array.isArray(res) ? res : Array.isArray(res?.data) ? res.data : [];
+      const [res, intakeRows] = await Promise.all([
+        superAdminApi.getSchools(),
+        schoolIntakeApi.list().catch(() => [] as SchoolIntake[]),
+      ]);
+      const list = Array.isArray(res) ? res : Array.isArray((res as any)?.data) ? (res as any).data : [];
       setSchools(list);
+      setIntakes(intakeRows);
     } catch (err) {
       console.error('Error fetching executive schools:', err);
     } finally {
@@ -79,6 +85,9 @@ export default function SalesExecutiveDashboard() {
     setRefreshing(true);
     loadData();
   }, [loadData]);
+
+  const withFounder = intakes.filter((item) => item.status === 'SUBMITTED' || item.status === 'FAILED').length;
+  const sentBack = intakes.filter((item) => item.status === 'CHANGES_REQUESTED').length;
 
   return (
     <ConsoleAmbientBackground>
@@ -107,7 +116,7 @@ export default function SalesExecutiveDashboard() {
               My Assigned Schools
             </Text>
             <Text style={[styles.heroSubtitle, { color: colors.textSecondary }]}>
-              Track onboarding milestones, manage data uploads, and submit school requirements.
+              Upload a school dossier. The founder reviews it, then the school is created and assigned back to you.
             </Text>
           </View>
 
@@ -120,7 +129,7 @@ export default function SalesExecutiveDashboard() {
             ]}
           >
             <PlusCircle size={18} color="#FFFFFF" />
-            <Text style={styles.newSchoolBtnText}>New School Request</Text>
+            <Text style={styles.newSchoolBtnText}>Onboard a school</Text>
           </Pressable>
         </View>
 
@@ -155,6 +164,39 @@ export default function SalesExecutiveDashboard() {
           </GlassCard>
         </View>
 
+        <Pressable
+          onPress={() => router.push('/(app)/schools/add?tab=sent' as any)}
+          style={({ pressed }) => [{ transform: [{ scale: pressed ? 0.985 : 1 }], marginBottom: 20 }]}
+        >
+          <GlassCard variant="lightweight" style={styles.intakeStrip}>
+            <View style={styles.intakeStripRow}>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Founder review</Text>
+              <Text style={[styles.schoolAddr, { color: colors.textSecondary }]}>
+                {intakes.length
+                  ? `${withFounder} with the founder${sentBack ? ` · ${sentBack} sent back to you` : ''}`
+                  : 'A school is created only after the founder approves your dossier.'}
+              </Text>
+              </View>
+              <View style={styles.intakeCount}>
+                <Text style={styles.intakeCountText}>{intakes.length}</Text>
+              </View>
+            </View>
+          </GlassCard>
+        </Pressable>
+
+        {intakes.slice(0, 3).map((item) => {
+          const meta = INTAKE_STATUS[item.status as IntakeStatus] || INTAKE_STATUS.SUBMITTED;
+          return (
+            <GlassCard key={item.id} variant="lightweight" style={styles.intakeRow}>
+              <View style={styles.intakeStripRow}>
+                <Text style={[styles.schoolName, { color: colors.textPrimary, flex: 1 }]} numberOfLines={1}>{item.name}</Text>
+                <Text style={{ color: meta.color, fontSize: 12, fontWeight: '700' }}>{meta.label}</Text>
+              </View>
+            </GlassCard>
+          );
+        })}
+
         {/* Schools List */}
         <View style={styles.listHeader}>
           <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
@@ -172,7 +214,7 @@ export default function SalesExecutiveDashboard() {
             <School size={40} color={colors.textTertiary} />
             <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>No Schools Assigned</Text>
             <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
-              You currently have no schools assigned. Create a new school request or ask your Sales Manager to allocate schools.
+              Schools appear here after the founder approves your dossier. Send one from Onboard a school.
             </Text>
           </GlassCard>
         ) : (
@@ -336,7 +378,33 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 12,
-    marginBottom: 24,
+    marginBottom: 16,
+  },
+  intakeStrip: {
+    padding: 16,
+  },
+  intakeStripRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  intakeCount: {
+    minWidth: 44,
+    height: 44,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(10,132,255,0.12)',
+  },
+  intakeCountText: {
+    color: '#0A84FF',
+    fontWeight: '800',
+    fontSize: 16,
+  },
+  intakeRow: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginBottom: 8,
   },
   quickCard: {
     flex: 1,
