@@ -17,6 +17,7 @@ type RoutePolicy =
  * fail closed to Founder access until a policy is explicitly added.
  */
 const ROUTE_POLICIES: RoutePolicy[] = [
+  {pattern:/^\/media-qr\/?$/,founderOnly:true},
   { pattern: /^\/field(?:\/.*)?$/, allowedRoles: [...SALES_ROLES] },
   { pattern: /^\/sales\/(?:playbook|training)\/?$/, allowedRoles: [...SALES_ROLES] },
   { pattern: /^\/$/, publicForAuthenticated: true },
@@ -39,7 +40,7 @@ const ROUTE_POLICIES: RoutePolicy[] = [
   { pattern: /^\/complaints(?:\/.*)?$/, permission: PERMISSIONS.COMPLAINTS_READ },
   { pattern: /^\/checklist(?:\/.*)?$/, permission: PERMISSIONS.CHECKLIST_READ },
   {
-    pattern: /^\/(?:console|admins|clusters|manage-content|medical|microservices|messenger)(?:\/.*)?$/,
+    pattern: /^\/(?:console|admins|clusters|manage-content|content-programs|medical|microservices|messenger)(?:\/.*)?$/,
     founderOnly: true,
   },
 ];
@@ -62,4 +63,3 @@ export function AppRouteGuard({ children }: { children: React.ReactNode }) {
   }
   return <>{children}</>;
 }
-

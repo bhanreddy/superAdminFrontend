@@ -12,6 +12,8 @@ interface InputProps extends TextInputProps {
   containerStyle?: ViewStyle;
   /** Force dark field styling (e.g. branded auth screens) regardless of app theme. */
   tone?: 'auto' | 'dark';
+  /** Dense editors may opt out of JS-driven focus color animation. */
+  animateFocus?: boolean;
 }
 
 const WEB_INPUT_RESET =
@@ -31,6 +33,7 @@ export const Input: React.FC<InputProps> = React.memo(({
   secureTextEntry,
   containerStyle,
   tone = 'auto',
+  animateFocus = true,
   style,
   onFocus,
   onBlur,
@@ -48,6 +51,7 @@ export const Input: React.FC<InputProps> = React.memo(({
 
   const handleFocus = () => {
     setIsFocused(true);
+    if (!animateFocus) return;
     Animated.spring(focusAnim, {
       toValue: 1,
       tension: 200,
@@ -58,6 +62,7 @@ export const Input: React.FC<InputProps> = React.memo(({
 
   const handleBlur = () => {
     setIsFocused(false);
+    if (!animateFocus) return;
     Animated.spring(focusAnim, {
       toValue: 0,
       tension: 200,
@@ -97,7 +102,7 @@ export const Input: React.FC<InputProps> = React.memo(({
         style={[
           styles.inputWrapper,
           {
-            borderColor: error ? colors.error : borderColor,
+            borderColor: error ? colors.error : animateFocus ? borderColor : isFocused ? colors.primary : colors.border,
             backgroundColor: fieldBg,
           },
           // Soft Apple-grade inset tray and focus glow

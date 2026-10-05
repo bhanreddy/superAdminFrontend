@@ -100,6 +100,10 @@ export const PERMISSIONS = {
   USERS_READ_TEAM: 'users.read.team',
   AUDIT_READ: 'audit.read',
   ANALYTICS_READ: 'analytics.read',
+  CURRICULUM_READ: 'curriculum.read',
+  CURRICULUM_AUTHOR: 'curriculum.author',
+  CURRICULUM_REVIEW: 'curriculum.review',
+  CURRICULUM_PUBLISH: 'curriculum.publish',
 } as const;
 
 export function isFounderOrSuperAdmin(role: string | null | undefined): boolean {

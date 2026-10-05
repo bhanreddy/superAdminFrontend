@@ -124,7 +124,7 @@ function DirectSchoolCreateScreen() {
         setHandoff(operation);
         if (operation.status === 'SUCCEEDED' && operation.target_school_id) {
           showToast(`School handoff completed for ${name}.`, 'success', 5000);
-          router.replace(`/(app)/schools/${operation.target_school_id}/build-config?cluster_id=${encodeURIComponent(operation.cluster_id || assignedCluster.cluster_id)}` as any);
+          router.replace(`/(app)/schools/${operation.target_school_id}/build-config?download=1&cluster_id=${encodeURIComponent(operation.cluster_id || assignedCluster.cluster_id)}` as any);
           return;
         }
         const reason = operation.failure_reason || 'Onboarding is waiting to resume.';
@@ -173,7 +173,7 @@ function DirectSchoolCreateScreen() {
 
       // Navigate to the new school's build config
       const createdCluster = newSchool.cluster_id || assignedCluster?.cluster_id || '';
-      router.replace(`/(app)/schools/${newSchool.id}/build-config?cluster_id=${encodeURIComponent(createdCluster)}` as any);
+      router.replace(`/(app)/schools/${newSchool.id}/build-config?download=1&cluster_id=${encodeURIComponent(createdCluster)}` as any);
     } catch (err: any) {
       const msg = getApiErrorMessage(err, 'Failed to create school.');
       setErrorMsg(msg);
@@ -336,7 +336,7 @@ function DirectSchoolCreateScreen() {
                   setHandoff(operation);
                   if (operation.status === 'SUCCEEDED' && operation.target_school_id) {
                     showToast(`School handoff completed for ${name}.`, 'success', 5000);
-                    router.replace(`/(app)/schools/${operation.target_school_id}/build-config?cluster_id=${encodeURIComponent(operation.cluster_id || assignedCluster?.cluster_id || '')}` as any);
+                    router.replace(`/(app)/schools/${operation.target_school_id}/build-config?download=1&cluster_id=${encodeURIComponent(operation.cluster_id || assignedCluster?.cluster_id || '')}` as any);
                     return;
                   }
                   setErrorMsg(operation.failure_reason || 'Handoff is still incomplete.');

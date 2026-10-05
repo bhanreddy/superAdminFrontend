@@ -43,6 +43,7 @@ export interface SchoolConfiguration {
     blockers: ConfigBlocker[];
     platforms: Record<string, { status: string; missing?: string[] }>;
   };
+  library?: { mode: 'exact' | 'template' | null; folder: string | null };
   latest_revision: { revision: number } | null;
   latest_job: { id: string; revision: number; status: string; attempt_count: number; error?: { message?: string } | null } | null;
 }

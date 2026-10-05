@@ -41,7 +41,7 @@ function field(config: Record<string, any>, suggestions: Record<string, any>, ke
 }
 
 export default function BuildConfigScreen() {
-  const { id, section, cluster_id: clusterParam } = useLocalSearchParams<{ id: string; section?: string; cluster_id?: string }>();
+  const { id, section, download: autoDownload, cluster_id: clusterParam } = useLocalSearchParams<{ id: string; section?: string; download?: string; cluster_id?: string }>();
   const clusterId = Array.isArray(clusterParam) ? clusterParam[0] : clusterParam;
   const { colors } = useTheme();
   const { can } = useAuth();
@@ -53,13 +53,16 @@ export default function BuildConfigScreen() {
   const [school, setSchool] = useState<any>(null);
   const [draft, setDraft] = useState<SchoolConfiguration | null>(null);
   const [legacy, setLegacy] = useState<BuildConfig | null>(null);
-  const [step, setStep] = useState<StepName>(section === 'env' ? 'Infrastructure' : section === 'appjson' || section === 'easjson' ? 'Application' : 'Identity');
+  const [step, setStep] = useState<StepName>(autoDownload === '1' ? 'Review' : section === 'env' ? 'Infrastructure' : section === 'appjson' || section === 'easjson' ? 'Application' : 'Identity');
   const [form, setForm] = useState<Record<string, string>>({});
   const [platforms, setPlatforms] = useState<string[]>(['android', 'web']);
   const [saving, setSaving] = useState(false);
   const [job, setJob] = useState<SchoolConfiguration['latest_job']>(null);
   const [artifacts, setArtifacts] = useState<Array<{ id: string; revision: number; file_name: string; sha256: string }>>([]);
   const [diffText, setDiffText] = useState('');
+  const autoStarted = useRef(false);
+  const pendingDownload = useRef(false);
+  const [preparing, setPreparing] = useState(false);
   const idempotency = useRef(`pkg-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`);
 
   const load = useCallback(async () => {
@@ -126,7 +129,8 @@ export default function BuildConfigScreen() {
         if (next.status === 'SUCCEEDED' || next.status === 'FAILED') {
           const packages = await listSchoolPackages(id, clusterId);
           setArtifacts(packages.artifacts || []);
-          if (next.status === 'SUCCEEDED') showToast(`Package revision ${next.revision} is ready.`, 'success');
+          if (next.status === 'SUCCEEDED') showToast(`School folder is ready.`, 'success');
+          if (next.status === 'FAILED') pendingDownload.current = false;
         }
       } catch (err) {
         // Keep the last known job state. The next poll retries.
@@ -207,24 +211,56 @@ export default function BuildConfigScreen() {
 
   const generate = async () => {
     if (!clusterId) return;
+    if (preparing) return;
+    setPreparing(true);
+    pendingDownload.current = true;
     try {
       const created = await generateSchoolPackage(id, clusterId, idempotency.current);
       setJob({ id: created.job_id, revision: created.revision, status: created.status, attempt_count: 0, error: null });
       idempotency.current = `pkg-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-      showToast('Package generation started. The school record is unchanged.', 'success');
+      if (created.status === 'SUCCEEDED') {
+        const packages = await listSchoolPackages(id, clusterId);
+        setArtifacts(packages.artifacts || []);
+      }
+      showToast('Preparing the school folder for download.', 'success');
     } catch (err: any) {
       const blockersText = (err?.response?.data?.blockers || []).map((item: any) => item.message).join('\n');
+      pendingDownload.current = false;
       showToast(blockersText || err?.response?.data?.error || 'Generation failed', 'error');
+    } finally {
+      setPreparing(false);
     }
   };
 
   const download = async (artifact: { id: string; file_name: string }) => {
     if (!clusterId) return;
-    await downloadAuthorizedFile(
-      `/api/super-admin/schools/${id}/packages/${artifact.id}/download?cluster_id=${encodeURIComponent(clusterId)}`,
-      artifact.file_name,
-    );
+    try {
+      await downloadAuthorizedFile(
+        `/api/super-admin/schools/${id}/packages/${artifact.id}/download?cluster_id=${encodeURIComponent(clusterId)}`,
+        artifact.file_name,
+      );
+    } catch {
+      showToast('Download failed. Use Download to try again.', 'error');
+    }
   };
+
+  useEffect(() => {
+    if (loading || !draft || !clusterId || autoDownload !== '1' || autoStarted.current) return;
+    autoStarted.current = true;
+    if (!canGenerate) {
+      showToast('School created. Build trigger permission is required to prepare its folder.', 'warning');
+      return;
+    }
+    void generate();
+  }, [loading, draft, clusterId, autoDownload, canGenerate]);
+
+  useEffect(() => {
+    if (!pendingDownload.current || job?.status !== 'SUCCEEDED') return;
+    const artifact = artifacts.find(item => item.revision === job.revision);
+    if (!artifact) return;
+    pendingDownload.current = false;
+    void download(artifact);
+  }, [artifacts, job]);
 
   const showDiff = async () => {
     if (!clusterId || !draft?.latest_revision || draft.latest_revision.revision < 2) return;
@@ -374,14 +410,18 @@ export default function BuildConfigScreen() {
           <>
             <Text style={{ color: colors.textPrimary, fontWeight: '700' }}>{form.official_name} · app name {form.app_display_name}</Text>
             <Text style={{ color: colors.textSecondary, fontSize: 13 }}>{form.slug} · {form.android_package} · {platforms.join(', ') || 'no platforms'}</Text>
-            <Text style={{ color: colors.textSecondary, fontSize: 13 }}>Files: app.json, eas.json, wrangler.jsonc, .env, schoolConfig.ts, assets. school.ts stays in the checkout.</Text>
+            <Text style={{ color: colors.textSecondary, fontSize: 13 }}>
+              {draft.library?.mode === 'exact'
+                ? `Download is the saved constants folder “${draft.library.folder}”: all original files and assets, including the original environment filename if present.`
+                : 'Download is a school constants folder in the same layout: app.json, eas.json, .env, wrangler.jsonc, constants, and assets.'}
+            </Text>
             {legacy ? (
               <>
                 <CodeBlock title="app.json changes" body={JSON.stringify(legacy.app_json_changes, null, 2)} colors={colors} />
                 <CodeBlock title="eas.json profile" body={JSON.stringify(legacy.eas_profile, null, 2)} colors={colors} />
               </>
             ) : null}
-            {canGenerate ? <Button title={job?.status === 'RUNNING' || job?.status === 'QUEUED' ? 'Generating…' : 'Generate package'} onPress={generate} loading={job?.status === 'RUNNING' || job?.status === 'QUEUED'} /> : <Text style={{ color: colors.textSecondary }}>Package generation requires build trigger permission.</Text>}
+            {canGenerate ? <Button title={preparing || job?.status === 'RUNNING' || job?.status === 'QUEUED' ? 'Preparing folder…' : 'Download school folder'} onPress={generate} loading={preparing || job?.status === 'RUNNING' || job?.status === 'QUEUED'} /> : <Text style={{ color: colors.textSecondary }}>Preparing the school folder requires build trigger permission.</Text>}
             {job?.status === 'FAILED' ? (
               <View style={{ gap: 8 }}>
                 <Text style={{ color: colors.error }}>{job.error?.message || 'Generation failed. The school was not duplicated.'}</Text>

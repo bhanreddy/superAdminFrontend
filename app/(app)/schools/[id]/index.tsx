@@ -555,7 +555,7 @@ export default function SchoolDetailScreen() {
           {can(PERMISSIONS.BUILDS_READ) && <Button
             title="Build Config"
             variant="secondary"
-            onPress={() => router.push(`/(app)/schools/${school.id}/build-config` as any)}
+            onPress={() => router.push(`/(app)/schools/${school.id}/build-config?cluster_id=${encodeURIComponent(school.cluster_id || '')}` as any)}
             style={styles.halfBtn}
           />}
           {can(PERMISSIONS.CONFIGS_READ) && <Button

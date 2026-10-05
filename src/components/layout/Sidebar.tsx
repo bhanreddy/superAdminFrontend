@@ -93,6 +93,7 @@ function getNavGroupsForRole(
       {
         title: 'MANAGEMENT',
         items: [
+          {key:'media-qr',label:'Media QR Manager',icon:(c,s)=><QrCode size={s} color={c} strokeWidth={1.8}/>,route:'/(app)/media-qr'},
           {
             key: 'schools',
             label: 'Schools',
@@ -247,6 +248,13 @@ function getNavGroupsForRole(
             label: 'Festival Posters',
             icon: (c, s) => <Sparkles size={s} color={c} strokeWidth={1.8} />,
             route: '/(app)/console/festival-posters',
+          },
+          {
+            key: 'content-studio',
+            label: 'Content Studio',
+            icon: (c, s) => <BookOpen size={s} color={c} strokeWidth={1.8} />,
+            route: '/(app)/manage-content',
+            requiresSuperAdmin: true,
           },
           {
             key: 'audit-logs',

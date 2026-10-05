@@ -43,6 +43,8 @@ async function checklistServer() {
   let failReads = false;
   function sql(strings, ...values) {
     const query = strings.join('?').replace(/\s+/g, ' ').trim();
+    // The route uses a nested server-side timestamp fragment for completion.
+    if (query === 'NOW()') return new Date().toISOString();
     if (query.startsWith('id =') || query.startsWith('task_key =')) return { query, value: values[0] };
     if (query.startsWith('INSERT INTO school_onboarding_checklists')) {
       const [school_id, task_key, title, category] = values;
@@ -61,9 +63,11 @@ async function checklistServer() {
       return Promise.resolve(rows.filter((item) => item.school_id === schoolId && (lookup.query.startsWith('id =') ? item.id : item.task_key) === lookup.value));
     }
     if (query.startsWith('UPDATE school_onboarding_checklists')) {
-      const [status, blocker_reason, notes, completed_by, completed_at, id] = values;
+      const [status, blocker_reason, next_action, completion_outcome, notes, evidence_url,
+        escalated_at, escalation_reason, escalated_to, completed_by, completed_at, id] = values;
       const item = rows.find((row) => row.id === id);
-      Object.assign(item, { status, blocker_reason, notes, completed_by, completed_at });
+      Object.assign(item, { status, blocker_reason, next_action, completion_outcome, notes, evidence_url,
+        escalated_at, escalation_reason, escalated_to, completed_by, completed_at });
       return Promise.resolve([{ ...item }]);
     }
     throw new Error(`Unexpected SQL in checklist fixture: ${query}`);

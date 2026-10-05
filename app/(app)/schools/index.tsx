@@ -217,7 +217,10 @@ export default function SchoolsListScreen() {
   };
 
   const goToBuildConfig = (school: SchoolType) => {
-    router.push({ pathname: '/(app)/schools/[id]/build-config', params: { id: school.id.toString() } } as any);
+    router.push({
+      pathname: '/(app)/schools/[id]/build-config',
+      params: { id: school.id.toString(), cluster_id: school.cluster_id || '' },
+    } as any);
   };
 
   const goToAppConfig = (school: SchoolType) => {

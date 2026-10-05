@@ -439,3 +439,5 @@ export const lightTheme = {
 
 // ─── Default export for backward compatibility ──────────────────────────────
 export const theme = darkTheme;
+
+export const MEDIA_EDITORIAL={accent:'#651F34'} as const;
