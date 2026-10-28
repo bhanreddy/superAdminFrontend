@@ -27,6 +27,7 @@ const initialState: AuthState = {
   user: null,
   session: null,
   loading: true,
+  mustChangePassword: false,
   isSuperAdmin: false,
   currentAdmin: null,
   founder: null,
@@ -42,6 +43,7 @@ const loggedOutState: AuthState = {
   user: null,
   session: null,
   loading: false,
+  mustChangePassword: false,
   isSuperAdmin: false,
   currentAdmin: null,
   founder: null,
@@ -108,6 +110,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             user: rawUser,
           },
           loading: false,
+          mustChangePassword: Boolean(rawUser.mustChangePassword),
           isSuperAdmin: isFounder,
           currentAdmin: profile.admin || {
             id: rawUser.id,
@@ -181,6 +184,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
     return () => setAuthInvalidationHandler(null);
   }, []);
+
+  // Refresh the CA menu after owner grants change; the API enforces grants on every request.
+  useEffect(() => {
+    if ((state.role !== 'CA' && state.role !== 'CA_LEAD')) return;
+    const timer = setInterval(async () => {
+      const token = await getStoredAccessToken();
+      if (!token) return;
+      const resolved = await validateAndBuildState(token);
+      if (resolved && mountedRef.current) setState(resolved);
+    }, 30000);
+    return () => clearInterval(timer);
+  }, [state.role, validateAndBuildState]);
 
   // Centralized permission check helper: can("students.import")
   const can = useCallback(

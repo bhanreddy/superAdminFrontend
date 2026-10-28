@@ -447,6 +447,10 @@ export const founderApi = {
     const response = await superAdminClient.post('/api/super-admin/founder/expenses', payload);
     return response.data;
   },
+  markExpensePaid: async (id: string, accountCode: string) => {
+    const response = await superAdminClient.post(`/api/super-admin/founder/expenses/${id}/paid`, { account_code: accountCode });
+    return response.data;
+  },
   approveExpense: async (id: string, approverFounderId: string) => {
     const response = await superAdminClient.post(`/api/super-admin/founder/expenses/${id}/approve`, { approver_founder_id: approverFounderId });
     return response.data;

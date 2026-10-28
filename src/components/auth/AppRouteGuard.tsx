@@ -3,6 +3,7 @@ import { usePathname } from 'expo-router';
 import { SALES_ROLES } from '../../content/salesPlaybook';
 import type { Role } from '../../constants/rbac';
 import { PERMISSIONS } from '../../constants/rbac';
+import { useAuth } from '../../hooks/useAuth';
 import { RouteGuard } from './RouteGuard';
 
 type RoutePolicy =
@@ -47,6 +48,10 @@ const ROUTE_POLICIES: RoutePolicy[] = [
 
 export function AppRouteGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || '/';
+  const { role, isFounder, permissions } = useAuth();
+  if (/^\/books\/access\/?$/.test(pathname)) return <RouteGuard allowedRoles={['CA_LEAD']}>{children}</RouteGuard>;
+  if (/^\/books\/account\/?$/.test(pathname)) return <RouteGuard allowedRoles={['CA', 'CA_LEAD']}>{children}</RouteGuard>;
+  if (/^\/books\/?$/.test(pathname) && (isFounder || (role === 'CA' || role === 'CA_LEAD') || permissions.some(p => p.startsWith('books.')))) return <>{children}</>;
   const policy = ROUTE_POLICIES.find((candidate) => candidate.pattern.test(pathname));
 
   if (!policy || 'founderOnly' in policy) {

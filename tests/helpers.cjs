@@ -117,12 +117,14 @@ const React = require('react');
 const native = {
   View: 'View', Text: 'Text', ScrollView: 'ScrollView', Pressable: 'Pressable', TextInput: 'TextInput',
   ActivityIndicator: 'ActivityIndicator', Modal: ({ visible, children }) => visible ? React.createElement('Modal', null, children) : null,
+  Linking: { openURL: async () => {} },
   Platform: { OS: 'ios' }, Alert: { alert: () => {} }, StyleSheet: { create: (styles) => styles },
 };
 function uiLoader(overrides = {}) {
   const colors = { primary: '#1765B2', textPrimary: '#111111', textSecondary: '#555555', border: '#DDDDDD', background: '#F5F7FA' };
   const mocks = {
     'react-native': native,
+    'expo-clipboard': { setStringAsync: async () => true },
     'lucide-react-native': new Proxy({}, { get: (_, key) => key === '__esModule' ? true : () => null }),
     'expo-router': { useLocalSearchParams: () => ({}), useRouter: () => ({ push: () => {} }), usePathname: () => '/sales/playbook' },
     [path.join(frontend, 'src/contexts/ThemeContext.tsx')]: { useTheme: () => ({ colors, isDark: false, clayShadows: {} }), clayStyle: () => ({}) },

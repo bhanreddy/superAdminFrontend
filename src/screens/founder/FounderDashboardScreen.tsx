@@ -107,18 +107,19 @@ const ROW_ACCENTS = [
 
 function FinancialSummaryGrid({ summary, colors, isDark }: { summary: founderDb.FinancialSummary; colors: any; isDark: boolean }) {
   const cards = [
-    { label: 'Total collected', value: founderDb.formatInr(summary.revenue), color: '#00D4AD' },
+    { label: 'Books revenue', value: founderDb.formatInr(summary.revenue), color: '#00D4AD' },
     { label: 'Client billing collected', value: founderDb.formatInr(summary.client_billing_collected), color: '#7C6FFF' },
-    { label: 'Platform expenses', value: founderDb.formatInr(summary.expenses), color: '#FF6B7A' },
+    { label: 'Books expenses', value: founderDb.formatInr(summary.expenses), color: '#FF6B7A' },
     { label: 'Net profit', value: founderDb.formatInr(summary.net_profit), color: summary.net_profit >= 0 ? '#7C6FFF' : '#FF6B7A' },
     { label: 'Profit margin', value: summary.profit_margin == null ? '—' : `${summary.profit_margin.toFixed(1)}%`, color: '#38C8F4' },
   ];
   return (
     <View style={[styles.financialGrid, { borderColor: colors.clayBorderColor, backgroundColor: isDark ? 'rgba(18,20,34,0.68)' : 'rgba(250,251,255,0.85)' }]}>
       <View style={styles.financialGridHead}>
-        <View><Text style={[styles.financialGridTitle, { color: colors.textPrimary }]}>Financial Summary</Text><Text style={[styles.financialGridSub, { color: colors.textSecondary }]}>Total collected includes Business Unit collections and issued client billing documents. Expenses are platform-wide.</Text></View>
-        <View style={[styles.financialScope, { backgroundColor: 'rgba(124,111,255,0.12)' }]}><Text style={{ color: '#7C6FFF', fontSize: 10, fontWeight: '800' }}>LIVE</Text></View>
+        <View><Text style={[styles.financialGridTitle, { color: colors.textPrimary }]}>Financial Summary</Text><Text style={[styles.financialGridSub, { color: colors.textSecondary }]}>Revenue, expenses and profit use the Nexsyrus Books ledger, including connected finances. Client billing collected shows recorded receipts.</Text></View>
+        <View style={[styles.financialScope, { backgroundColor: 'rgba(124,111,255,0.12)' }]}><Text style={{ color: '#7C6FFF', fontSize: 10, fontWeight: '800' }}>BOOKS</Text></View>
       </View>
+      {summary.business_unit_id !== 'ALL' && <Text style={{ color: colors.textSecondary, fontSize: 12, marginBottom: 12 }}>Selected unit collections: {founderDb.formatInr(summary.business_unit_collections)}. Books totals remain platform-wide.</Text>}
       <View style={styles.financialCards}>{cards.map((card) => <View key={card.label} style={[styles.financialCard, { borderColor: `${card.color}28`, backgroundColor: `${card.color}0C` }]}><Text style={[styles.financialCardLabel, { color: colors.textSecondary }]}>{card.label}</Text><Text style={[styles.financialCardValue, { color: card.color }]} numberOfLines={1}>{card.value}</Text></View>)}</View>
     </View>
   );
@@ -926,6 +927,7 @@ export default function FounderDashboardScreen() {
   const navItems = useMemo(
     () => [
       { label: 'Expenses', sub: 'Track & receipts', route: '/(app)/console/expenses', gradient: founderGradients.danger, icon: 'INR' },
+      { label: 'Books & accounting', sub: 'Sales, purchases & ledger', route: '/(app)/books', gradient: founderGradients.info, icon: 'INR' },
       { label: 'People & payroll', sub: 'Salaries & HR docs', route: '/(app)/console/payroll', gradient: founderGradients.primary, icon: 'HR' },
       ...(canApproveReject
         ? ([

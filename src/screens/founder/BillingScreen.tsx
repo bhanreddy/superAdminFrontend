@@ -39,6 +39,7 @@ import {
   Stethoscope,
 } from 'lucide-react-native';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
+import { Select as BooksSelect } from '../books/BooksUi';
 import { Input } from '../../components/ui/Input';
 import { useTheme } from '../../contexts/ThemeContext';
 import {
@@ -753,6 +754,16 @@ function CreateDocumentModal({
   const [previewErr, setPreviewErr] = useState<string | null>(null);
   const [issuing, setIssuing] = useState(false);
   const [issueErr, setIssueErr] = useState<string | null>(null);
+  const [invoiceOptions, setInvoiceOptions] = useState<BillingDocument[]>([]);
+  const [settleInvoice, setSettleInvoice] = useState<BillingDocument | null>(null);
+  const [invoiceError, setInvoiceError] = useState('');
+  useEffect(() => {
+    let current = true;
+    setInvoiceOptions([]); setInvoiceError('');
+    if (docType !== 'receipt' || !legalName.trim()) { setSettleInvoice(null); return; }
+    const timer = setTimeout(() => { void billing.outstandingInvoices(legalName.trim()).then(rows => { if (current) setInvoiceOptions(rows); }).catch(() => { if (current) setInvoiceError('Outstanding invoices could not be loaded. Change the customer name to retry.'); }); }, 250);
+    return () => { current = false; clearTimeout(timer); };
+  }, [docType, legalName]);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -778,7 +789,7 @@ function CreateDocumentModal({
   const showNameSuggestions = nameFocused && (legalName.trim().length > 0 || clients.length > 0);
 
   const onLegalNameChange = (value: string) => {
-    setLegalName(value);
+    setLegalName(value); setSettleInvoice(null);
     if (selectedClient && value.trim().toLowerCase() !== selectedClient.name.trim().toLowerCase()) {
       setSelectedClient(null);
     }
@@ -786,7 +797,7 @@ function CreateDocumentModal({
 
   const pickClient = (client: BillingClient) => {
     if (nameBlurTimer.current) clearTimeout(nameBlurTimer.current);
-    setSelectedClient(client);
+    setSelectedClient(client); setSettleInvoice(null);
     setLegalName(client.name);
     setAddress(client.address || '');
     setNameFocused(false);
@@ -805,6 +816,7 @@ function CreateDocumentModal({
   const buildInput = useCallback((): IssueDocumentInput => {
     const input: IssueDocumentInput = {
       document_type: docType,
+      settles_invoice_id: docType === 'receipt' ? settleInvoice?.id || null : null,
       client: {
         legal_name: legalName.trim(),
         billing_address: address.trim(),
@@ -820,8 +832,9 @@ function CreateDocumentModal({
       })),
     };
     if (docType === 'tax_invoice') input.gst_rate = Number(gstRate);
+    if (docType === 'receipt' && settleInvoice) input.client = { legal_name: settleInvoice.client_legal_name, billing_address: settleInvoice.client_billing_address, gstin: settleInvoice.client_gstin, id: settleInvoice.client_id, kind: settleInvoice.client_kind, cluster_id: settleInvoice.client_cluster_id };
     return input;
-  }, [docType, legalName, address, gstin, items, gstRate, selectedClient]);
+  }, [docType, legalName, address, gstin, items, gstRate, selectedClient, settleInvoice]);
 
   // Debounced live preview (server-side computation is the source of truth).
   useEffect(() => {
@@ -1041,6 +1054,15 @@ function CreateDocumentModal({
                 placeholder="Leave blank if not applicable"
               />
             )}
+            {docType === 'receipt' && <View style={{ gap: 10, marginBottom: 16 }}>
+              <BooksSelect label="Receipt applies to" value={settleInvoice?.id || ''} options={[{ value: '', label: 'Standalone non-GST sale' }, ...invoiceOptions.map(doc => ({ value: doc.id, label: `${doc.document_number} · ${money(Number(doc.outstanding_amount))} outstanding` }))]} onChange={id => {
+                const invoice = invoiceOptions.find(doc => doc.id === id) || null;
+                setSettleInvoice(invoice);
+                if (invoice) { setAddress(invoice.client_billing_address); setGstin(invoice.client_gstin || ''); setItems([{ description: `Payment for ${invoice.document_number}`, quantity: 1, rate: Number(invoice.outstanding_amount) }]); }
+              }} />
+              <Text style={{ color: colors.textSecondary, fontSize: 12, lineHeight: 19 }}>{settleInvoice ? 'This receipt settles the selected invoice in Books. Change the amount below for a partial payment.' : 'Choose an existing invoice when collecting its payment. Standalone receipts record new non-GST revenue.'}</Text>
+              {!!invoiceError && <Text style={{ color: '#F43F5E', fontSize: 12 }}>{invoiceError}</Text>}
+            </View>}
             {docType === 'tax_invoice' && (
               <Input
                 label="GST rate (%)"

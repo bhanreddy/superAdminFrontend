@@ -14,7 +14,7 @@ import AppSplash from '../src/components/ui/AppSplash';
 
 function RootLayoutInner() {
   const { colors, isDark } = useTheme();
-  const { session, loading, isSuperAdmin, founder, role, status } = useAuth();
+  const { session, loading, isSuperAdmin, founder, role, status, mustChangePassword } = useAuth();
 
   // Expo Router wraps screens in a React Navigation navigator that paints its own
   // background from the *navigation* theme (default: light rgb(242,242,242)). Left
@@ -35,9 +35,17 @@ function RootLayoutInner() {
   useEffect(() => {
     if (loading || !splashDone || !isClusterReady) return;
 
+    const caEntry = segments[0] === '(auth)' && segments[1] === 'ca-login';
+    if (session && hasAppAccess && (role === 'CA' || role === 'CA_LEAD')) {
+      const onAccount = segments[0] === '(app)' && segments[1] === 'books' && segments[2] === 'account';
+      if (mustChangePassword && !onAccount) router.replace('/(app)/books/account' as any);
+      else if (!mustChangePassword && (segments[0] === '(auth)' || segments[0] === 'cluster-selector')) router.replace('/(app)/books' as any);
+      return;
+    }
+
     // If no cluster selected, redirect to cluster selector
     const onClusterSelector = segments[0] === 'cluster-selector';
-    if (!selectedCluster) {
+    if (!selectedCluster && !caEntry) {
       if (!onClusterSelector) {
         router.replace('/cluster-selector');
       }
@@ -55,7 +63,7 @@ function RootLayoutInner() {
         router.replace('/(app)/');
       }
     }
-  }, [session, loading, hasAppAccess, segments, router, splashDone, isClusterReady, selectedCluster]);
+  }, [session, loading, hasAppAccess, segments, router, splashDone, isClusterReady, selectedCluster, role, mustChangePassword]);
 
   return (
     <NavThemeProvider value={navTheme}>

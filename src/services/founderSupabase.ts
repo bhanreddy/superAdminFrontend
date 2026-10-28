@@ -161,8 +161,9 @@ export async function createExpense(payload: {
   description: string;
   amount: number;
   category: ExpenseCategory;
+  expense_date?: string;
   receipt_url: string | null;
-  created_by_founder_id: string;
+  created_by_founder_id: string | null;
 }): Promise<ExpenseRow> {
   return await founderApi.createExpense(payload) as ExpenseRow;
 }

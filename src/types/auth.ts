@@ -6,6 +6,7 @@ export interface InternalUser {
   id: string;
   employee_id: string;
   employeeId?: string;
+  mustChangePassword?: boolean;
   full_name: string;
   fullName?: string;
   email: string;
@@ -37,6 +38,7 @@ export interface AuthState {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  mustChangePassword: boolean;
   isSuperAdmin: boolean;
   currentAdmin: SuperAdmin | null;
   founder: FounderRow | null;

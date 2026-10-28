@@ -64,6 +64,7 @@ export interface ClientSnapshotInput {
 }
 
 export interface IssueDocumentInput {
+  settles_invoice_id?: string | null;
   document_type: DocumentType;
   client: ClientSnapshotInput;
   line_items: LineItemInput[];
@@ -86,6 +87,8 @@ export interface PreviewResult {
 }
 
 export interface BillingDocument {
+  settles_invoice_id?: string | null;
+  outstanding_amount?: number | string;
   id: string;
   document_number: string;
   document_type: DocumentType;
@@ -226,4 +229,8 @@ export async function fetchDocumentHtml(id: string): Promise<string> {
     transformResponse: (d) => d,
   });
   return res.data as string;
+}
+
+export async function outstandingInvoices(customer: string): Promise<BillingDocument[]> {
+  return (await superAdminClient.get(`${BASE}/invoices/outstanding`, { params: { customer } })).data;
 }

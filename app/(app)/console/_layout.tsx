@@ -42,6 +42,7 @@ export default function ConsoleStackLayout() {
       <Stack.Screen name="collections" />
       <Stack.Screen name="collection-approvals" />
       <Stack.Screen name="billing" />
+      <Stack.Screen name="books" />
       <Stack.Screen name="sprint" />
       <Stack.Screen name="backups" />
       <Stack.Screen name="enquiries" />

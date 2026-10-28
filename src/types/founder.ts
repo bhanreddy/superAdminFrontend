@@ -28,6 +28,12 @@ export interface ExpenseRow {
   category: ExpenseCategory;
   status: ExpenseStatus;
   receipt_url: string | null;
+  expense_date?: string | null;
+  paid_at?: string | null;
+  paid_account?: string;
+  books_journal_id?: string | null;
+  books_payment_journal_id?: string | null;
+  books_state?: 'posted' | 'reversed' | null;
   created_by_founder_id: string | null;
   approved_by_founder_id: string | null;
   rejection_reason: string | null;

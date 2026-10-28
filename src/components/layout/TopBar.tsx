@@ -98,7 +98,7 @@ export const TopBar = React.memo(function TopBar({ onMenuPress, showMenu }: TopB
             <Breadcrumb />
           </View>
         )}
-        {selectedCluster && (
+        {selectedCluster && (role !== 'CA' && role !== 'CA_LEAD') && (
           <Pressable
             onPress={() => router.push('/cluster-selector' as any)}
             style={({ pressed, hovered }: any) => [
@@ -197,7 +197,7 @@ export const TopBar = React.memo(function TopBar({ onMenuPress, showMenu }: TopB
 
         {/* Sign out */}
         <Pressable
-          onPress={signOut}
+          onPress={async () => { await signOut(); if ((role === 'CA' || role === 'CA_LEAD')) router.replace('/(auth)/ca-login' as any); }}
           style={({ pressed, hovered }: any) => [
             styles.iconBtn,
             {

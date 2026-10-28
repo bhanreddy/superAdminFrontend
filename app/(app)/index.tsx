@@ -16,7 +16,7 @@ import {
   useWindowDimensions,
   Platform,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, Redirect } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
@@ -937,7 +937,8 @@ const PremiumAvatar = React.memo(function PremiumAvatar({ name, compact = false 
 // MAIN DASHBOARD ROUTER - MULTI-ROLE ADAPTIVE
 // ============================================================
 export default function DashboardScreen() {
-  const { role } = useAuth();
+  const { role, mustChangePassword } = useAuth();
+  if ((role === 'CA' || role === 'CA_LEAD')) return <Redirect href={(mustChangePassword ? '/(app)/books/account' : '/(app)/books') as any} />;
 
   if (isFounderOrSuperAdmin(role)) {
     return <FounderDashboardScreen />;

@@ -90,3 +90,95 @@ test('sales direct links allow sales and founder roles and deny unrelated roles'
     }
   }
 });
+
+test('regional guide switches language and respects the selected school stakeholder', async () => {
+  const Screen = uiLoader()(screenPath('SalesPlaybookScreen')).default;
+  let screen;
+  try {
+    await act(async () => { screen = create(React.createElement(Screen)); });
+    assert.match(textOf(screen.root), /Namaskaram/);
+    act(() => pressable(screen.root, 'Karnataka').props.onPress());
+    assert.match(textOf(screen.root), /Namaskara/);
+    assert.match(textOf(screen.root), /Kannada/);
+    assert.doesNotMatch(textOf(screen.root), /Namaskaram/);
+    act(() => pressable(screen.root, 'Accounts team').props.onPress());
+    assert.match(textOf(screen.root), /How do you reconcile payments, concessions and overdue accounts today/);
+    act(() => pressable(screen.root, 'Visit planner').props.onPress());
+    assert.match(textOf(screen.root), /Region: Karnataka · Conversation with: Accounts team/);
+  } finally { act(() => screen?.unmount()); }
+});
+
+test('objection coaching opens the relevant psychology and original research', async () => {
+  const opened = [];
+  const Screen = uiLoader({
+    'react-native': {
+      View: 'View', Text: 'Text', ScrollView: 'ScrollView', Pressable: 'Pressable', TextInput: 'TextInput',
+      StyleSheet: { create: (styles) => styles }, Linking: { openURL: async (url) => opened.push(url) },
+    },
+  })(screenPath('SalesPlaybookScreen')).default;
+  let screen;
+  try {
+    await act(async () => { screen = create(React.createElement(Screen)); });
+    act(() => pressable(screen.root, 'Objection lab').props.onPress());
+    act(() => pressable(screen.root, '“Come back next academic year.”').props.onPress());
+    assert.match(textOf(screen.root), /Accept a request to stop contacting them/);
+    act(() => pressable(screen.root, 'Explore the psychology').props.onPress());
+    assert.match(textOf(screen.root), /Implementation intentions/);
+    await act(async () => { await screen.root.findByProps({ accessibilityLabel: 'Read research: Implementation intentions' }).props.onPress(); });
+    assert.equal(opened.length, 1);
+    assert.match(opened[0], /Gollwitzer/);
+  } finally { act(() => screen?.unmount()); }
+});
+
+test('visit planner copies the edited school context and reports clipboard failure truthfully', async () => {
+  const copied = []; let fail = false;
+  const Screen = uiLoader({ 'expo-clipboard': { setStringAsync: async (value) => {
+    if (fail) return false;
+    copied.push(value); return true;
+  } } })(screenPath('SalesPlaybookScreen')).default;
+  let screen;
+  try {
+    await act(async () => { screen = create(React.createElement(Screen)); });
+    act(() => {
+      pressable(screen.root, 'Karnataka').props.onPress();
+      pressable(screen.root, 'Prepare my next visit').props.onPress();
+    });
+    act(() => {
+      screen.root.findByProps({ accessibilityLabel: 'School name' }).props.onChangeText('Example School');
+      screen.root.findByProps({ accessibilityLabel: 'Action owner' }).props.onChangeText('Accounts lead');
+      screen.root.findByProps({ accessibilityLabel: 'Review date / time' }).props.onChangeText('5 November, 11 am IST');
+      screen.root.findByProps({ accessibilityLabel: 'Baseline / success measure' }).props.onChangeText('Compare weekly reconciliation time');
+      pressable(screen.root, 'Existing ERP review').props.onPress();
+      pressable(screen.root, 'Parent communication').props.onPress();
+    });
+    await act(async () => { await pressable(screen.root, 'Copy visit plan and follow-up').props.onPress(); });
+    assert.equal(copied.length, 1);
+    assert.match(copied[0], /School: Example School/);
+    assert.match(copied[0], /Region: Karnataka/);
+    assert.match(copied[0], /Priority: Parent communication/);
+    assert.match(copied[0], /Compare weekly reconciliation time/);
+    assert.match(copied[0], /side by side/);
+    assert.match(copied[0], /Accounts lead on 5 November, 11 am IST/);
+    assert.match(textOf(screen.root), /Visit plan and follow-up copied/);
+    fail = true;
+    await act(async () => { await pressable(screen.root, 'Copy visit plan and follow-up').props.onPress(); });
+    assert.match(textOf(screen.root), /Clipboard unavailable/);
+    assert.equal(copied.length, 1);
+  } finally { act(() => screen?.unmount()); }
+});
+
+test('chapter deep links open training references and search reset restores the library', async () => {
+  const Screen = uiLoader({ 'expo-router': {
+    useLocalSearchParams: () => ({ chapter: 'pricing' }), useRouter: () => ({ push: () => {} }),
+  } })(screenPath('SalesPlaybookScreen')).default;
+  let screen;
+  try {
+    await act(async () => { screen = create(React.createElement(Screen)); });
+    assert.equal(pressable(screen.root, 'Discuss price and measurable value').props.accessibilityState.expanded, true);
+    assert.match(textOf(screen.root), /Reference pricing example/);
+    act(() => screen.root.findByProps({ accessibilityLabel: 'Search sales playbook' }).props.onChangeText('no-results'));
+    assert.match(textOf(screen.root), /No chapters match/);
+    act(() => pressable(screen.root, 'Reset chapter filters').props.onPress());
+    assert.match(textOf(screen.root), /8 chapters/);
+  } finally { act(() => screen?.unmount()); }
+});

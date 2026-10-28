@@ -51,9 +51,9 @@ export const authService = {
   /**
    * Sign in via the backend with Email, Phone, or Employee ID.
    */
-  async signIn(identifier: string, password: string): Promise<LoginResult> {
+  async signIn(identifier: string, password: string, caOnly = false): Promise<LoginResult> {
     try {
-      const response = await superAdminClient.post('/api/super-admin/auth/login', {
+      const response = await superAdminClient.post(caOnly ? '/api/super-admin/auth/ca/login' : '/api/super-admin/auth/login', {
         identifier,
         email: identifier, // backwards compatibility
         password,

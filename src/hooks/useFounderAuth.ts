@@ -10,7 +10,7 @@ export function useFounderAuth() {
     const isApprover = role === 'APPROVER';
     const isFounderOnly = role === 'FOUNDER';
     const canApproveReject =
-      isApprover || (isSuperAdmin && Boolean(founder?.id));
+      isApprover || isSuperAdmin;
 
     return {
       founder,
@@ -18,7 +18,7 @@ export function useFounderAuth() {
       role,
       isApprover,
       isFounderOnly,
-      /** Approve/reject queues; needs a `founders` row id for DB FKs (or APPROVER role). */
+      /** Approval authority matches the API; super admins may have no founder FK. */
       canApproveReject,
       refreshProfile: refreshSessionProfile,
       /** Matches dashboard: super admins use the console without a `founders` row. */

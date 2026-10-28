@@ -77,6 +77,11 @@ function getNavGroupsForRole(
   isSupport: boolean,
   can: (permission: string) => boolean,
 ): NavGroup[] {
+  if ((role === 'CA' || role === 'CA_LEAD')) return [{ title: 'ACCOUNTING', items: [
+    { key: 'books', label: 'Books', icon: (c, s) => <BookOpen size={s} color={c} />, route: '/(app)/books' },
+    ...(role === 'CA_LEAD' ? [{ key: 'books-access', label: 'CA team', icon: (c: string, s: number) => <Users size={s} color={c} />, route: '/(app)/books/access' }] : []),
+    { key: 'books-account', label: 'My account', icon: (c, s) => <ShieldCheck size={s} color={c} />, route: '/(app)/books/account' },
+  ] }];
   // 1. FOUNDER / SUPER_ADMIN
   if (isFounder) {
     return [
@@ -175,6 +180,15 @@ function getNavGroupsForRole(
             label: 'Messenger',
             icon: (c, s) => <MessageCircle size={s} color={c} strokeWidth={1.8} />,
             route: '/(app)/messenger/',
+          },
+          {
+            key: 'books',
+            label: 'Books & Accounting',
+            icon: (c, s) => <BookOpen size={s} color={c} strokeWidth={1.8} />,
+            route: '/(app)/books',
+          },
+          {
+            key: 'books-access', label: 'CA access', icon: (c, s) => <ShieldCheck size={s} color={c} />, route: '/(app)/books/access',
           },
           {
             key: 'billing',

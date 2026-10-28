@@ -1,4 +1,6 @@
 export type Role =
+  | 'CA_LEAD'
+  | 'CA'
   | 'FOUNDER'
   | 'SUPER_ADMIN'
   | 'SALES_MANAGER'
@@ -15,6 +17,8 @@ export type Role =
   | 'VIEW_ONLY_ADMIN';
 
 export const ROLES: Record<string, Role> = {
+  CA_LEAD: 'CA_LEAD',
+  CA: 'CA',
   FOUNDER: 'FOUNDER',
   SUPER_ADMIN: 'SUPER_ADMIN',
   SALES_MANAGER: 'SALES_MANAGER',
@@ -32,6 +36,8 @@ export const ROLES: Record<string, Role> = {
 };
 
 export const ROLE_LABELS: Record<Role, string> = {
+  CA_LEAD: 'Lead CA · Nexsyrus & Nexmaxx',
+  CA: 'Chartered Accountant',
   FOUNDER: 'Founder / Super Admin',
   SUPER_ADMIN: 'Super Admin',
   SALES_MANAGER: 'Sales Manager',
@@ -49,6 +55,8 @@ export const ROLE_LABELS: Record<Role, string> = {
 };
 
 export const ROLE_BADGE_COLORS: Record<Role, { bg: string; text: string; border: string }> = {
+  CA_LEAD: { bg: 'rgba(94, 92, 230, 0.15)', text: '#5E5CE6', border: 'rgba(94, 92, 230, 0.3)' },
+  CA: { bg: 'rgba(18, 146, 111, 0.15)', text: '#12926f', border: 'rgba(18, 146, 111, 0.3)' },
   FOUNDER: { bg: 'rgba(255, 45, 85, 0.15)', text: '#FF2D55', border: 'rgba(255, 45, 85, 0.3)' },
   SUPER_ADMIN: { bg: 'rgba(175, 82, 222, 0.15)', text: '#AF52DE', border: 'rgba(175, 82, 222, 0.3)' },
   SALES_MANAGER: { bg: 'rgba(10, 132, 255, 0.15)', text: '#0A84FF', border: 'rgba(10, 132, 255, 0.3)' },
