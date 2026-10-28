@@ -523,3 +523,69 @@ test('finance connection viewing grants do not expose historical import actions'
   assert.equal(tree.root.findAllByType('Pressable').some(b=>b.props.accessibilityLabel==='Review existing records'),false);
   await act(async()=>tree.unmount());
 });
+
+test('report dates stay compact, apply only confirmed valid ranges, and discard cancelled edits', async () => {
+  const env = environment();
+  const Filter = env.load(p('src/screens/books/BooksDateFilter.tsx')).default;
+  const changes = [];
+  function Harness() {
+    const [value, setValue] = React.useState({ from: '2026-04-01', to: '2026-10-26' });
+    return React.createElement(Filter, { value, fiscalStart: '2026-04-01', today: '2026-10-26', onChange: next => { changes.push(next); setValue(next); } });
+  }
+  let tree;
+  try {
+    await act(async () => { tree = create(React.createElement(Harness)); });
+    assert.equal(tree.root.findAllByType('TextInput').length, 0);
+    assert.match(textOf(tree.root), /THIS FINANCIAL YEAR/);
+    await press(tree, 'Change dates');
+    await input(tree, 'From (YYYY-MM-DD)', '2026-10-01');
+    await press(tree, 'Cancel');
+    assert.equal(changes.length, 0);
+    await press(tree, 'Change dates');
+    assert.equal(tree.root.findAllByType('TextInput').find(n => n.props.accessibilityLabel === 'From (YYYY-MM-DD)').props.value, '2026-04-01');
+    await input(tree, 'From (YYYY-MM-DD)', '2026-02-30');
+    await press(tree, 'Apply dates');
+    assert.match(textOf(tree.root), /Enter valid dates/);
+    assert.equal(changes.length, 0);
+    await input(tree, 'From (YYYY-MM-DD)', '2026-11-01');
+    await press(tree, 'Apply dates');
+    assert.match(textOf(tree.root), /start date must be on or before/);
+    await input(tree, 'From (YYYY-MM-DD)', '2026-10-01');
+    await press(tree, 'Apply dates');
+    assert.equal(changes.length, 1);
+    assert.equal(changes[0].from, '2026-10-01');
+    assert.equal(changes[0].to, '2026-10-26');
+    assert.equal(tree.root.findAllByType('TextInput').length, 0);
+    assert.match(textOf(tree.root), /REPORTING PERIOD/);
+    await press(tree, 'Change dates');
+    await press(tree, 'This financial year');
+    assert.equal(changes.length, 1);
+    await press(tree, 'Apply dates');
+    assert.equal(changes[1].from, '2026-04-01');
+    assert.match(textOf(tree.root), /THIS FINANCIAL YEAR/);
+  } finally { await act(async () => tree?.unmount()); }
+});
+
+test('Books navigation can collapse without changing the selected module or exposing date inputs', async () => {
+  const env = environment({
+    get: async url => url === '/bootstrap'
+      ? { settings: { organization_name: 'Nexsyrus', fiscal_year_month: 4 }, stats: { contacts: 0, items: 0, documents: 0 } }
+      : url === '/lookups' ? { contacts: [], items: [], accounts: [], payments: [], projects: [] }
+      : url === '/dashboard' ? { from: '2026-04-01', to: '2026-10-26', receivables: 0, payables: 0, cash: 0, profit: 0, cashflow: [] } : [],
+    mocks: workspaceMocks({ role: 'FOUNDER', isFounder: true, permissions: [], can: () => true, refreshSessionProfile: async () => {} }),
+  });
+  const Screen = env.load(p('src/screens/books/BooksScreen.tsx')).default;
+  let tree;
+  try {
+    await act(async () => { tree = create(React.createElement(Screen)); });
+    await act(async () => new Promise(resolve => setTimeout(resolve, 30)));
+    assert.equal(tree.root.findAllByType('ScrollView').filter(n => n.props.accessibilityLabel === 'Books navigation').length, 1);
+    assert.equal(tree.root.findAllByType('TextInput').length, 0);
+    await press(tree, 'Hide Books navigation');
+    assert.equal(tree.root.findAllByType('ScrollView').filter(n => n.props.accessibilityLabel === 'Books navigation').length, 0);
+    assert.match(textOf(tree.root), /TOTAL RECEIVABLES/);
+    await press(tree, 'Show Books navigation');
+    assert.equal(tree.root.findAllByType('ScrollView').filter(n => n.props.accessibilityLabel === 'Books navigation').length, 1);
+    assert.equal(tree.root.findByProps({ accessibilityLabel: 'Books content' }).props.nestedScrollEnabled, true);
+  } finally { await act(async () => tree?.unmount()); }
+});

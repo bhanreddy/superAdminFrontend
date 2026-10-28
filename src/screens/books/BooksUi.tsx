@@ -138,11 +138,13 @@ export function Select({
   value,
   options,
   onChange,
+  compact = false,
 }: {
   label: string;
   value: string;
   options: { value: string; label: string }[];
   onChange: (v: string) => void;
+  compact?: boolean;
 }) {
   const [open, setOpen] = useState(false),
     [query, setQuery] = useState('');
@@ -152,7 +154,7 @@ export function Select({
   const filtered = options.filter(o => o.label.toLowerCase().includes(query.trim().toLowerCase()));
   return (
     <View style={layout}>
-      <Text style={[ui.label, { color: colors.textSecondary }]}>{label}</Text>
+      {!compact && <Text style={[ui.label, { color: colors.textSecondary }]}>{label}</Text>}
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={label}
@@ -167,7 +169,8 @@ export function Select({
           {
             borderColor: colors.border,
             backgroundColor: colors.background,
-            minHeight: 44,
+            minHeight: compact ? 38 : 44,
+            paddingVertical: compact ? 8 : 10,
             justifyContent: 'space-between',
           },
         ]}
@@ -266,12 +269,14 @@ export function Dialog({
   children,
   footer,
   busy = false,
+  maxWidth = 1080,
 }: {
   title: string;
   onClose: () => void;
   children: React.ReactNode;
   footer?: React.ReactNode;
   busy?: boolean;
+  maxWidth?: number;
 }) {
   const { colors } = useTheme();
   const { width, height } = useWindowDimensions();
@@ -292,7 +297,7 @@ export function Dialog({
           style={[
             ui.dialog,
             {
-              width: Math.min(1080, Math.max(200, width - 32)),
+              width: Math.min(maxWidth, Math.max(200, width - 32)),
               maxHeight: Math.max(180, height - 32),
               backgroundColor: colors.surface,
               borderColor: colors.border,

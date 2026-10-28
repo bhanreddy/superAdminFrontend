@@ -27,16 +27,17 @@ import {
   Settings,
   Repeat,
   ClipboardList,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from 'lucide-react-native';
 import { useBooksAccess as useAuth } from './BooksCompanyContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { ScreenHeader } from '../../components/ui/ScreenHeader';
+import BooksDateFilter from './BooksDateFilter';
 import * as api from '../../api/books';
 import {
   Action,
   Panel,
   Field,
-  FormRow,
   Select,
   Table,
   Badge,
@@ -140,6 +141,11 @@ function financialStart(month = 4) {
 export default function BooksScreen() {
   const { colors } = useTheme(),
     { width } = useWindowDimensions();
+  const [availableWidth, setAvailableWidth] = useState(width);
+  const [navCollapsed, setNavCollapsed] = useState(false);
+  const wide = availableWidth >= 1000;
+  const compact = availableWidth < 650;
+  const contentRef = useRef<ScrollView>(null);
   const { can, isFounder, role, permissions, refreshSessionProfile, booksCompany } = useAuth();
   const allowed = (key: string, action = 'view') => (key !== 'connections' || !booksCompany || booksCompany.code === 'nexsyrus') && can(`books.${key}.${action}`);
   const allowedModules = modules.filter(key => allowed(key));
@@ -168,9 +174,7 @@ export default function BooksScreen() {
     [notice, setNotice] = useState(''),
     [search, setSearch] = useState(''),
     [status, setStatus] = useState('');
-  const [from, setFrom] = useState(financialStart()),
-    [to, setTo] = useState(api.today()),
-    [dates, setDates] = useState({ from: financialStart(), to: api.today() });
+  const [dates, setDates] = useState({ from: financialStart(), to: api.today() });
   const [editor, setEditor] = useState<{
       kind: api.DocumentKind;
       document?: api.BookDocument;
@@ -283,6 +287,7 @@ export default function BooksScreen() {
     if (!allowedModules.includes(value)) return;
     setRows([]); setReport(null);
     setModule(value);
+    contentRef.current?.scrollTo({ y: 0, animated: false });
     setTransactionType('all');
     setPage(1);
     setSearch('');
@@ -782,15 +787,20 @@ export default function BooksScreen() {
     ];
   }
   const main = (
-    <View style={{ flex: 1, gap: 22, minWidth: 0 }}>
-      <ScreenHeader
-        title={title}
-        subtitle={
-          descriptions[module] ||
-          `Create, review, and manage ${api.labels[module as api.DocumentKind]?.toLowerCase()}.`
-        }
-        rightAction={
+    <View style={{ gap: 18, minWidth: 0, flexShrink: 0 }}>
+      <View style={st.moduleHeader}>
+        <View style={{ flex: 1, minWidth: 180, gap: 5 }}>
+          {wide ? <View style={ui.row}>
+            <Pressable accessibilityRole="button" accessibilityLabel={navCollapsed ? 'Show Books navigation' : 'Hide Books navigation'} onPress={() => setNavCollapsed(current => !current)} style={[st.navToggle, { borderColor: colors.border, backgroundColor: colors.surface }]}>
+              {navCollapsed ? <PanelLeftOpen size={17} color={colors.textSecondary} /> : <PanelLeftClose size={17} color={colors.textSecondary} />}
+            </Pressable>
+            <Text accessibilityRole="header" style={[st.moduleTitle, { color: colors.textPrimary }]}>{title}</Text>
+          </View> : <View style={{ maxWidth: 300 }}><Select compact label="Books section" value={module} options={visibleGroups.flatMap(group => group.items.map(item => ({ value: String(item[0]), label: String(item[1]) })))} onChange={navigate} /></View>}
+          <Text style={{ color: colors.textSecondary, fontSize: 13, lineHeight: 20 }}>{descriptions[module] || `Create, review, and manage ${api.labels[module as api.DocumentKind]?.toLowerCase()}.`}</Text>
+        </View>
+        <View style={{ maxWidth: '100%' }}>
           <View style={[ui.row, { flexWrap: 'wrap' }]}>
+            {(isFounder || role === 'CA_LEAD') && <Action label={role === 'CA_LEAD' ? 'CA team' : 'CA access'} secondary onPress={() => router.push('/(app)/books/access' as any)} />}
             {allowed('data', 'export') && !['home', 'settings', 'documents', 'connections'].includes(module) && (
               <Action
                 label="Export CSV"
@@ -827,8 +837,8 @@ export default function BooksScreen() {
               />
             )}
           </View>
-        }
-      />
+        </View>
+      </View>
       {error && <Notice error text={error} />}
       {notice && <Notice text={notice} />}
       {loading && (
@@ -857,34 +867,7 @@ export default function BooksScreen() {
       )}
       {bootstrap && !loading && (
         <>
-          {['home', 'reports'].includes(module) && (
-            <FormRow style={{ alignItems: 'flex-end' }}>
-              <Field
-                label="From (YYYY-MM-DD)"
-                value={from}
-                onChange={setFrom}
-              />
-              <Field label="To (YYYY-MM-DD)" value={to} onChange={setTo} />
-              <Action
-                label="Apply dates"
-                secondary
-                onPress={() => setDates({ from, to })}
-              />
-              <Action
-                label="This financial year"
-                secondary
-                onPress={() => {
-                  const v = {
-                    from: financialStart(bootstrap.settings.fiscal_year_month),
-                    to: api.today(),
-                  };
-                  setFrom(v.from);
-                  setTo(v.to);
-                  setDates(v);
-                }}
-              />
-            </FormRow>
-          )}
+          {['home', 'reports'].includes(module) && <BooksDateFilter value={dates} fiscalStart={financialStart(bootstrap.settings.fiscal_year_month)} today={api.today()} onChange={setDates} />}
           {module === 'home' && report && (
             <>
               <Kpis report={report} />
@@ -1041,8 +1024,8 @@ export default function BooksScreen() {
           )}
           {columns.length > 0 && (
             <>
-              <FormRow style={{ alignItems: 'flex-end' }}>
-                <View style={{ flex: 1, minWidth: 200 }}>
+              <View testID="books-record-filters" style={[ui.wrap, { alignItems: 'flex-end', flexShrink: 0 }]}>
+                <View style={{ flexGrow: 1, flexBasis: 240, minWidth: 180, maxWidth: 480 }}>
                   <Field
                     label={`Search ${title.toLowerCase()}`}
                     value={search}
@@ -1054,7 +1037,7 @@ export default function BooksScreen() {
                   />
                 </View>
                 {['payments', 'recurring'].includes(module) && (
-                  <Select
+                  <View style={{ width: 200, maxWidth: '100%' }}><Select
                     label="Transaction type"
                     value={transactionType}
                     options={
@@ -1075,10 +1058,10 @@ export default function BooksScreen() {
                           ]
                     }
                     onChange={setTransactionType}
-                  />
+                  /></View>
                 )}
                 {isDoc && (
-                  <Select
+                  <View style={{ width: 170, maxWidth: '100%' }}><Select
                     label="Status"
                     value={status}
                     options={[
@@ -1104,9 +1087,9 @@ export default function BooksScreen() {
                       setStatus(v);
                       setPage(1);
                     }}
-                  />
+                  /></View>
                 )}
-              </FormRow>
+              </View>
               <Table
                 columns={columns}
                 rows={filtered}
@@ -1185,55 +1168,22 @@ export default function BooksScreen() {
     </View>
   );
   return (
-    <View style={[st.root, { backgroundColor: colors.background }]}>
-      <View style={[st.brand, { borderColor: colors.border }]}>
-        <BookOpen size={24} color={colors.primary} />
-        <Text
-          style={{ color: colors.textPrimary, fontWeight: '800', fontSize: 19, flexShrink: 1 }}
-        >
-          NexSyrus{' '}
-          <Text style={{ fontWeight: '400', color: colors.textSecondary }}>
-            Books
-          </Text>
-        </Text>
-        <View style={{ flex: 1 }} />
-        {(isFounder || role === 'CA_LEAD') && <Action label={role === 'CA_LEAD' ? 'CA team' : 'CA access'} secondary onPress={() => router.push('/(app)/books/access' as any)} />}
-        {width >= 650 && <Text style={{ color: colors.textTertiary, fontSize: 11 }}>
-          INR · Native accounting
-        </Text>}
-      </View>
-      <View
-        style={{ flex: 1, flexDirection: width >= 1180 ? 'row' : 'column' }}
-      >
-        <ScrollView
-          horizontal={width < 1180}
-          showsHorizontalScrollIndicator={false}
-          style={
-            width >= 1180
-              ? [st.nav, { borderColor: colors.border }]
-              : {
-                  minHeight: 52,
-                  maxHeight: 58,
-                  flexGrow: 0,
-                  flexShrink: 0,
-                  borderBottomWidth: 1,
-                  borderColor: colors.border,
-                }
-          }
-          contentContainerStyle={
-            width < 1180
-              ? { flexDirection: 'row', padding: 8, gap: 4 }
-              : { padding: 14, gap: 18 }
-          }
+    <View style={[st.root, { backgroundColor: colors.background }]} onLayout={event => { if (event.nativeEvent.layout.width > 0) setAvailableWidth(event.nativeEvent.layout.width); }}>
+      <View style={st.workspace}>
+        {wide && !navCollapsed && <ScrollView
+          accessibilityLabel="Books navigation"
+          showsVerticalScrollIndicator
+          style={[st.nav, { borderColor: colors.border }]}
+          contentContainerStyle={{ padding: 12, paddingBottom: 28, gap: 18 }}
         >
           {visibleGroups.map((g) => (
             <View
               key={g.label}
               style={
-                width < 1180 ? { flexDirection: 'row', gap: 4 } : { gap: 3 }
+                { gap: 3 }
               }
             >
-              {width >= 1180 && (
+              {wide && (
                 <Text
                   style={{
                     color: colors.textTertiary,
@@ -1261,7 +1211,7 @@ export default function BooksScreen() {
                       borderRadius: 8,
                       backgroundColor:
                         key === module ? colors.primary + '18' : 'transparent',
-                      minWidth: width < 1180 ? 95 : undefined,
+                      minWidth: 0,
                     },
                   ]}
                 >
@@ -1285,12 +1235,17 @@ export default function BooksScreen() {
               ))}
             </View>
           ))}
-        </ScrollView>
+        </ScrollView>}
         <ScrollView
-          style={{ flex: 1 }}
+          ref={contentRef}
+          accessibilityLabel="Books content"
+          showsVerticalScrollIndicator
+          nestedScrollEnabled
+          style={st.content}
           contentContainerStyle={{
-            padding: width < 650 ? 16 : 28,
-            paddingBottom: 110,
+            flexGrow: 1,
+            padding: compact ? 14 : 22,
+            paddingBottom: 40,
           }}
           keyboardShouldPersistTaps="handled"
         >
@@ -1450,16 +1405,11 @@ export default function BooksScreen() {
   );
 }
 const st = StyleSheet.create({
-  root: { flex: 1 },
-  brand: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    flexShrink: 0,
-    alignItems: 'center',
-    gap: 10,
-    paddingVertical: 19,
-    paddingHorizontal: 24,
-    borderBottomWidth: 1,
-  },
-  nav: { width: 184, maxWidth: 184, borderRightWidth: 1 },
+  root: { flex: 1, minHeight: 0, minWidth: 0, overflow: 'hidden' },
+  workspace: { flex: 1, minHeight: 0, minWidth: 0, flexDirection: 'row', overflow: 'hidden' },
+  nav: { width: 176, maxWidth: 176, flexGrow: 0, flexShrink: 0, minHeight: 0, borderRightWidth: 1 },
+  content: { flex: 1, minHeight: 0, minWidth: 0 },
+  moduleHeader: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 14 },
+  moduleTitle: { fontSize: 26, fontWeight: '700', letterSpacing: -0.7, lineHeight: 32 },
+  navToggle: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderRadius: 8 },
 });

@@ -1,6 +1,7 @@
 import { useLocalSearchParams } from 'expo-router';
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
+import { BookOpen } from 'lucide-react-native';
 import { useAuth } from '../../hooks/useAuth';
 import { useTheme } from '../../contexts/ThemeContext';
 import * as api from '../../api/books';
@@ -34,8 +35,12 @@ export default function BooksCompanyWorkspace({ children }: { children: React.Re
   useEffect(() => { api.setBooksCompany(company?.id || null); setReady(company?.id || ''); }, [company?.id]);
   if (loading) return <ActivityIndicator />;
   if (!company) return <View style={{ padding: 28, gap: 20 }}>{!!error && <Notice error text={error} />}<Panel><Text style={[ui.title, { color: colors.textPrimary }]}>Company access has not been assigned</Text><Text style={{ color: colors.textSecondary }}>Your lead CA or SuperAdmin can assign Nexsyrus or Nexmaxx and choose your accounting permissions.</Text><Action label="Check company access" onPress={() => void load()} /></Panel></View>;
-  return <View style={{ flex: 1, gap: 16 }}>
-    <View style={{ maxWidth: 440 }}><Select label="Company books" value={selected} options={companies.map(c => ({ value: c.id, label: c.name }))} onChange={setSelected} /></View>
+  return <View style={{ flex: 1, minHeight: 0, minWidth: 0, overflow: 'hidden', borderWidth: 1, borderRadius: 16, borderColor: colors.border, backgroundColor: colors.surface }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1, borderColor: colors.border, flexShrink: 0 }}>
+      <BookOpen size={20} color={colors.primary} /><Text style={{ color: colors.textPrimary, fontWeight: '700', fontSize: 17 }}>Books</Text>
+      <View style={{ flex: 1, maxWidth: 260, minWidth: 120 }}><Select compact label="Company books" value={selected} options={companies.map(c => ({ value: c.id, label: c.name }))} onChange={setSelected} /></View>
+      <View style={{ flex: 1 }} /><Text style={{ color: colors.textSecondary, fontSize: 11, fontWeight: '600' }}>INR</Text>
+    </View>
     {ready === company.id && <Context.Provider value={{ companies, company, can: p => company.permissions.includes(p) }}><React.Fragment key={company.id}>{children}</React.Fragment></Context.Provider>}
   </View>;
 }
