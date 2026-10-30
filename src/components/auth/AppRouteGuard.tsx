@@ -2,7 +2,7 @@ import React from 'react';
 import { usePathname } from 'expo-router';
 import { SALES_ROLES } from '../../content/salesPlaybook';
 import type { Role } from '../../constants/rbac';
-import { PERMISSIONS } from '../../constants/rbac';
+import { PERMISSIONS, ROLES } from '../../constants/rbac';
 import { useAuth } from '../../hooks/useAuth';
 import { RouteGuard } from './RouteGuard';
 
@@ -18,6 +18,7 @@ type RoutePolicy =
  * fail closed to Founder access until a policy is explicitly added.
  */
 const ROUTE_POLICIES: RoutePolicy[] = [
+  { pattern: /^\/connect\/?$/, allowedRoles: Object.values(ROLES).filter(role => role !== 'CA' && role !== 'CA_LEAD') },
   {pattern:/^\/media-qr\/?$/,founderOnly:true},
   { pattern: /^\/field(?:\/.*)?$/, allowedRoles: [...SALES_ROLES] },
   { pattern: /^\/sales\/(?:playbook|training)\/?$/, allowedRoles: [...SALES_ROLES] },
