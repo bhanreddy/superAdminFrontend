@@ -102,9 +102,7 @@ export const connectApi = {
         params: { search: q, status: 'ACTIVE' },
       })
     ).data;
-    return (Array.isArray(data) ? data : data.data || []).filter(
-      (u: Employee) => !['CA', 'CA_LEAD'].includes(u.role),
-    );
+    return Array.isArray(data) ? data : data.data || [];
   },
   provision: async (id: string, remove = false) =>
     remove

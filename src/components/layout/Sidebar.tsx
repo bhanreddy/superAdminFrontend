@@ -714,7 +714,7 @@ export const Sidebar = React.memo(function Sidebar({ collapsed, onToggle }: Side
   const navGroups = useMemo(
     () => {
       const groups = getNavGroupsForRole(role, isFounder, isSales, isImplementation, isSupport, can);
-      if (role && role !== 'CA' && role !== 'CA_LEAD') groups.splice(1, 0, {
+      if (role) groups.splice(1, 0, {
         title: 'COLLABORATION',
         items: [{ key: 'connect', label: 'NexSyrus Connect', icon: (c, s) => <MessageCircle size={s} color={c} />, route: '/(app)/connect' }],
       });

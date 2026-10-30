@@ -141,7 +141,7 @@ function ConnectWorkspace() {
   const [selection, setSelection] = useState({ start: 0, end: 0 });
   const [hoveredMessage, setHoveredMessage] = useState<string | null>(null);
   const composerRef = useRef<TextInput>(null);
-  const { user, role, can, isFounder } = useAuth();
+  const { user, can, isFounder } = useAuth();
   const { selectedCluster } = useCluster();
   const router = useRouter();
   const params = useLocalSearchParams<{
@@ -349,7 +349,7 @@ function ConnectWorkspace() {
     setDraft('');
     setLoading(true);
     setError('');
-    if (!user || role === 'CA' || role === 'CA_LEAD') {
+    if (!user) {
       setLoading(false);
       return;
     }
@@ -1679,10 +1679,6 @@ function ConnectWorkspace() {
     );
   }
 
-  if (role === 'CA' || role === 'CA_LEAD')
-    return (
-      <Text style={textStyle}>Connect is available to company employees.</Text>
-    );
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}

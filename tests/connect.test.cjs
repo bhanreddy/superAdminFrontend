@@ -10,6 +10,9 @@ const {
   pressable,
   textOf,
 } = require('./helpers.cjs');
+const ROLES = Object.values(
+  loader()(path.join(frontend, 'src/constants/rbac.ts')).ROLES,
+);
 const apiPath = path.join(frontend, 'src/services/connect/api.ts');
 const realtimePath = path.join(frontend, 'src/services/connect/realtime.ts');
 const dummyClient = { get: async () => ({ data: {} }) };
@@ -182,7 +185,7 @@ test('late realtime session response cannot subscribe after disposal', async () 
   assert.equal(created, false);
 });
 
-function fixture(width = 390, platform = 'android') {
+function fixture(width = 390, platform = 'android', role = 'QA') {
   let currentUser = 'employee-a',
     failSend = false,
     denied = false,
@@ -209,7 +212,7 @@ function fixture(width = 390, platform = 'android') {
       id: currentUser,
       full_name: 'Employee',
       employee_id: 'EMP-A',
-      role: 'QA',
+      role,
     },
     can_manage: false,
     channels: [channel],
@@ -305,7 +308,7 @@ function fixture(width = 390, platform = 'android') {
       useCluster: () => ({ selectedCluster: { cluster_id: 'local' } }),
     },
     [path.join(frontend, 'src/hooks/useAuth.ts')]: {
-      useAuth: () => ({ user: { id: currentUser }, role: 'QA' }),
+      useAuth: () => ({ user: { id: currentUser }, role }),
     },
     [path.join(frontend, 'src/services/connect/files.ts')]: {
       pickConnectFile: async () => pickedForm,
@@ -444,15 +447,8 @@ test('switching employee identity removes prior messages and failed drafts', asy
     act(() => screen?.unmount());
   }
 });
-test('Connect route allows internal roles and excludes Books-only CA accounts', () => {
-  for (const role of [
-    'QA',
-    'SALES_EXECUTIVE',
-    'SUPPORT_MANAGER',
-    'FOUNDER',
-    'CA',
-    'CA_LEAD',
-  ]) {
+test('Connect route allows all application roles and denies missing or unknown roles', () => {
+  for (const role of [...ROLES, null, 'UNKNOWN']) {
     const load = uiLoader({
       'expo-router': {
         usePathname: () => '/connect',
@@ -480,7 +476,7 @@ test('Connect route allows internal roles and excludes Books-only CA accounts', 
     );
     assert.equal(
       textOf(screen.root).includes('Company messages'),
-      !role.startsWith('CA'),
+      ROLES.includes(role),
     );
     screen.unmount();
   }
@@ -707,5 +703,108 @@ test('web composer sends on Enter while preserving Shift+Enter and composition i
     if (screen) act(() => screen.unmount());
     if (previousDocument === undefined) delete global.document;
     else global.document = previousDocument;
+  }
+});
+
+test('every application role loads the workspace and sends messages, including accountants and read-only admins', async () => {
+  for (const role of ROLES) {
+    const f = fixture(1280, 'android', role);
+    let screen;
+    try {
+      await act(async () => {
+        screen = create(React.createElement(f.Screen));
+        await flush();
+      });
+      assert.ok(
+        screen.root.findByProps({ testID: 'connect-conversation' }),
+        role,
+      );
+      const input = screen.root.findByProps({
+        accessibilityLabel: 'Message composer',
+      });
+      act(() => input.props.onChangeText('Hello from ' + role));
+      await act(async () => {
+        pressable(screen.root, 'Send message').props.onPress();
+        await flush();
+      });
+      assert.equal(f.sent[0].body, 'Hello from ' + role);
+    } finally {
+      if (screen) act(() => screen.unmount());
+    }
+  }
+});
+
+test('the directory retains CA and Lead CA colleagues in both supported response formats', async () => {
+  const people = ROLES.map((role) => ({ id: role, role, full_name: role }));
+  for (const data of [people, { data: people }]) {
+    const load = loader({
+      [path.join(frontend, 'src/api/superAdminClient.ts')]: {
+        superAdminClient: { get: async () => ({ data }) },
+      },
+    });
+    assert.deepEqual(await load(apiPath).connectApi.directory(), people);
+  }
+});
+
+test('each role can reach Connect from its navigation menu without gaining founder navigation', () => {
+  for (const role of ROLES) {
+    const root = ['FOUNDER', 'SUPER_ADMIN'].includes(role);
+    let destination;
+    const load = uiLoader({
+      'react-native': {
+        View: 'View',
+        Text: 'Text',
+        Pressable: 'Pressable',
+        ScrollView: 'ScrollView',
+        Image: 'Image',
+        Platform: {
+          OS: 'android',
+          select: (options) => options.android ?? options.default,
+        },
+        StyleSheet: { create: (x) => x },
+        Animated: {
+          View: 'AnimatedView',
+          Value: class {
+            constructor(value) {
+              this.value = value;
+            }
+          },
+          spring: () => ({ start() {} }),
+        },
+      },
+      'expo-router': {
+        useSegments: () => ['(app)'],
+        useRouter: () => ({ push: (route) => (destination = route) }),
+      },
+      [path.join(frontend, 'assets/logo.png')]: {},
+      [path.join(frontend, 'src/hooks/useAuth.ts')]: {
+        useAuth: () => ({ role, isFounder: root, can: () => false }),
+      },
+      [path.join(frontend, 'src/contexts/ThemeContext.tsx')]: {
+        useTheme: () => ({
+          colors: {},
+          layout: { sidebarWidth: 250, sidebarCollapsedWidth: 68 },
+          clayShadows: {},
+        }),
+        clayStyle: () => ({}),
+      },
+    });
+    const Sidebar = load(
+      path.join(frontend, 'src/components/layout/Sidebar.tsx'),
+    ).Sidebar;
+    let screen;
+    try {
+      act(() => {
+        screen = create(
+          React.createElement(Sidebar, { collapsed: false, onToggle() {} }),
+        );
+      });
+      assert.ok(pressable(screen.root, 'NexSyrus Connect'), role);
+      act(() => pressable(screen.root, 'NexSyrus Connect').props.onPress());
+      assert.equal(destination, '/(app)/connect');
+      if (!root) assert.doesNotMatch(textOf(screen.root), /Cluster Management/);
+    } finally {
+      if (screen) act(() => screen.unmount());
+    }
   }
 });

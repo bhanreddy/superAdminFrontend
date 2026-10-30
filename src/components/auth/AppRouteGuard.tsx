@@ -18,7 +18,7 @@ type RoutePolicy =
  * fail closed to Founder access until a policy is explicitly added.
  */
 const ROUTE_POLICIES: RoutePolicy[] = [
-  { pattern: /^\/connect\/?$/, allowedRoles: Object.values(ROLES).filter(role => role !== 'CA' && role !== 'CA_LEAD') },
+  { pattern: /^\/connect\/?$/, allowedRoles: Object.values(ROLES) },
   {pattern:/^\/media-qr\/?$/,founderOnly:true},
   { pattern: /^\/field(?:\/.*)?$/, allowedRoles: [...SALES_ROLES] },
   { pattern: /^\/sales\/(?:playbook|training)\/?$/, allowedRoles: [...SALES_ROLES] },
