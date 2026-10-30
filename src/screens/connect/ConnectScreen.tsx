@@ -53,6 +53,13 @@ import {
   Code,
   MessageSquare,
 } from 'lucide-react-native';
+import {
+  ConnectAvatar,
+  ConnectMessageBody,
+  ConnectMessageRow,
+} from './ConnectMessageRow';
+import { ConnectTextField } from './ConnectTextField';
+import { useConnectViewport } from './useConnectViewport';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../hooks/useAuth';
 import { useCluster } from '../../contexts/ClusterContext';
@@ -138,8 +145,11 @@ function ConnectWorkspace() {
   const [channelsOpen, setChannelsOpen] = useState(true);
   const [dmsOpen, setDmsOpen] = useState(true);
   const [emojiOpen, setEmojiOpen] = useState(false);
-  const [selection, setSelection] = useState({ start: 0, end: 0 });
-  const [hoveredMessage, setHoveredMessage] = useState<string | null>(null);
+  const [formattingOpen, setFormattingOpen] = useState(false);
+  const [requestedSelection, setRequestedSelection] = useState<
+    { start: number; end: number } | undefined
+  >();
+  const selection = useRef({ start: 0, end: 0 });
   const composerRef = useRef<TextInput>(null);
   const { user, can, isFounder } = useAuth();
   const { selectedCluster } = useCluster();
@@ -150,6 +160,7 @@ function ConnectWorkspace() {
   }>();
   const { width } = useWindowDimensions();
   const mobile = width < 900;
+  const viewport = useConnectViewport(mobile);
   const [context, setContext] = useState<Bootstrap | null>(null),
     [loading, setLoading] = useState(true),
     [error, setError] = useState('');
@@ -163,6 +174,13 @@ function ConnectWorkspace() {
     [editing, setEditing] = useState<Message | null>(null),
     [sending, setSending] = useState(false),
     [pending, setPending] = useState<Pending[]>([]);
+  const sendLock = useRef(false);
+  const draftRef = useRef(draft);
+  draftRef.current = draft;
+  const threadRef = useRef(thread);
+  threadRef.current = thread;
+  const [composerHeight, setComposerHeight] = useState(52);
+  const [composerFocused, setComposerFocused] = useState(false);
   const [connection, setConnection] = useState<ConnectionState>('connecting'),
     [retryConnection, setRetryConnection] = useState(0);
   const [dialog, setDialog] = useState<Dialog>(null),
@@ -259,7 +277,7 @@ function ConnectWorkspace() {
       borderColor: colors.border,
     },
   ];
-  const action = async (fn: () => Promise<any>) => {
+  const action = useCallback(async (fn: () => Promise<any>) => {
     setError('');
     setBusy(true);
     try {
@@ -269,7 +287,7 @@ function ConnectWorkspace() {
     } finally {
       setBusy(false);
     }
-  };
+  }, []);
 
   const refreshContext = useCallback(async () => {
     const version = scope.current;
@@ -301,6 +319,7 @@ function ConnectWorkspace() {
         setSearchEmployees([]);
         setDraft('');
         setEditing(null);
+        sendLock.current = false;
         setSending(false);
         setError(errorText(e));
       }
@@ -527,12 +546,15 @@ function ConnectWorkspace() {
   }, [dialog, peopleQuery]);
 
   function chooseConversation(id: string) {
+    setEmojiOpen(false);
+    setRequestedSelection(undefined);
+    setComposerHeight(52);
     setDialog(null);
     setError('');
     setActive(id);
     activeRef.current = id;
   }
-  async function openThread(m: Message) {
+  const openThread = useCallback(async (m: Message) => {
     setThread(m);
     setEditing(null);
     setDraft('');
@@ -549,7 +571,7 @@ function ConnectWorkspace() {
     } catch (e) {
       setError(errorText(e));
     }
-  }
+  }, []);
   async function navigateMessage(id: string) {
     const m = await connectApi.message(id);
     const version = scope.current;
@@ -571,18 +593,22 @@ function ConnectWorkspace() {
   }
   async function sendDraft(item?: Pending) {
     const id = item?.conversation_id || activeRef.current;
-    if (!id || sending) return;
+    if (!id || sending || sendLock.current) return;
     const fileToUpload = item ? item.file : pickedFile;
     const isEdit = !!editing && !item;
-    const body = draft.trim() || (pickedFile ? 'Shared a file' : '');
+    const submittedDraft = draftRef.current;
+    const body = submittedDraft.trim() || (pickedFile ? 'Shared a file' : '');
     if (!item && !body) return;
     const payload = item?.draft || {
       client_id: draftId(),
       body,
-      mentions: [...draft.matchAll(/<@([a-f0-9-]{36})>/gi)].map((m) => m[1]),
+      mentions: [...submittedDraft.matchAll(/<@([a-f0-9-]{36})>/gi)].map(
+        (m) => m[1],
+      ),
       parent_id: thread?.id || null,
     };
     const version = scope.current;
+    sendLock.current = true;
     setSending(true);
     setError('');
     try {
@@ -596,14 +622,19 @@ function ConnectWorkspace() {
       if (id === activeRef.current) {
         scrollToLatest.current = true;
         setMessages((old) => mergeMessages(old, [sent]));
-        if (!item) {
+        if (
+          !item &&
+          draftRef.current === submittedDraft &&
+          (threadRef.current?.id || null) === payload.parent_id
+        ) {
           setDraft('');
           setEditing(null);
+          setComposerHeight(52);
         }
       }
       if (fileToUpload && !isEdit) {
         const form = fileToUpload;
-        if (!item) setPickedFile(null);
+        if (!item) setPickedFile((old) => (old === fileToUpload ? null : old));
         try {
           await connectApi.upload(sent.id, form);
           const m = await connectApi.message(sent.id);
@@ -639,12 +670,23 @@ function ConnectWorkspace() {
           },
         ]);
       else setError(errorText(e));
-      if (!isEdit && !item && id === activeRef.current) {
+      if (!isEdit && !item)
+        setPickedFile((old) => (old === fileToUpload ? null : old));
+      if (
+        !isEdit &&
+        !item &&
+        id === activeRef.current &&
+        draftRef.current === submittedDraft &&
+        (threadRef.current?.id || null) === payload.parent_id
+      ) {
         setDraft('');
-        setPickedFile(null);
+        setComposerHeight(52);
       }
     } finally {
-      if (version === scope.current) setSending(false);
+      if (version === scope.current) {
+        sendLock.current = false;
+        setSending(false);
+      }
     }
   }
   const loadOlder = async (inThread = false) => {
@@ -701,6 +743,7 @@ function ConnectWorkspace() {
     Icon: typeof Search,
     onPress: () => void,
     disabled = false,
+    keepFocus = false,
   ) {
     return (
       <Pressable
@@ -708,8 +751,15 @@ function ConnectWorkspace() {
         accessibilityLabel={label}
         disabled={disabled}
         onPress={onPress}
+        onPressIn={
+          keepFocus && Platform.OS === 'web'
+            ? (event) => event.preventDefault()
+            : undefined
+        }
+        hitSlop={4}
         style={({ pressed }) => [
           styles.icon,
+          mobile && styles.touchIcon,
           {
             backgroundColor: pressed ? colors.hover : 'transparent',
             opacity: disabled ? 0.4 : 1,
@@ -868,295 +918,110 @@ function ConnectWorkspace() {
     );
   }
   function formatDraft(delimiter: string) {
-    const start = Math.min(selection.start, draft.length),
-      end = Math.min(selection.end, draft.length);
+    const start = Math.min(selection.current.start, draft.length),
+      end = Math.min(selection.current.end, draft.length);
     const value = draft.slice(start, end) || 'text';
     setDraft(
       draft.slice(0, start) + delimiter + value + delimiter + draft.slice(end),
     );
+    setRequestedSelection({
+      start: start + delimiter.length,
+      end: start + delimiter.length + value.length,
+    });
     composerRef.current?.focus();
   }
-  function dateDivider(date: string) {
-    return (
-      <View style={styles.dateDivider}>
-        <View style={[styles.dateLine, { backgroundColor: colors.border }]} />
-        <Text
-          style={[
-            styles.dateLabel,
-            {
-              color: colors.textPrimary,
-              borderColor: colors.border,
-              backgroundColor: colors.surface,
-            },
-          ]}
-        >
-          {new Date(date).toLocaleDateString(undefined, {
-            weekday: 'long',
-            month: 'long',
-            day: 'numeric',
-          })}
-        </Text>
-        <View style={[styles.dateLine, { backgroundColor: colors.border }]} />
-      </View>
-    );
-  }
+  const openMessageActions = useCallback((message: Message) => {
+    setActionMessage(message);
+    setDialog('message');
+  }, []);
+  const reactToMessage = useCallback(
+    (message: Message, emoji: string, mine: boolean) => {
+      void action(async () => {
+        const updated = await connectApi.react(message.id, emoji, mine);
+        setMessages((old) => mergeMessages(old, [updated]));
+      });
+    },
+    [action],
+  );
+  const downloadFile = useCallback(
+    (file: NonNullable<Message['attachments']>[number]) => {
+      void action(() => downloadConnectFile(file));
+    },
+    [action],
+  );
   function avatar(name: string, small = false) {
-    return (
-      <View
-        style={[
-          styles.avatar,
-          small && { width: 22, height: 22, borderRadius: 4 },
-          {
-            backgroundColor: ['#337C91', '#9B594E', '#6E5BA7', '#4D7861'][
-              Array.from(name).reduce((sum, ch) => sum + ch.charCodeAt(0), 0) %
-                4
-            ],
-          },
-        ]}
-      >
-        <Text
-          style={{
-            color: '#FFFFFF',
-            fontWeight: '700',
-            fontSize: small ? 11 : 14,
-          }}
-        >
-          {name
-            .split(' ')
-            .map((n) => n[0])
-            .slice(0, 2)
-            .join('')
-            .toUpperCase()}
-        </Text>
-      </View>
-    );
+    return <ConnectAvatar name={name} small={small} colors={colors} />;
   }
-  function bodyOf(m: Message) {
-    const render = (body: string): React.ReactNode =>
-      body
-        .split(
-          /(`[^`\n]+`|<@[a-f0-9-]{36}>|https?:\/\/[^\s<>]+|\*[^*\n]+\*|_[^_\n]+_|~[^~\n]+~)/gi,
-        )
-        .map((part, i) => {
-          if (/^(`[^`]+`|\*[^*]+\*|_[^_]+_|~[^~]+~)$/.test(part))
-            return (
-              <Text
-                key={i}
-                style={
-                  part[0] === '*'
-                    ? { fontWeight: '700' }
-                    : part[0] === '_'
-                      ? { fontStyle: 'italic' }
-                      : part[0] === '~'
-                        ? { textDecorationLine: 'line-through' }
-                        : {
-                            fontFamily:
-                              Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-                            backgroundColor: colors.hover,
-                            color: isDark ? '#E891A6' : '#C22D50',
-                          }
-                }
-              >
-                {part[0] === '`'
-                  ? part.slice(1, -1)
-                  : render(part.slice(1, -1))}
-              </Text>
-            );
-          const id = part.match(/^<@(.+)>$/)?.[1];
-          const mention = m.mentions.find((x) => x.user_id === id);
-          if (/^https?:\/\//i.test(part)) {
-            try {
-              const url = new URL(part);
-              if (!url.username && !url.password)
-                return (
-                  <Text
-                    key={i}
-                    accessibilityRole="link"
-                    onPress={() => {
-                      void Linking.openURL(url.href);
-                    }}
-                    style={{
-                      color: colors.primary,
-                      textDecorationLine: 'underline',
-                    }}
-                  >
-                    {part}
-                  </Text>
-                );
-            } catch {}
-          }
-          return (
-            <Text
-              key={i}
-              style={
-                id
-                  ? {
-                      color: colors.primary,
-                      backgroundColor: colors.primaryMuted,
-                      fontWeight: '600',
-                    }
-                  : undefined
-              }
-            >
-              {id ? '@' + (mention?.name || 'employee') : part}
-            </Text>
-          );
-        });
-    return render(m.body);
+  function bodyOf(message: Message) {
+    return (
+      <ConnectMessageBody message={message} colors={colors} isDark={!!isDark} />
+    );
   }
   const renderMessage = useCallback(
-    ({ item: m, index }: { item: Message; index?: number }) => (
-      <View>
-        {!m.parent_id &&
+    ({ item: message, index }: { item: Message; index?: number }) => (
+      <ConnectMessageRow
+        message={message}
+        day={
+          !message.parent_id &&
           index !== undefined &&
           (index === 0 ||
             new Date(roots[index - 1]?.created_at).toDateString() !==
-              new Date(m.created_at).toDateString()) &&
-          dateDivider(m.created_at)}
-        <Pressable
-          accessible={false}
-          onHoverIn={() => setHoveredMessage(m.id)}
-          onHoverOut={() => setHoveredMessage(null)}
-          style={[
-            styles.message,
-            {
-              backgroundColor:
-                hoveredMessage === m.id ? colors.hover : 'transparent',
-            },
-          ]}
-        >
-          {avatar(m.sender_name)}
-          <View style={styles.messageContent}>
-            <View style={styles.row}>
-              <Text style={[styles.sender, textStyle]}>{m.sender_name}</Text>
-              <Text style={[styles.meta, { color: colors.textTertiary }]}>
-                {new Date(m.created_at).toLocaleString(undefined, {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-                {m.edited_at ? ' · edited' : ''}
-              </Text>
-            </View>
-            <Text
-              selectable
-              style={{
-                color: m.deleted_at ? colors.textTertiary : colors.textPrimary,
-                fontSize: 15,
-                lineHeight: 22,
-              }}
-            >
-              {m.deleted_at ? 'Message deleted' : bodyOf(m)}
-            </Text>
-            {!m.deleted_at &&
-              m.attachments?.map((file) => (
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel={`Download ${file.filename}`}
-                  key={file.id}
-                  onPress={() => {
-                    void action(() => downloadConnectFile(file));
-                  }}
-                  style={[styles.notice, { borderColor: colors.border }]}
-                >
-                  <Text style={{ color: colors.primary, fontSize: 12 }}>
-                    {file.filename} · {Math.ceil(file.byte_size / 1024)} KB
-                  </Text>
-                </Pressable>
-              ))}
-            {!m.deleted_at && (
-              <View style={[styles.row, { flexWrap: 'wrap', marginTop: 5 }]}>
-                {!m.parent_id &&
-                  !!m.reply_count &&
-                  button(
-                    m.reply_count
-                      ? `${m.reply_count} ${m.reply_count === 1 ? 'reply' : 'replies'}`
-                      : 'Reply in thread',
-                    () => {
-                      void openThread(m);
-                    },
-                  )}
-                {EMOJI.filter((emoji) =>
-                  m.reactions.some((r) => r.emoji === emoji),
-                ).map((emoji) => {
-                  const reactions = m.reactions.filter(
-                      (r) => r.emoji === emoji,
-                    ),
-                    mine = reactions.some((r) => r.user_id === self);
-                  return (
-                    <Pressable
-                      key={emoji}
-                      accessibilityRole="button"
-                      accessibilityLabel={`${mine ? 'Remove' : 'Add'} ${emoji} reaction`}
-                      onPress={() => {
-                        void action(async () => {
-                          const updated = await connectApi.react(
-                            m.id,
-                            emoji,
-                            mine,
-                          );
-                          setMessages((old) => mergeMessages(old, [updated]));
-                        });
-                      }}
-                      style={[
-                        styles.reaction,
-                        {
-                          borderColor: mine ? colors.primary : colors.border,
-                          backgroundColor: mine
-                            ? colors.primaryMuted
-                            : 'transparent',
-                        },
-                      ]}
-                    >
-                      <Text
-                        style={{ color: colors.textSecondary, fontSize: 12 }}
-                      >
-                        {emoji}
-                        {reactions.length ? ' ' + reactions.length : ''}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            )}
-          </View>
-          {!m.deleted_at && (
-            <View
-              style={[
-                styles.messageTools,
-                {
-                  backgroundColor: colors.surface,
-                  borderColor:
-                    hoveredMessage === m.id ? colors.border : 'transparent',
-                },
-              ]}
-            >
-              {(hoveredMessage === m.id || mobile) && (
-                <>
-                  {iconButton('Add a reaction', SmilePlus, () => {
-                    setActionMessage(m);
-                    setDialog('message');
-                  })}
-                  {!m.parent_id &&
-                    iconButton('Reply in thread', MessageSquare, () => {
-                      void openThread(m);
-                    })}
-                </>
-              )}
-              {iconButton('Message actions', MoreHorizontal, () => {
-                setActionMessage(m);
-                setDialog('message');
-              })}
-            </View>
-          )}
-        </Pressable>
-      </View>
+              new Date(message.created_at).toDateString())
+            ? message.created_at
+            : undefined
+        }
+        colors={colors}
+        isDark={!!isDark}
+        mobile={mobile}
+        self={self}
+        onThread={openThread}
+        onActions={openMessageActions}
+        onReact={reactToMessage}
+        onDownload={downloadFile}
+      />
     ),
-    [colors, self, thread, hoveredMessage, mobile, roots],
+    [
+      colors,
+      isDark,
+      mobile,
+      self,
+      openThread,
+      openMessageActions,
+      reactToMessage,
+      downloadFile,
+      roots,
+    ],
   );
   const [deleteTarget, setDeleteTarget] = useState<Message | null>(null);
+  async function searchMessages() {
+    await action(async () =>
+      setSearchResults(
+        await connectApi.search({
+          q: searchQuery,
+          conversation_id: searchHere ? active : undefined,
+          sender_id: searchAuthor || undefined,
+          after_date: searchFrom || undefined,
+          before_date: searchTo || undefined,
+          mentions_only: mentionsOnly,
+        }),
+      ),
+    );
+  }
   function composer() {
+    const composerButton = (
+      label: string,
+      Icon: typeof Search,
+      onPress: () => void,
+      disabled = false,
+    ) => iconButton(label, Icon, onPress, disabled, true);
     return (
-      <View style={[styles.composer, { backgroundColor: colors.surface }]}>
+      <View
+        style={[
+          styles.composer,
+          mobile && { paddingHorizontal: 12 },
+          { backgroundColor: colors.surface },
+        ]}
+      >
         {pickedFile && (
           <View style={styles.row}>
             <Text
@@ -1208,7 +1073,10 @@ function ConnectWorkspace() {
           <View
             style={[
               styles.emojiPicker,
-              { borderColor: colors.border, backgroundColor: colors.surface },
+              {
+                borderColor: colors.border,
+                backgroundColor: colors.surface,
+              },
             ]}
           >
             {['😀', '👍', '❤️', '🎉', '👀', '✅', '🙏', '🚀'].map((emoji) => (
@@ -1231,48 +1099,76 @@ function ConnectWorkspace() {
         <View
           style={[
             styles.composeBox,
-            { borderColor: colors.border, backgroundColor: colors.surface },
+            {
+              borderColor: composerFocused ? colors.primary : colors.border,
+              backgroundColor: colors.surface,
+            },
           ]}
         >
-          <View
-            style={[styles.formatToolbar, { backgroundColor: colors.hover }]}
-          >
-            {iconButton(
-              'Bold text',
-              Bold,
-              () => formatDraft('*'),
-              sending || !!selected?.archived_at,
-            )}
-            {iconButton(
-              'Italic text',
-              Italic,
-              () => formatDraft('_'),
-              sending || !!selected?.archived_at,
-            )}
-            {iconButton(
-              'Strike through text',
-              Strikethrough,
-              () => formatDraft('~'),
-              sending || !!selected?.archived_at,
-            )}
+          {(!mobile || formattingOpen) && (
             <View
-              style={[
-                styles.toolbarDivider,
-                { backgroundColor: colors.border },
-              ]}
-            />
-            {iconButton(
-              'Inline code',
-              Code,
-              () => formatDraft('`'),
-              sending || !!selected?.archived_at,
-            )}
-          </View>
+              style={[styles.formatToolbar, { backgroundColor: colors.hover }]}
+            >
+              {composerButton(
+                'Bold text',
+                Bold,
+                () => formatDraft('*'),
+                !!selected?.archived_at,
+              )}
+              {composerButton(
+                'Italic text',
+                Italic,
+                () => formatDraft('_'),
+                !!selected?.archived_at,
+              )}
+              {composerButton(
+                'Strike through text',
+                Strikethrough,
+                () => formatDraft('~'),
+                !!selected?.archived_at,
+              )}
+              <View
+                style={[
+                  styles.toolbarDivider,
+                  { backgroundColor: colors.border },
+                ]}
+              />
+              {composerButton(
+                'Inline code',
+                Code,
+                () => formatDraft('`'),
+                !!selected?.archived_at,
+              )}
+            </View>
+          )}
           <TextInput
             ref={composerRef}
-            onSelectionChange={(event) =>
-              setSelection(event.nativeEvent.selection)
-            }
+            selection={requestedSelection}
+            onSelectionChange={(event) => {
+              selection.current = event.nativeEvent.selection;
+              if (requestedSelection) setRequestedSelection(undefined);
+            }}
+            onChange={(event) => {
+              if (Platform.OS !== 'web') return;
+              const node = event.target as unknown as HTMLTextAreaElement;
+              if (node?.tagName !== 'TEXTAREA' || !node.style) return;
+              node.style.height = 'auto';
+              const height = Math.max(52, Math.min(132, node.scrollHeight));
+              node.style.height = `${height}px`;
+              setComposerHeight((old) => (old === height ? old : height));
+            }}
+            onFocus={() => setComposerFocused(true)}
+            onBlur={() => setComposerFocused(false)}
+            onContentSizeChange={(event) => {
+              const height = Math.max(
+                52,
+                Math.min(132, Math.ceil(event.nativeEvent.contentSize.height)),
+              );
+              setComposerHeight((old) => (old === height ? old : height));
+            }}
+            underlineColorAndroid="transparent"
+            selectionColor={colors.primary}
+            blurOnSubmit={false}
             accessibilityLabel={
               editing
                 ? 'Edit message'
@@ -1316,8 +1212,13 @@ function ConnectWorkspace() {
             }}
             multiline
             maxLength={8000}
-            editable={!sending && !selected?.archived_at}
-            style={[styles.composerInput, textStyle]}
+            editable={!selected?.archived_at}
+            style={[
+              styles.composerInput,
+              textStyle,
+              { height: composerHeight },
+              Platform.OS === 'web' && ({ outlineStyle: 'none' } as any),
+            ]}
           />
           <View
             style={[
@@ -1325,8 +1226,15 @@ function ConnectWorkspace() {
               { borderTopColor: colors.borderSubtle },
             ]}
           >
+            {mobile &&
+              composerButton(
+                'Formatting options',
+                Bold,
+                () => setFormattingOpen(!formattingOpen),
+                !!selected?.archived_at,
+              )}
             {!editing &&
-              iconButton(
+              composerButton(
                 'Attach a file',
                 Plus,
                 () => {
@@ -1337,13 +1245,13 @@ function ConnectWorkspace() {
                 },
                 sending || !!selected?.archived_at,
               )}
-            {iconButton(
+            {composerButton(
               'Insert emoji',
               SmilePlus,
               () => setEmojiOpen(!emojiOpen),
-              sending || !!selected?.archived_at,
+              !!selected?.archived_at,
             )}
-            {iconButton(
+            {composerButton(
               'Mention a colleague',
               AtSign,
               () => {
@@ -1352,7 +1260,7 @@ function ConnectWorkspace() {
                 );
                 composerRef.current?.focus();
               },
-              sending || !!selected?.archived_at,
+              !!selected?.archived_at,
             )}
             <Text style={{ flex: 1, color: colors.textTertiary, fontSize: 12 }}>
               {pickedFile ? 'File attached' : ''}
@@ -1365,11 +1273,17 @@ function ConnectWorkspace() {
                 (!draft.trim() && !pickedFile) ||
                 !!selected?.archived_at
               }
+              onPressIn={
+                Platform.OS === 'web'
+                  ? (event) => event.preventDefault()
+                  : undefined
+              }
               onPress={() => {
                 void sendDraft();
               }}
               style={[
                 styles.send,
+                mobile && { minWidth: 44, height: 44 },
                 {
                   backgroundColor:
                     (draft.trim() || pickedFile) && !sending
@@ -1682,7 +1596,16 @@ function ConnectWorkspace() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      style={[styles.root, { backgroundColor: colors.background }]}
+      style={[
+        styles.root,
+        { backgroundColor: colors.background },
+        viewport && {
+          flex: 0,
+          height: viewport.height,
+          maxHeight: viewport.height,
+          transform: [{ translateY: viewport.offsetTop }],
+        },
+      ]}
     >
       <View style={styles.top}>
         <Pressable
@@ -1956,8 +1879,9 @@ function ConnectWorkspace() {
                             data={roots}
                             keyExtractor={(m) => m.id}
                             renderItem={renderMessage}
-                            initialNumToRender={20}
-                            maxToRenderPerBatch={15}
+                            initialNumToRender={12}
+                            maxToRenderPerBatch={6}
+                            updateCellsBatchingPeriod={50}
                             windowSize={7}
                             onScroll={(event) => {
                               const {
@@ -1972,6 +1896,10 @@ function ConnectWorkspace() {
                                 160;
                             }}
                             scrollEventThrottle={100}
+                            keyboardShouldPersistTaps="handled"
+                            keyboardDismissMode={
+                              Platform.OS === 'ios' ? 'interactive' : 'on-drag'
+                            }
                             onContentSizeChange={() => {
                               if (scrollToLatest.current) {
                                 scrollToLatest.current = false;
@@ -2127,7 +2055,13 @@ function ConnectWorkspace() {
                           data={replies}
                           keyExtractor={(m) => m.id}
                           renderItem={renderMessage}
-                          initialNumToRender={15}
+                          initialNumToRender={10}
+                          maxToRenderPerBatch={6}
+                          windowSize={7}
+                          keyboardShouldPersistTaps="handled"
+                          keyboardDismissMode={
+                            Platform.OS === 'ios' ? 'interactive' : 'on-drag'
+                          }
                           ListHeaderComponent={
                             <>
                               {renderMessage({
@@ -2165,962 +2099,105 @@ function ConnectWorkspace() {
       <Modal
         visible={!!context && (dialog !== null || !!deleteTarget)}
         transparent
-        animationType="fade"
+        animationType={mobile ? 'none' : 'fade'}
         onRequestClose={() => {
           setDialog(null);
           setDeleteTarget(null);
         }}
       >
-        <View
-          style={[styles.modalBackdrop, { backgroundColor: colors.overlay }]}
+        <KeyboardAvoidingView
+          style={[
+            { flex: 1 },
+            viewport && {
+              flex: 0,
+              height: viewport.height,
+              transform: [{ translateY: viewport.offsetTop }],
+            },
+          ]}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
           <View
-            style={[
-              styles.modal,
-              {
-                backgroundColor: colors.surface,
-                borderColor: colors.border,
-                maxWidth: dialog === 'search' ? 760 : 540,
-              },
-            ]}
+            style={[styles.modalBackdrop, { backgroundColor: colors.overlay }]}
           >
-            <View style={[styles.row, { marginBottom: 12 }]}>
-              <Text style={[styles.sectionTitle, textStyle]}>
-                {deleteTarget
-                  ? 'Delete message?'
-                  : dialog === 'create'
-                    ? 'Create a channel'
-                    : dialog === 'people'
-                      ? 'New direct message'
-                      : dialog === 'members'
-                        ? 'Channel details & members'
-                        : dialog === 'notifications'
-                          ? 'Your notifications'
-                          : dialog === 'search'
-                            ? 'Search Connect'
-                            : dialog === 'saved'
-                              ? 'Saved messages'
-                              : dialog === 'pins'
-                                ? 'Pinned messages'
-                                : dialog === 'task'
-                                  ? 'Create a school checklist task'
-                                  : dialog === 'message'
-                                    ? 'Message actions'
-                                    : dialog === 'threads'
-                                      ? 'Threads'
-                                      : dialog === 'company'
-                                        ? 'Company access'
-                                        : 'Preferences & availability'}
-              </Text>
-              <View style={{ flex: 1 }} />
-              {button('Close', () => {
-                setDialog(null);
-                setDeleteTarget(null);
-              })}
-            </View>
-            <ScrollView keyboardShouldPersistTaps="handled">
-              {dialog === 'threads' && (
-                <>
-                  <Text
-                    style={[
-                      styles.welcomeCopy,
-                      { color: colors.textSecondary, marginBottom: 16 },
-                    ]}
-                  >
-                    Replies in {currentTitle}. Open a thread to keep the
-                    discussion going.
-                  </Text>
-                  {!roots.some((m) => m.reply_count) && (
+            <View
+              style={[
+                styles.modal,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  maxWidth: dialog === 'search' ? 760 : 540,
+                },
+              ]}
+            >
+              <View style={[styles.row, { marginBottom: 12 }]}>
+                <Text style={[styles.sectionTitle, textStyle]}>
+                  {deleteTarget
+                    ? 'Delete message?'
+                    : dialog === 'create'
+                      ? 'Create a channel'
+                      : dialog === 'people'
+                        ? 'New direct message'
+                        : dialog === 'members'
+                          ? 'Channel details & members'
+                          : dialog === 'notifications'
+                            ? 'Your notifications'
+                            : dialog === 'search'
+                              ? 'Search Connect'
+                              : dialog === 'saved'
+                                ? 'Saved messages'
+                                : dialog === 'pins'
+                                  ? 'Pinned messages'
+                                  : dialog === 'task'
+                                    ? 'Create a school checklist task'
+                                    : dialog === 'message'
+                                      ? 'Message actions'
+                                      : dialog === 'threads'
+                                        ? 'Threads'
+                                        : dialog === 'company'
+                                          ? 'Company access'
+                                          : 'Preferences & availability'}
+                </Text>
+                <View style={{ flex: 1 }} />
+                {button('Close', () => {
+                  setDialog(null);
+                  setDeleteTarget(null);
+                })}
+              </View>
+              <ScrollView
+                style={{ flexShrink: 1, minHeight: 0 }}
+                contentContainerStyle={{ paddingBottom: 16 }}
+                keyboardShouldPersistTaps="handled"
+                keyboardDismissMode="on-drag"
+              >
+                {dialog === 'threads' && (
+                  <>
                     <Text
-                      style={[styles.empty, { color: colors.textSecondary }]}
+                      style={[
+                        styles.welcomeCopy,
+                        { color: colors.textSecondary, marginBottom: 16 },
+                      ]}
                     >
-                      No threads in this conversation yet. Reply to a message to
-                      start one.
+                      Replies in {currentTitle}. Open a thread to keep the
+                      discussion going.
                     </Text>
-                  )}
-                  {roots
-                    .filter((m) => m.reply_count)
-                    .map((m) => (
-                      <Pressable
-                        key={m.id}
-                        accessibilityRole="button"
-                        accessibilityLabel={`Open thread from ${m.sender_name}`}
-                        onPress={() => {
-                          setDialog(null);
-                          void openThread(m);
-                        }}
-                        style={[styles.notice, { borderColor: colors.border }]}
-                      >
-                        <Text style={[styles.sender, textStyle]}>
-                          {m.sender_name}
-                        </Text>
-                        <Text
-                          numberOfLines={3}
-                          style={[
-                            styles.welcomeCopy,
-                            { color: colors.textSecondary },
-                          ]}
-                        >
-                          {m.deleted_at ? 'Message deleted' : bodyOf(m)}
-                        </Text>
-                        <Text style={{ color: colors.primary, marginTop: 8 }}>
-                          {m.reply_count}{' '}
-                          {m.reply_count === 1 ? 'reply' : 'replies'}
-                        </Text>
-                      </Pressable>
-                    ))}
-                </>
-              )}
-              {dialog === 'company' && (
-                <>
-                  <Text style={[styles.empty, { color: colors.textSecondary }]}>
-                    Grant or revoke Connect access for existing company
-                    employees. Channel membership is managed separately.
-                  </Text>
-                  {!!accessNotice && (
-                    <Text
-                      accessibilityRole="alert"
-                      style={{ color: colors.success }}
-                    >
-                      {accessNotice}
-                    </Text>
-                  )}
-                  <TextInput
-                    accessibilityLabel="Find company employee"
-                    placeholder="Search your existing employee directory"
-                    placeholderTextColor={colors.textTertiary}
-                    value={peopleQuery}
-                    onChangeText={setPeopleQuery}
-                    style={fieldStyle}
-                  />
-                  {people
-                    .filter((p) => p.id !== self)
-                    .map((p) => (
-                      <View key={p.id} style={styles.person}>
-                        <View style={{ flex: 1 }}>
-                          <Text style={textStyle}>{p.full_name}</Text>
-                          <Text
-                            style={{ fontSize: 12, color: colors.textTertiary }}
-                          >
-                            {p.employee_id} · {p.role}
-                          </Text>
-                        </View>
-                        {button(
-                          'Grant access',
-                          () => {
-                            void action(async () => {
-                              await connectApi.provision(p.id);
-                              await refreshContext();
-                              setAccessNotice(
-                                `${p.full_name} can now use Connect.`,
-                              );
-                            });
-                          },
-                          busy,
-                        )}
-                        {button(
-                          'Revoke access',
-                          () => {
-                            void action(async () => {
-                              await connectApi.provision(p.id, true);
-                              await refreshContext();
-                              setAccessNotice(
-                                `${p.full_name} no longer has Connect access.`,
-                              );
-                            });
-                          },
-                          busy,
-                        )}
-                      </View>
-                    ))}
-                </>
-              )}
-              {!!deleteTarget && (
-                <>
-                  <Text style={[styles.empty, { color: colors.textSecondary }]}>
-                    The message will become a tombstone. Its text will be
-                    removed and the action audited.
-                  </Text>
-                  {button(
-                    'Delete my message',
-                    () => {
-                      void action(async () => {
-                        const m = await connectApi.delete(deleteTarget.id);
-                        setMessages((old) => mergeMessages(old, [m]));
-                        setDeleteTarget(null);
-                      });
-                    },
-                    busy,
-                    true,
-                  )}
-                </>
-              )}
-              {dialog === 'message' && actionMessage && (
-                <>
-                  <Text
-                    style={[
-                      styles.label,
-                      { color: colors.textSecondary, marginBottom: 12 },
-                    ]}
-                  >
-                    Add a reaction
-                  </Text>
-                  <View style={[styles.row, { marginBottom: 16 }]}>
-                    {EMOJI.map((emoji) => (
-                      <Pressable
-                        key={emoji}
-                        accessibilityRole="button"
-                        accessibilityLabel={`React ${emoji}`}
-                        onPress={() => {
-                          void action(async () => {
-                            const updated = await connectApi.react(
-                              actionMessage.id,
-                              emoji,
-                              actionMessage.reactions.some(
-                                (r) => r.emoji === emoji && r.user_id === self,
-                              ),
-                            );
-                            setMessages((old) => mergeMessages(old, [updated]));
-                            setDialog(null);
-                          });
-                        }}
-                        style={[
-                          styles.reaction,
-                          {
-                            borderColor: colors.border,
-                            backgroundColor: colors.background,
-                          },
-                        ]}
-                      >
-                        <Text style={{ fontSize: 22 }}>{emoji}</Text>
-                      </Pressable>
-                    ))}
-                  </View>
-                  {button(
-                    'Save message',
-                    () => {
-                      void action(async () => {
-                        await connectApi.save(actionMessage.id);
-                        setDialog(null);
-                      });
-                    },
-                    busy,
-                  )}
-                  {selected?.can_manage &&
-                    button(
-                      'Pin message',
-                      () => {
-                        void action(async () => {
-                          await connectApi.pin(actionMessage.id);
-                          setDialog(null);
-                        });
-                      },
-                      busy,
-                    )}
-                  {button('Copy message link', () => {
-                    void action(async () => {
-                      const link =
-                        Platform.OS === 'web'
-                          ? `${window.location.origin}/connect?conversation=${actionMessage.conversation_id}&message=${actionMessage.id}`
-                          : Linking.createURL('connect', {
-                              queryParams: {
-                                conversation: actionMessage.conversation_id,
-                                message: actionMessage.id,
-                              },
-                            });
-                      await Clipboard.setStringAsync(link);
-                      setDialog(null);
-                    });
-                  })}
-                  {(isFounder || can?.('checklist.delegate')) &&
-                    button('Convert to task', () => {
-                      void action(async () => {
-                        setTaskSchools(await connectApi.taskSchools());
-                        setTaskEmployees(
-                          await connectApi.employees(
-                            '',
-                            actionMessage.conversation_id,
-                          ),
-                        );
-                        setTaskTitle('');
-                        setTaskDescription('');
-                        setTaskAssignee(self || '');
-                        setTaskSchool('');
-                        setTaskDeadline('');
-                        setDialog('task');
-                      });
-                    })}
-                  {actionMessage.sender_id === self && (
-                    <>
-                      {button('Edit message', () => {
-                        void action(async () => {
-                          if (actionMessage.parent_id)
-                            await openThread(
-                              await connectApi.message(actionMessage.parent_id),
-                            );
-                          setEditing(actionMessage);
-                          setDraft(actionMessage.body);
-                          setDialog(null);
-                        });
-                      })}
-                      {button('Delete message', () => {
-                        setDeleteTarget(actionMessage);
-                        setDialog(null);
-                      })}
-                    </>
-                  )}
-                </>
-              )}
-              {(dialog === 'saved' || dialog === 'pins') && (
-                <>
-                  {!bookmarks.length && (
-                    <Text
-                      style={[styles.empty, { color: colors.textSecondary }]}
-                    >
-                      {dialog === 'saved'
-                        ? 'Save useful messages to return to them later.'
-                        : 'Channel managers can pin useful messages.'}
-                    </Text>
-                  )}
-                  {bookmarks.map((b) => (
-                    <View
-                      key={b.message_id}
-                      style={[styles.notice, { borderColor: colors.border }]}
-                    >
-                      <Text numberOfLines={3} style={textStyle}>
-                        {b.deleted_at ? 'Message deleted' : b.preview}
-                      </Text>
-                      <View style={styles.row}>
-                        {button('Open original', () => {
-                          void action(() => navigateMessage(b.message_id));
-                        })}
-                        {dialog === 'saved'
-                          ? button('Unsave', () => {
-                              void action(async () => {
-                                await connectApi.save(b.message_id, true);
-                                setBookmarks(await connectApi.saved());
-                              });
-                            })
-                          : selected?.can_manage
-                            ? button('Unpin', () => {
-                                void action(async () => {
-                                  await connectApi.pin(b.message_id, true);
-                                  setBookmarks(await connectApi.pins(active!));
-                                });
-                              })
-                            : null}
-                      </View>
-                    </View>
-                  ))}
-                </>
-              )}
-              {dialog === 'task' && actionMessage && (
-                <>
-                  <Text style={[styles.empty, { color: colors.textSecondary }]}>
-                    Create work in the existing school checklist. Choose an
-                    authorized school and employee. Enter the task wording to
-                    share; original message text stays in Connect.
-                  </Text>
-                  <TextInput
-                    accessibilityLabel="Task title"
-                    placeholder="Task title"
-                    placeholderTextColor={colors.textTertiary}
-                    value={taskTitle}
-                    onChangeText={setTaskTitle}
-                    style={fieldStyle}
-                  />
-                  <TextInput
-                    accessibilityLabel="Task description"
-                    placeholder="Instructions to share with the task assignee"
-                    placeholderTextColor={colors.textTertiary}
-                    value={taskDescription}
-                    onChangeText={setTaskDescription}
-                    style={fieldStyle}
-                    multiline
-                  />
-                  <Text
-                    style={[
-                      styles.label,
-                      { color: colors.textTertiary, marginVertical: 10 },
-                    ]}
-                  >
-                    SCHOOL
-                  </Text>
-                  <View style={[styles.row, { flexWrap: 'wrap' }]}>
-                    {taskSchools.map((s) => (
-                      <React.Fragment key={s.id}>
-                        {button(
-                          `${taskSchool === String(s.id) ? '✓ ' : ''}${s.name}`,
-                          () => setTaskSchool(String(s.id)),
-                        )}
-                      </React.Fragment>
-                    ))}
-                  </View>
-                  <Text
-                    style={[
-                      styles.label,
-                      { color: colors.textTertiary, marginVertical: 10 },
-                    ]}
-                  >
-                    ASSIGN TO
-                  </Text>
-                  <View style={[styles.row, { flexWrap: 'wrap' }]}>
-                    {taskEmployees.map((e) => (
-                      <React.Fragment key={e.id}>
-                        {button(
-                          `${taskAssignee === e.id ? '✓ ' : ''}${e.full_name}`,
-                          () => setTaskAssignee(e.id),
-                        )}
-                      </React.Fragment>
-                    ))}
-                  </View>
-                  <TextInput
-                    accessibilityLabel="Task deadline"
-                    placeholder="Deadline YYYY-MM-DD (optional)"
-                    placeholderTextColor={colors.textTertiary}
-                    value={taskDeadline}
-                    onChangeText={setTaskDeadline}
-                    style={fieldStyle}
-                  />
-                  <View style={[styles.row, { flexWrap: 'wrap' }]}>
-                    {['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'].map((p) => (
-                      <React.Fragment key={p}>
-                        {button(`${taskPriority === p ? '✓ ' : ''}${p}`, () =>
-                          setTaskPriority(p),
-                        )}
-                      </React.Fragment>
-                    ))}
-                  </View>
-                  <View style={[styles.row, { flexWrap: 'wrap' }]}>
-                    {['NOT_STARTED', 'IN_PROGRESS', 'BLOCKED'].map((s) => (
-                      <React.Fragment key={s}>
-                        {button(
-                          `${taskStatus === s ? '✓ ' : ''}${s.replace('_', ' ')}`,
-                          () => setTaskStatus(s),
-                        )}
-                      </React.Fragment>
-                    ))}
-                  </View>
-                  {button(
-                    'Create checklist task',
-                    () => {
-                      void action(async () => {
-                        const task = await connectApi.task(actionMessage.id, {
-                          title: taskTitle,
-                          description: taskDescription,
-                          assigned_to: taskAssignee,
-                          school_id: taskSchool,
-                          priority: taskPriority,
-                          deadline: taskDeadline || undefined,
-                          status: taskStatus,
-                        });
-                        setDialog(null);
-                        router.push(
-                          `/(app)/checklist?schoolId=${task.school_id}` as any,
-                        );
-                      });
-                    },
-                    busy || !taskTitle.trim() || !taskSchool,
-                    true,
-                  )}
-                </>
-              )}
-              {dialog === 'create' && (
-                <>
-                  <TextInput
-                    accessibilityLabel="Channel name"
-                    placeholder="Channel name, e.g. product-and-research"
-                    placeholderTextColor={colors.textTertiary}
-                    value={channelName}
-                    onChangeText={setChannelName}
-                    style={fieldStyle}
-                    maxLength={64}
-                  />
-                  <TextInput
-                    accessibilityLabel="Channel purpose"
-                    placeholder="Purpose"
-                    placeholderTextColor={colors.textTertiary}
-                    value={purpose}
-                    onChangeText={setPurpose}
-                    style={fieldStyle}
-                    maxLength={250}
-                  />
-                  <TextInput
-                    accessibilityLabel="Channel description"
-                    placeholder="Description"
-                    placeholderTextColor={colors.textTertiary}
-                    value={description}
-                    onChangeText={setDescription}
-                    style={fieldStyle}
-                    maxLength={1000}
-                  />
-                  <View style={styles.row}>
-                    {['company', 'department', 'project'].map((c) => (
-                      <React.Fragment key={c}>
-                        {button(`${category === c ? '✓ ' : ''}${c}`, () =>
-                          setCategory(c),
-                        )}
-                      </React.Fragment>
-                    ))}
-                  </View>
-                  {button(
-                    privateChannel
-                      ? 'Private · invited members'
-                      : 'Public · employees can join',
-                    () => setPrivateChannel(!privateChannel),
-                  )}
-                  {button(
-                    announcement
-                      ? 'Announcements · managers post'
-                      : 'All members can post',
-                    () => setAnnouncement(!announcement),
-                  )}
-                  {button(
-                    'Create channel',
-                    () => {
-                      void action(async () => {
-                        const c = await connectApi.createChannel({
-                          name: channelName,
-                          purpose,
-                          description,
-                          category,
-                          visibility: privateChannel ? 'private' : 'public',
-                          announcements_only: announcement,
-                        });
-                        await refreshContext();
-                        chooseConversation(c.id);
-                      });
-                    },
-                    busy || !channelName.trim(),
-                    true,
-                  )}
-                </>
-              )}
-              {(dialog === 'people' || dialog === 'members') && (
-                <>
-                  {dialog === 'members' && selected && (
-                    <>
+                    {!roots.some((m) => m.reply_count) && (
                       <Text
                         style={[styles.empty, { color: colors.textSecondary }]}
                       >
-                        {selected.description || 'No description yet.'}
+                        No threads in this conversation yet. Reply to a message
+                        to start one.
                       </Text>
-                      {button('Pinned messages', () => {
-                        void action(async () => {
-                          setBookmarks(await connectApi.pins(selected.id));
-                          setDialog('pins');
-                        });
-                      })}
-                      {selected.can_manage && (
-                        <>
-                          <TextInput
-                            accessibilityLabel="Edit channel purpose"
-                            value={purpose}
-                            onChangeText={setPurpose}
-                            style={fieldStyle}
-                          />
-                          <TextInput
-                            accessibilityLabel="Edit channel description"
-                            value={description}
-                            onChangeText={setDescription}
-                            style={fieldStyle}
-                          />
-                          <View style={[styles.row, { flexWrap: 'wrap' }]}>
-                            {button(
-                              'Save details',
-                              () => {
-                                void action(async () => {
-                                  await connectApi.updateChannel(selected.id, {
-                                    purpose,
-                                    description,
-                                  });
-                                  await refreshContext();
-                                });
-                              },
-                              busy,
-                            )}
-                            {button(
-                              selected.archived_at
-                                ? 'Restore channel'
-                                : 'Archive channel',
-                              () => {
-                                void action(async () => {
-                                  await connectApi.updateChannel(selected.id, {
-                                    archived: !selected.archived_at,
-                                  });
-                                  await refreshContext();
-                                });
-                              },
-                              busy,
-                            )}
-                          </View>
-                        </>
-                      )}
-                      {members.map((m) => (
-                        <View key={m.user_id} style={styles.person}>
-                          <Text style={[textStyle, { flex: 1 }]}>
-                            {m.full_name} · {m.role}
-                          </Text>
-                          {selected.can_manage && m.user_id !== self && (
-                            <>
-                              {button(
-                                m.role === 'manager'
-                                  ? 'Make member'
-                                  : 'Make manager',
-                                () => {
-                                  void action(async () => {
-                                    await connectApi.membership(
-                                      selected.id,
-                                      m.user_id,
-                                      m.role === 'manager'
-                                        ? 'member'
-                                        : 'manager',
-                                    );
-                                    setMembers(
-                                      await connectApi.members(selected.id),
-                                    );
-                                  });
-                                },
-                                busy,
-                              )}
-                              {button(
-                                'Remove',
-                                () => {
-                                  void action(async () => {
-                                    await connectApi.membership(
-                                      selected.id,
-                                      m.user_id,
-                                      'member',
-                                      true,
-                                    );
-                                    setMembers(
-                                      await connectApi.members(selected.id),
-                                    );
-                                    await refreshContext();
-                                  });
-                                },
-                                busy,
-                              )}
-                            </>
-                          )}
-                        </View>
-                      ))}
-                    </>
-                  )}
-                  {(dialog === 'people' || selected?.can_manage) && (
-                    <>
-                      <TextInput
-                        accessibilityLabel="Find employee"
-                        placeholder="Find an employee"
-                        placeholderTextColor={colors.textTertiary}
-                        value={peopleQuery}
-                        onChangeText={setPeopleQuery}
-                        style={fieldStyle}
-                      />
-                      {people
-                        .filter(
-                          (p) =>
-                            p.id !== self &&
-                            (dialog !== 'members' ||
-                              !members.some((m) => m.user_id === p.id)),
-                        )
-                        .map((p) => (
-                          <Pressable
-                            accessibilityRole="button"
-                            accessibilityLabel={`${dialog === 'people' ? 'Message' : 'Add'} ${p.full_name}`}
-                            key={p.id}
-                            onPress={() => {
-                              void action(async () => {
-                                if (dialog === 'people') {
-                                  const d = await connectApi.dm(p.id);
-                                  await refreshContext();
-                                  chooseConversation(d.id);
-                                } else if (active) {
-                                  await connectApi.membership(active, p.id);
-                                  setMembers(await connectApi.members(active));
-                                }
-                              });
-                            }}
-                            style={styles.person}
-                          >
-                            {avatar(p.full_name)}
-                            <View style={{ flex: 1 }}>
-                              <Text style={textStyle}>{p.full_name}</Text>
-                              <Text
-                                style={{
-                                  color: colors.textTertiary,
-                                  fontSize: 12,
-                                }}
-                              >
-                                {p.employee_id} · {p.role}
-                              </Text>
-                            </View>
-                            <ChevronRight
-                              size={16}
-                              color={colors.textTertiary}
-                            />
-                          </Pressable>
-                        ))}
-                    </>
-                  )}
-                </>
-              )}
-              {dialog === 'notifications' && (
-                <>
-                  {!notices.length && (
-                    <Text
-                      style={[styles.empty, { color: colors.textSecondary }]}
-                    >
-                      You're caught up. Mentions, DMs and thread replies will
-                      appear here.
-                    </Text>
-                  )}
-                  {notices.map((n) => (
-                    <Pressable
-                      key={n.id}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Open ${n.kind} from ${n.sender_name}`}
-                      onPress={() => {
-                        void action(async () => {
-                          await connectApi.readNotice(n.id);
-                          router.setParams({
-                            conversation: n.conversation_id,
-                            message: n.message_id,
-                          });
-                          if (activeRef.current === n.conversation_id)
-                            await navigateMessage(n.message_id);
-                          else chooseConversation(n.conversation_id);
-                          await refreshContext();
-                          setDialog(null);
-                        });
-                      }}
-                      style={[
-                        styles.notice,
-                        {
-                          borderColor: colors.border,
-                          backgroundColor: n.read_at
-                            ? 'transparent'
-                            : colors.primaryMuted,
-                        },
-                      ]}
-                    >
-                      <Text style={[styles.sender, textStyle]}>
-                        {n.sender_name} · {n.kind}
-                      </Text>
-                      <Text
-                        numberOfLines={2}
-                        style={{ color: colors.textSecondary, marginTop: 5 }}
-                      >
-                        {n.preview}
-                      </Text>
-                      <Text
-                        style={{
-                          color: colors.textTertiary,
-                          fontSize: 11,
-                          marginTop: 5,
-                        }}
-                      >
-                        {new Date(n.created_at).toLocaleString()}
-                      </Text>
-                    </Pressable>
-                  ))}
-                </>
-              )}
-              {dialog === 'settings' && (
-                <>
-                  <Text style={[styles.empty, { color: colors.textSecondary }]}>
-                    Set your availability for the next five minutes. It returns
-                    to away when the status expires.
-                  </Text>
-                  <View style={styles.row}>
-                    {['online', 'away', 'busy'].map((s) => (
-                      <React.Fragment key={s}>
-                        {button(
-                          s,
-                          () => {
-                            void action(async () => {
-                              await connectApi.presence(s);
-                              setPresence(await connectApi.listPresence());
-                            });
-                          },
-                          busy,
-                        )}
-                      </React.Fragment>
-                    ))}
-                  </View>
-                  <Text style={[styles.empty, { color: colors.textSecondary }]}>
-                    Choose what reaches your notification centre.
-                  </Text>
-                  {(['all', 'mentions', 'muted'] as const).map((mode) => (
-                    <React.Fragment key={mode}>
-                      {button(
-                        `${context?.preferences.mode === mode ? '✓ ' : ''}${mode === 'all' ? 'All messages' : mode === 'mentions' ? 'Mentions, DMs, threads & announcements' : 'Mute notifications'}`,
-                        () => {
-                          void action(async () => {
-                            await connectApi.preferences(mode);
-                            await refreshContext();
-                          });
-                        },
-                        busy,
-                      )}
-                    </React.Fragment>
-                  ))}
-                  <Text style={[styles.empty, { color: colors.textTertiary }]}>
-                    Push notifications are not available yet.
-                  </Text>
-                  {presence.map((p) => (
-                    <Text
-                      key={p.user_id}
-                      style={{ color: colors.textSecondary, fontSize: 12 }}
-                    >
-                      {p.user_id === self
-                        ? 'You'
-                        : context?.direct_messages.find(
-                            (d) => d.employee_id === p.user_id,
-                          )?.name || 'Colleague'}{' '}
-                      · {p.status}
-                    </Text>
-                  ))}
-                </>
-              )}
-              {dialog === 'search' && (
-                <>
-                  <TextInput
-                    accessibilityLabel="Search messages"
-                    placeholder="Search messages, channels and employees"
-                    placeholderTextColor={colors.textTertiary}
-                    value={searchQuery}
-                    onChangeText={setSearchQuery}
-                    style={fieldStyle}
-                  />
-                  <Text
-                    style={[
-                      styles.label,
-                      { color: colors.textTertiary, marginVertical: 10 },
-                    ]}
-                  >
-                    FROM EMPLOYEE
-                  </Text>
-                  <ScrollView horizontal>
-                    <View style={styles.row}>
-                      {button(searchAuthor ? 'Anyone' : '✓ Anyone', () =>
-                        setSearchAuthor(''),
-                      )}
-                      {searchEmployees.map((e) => (
-                        <React.Fragment key={e.id}>
-                          {button(
-                            `${searchAuthor === e.id ? '✓ ' : ''}${e.full_name}`,
-                            () => setSearchAuthor(e.id),
-                          )}
-                        </React.Fragment>
-                      ))}
-                    </View>
-                  </ScrollView>
-                  <View style={styles.row}>
-                    <TextInput
-                      accessibilityLabel="Search after date"
-                      placeholder="From YYYY-MM-DD"
-                      placeholderTextColor={colors.textTertiary}
-                      value={searchFrom}
-                      onChangeText={setSearchFrom}
-                      style={[...fieldStyle, { flex: 1 }]}
-                    />
-                    <TextInput
-                      accessibilityLabel="Search before date"
-                      placeholder="To YYYY-MM-DD"
-                      placeholderTextColor={colors.textTertiary}
-                      value={searchTo}
-                      onChangeText={setSearchTo}
-                      style={[...fieldStyle, { flex: 1 }]}
-                    />
-                  </View>
-                  <View style={[styles.row, { flexWrap: 'wrap' }]}>
-                    {active &&
-                      button(
-                        searchHere
-                          ? '✓ Current conversation'
-                          : 'All conversations',
-                        () => setSearchHere(!searchHere),
-                      )}
-                    {button(
-                      mentionsOnly ? '✓ My mentions' : 'Include all messages',
-                      () => setMentionsOnly(!mentionsOnly),
                     )}
-                    {button(
-                      'Search',
-                      () => {
-                        void action(async () =>
-                          setSearchResults(
-                            await connectApi.search({
-                              q: searchQuery,
-                              conversation_id: searchHere ? active : undefined,
-                              sender_id: searchAuthor || undefined,
-                              after_date: searchFrom || undefined,
-                              before_date: searchTo || undefined,
-                              mentions_only: mentionsOnly,
-                            }),
-                          ),
-                        );
-                      },
-                      busy,
-                      true,
-                    )}
-                  </View>
-                  {searchResults && (
-                    <>
-                      {!searchResults.messages.length &&
-                        !searchResults.channels.length &&
-                        !searchResults.employees.length && (
-                          <Text
-                            style={[
-                              styles.empty,
-                              { color: colors.textSecondary },
-                            ]}
-                          >
-                            No results in conversations you can access.
-                          </Text>
-                        )}
-                      {searchResults.channels.map((c) => (
-                        <View key={c.id} style={styles.person}>
-                          <Text style={[textStyle, { flex: 1 }]}>
-                            # {c.name}
-                          </Text>
-                          {button('Open channel', () => {
-                            const joined = context?.channels.find(
-                              (x) => x.id === c.id,
-                            )?.joined;
-                            void action(async () => {
-                              if (!joined)
-                                await connectApi.membership(c.id, self!);
-                              await refreshContext();
-                              chooseConversation(c.id);
-                            });
-                          })}
-                        </View>
-                      ))}
-                      {searchResults.employees
-                        .filter((p) => p.id !== self)
-                        .map((p) => (
-                          <View key={p.id} style={styles.person}>
-                            <Text style={[textStyle, { flex: 1 }]}>
-                              {p.full_name}
-                            </Text>
-                            {button('Message employee', () => {
-                              void action(async () => {
-                                const d = await connectApi.dm(p.id);
-                                await refreshContext();
-                                chooseConversation(d.id);
-                              });
-                            })}
-                          </View>
-                        ))}
-                      {searchResults.messages.map((m) => (
+                    {roots
+                      .filter((m) => m.reply_count)
+                      .map((m) => (
                         <Pressable
                           key={m.id}
                           accessibilityRole="button"
-                          accessibilityLabel={`Open message from ${m.sender_name}`}
+                          accessibilityLabel={`Open thread from ${m.sender_name}`}
                           onPress={() => {
-                            void action(() => navigateMessage(m.id));
+                            setDialog(null);
+                            void openThread(m);
                           }}
                           style={[
                             styles.notice,
@@ -3132,31 +2209,981 @@ function ConnectWorkspace() {
                           </Text>
                           <Text
                             numberOfLines={3}
-                            style={{
-                              color: colors.textSecondary,
-                              marginTop: 5,
-                            }}
+                            style={[
+                              styles.welcomeCopy,
+                              { color: colors.textSecondary },
+                            ]}
                           >
-                            {bodyOf(m)}
+                            {m.deleted_at ? 'Message deleted' : bodyOf(m)}
+                          </Text>
+                          <Text style={{ color: colors.primary, marginTop: 8 }}>
+                            {m.reply_count}{' '}
+                            {m.reply_count === 1 ? 'reply' : 'replies'}
                           </Text>
                         </Pressable>
                       ))}
-                    </>
-                  )}
-                </>
+                  </>
+                )}
+                {dialog === 'company' && (
+                  <>
+                    <Text
+                      style={[styles.empty, { color: colors.textSecondary }]}
+                    >
+                      Grant or revoke Connect access for existing company
+                      employees. Channel membership is managed separately.
+                    </Text>
+                    {!!accessNotice && (
+                      <Text
+                        accessibilityRole="alert"
+                        style={{ color: colors.success }}
+                      >
+                        {accessNotice}
+                      </Text>
+                    )}
+                    <ConnectTextField
+                      colors={colors}
+                      accessibilityLabel="Find company employee"
+                      autoFocus
+                      autoCapitalize="none"
+                      returnKeyType="search"
+                      placeholder="Search your existing employee directory"
+                      placeholderTextColor={colors.textTertiary}
+                      value={peopleQuery}
+                      onChangeText={setPeopleQuery}
+                      style={fieldStyle}
+                    />
+                    {people
+                      .filter((p) => p.id !== self)
+                      .map((p) => (
+                        <View key={p.id} style={styles.person}>
+                          <View style={{ flex: 1 }}>
+                            <Text style={textStyle}>{p.full_name}</Text>
+                            <Text
+                              style={{
+                                fontSize: 12,
+                                color: colors.textTertiary,
+                              }}
+                            >
+                              {p.employee_id} · {p.role}
+                            </Text>
+                          </View>
+                          {button(
+                            'Grant access',
+                            () => {
+                              void action(async () => {
+                                await connectApi.provision(p.id);
+                                await refreshContext();
+                                setAccessNotice(
+                                  `${p.full_name} can now use Connect.`,
+                                );
+                              });
+                            },
+                            busy,
+                          )}
+                          {button(
+                            'Revoke access',
+                            () => {
+                              void action(async () => {
+                                await connectApi.provision(p.id, true);
+                                await refreshContext();
+                                setAccessNotice(
+                                  `${p.full_name} no longer has Connect access.`,
+                                );
+                              });
+                            },
+                            busy,
+                          )}
+                        </View>
+                      ))}
+                  </>
+                )}
+                {!!deleteTarget && (
+                  <>
+                    <Text
+                      style={[styles.empty, { color: colors.textSecondary }]}
+                    >
+                      The message will become a tombstone. Its text will be
+                      removed and the action audited.
+                    </Text>
+                    {button(
+                      'Delete my message',
+                      () => {
+                        void action(async () => {
+                          const m = await connectApi.delete(deleteTarget.id);
+                          setMessages((old) => mergeMessages(old, [m]));
+                          setDeleteTarget(null);
+                        });
+                      },
+                      busy,
+                      true,
+                    )}
+                  </>
+                )}
+                {dialog === 'message' && actionMessage && (
+                  <>
+                    {!actionMessage.parent_id &&
+                      button('Reply in thread', () => {
+                        setDialog(null);
+                        void openThread(actionMessage);
+                      })}
+                    <Text
+                      style={[
+                        styles.label,
+                        { color: colors.textSecondary, marginBottom: 12 },
+                      ]}
+                    >
+                      Add a reaction
+                    </Text>
+                    <View style={[styles.row, { marginBottom: 16 }]}>
+                      {EMOJI.map((emoji) => (
+                        <Pressable
+                          key={emoji}
+                          accessibilityRole="button"
+                          accessibilityLabel={`React ${emoji}`}
+                          onPress={() => {
+                            void action(async () => {
+                              const updated = await connectApi.react(
+                                actionMessage.id,
+                                emoji,
+                                actionMessage.reactions.some(
+                                  (r) =>
+                                    r.emoji === emoji && r.user_id === self,
+                                ),
+                              );
+                              setMessages((old) =>
+                                mergeMessages(old, [updated]),
+                              );
+                              setDialog(null);
+                            });
+                          }}
+                          style={[
+                            styles.reaction,
+                            {
+                              borderColor: colors.border,
+                              backgroundColor: colors.background,
+                            },
+                          ]}
+                        >
+                          <Text style={{ fontSize: 22 }}>{emoji}</Text>
+                        </Pressable>
+                      ))}
+                    </View>
+                    {button(
+                      'Save message',
+                      () => {
+                        void action(async () => {
+                          await connectApi.save(actionMessage.id);
+                          setDialog(null);
+                        });
+                      },
+                      busy,
+                    )}
+                    {selected?.can_manage &&
+                      button(
+                        'Pin message',
+                        () => {
+                          void action(async () => {
+                            await connectApi.pin(actionMessage.id);
+                            setDialog(null);
+                          });
+                        },
+                        busy,
+                      )}
+                    {button('Copy message link', () => {
+                      void action(async () => {
+                        const link =
+                          Platform.OS === 'web'
+                            ? `${window.location.origin}/connect?conversation=${actionMessage.conversation_id}&message=${actionMessage.id}`
+                            : Linking.createURL('connect', {
+                                queryParams: {
+                                  conversation: actionMessage.conversation_id,
+                                  message: actionMessage.id,
+                                },
+                              });
+                        await Clipboard.setStringAsync(link);
+                        setDialog(null);
+                      });
+                    })}
+                    {(isFounder || can?.('checklist.delegate')) &&
+                      button('Convert to task', () => {
+                        void action(async () => {
+                          setTaskSchools(await connectApi.taskSchools());
+                          setTaskEmployees(
+                            await connectApi.employees(
+                              '',
+                              actionMessage.conversation_id,
+                            ),
+                          );
+                          setTaskTitle('');
+                          setTaskDescription('');
+                          setTaskAssignee(self || '');
+                          setTaskSchool('');
+                          setTaskDeadline('');
+                          setDialog('task');
+                        });
+                      })}
+                    {actionMessage.sender_id === self && (
+                      <>
+                        {button('Edit message', () => {
+                          void action(async () => {
+                            if (actionMessage.parent_id)
+                              await openThread(
+                                await connectApi.message(
+                                  actionMessage.parent_id,
+                                ),
+                              );
+                            setEditing(actionMessage);
+                            setDraft(actionMessage.body);
+                            setDialog(null);
+                          });
+                        })}
+                        {button('Delete message', () => {
+                          setDeleteTarget(actionMessage);
+                          setDialog(null);
+                        })}
+                      </>
+                    )}
+                  </>
+                )}
+                {(dialog === 'saved' || dialog === 'pins') && (
+                  <>
+                    {!bookmarks.length && (
+                      <Text
+                        style={[styles.empty, { color: colors.textSecondary }]}
+                      >
+                        {dialog === 'saved'
+                          ? 'Save useful messages to return to them later.'
+                          : 'Channel managers can pin useful messages.'}
+                      </Text>
+                    )}
+                    {bookmarks.map((b) => (
+                      <View
+                        key={b.message_id}
+                        style={[styles.notice, { borderColor: colors.border }]}
+                      >
+                        <Text numberOfLines={3} style={textStyle}>
+                          {b.deleted_at ? 'Message deleted' : b.preview}
+                        </Text>
+                        <View style={styles.row}>
+                          {button('Open original', () => {
+                            void action(() => navigateMessage(b.message_id));
+                          })}
+                          {dialog === 'saved'
+                            ? button('Unsave', () => {
+                                void action(async () => {
+                                  await connectApi.save(b.message_id, true);
+                                  setBookmarks(await connectApi.saved());
+                                });
+                              })
+                            : selected?.can_manage
+                              ? button('Unpin', () => {
+                                  void action(async () => {
+                                    await connectApi.pin(b.message_id, true);
+                                    setBookmarks(
+                                      await connectApi.pins(active!),
+                                    );
+                                  });
+                                })
+                              : null}
+                        </View>
+                      </View>
+                    ))}
+                  </>
+                )}
+                {dialog === 'task' && actionMessage && (
+                  <>
+                    <Text
+                      style={[styles.empty, { color: colors.textSecondary }]}
+                    >
+                      Create work in the existing school checklist. Choose an
+                      authorized school and employee. Enter the task wording to
+                      share; original message text stays in Connect.
+                    </Text>
+                    <ConnectTextField
+                      colors={colors}
+                      accessibilityLabel="Task title"
+                      placeholder="Task title"
+                      placeholderTextColor={colors.textTertiary}
+                      value={taskTitle}
+                      onChangeText={setTaskTitle}
+                      style={fieldStyle}
+                    />
+                    <ConnectTextField
+                      colors={colors}
+                      accessibilityLabel="Task description"
+                      placeholder="Instructions to share with the task assignee"
+                      placeholderTextColor={colors.textTertiary}
+                      value={taskDescription}
+                      onChangeText={setTaskDescription}
+                      style={fieldStyle}
+                      multiline
+                    />
+                    <Text
+                      style={[
+                        styles.label,
+                        { color: colors.textTertiary, marginVertical: 10 },
+                      ]}
+                    >
+                      SCHOOL
+                    </Text>
+                    <View style={[styles.row, { flexWrap: 'wrap' }]}>
+                      {taskSchools.map((s) => (
+                        <React.Fragment key={s.id}>
+                          {button(
+                            `${taskSchool === String(s.id) ? '✓ ' : ''}${s.name}`,
+                            () => setTaskSchool(String(s.id)),
+                          )}
+                        </React.Fragment>
+                      ))}
+                    </View>
+                    <Text
+                      style={[
+                        styles.label,
+                        { color: colors.textTertiary, marginVertical: 10 },
+                      ]}
+                    >
+                      ASSIGN TO
+                    </Text>
+                    <View style={[styles.row, { flexWrap: 'wrap' }]}>
+                      {taskEmployees.map((e) => (
+                        <React.Fragment key={e.id}>
+                          {button(
+                            `${taskAssignee === e.id ? '✓ ' : ''}${e.full_name}`,
+                            () => setTaskAssignee(e.id),
+                          )}
+                        </React.Fragment>
+                      ))}
+                    </View>
+                    <ConnectTextField
+                      colors={colors}
+                      accessibilityLabel="Task deadline"
+                      placeholder="Deadline YYYY-MM-DD (optional)"
+                      placeholderTextColor={colors.textTertiary}
+                      value={taskDeadline}
+                      onChangeText={setTaskDeadline}
+                      style={fieldStyle}
+                    />
+                    <View style={[styles.row, { flexWrap: 'wrap' }]}>
+                      {['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'].map((p) => (
+                        <React.Fragment key={p}>
+                          {button(`${taskPriority === p ? '✓ ' : ''}${p}`, () =>
+                            setTaskPriority(p),
+                          )}
+                        </React.Fragment>
+                      ))}
+                    </View>
+                    <View style={[styles.row, { flexWrap: 'wrap' }]}>
+                      {['NOT_STARTED', 'IN_PROGRESS', 'BLOCKED'].map((s) => (
+                        <React.Fragment key={s}>
+                          {button(
+                            `${taskStatus === s ? '✓ ' : ''}${s.replace('_', ' ')}`,
+                            () => setTaskStatus(s),
+                          )}
+                        </React.Fragment>
+                      ))}
+                    </View>
+                    {button(
+                      'Create checklist task',
+                      () => {
+                        void action(async () => {
+                          const task = await connectApi.task(actionMessage.id, {
+                            title: taskTitle,
+                            description: taskDescription,
+                            assigned_to: taskAssignee,
+                            school_id: taskSchool,
+                            priority: taskPriority,
+                            deadline: taskDeadline || undefined,
+                            status: taskStatus,
+                          });
+                          setDialog(null);
+                          router.push(
+                            `/(app)/checklist?schoolId=${task.school_id}` as any,
+                          );
+                        });
+                      },
+                      busy || !taskTitle.trim() || !taskSchool,
+                      true,
+                    )}
+                  </>
+                )}
+                {dialog === 'create' && (
+                  <>
+                    <ConnectTextField
+                      colors={colors}
+                      accessibilityLabel="Channel name"
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      helper="Use lowercase letters, numbers, and hyphens."
+                      placeholder="Channel name, e.g. product-and-research"
+                      placeholderTextColor={colors.textTertiary}
+                      value={channelName}
+                      onChangeText={setChannelName}
+                      style={fieldStyle}
+                      maxLength={64}
+                    />
+                    <ConnectTextField
+                      colors={colors}
+                      accessibilityLabel="Channel purpose"
+                      placeholder="Purpose"
+                      placeholderTextColor={colors.textTertiary}
+                      value={purpose}
+                      onChangeText={setPurpose}
+                      style={fieldStyle}
+                      maxLength={250}
+                    />
+                    <ConnectTextField
+                      colors={colors}
+                      accessibilityLabel="Channel description"
+                      multiline
+                      placeholder="Description"
+                      placeholderTextColor={colors.textTertiary}
+                      value={description}
+                      onChangeText={setDescription}
+                      style={fieldStyle}
+                      maxLength={1000}
+                    />
+                    <View style={styles.row}>
+                      {['company', 'department', 'project'].map((c) => (
+                        <React.Fragment key={c}>
+                          {button(`${category === c ? '✓ ' : ''}${c}`, () =>
+                            setCategory(c),
+                          )}
+                        </React.Fragment>
+                      ))}
+                    </View>
+                    {button(
+                      privateChannel
+                        ? 'Private · invited members'
+                        : 'Public · employees can join',
+                      () => setPrivateChannel(!privateChannel),
+                    )}
+                    {button(
+                      announcement
+                        ? 'Announcements · managers post'
+                        : 'All members can post',
+                      () => setAnnouncement(!announcement),
+                    )}
+                    {button(
+                      'Create channel',
+                      () => {
+                        void action(async () => {
+                          const c = await connectApi.createChannel({
+                            name: channelName,
+                            purpose,
+                            description,
+                            category,
+                            visibility: privateChannel ? 'private' : 'public',
+                            announcements_only: announcement,
+                          });
+                          await refreshContext();
+                          chooseConversation(c.id);
+                        });
+                      },
+                      busy || !channelName.trim(),
+                      true,
+                    )}
+                  </>
+                )}
+                {(dialog === 'people' || dialog === 'members') && (
+                  <>
+                    {dialog === 'members' && selected && (
+                      <>
+                        <Text
+                          style={[
+                            styles.empty,
+                            { color: colors.textSecondary },
+                          ]}
+                        >
+                          {selected.description || 'No description yet.'}
+                        </Text>
+                        {button('Pinned messages', () => {
+                          void action(async () => {
+                            setBookmarks(await connectApi.pins(selected.id));
+                            setDialog('pins');
+                          });
+                        })}
+                        {selected.can_manage && (
+                          <>
+                            <ConnectTextField
+                              colors={colors}
+                              accessibilityLabel="Edit channel purpose"
+                              value={purpose}
+                              onChangeText={setPurpose}
+                              style={fieldStyle}
+                            />
+                            <ConnectTextField
+                              colors={colors}
+                              accessibilityLabel="Edit channel description"
+                              value={description}
+                              onChangeText={setDescription}
+                              style={fieldStyle}
+                            />
+                            <View style={[styles.row, { flexWrap: 'wrap' }]}>
+                              {button(
+                                'Save details',
+                                () => {
+                                  void action(async () => {
+                                    await connectApi.updateChannel(
+                                      selected.id,
+                                      {
+                                        purpose,
+                                        description,
+                                      },
+                                    );
+                                    await refreshContext();
+                                  });
+                                },
+                                busy,
+                              )}
+                              {button(
+                                selected.archived_at
+                                  ? 'Restore channel'
+                                  : 'Archive channel',
+                                () => {
+                                  void action(async () => {
+                                    await connectApi.updateChannel(
+                                      selected.id,
+                                      {
+                                        archived: !selected.archived_at,
+                                      },
+                                    );
+                                    await refreshContext();
+                                  });
+                                },
+                                busy,
+                              )}
+                            </View>
+                          </>
+                        )}
+                        {members.map((m) => (
+                          <View key={m.user_id} style={styles.person}>
+                            <Text style={[textStyle, { flex: 1 }]}>
+                              {m.full_name} · {m.role}
+                            </Text>
+                            {selected.can_manage && m.user_id !== self && (
+                              <>
+                                {button(
+                                  m.role === 'manager'
+                                    ? 'Make member'
+                                    : 'Make manager',
+                                  () => {
+                                    void action(async () => {
+                                      await connectApi.membership(
+                                        selected.id,
+                                        m.user_id,
+                                        m.role === 'manager'
+                                          ? 'member'
+                                          : 'manager',
+                                      );
+                                      setMembers(
+                                        await connectApi.members(selected.id),
+                                      );
+                                    });
+                                  },
+                                  busy,
+                                )}
+                                {button(
+                                  'Remove',
+                                  () => {
+                                    void action(async () => {
+                                      await connectApi.membership(
+                                        selected.id,
+                                        m.user_id,
+                                        'member',
+                                        true,
+                                      );
+                                      setMembers(
+                                        await connectApi.members(selected.id),
+                                      );
+                                      await refreshContext();
+                                    });
+                                  },
+                                  busy,
+                                )}
+                              </>
+                            )}
+                          </View>
+                        ))}
+                      </>
+                    )}
+                    {(dialog === 'people' || selected?.can_manage) && (
+                      <>
+                        <ConnectTextField
+                          colors={colors}
+                          accessibilityLabel="Find employee"
+                          autoFocus
+                          autoCapitalize="none"
+                          returnKeyType="search"
+                          placeholder="Find an employee"
+                          placeholderTextColor={colors.textTertiary}
+                          value={peopleQuery}
+                          onChangeText={setPeopleQuery}
+                          style={fieldStyle}
+                        />
+                        {people
+                          .filter(
+                            (p) =>
+                              p.id !== self &&
+                              (dialog !== 'members' ||
+                                !members.some((m) => m.user_id === p.id)),
+                          )
+                          .map((p) => (
+                            <Pressable
+                              accessibilityRole="button"
+                              accessibilityLabel={`${dialog === 'people' ? 'Message' : 'Add'} ${p.full_name}`}
+                              key={p.id}
+                              onPress={() => {
+                                void action(async () => {
+                                  if (dialog === 'people') {
+                                    const d = await connectApi.dm(p.id);
+                                    await refreshContext();
+                                    chooseConversation(d.id);
+                                  } else if (active) {
+                                    await connectApi.membership(active, p.id);
+                                    setMembers(
+                                      await connectApi.members(active),
+                                    );
+                                  }
+                                });
+                              }}
+                              style={styles.person}
+                            >
+                              {avatar(p.full_name)}
+                              <View style={{ flex: 1 }}>
+                                <Text style={textStyle}>{p.full_name}</Text>
+                                <Text
+                                  style={{
+                                    color: colors.textTertiary,
+                                    fontSize: 12,
+                                  }}
+                                >
+                                  {p.employee_id} · {p.role}
+                                </Text>
+                              </View>
+                              <ChevronRight
+                                size={16}
+                                color={colors.textTertiary}
+                              />
+                            </Pressable>
+                          ))}
+                      </>
+                    )}
+                  </>
+                )}
+                {dialog === 'notifications' && (
+                  <>
+                    {!notices.length && (
+                      <Text
+                        style={[styles.empty, { color: colors.textSecondary }]}
+                      >
+                        You're caught up. Mentions, DMs and thread replies will
+                        appear here.
+                      </Text>
+                    )}
+                    {notices.map((n) => (
+                      <Pressable
+                        key={n.id}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Open ${n.kind} from ${n.sender_name}`}
+                        onPress={() => {
+                          void action(async () => {
+                            await connectApi.readNotice(n.id);
+                            router.setParams({
+                              conversation: n.conversation_id,
+                              message: n.message_id,
+                            });
+                            if (activeRef.current === n.conversation_id)
+                              await navigateMessage(n.message_id);
+                            else chooseConversation(n.conversation_id);
+                            await refreshContext();
+                            setDialog(null);
+                          });
+                        }}
+                        style={[
+                          styles.notice,
+                          {
+                            borderColor: colors.border,
+                            backgroundColor: n.read_at
+                              ? 'transparent'
+                              : colors.primaryMuted,
+                          },
+                        ]}
+                      >
+                        <Text style={[styles.sender, textStyle]}>
+                          {n.sender_name} · {n.kind}
+                        </Text>
+                        <Text
+                          numberOfLines={2}
+                          style={{ color: colors.textSecondary, marginTop: 5 }}
+                        >
+                          {n.preview}
+                        </Text>
+                        <Text
+                          style={{
+                            color: colors.textTertiary,
+                            fontSize: 11,
+                            marginTop: 5,
+                          }}
+                        >
+                          {new Date(n.created_at).toLocaleString()}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </>
+                )}
+                {dialog === 'settings' && (
+                  <>
+                    <Text
+                      style={[styles.empty, { color: colors.textSecondary }]}
+                    >
+                      Set your availability for the next five minutes. It
+                      returns to away when the status expires.
+                    </Text>
+                    <View style={styles.row}>
+                      {['online', 'away', 'busy'].map((s) => (
+                        <React.Fragment key={s}>
+                          {button(
+                            s,
+                            () => {
+                              void action(async () => {
+                                await connectApi.presence(s);
+                                setPresence(await connectApi.listPresence());
+                              });
+                            },
+                            busy,
+                          )}
+                        </React.Fragment>
+                      ))}
+                    </View>
+                    <Text
+                      style={[styles.empty, { color: colors.textSecondary }]}
+                    >
+                      Choose what reaches your notification centre.
+                    </Text>
+                    {(['all', 'mentions', 'muted'] as const).map((mode) => (
+                      <React.Fragment key={mode}>
+                        {button(
+                          `${context?.preferences.mode === mode ? '✓ ' : ''}${mode === 'all' ? 'All messages' : mode === 'mentions' ? 'Mentions, DMs, threads & announcements' : 'Mute notifications'}`,
+                          () => {
+                            void action(async () => {
+                              await connectApi.preferences(mode);
+                              await refreshContext();
+                            });
+                          },
+                          busy,
+                        )}
+                      </React.Fragment>
+                    ))}
+                    <Text
+                      style={[styles.empty, { color: colors.textTertiary }]}
+                    >
+                      Push notifications are not available yet.
+                    </Text>
+                    {presence.map((p) => (
+                      <Text
+                        key={p.user_id}
+                        style={{ color: colors.textSecondary, fontSize: 12 }}
+                      >
+                        {p.user_id === self
+                          ? 'You'
+                          : context?.direct_messages.find(
+                              (d) => d.employee_id === p.user_id,
+                            )?.name || 'Colleague'}{' '}
+                        · {p.status}
+                      </Text>
+                    ))}
+                  </>
+                )}
+                {dialog === 'search' && (
+                  <>
+                    <ConnectTextField
+                      colors={colors}
+                      accessibilityLabel="Search messages"
+                      onSubmitEditing={() => {
+                        void searchMessages();
+                      }}
+                      autoFocus
+                      autoCapitalize="none"
+                      returnKeyType="search"
+                      placeholder="Search messages, channels and employees"
+                      placeholderTextColor={colors.textTertiary}
+                      value={searchQuery}
+                      onChangeText={setSearchQuery}
+                      style={fieldStyle}
+                    />
+                    <Text
+                      style={[
+                        styles.label,
+                        { color: colors.textTertiary, marginVertical: 10 },
+                      ]}
+                    >
+                      FROM EMPLOYEE
+                    </Text>
+                    <ScrollView horizontal>
+                      <View style={styles.row}>
+                        {button(searchAuthor ? 'Anyone' : '✓ Anyone', () =>
+                          setSearchAuthor(''),
+                        )}
+                        {searchEmployees.map((e) => (
+                          <React.Fragment key={e.id}>
+                            {button(
+                              `${searchAuthor === e.id ? '✓ ' : ''}${e.full_name}`,
+                              () => setSearchAuthor(e.id),
+                            )}
+                          </React.Fragment>
+                        ))}
+                      </View>
+                    </ScrollView>
+                    <View
+                      style={[
+                        styles.row,
+                        mobile && {
+                          flexDirection: 'column',
+                          alignItems: 'stretch',
+                          gap: 0,
+                        },
+                      ]}
+                    >
+                      <ConnectTextField
+                        colors={colors}
+                        accessibilityLabel="Search after date"
+                        placeholder="YYYY-MM-DD"
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                        maxLength={10}
+                        placeholderTextColor={colors.textTertiary}
+                        value={searchFrom}
+                        onChangeText={setSearchFrom}
+                        style={fieldStyle}
+                        containerStyle={mobile ? undefined : { flex: 1 }}
+                      />
+                      <ConnectTextField
+                        colors={colors}
+                        accessibilityLabel="Search before date"
+                        placeholder="YYYY-MM-DD"
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                        maxLength={10}
+                        placeholderTextColor={colors.textTertiary}
+                        value={searchTo}
+                        onChangeText={setSearchTo}
+                        style={fieldStyle}
+                        containerStyle={mobile ? undefined : { flex: 1 }}
+                      />
+                    </View>
+                    <View style={[styles.row, { flexWrap: 'wrap' }]}>
+                      {active &&
+                        button(
+                          searchHere
+                            ? '✓ Current conversation'
+                            : 'All conversations',
+                          () => setSearchHere(!searchHere),
+                        )}
+                      {button(
+                        mentionsOnly ? '✓ My mentions' : 'Include all messages',
+                        () => setMentionsOnly(!mentionsOnly),
+                      )}
+                      {button(
+                        'Search',
+                        () => {
+                          void searchMessages();
+                        },
+                        busy,
+                        true,
+                      )}
+                    </View>
+                    {searchResults && (
+                      <>
+                        {!searchResults.messages.length &&
+                          !searchResults.channels.length &&
+                          !searchResults.employees.length && (
+                            <Text
+                              style={[
+                                styles.empty,
+                                { color: colors.textSecondary },
+                              ]}
+                            >
+                              No results in conversations you can access.
+                            </Text>
+                          )}
+                        {searchResults.channels.map((c) => (
+                          <View key={c.id} style={styles.person}>
+                            <Text style={[textStyle, { flex: 1 }]}>
+                              # {c.name}
+                            </Text>
+                            {button('Open channel', () => {
+                              const joined = context?.channels.find(
+                                (x) => x.id === c.id,
+                              )?.joined;
+                              void action(async () => {
+                                if (!joined)
+                                  await connectApi.membership(c.id, self!);
+                                await refreshContext();
+                                chooseConversation(c.id);
+                              });
+                            })}
+                          </View>
+                        ))}
+                        {searchResults.employees
+                          .filter((p) => p.id !== self)
+                          .map((p) => (
+                            <View key={p.id} style={styles.person}>
+                              <Text style={[textStyle, { flex: 1 }]}>
+                                {p.full_name}
+                              </Text>
+                              {button('Message employee', () => {
+                                void action(async () => {
+                                  const d = await connectApi.dm(p.id);
+                                  await refreshContext();
+                                  chooseConversation(d.id);
+                                });
+                              })}
+                            </View>
+                          ))}
+                        {searchResults.messages.map((m) => (
+                          <Pressable
+                            key={m.id}
+                            accessibilityRole="button"
+                            accessibilityLabel={`Open message from ${m.sender_name}`}
+                            onPress={() => {
+                              void action(() => navigateMessage(m.id));
+                            }}
+                            style={[
+                              styles.notice,
+                              { borderColor: colors.border },
+                            ]}
+                          >
+                            <Text style={[styles.sender, textStyle]}>
+                              {m.sender_name}
+                            </Text>
+                            <Text
+                              numberOfLines={3}
+                              style={{
+                                color: colors.textSecondary,
+                                marginTop: 5,
+                              }}
+                            >
+                              {bodyOf(m)}
+                            </Text>
+                          </Pressable>
+                        ))}
+                      </>
+                    )}
+                  </>
+                )}
+              </ScrollView>
+              {!!error && (
+                <Text
+                  accessibilityRole="alert"
+                  style={{ color: colors.error, marginTop: 10 }}
+                >
+                  {error}
+                </Text>
               )}
-            </ScrollView>
-            {!!error && (
-              <Text
-                accessibilityRole="alert"
-                style={{ color: colors.error, marginTop: 10 }}
-              >
-                {error}
-              </Text>
-            )}
-            {busy && <ActivityIndicator color={colors.primary} />}
+              {busy && <ActivityIndicator color={colors.primary} />}
+            </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </KeyboardAvoidingView>
   );
@@ -3242,16 +3269,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 22,
     paddingVertical: 8,
   },
-  sidebarAvatar: {
-    width: 22,
-    height: 22,
-    overflow: 'hidden',
-    borderRadius: 4,
-    alignItems: 'center',
-    justifyContent: 'center',
-    transform: [{ scale: 0.62 }],
-    marginHorizontal: -4,
-  },
   introAction: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -3259,29 +3276,6 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     minHeight: 36,
     marginTop: 8,
-  },
-  dateDivider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 12,
-  },
-  dateLine: { flex: 1, height: 1 },
-  dateLabel: {
-    borderWidth: 1,
-    borderRadius: 18,
-    paddingVertical: 6,
-    paddingHorizontal: 16,
-    fontWeight: '600',
-    fontSize: 12,
-  },
-  messageTools: {
-    position: 'absolute',
-    top: -10,
-    right: 16,
-    flexDirection: 'row',
-    borderWidth: 1,
-    borderRadius: 6,
-    paddingHorizontal: 2,
   },
   formatToolbar: {
     flexDirection: 'row',
@@ -3306,14 +3300,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  logo: {
-    height: 42,
-    width: 42,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: { fontSize: 22, fontWeight: '700', letterSpacing: -0.7 },
   icon: {
     minWidth: 32,
     minHeight: 32,
@@ -3370,21 +3356,6 @@ const styles = StyleSheet.create({
   discussion: { flexDirection: 'row', flex: 1, minHeight: 0 },
   mainMessages: { flex: 1, minWidth: 0 },
   thread: { borderLeftWidth: 1, flexShrink: 0, minHeight: 0 },
-  message: {
-    flexDirection: 'row',
-    gap: 10,
-    paddingHorizontal: 24,
-    paddingVertical: 8,
-    paddingRight: 52,
-  },
-  messageContent: { flex: 1, minWidth: 0 },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 5,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   sender: { fontSize: 15, fontWeight: '700' },
   meta: { fontSize: 12 },
   reaction: {
@@ -3397,8 +3368,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   button: {
-    minHeight: 30,
-    paddingHorizontal: 8,
+    minHeight: 40,
+    paddingHorizontal: 10,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 8,
@@ -3423,8 +3394,11 @@ const styles = StyleSheet.create({
   },
   composerInput: {
     minHeight: 52,
-    maxHeight: 160,
-    fontSize: 15,
+    maxHeight: 132,
+    minWidth: 0,
+    width: '100%',
+    fontSize: 16,
+    lineHeight: 24,
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 12,
@@ -3455,23 +3429,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 8,
   },
-  railCompose: {
-    width: 36,
-    height: 36,
-    borderRadius: 5,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   railFooter: { padding: 10, borderTopWidth: 1 },
-  railEmpty: {
-    marginHorizontal: 6,
-    marginTop: 8,
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: 16,
-    gap: 10,
-  },
-  eyebrow: { fontSize: 11, fontWeight: '700', letterSpacing: 1.4 },
   emptyConversation: {
     alignItems: 'flex-start',
     paddingTop: 40,
@@ -3531,6 +3489,7 @@ const styles = StyleSheet.create({
     borderColor: '#FFFFFF38',
     borderRadius: 6,
   },
+  touchIcon: { minWidth: 44, minHeight: 44 },
   suggestions: { borderWidth: 1, borderRadius: 10, marginBottom: 8 },
   person: {
     flexDirection: 'row',
@@ -3548,14 +3507,6 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 8,
   },
-  dot: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    fontSize: 9,
-    borderRadius: 7,
-    paddingHorizontal: 4,
-  },
   modalBackdrop: {
     flex: 1,
     alignItems: 'center',
@@ -3565,6 +3516,8 @@ const styles = StyleSheet.create({
   modal: {
     width: '100%',
     maxHeight: '90%',
+    minHeight: 0,
+    flexShrink: 1,
     padding: 20,
     borderRadius: 10,
     borderWidth: 1,

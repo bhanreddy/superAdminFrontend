@@ -185,7 +185,7 @@ test('late realtime session response cannot subscribe after disposal', async () 
   assert.equal(created, false);
 });
 
-function fixture(width = 390, platform = 'android', role = 'QA') {
+function fixture(width = 390, platform = 'android', role = 'QA', config = {}) {
   let currentUser = 'employee-a',
     failSend = false,
     denied = false,
@@ -214,7 +214,7 @@ function fixture(width = 390, platform = 'android', role = 'QA') {
       employee_id: 'EMP-A',
       role,
     },
-    can_manage: false,
+    can_manage: !!config.canManage,
     channels: [channel],
     direct_messages: [],
     unread_notifications: 0,
@@ -234,16 +234,20 @@ function fixture(width = 390, platform = 'android', role = 'QA') {
     history: async (_id, options = {}) => ({
       messages: options.parent
         ? [baseMessage(2, { parent_id: 'm1', body: 'Thread reply' })]
-        : [baseMessage(1, { reply_count: 1 })],
+        : Array.from({ length: config.messageCount || 1 }, (_, index) =>
+            baseMessage(index + 1, { reply_count: index === 0 ? 1 : 0 }),
+          ),
       has_more: false,
       last_sequence: 2,
     }),
     message: async (id) => baseMessage(Number(id.slice(1))),
     employees: async () => [],
     notifications: async () => [],
+    search: async () => ({ messages: [], channels: [], employees: [] }),
     read: async () => {},
     send: async (id, draft) => {
       sent.push({ ...draft });
+      if (config.sendGate) await config.sendGate;
       if (failSend) throw new Error('Connection lost');
       return baseMessage(3, { ...draft, id: 'sent', sender_id: currentUser });
     },
@@ -298,6 +302,21 @@ function fixture(width = 390, platform = 'android', role = 'QA') {
     useWindowDimensions: () => ({ width, height: 800 }),
   };
   const load = uiLoader({
+    ...(config.metrics
+      ? {
+          react: {
+            ...React,
+            memo: (component, compare) =>
+              React.memo(function Traced(props) {
+                if (component.name === 'ConnectMessageRow')
+                  config.metrics.rows = (config.metrics.rows || 0) + 1;
+                if (component.name === 'ConnectMessageBody')
+                  config.metrics.bodies = (config.metrics.bodies || 0) + 1;
+                return component(props);
+              }, compare),
+          },
+        }
+      : {}),
     'react-native': native,
     'expo-linking': { createURL: () => '' },
     'expo-router': {
@@ -806,5 +825,276 @@ test('each role can reach Connect from its navigation menu without gaining found
     } finally {
       if (screen) act(() => screen.unmount());
     }
+  }
+});
+
+test('caret movement makes no screen commits and typing leaves 120 memoized message rows untouched', async () => {
+  const metrics = { rows: 0 };
+  const f = fixture(1280, 'android', 'QA', { messageCount: 120, metrics });
+  let screen,
+    commits = 0;
+  try {
+    await act(async () => {
+      screen = create(
+        React.createElement(
+          React.Profiler,
+          { id: 'workspace', onRender: () => commits++ },
+          React.createElement(f.Screen),
+        ),
+      );
+      await flush();
+    });
+    assert.equal(metrics.rows, 120);
+    const input = () =>
+      screen.root.findByProps({ accessibilityLabel: 'Message composer' });
+    const initialCommits = commits,
+      initialRows = metrics.rows,
+      initialBodies = metrics.bodies;
+    for (let i = 0; i < 30; i++)
+      act(() =>
+        input().props.onSelectionChange({
+          nativeEvent: { selection: { start: i, end: i } },
+        }),
+      );
+    assert.equal(commits, initialCommits, 'caret updates stay in a ref');
+    for (let i = 0; i < 30; i++)
+      act(() => input().props.onChangeText('Typing message ' + i));
+    assert.equal(
+      metrics.rows,
+      initialRows,
+      'typing does not re-render history rows',
+    );
+    assert.equal(
+      metrics.bodies,
+      initialBodies,
+      'typing does not re-render message bodies',
+    );
+    const row = screen.root
+      .findAllByType('Pressable')
+      .find((node) => node.props.onHoverIn && node.props.onLongPress);
+    act(() => row.props.onHoverIn());
+    assert.equal(
+      metrics.rows,
+      initialRows + 1,
+      'hover updates only its own row',
+    );
+    assert.equal(
+      metrics.bodies,
+      initialBodies,
+      'hover keeps message text memoized',
+    );
+  } finally {
+    if (screen) act(() => screen.unmount());
+  }
+});
+
+test('the mobile composer stays editable and preserves a new draft while the previous send succeeds or fails', async () => {
+  for (const fail of [false, true]) {
+    let release;
+    const sendGate = new Promise((resolve) => (release = resolve));
+    const f = fixture(390, 'android', 'QA', { sendGate });
+    let screen;
+    try {
+      await act(async () => {
+        screen = create(React.createElement(f.Screen));
+        await flush();
+        pressable(screen.root, 'Open general, 1 unread').props.onPress();
+        await flush();
+      });
+      const input = () =>
+        screen.root.findByProps({ accessibilityLabel: 'Message composer' });
+      const form = new FormData();
+      if (fail) {
+        f.pick(form);
+        await act(async () => {
+          pressable(screen.root, 'Attach a file').props.onPress();
+          await flush();
+        });
+      }
+      act(() => input().props.onChangeText('First message'));
+      f.fail(fail);
+      await act(async () => {
+        const send = pressable(screen.root, 'Send message').props.onPress;
+        send();
+        send();
+        await flush();
+      });
+      assert.equal(input().props.editable, true);
+      assert.equal(f.sent.length, 1, 'rapid taps send only one request');
+      act(() => input().props.onChangeText('Next message stays here'));
+      await act(async () => {
+        release();
+        await flush();
+        await flush();
+      });
+      assert.equal(f.sent[0].body, 'First message');
+      assert.equal(input().props.value, 'Next message stays here');
+      if (fail) {
+        assert.ok(pressable(screen.root, 'Retry failed message'));
+        assert.equal(
+          pressable(screen.root, 'Remove file'),
+          undefined,
+          'failed request owns its old attachment',
+        );
+        f.fail(false);
+        await act(async () => {
+          pressable(screen.root, 'Retry failed message').props.onPress();
+          await flush();
+          await flush();
+        });
+        assert.equal(f.sent[1].client_id, f.sent[0].client_id);
+        assert.equal(f.uploads[0].form, form);
+        assert.equal(input().props.value, 'Next message stays here');
+      }
+    } finally {
+      if (screen) act(() => screen.unmount());
+    }
+  }
+});
+
+test('mobile editor keeps its input mounted, grows within bounds, and exposes formatting with touch-sized controls', async () => {
+  const f = fixture(390);
+  let screen;
+  const flatten = (style) =>
+    Object.assign({}, ...[style].flat(Infinity).filter(Boolean));
+  try {
+    await act(async () => {
+      screen = create(React.createElement(f.Screen));
+      await flush();
+      pressable(screen.root, 'Open general, 1 unread').props.onPress();
+      await flush();
+    });
+    const input = () =>
+      screen.root.findByProps({ accessibilityLabel: 'Message composer' });
+    const original = input();
+    assert.equal(input().props.blurOnSubmit, false);
+    assert.equal(flatten(input().props.style).fontSize, 16);
+    act(() =>
+      input().props.onContentSizeChange({
+        nativeEvent: { contentSize: { height: 900 } },
+      }),
+    );
+    assert.equal(flatten(input().props.style).height, 132);
+    act(() =>
+      input().props.onContentSizeChange({
+        nativeEvent: { contentSize: { height: 30 } },
+      }),
+    );
+    assert.equal(flatten(input().props.style).height, 52);
+    assert.equal(input(), original);
+    assert.equal(pressable(screen.root, 'Bold text'), undefined);
+    act(() => pressable(screen.root, 'Formatting options').props.onPress());
+    const bold = pressable(screen.root, 'Bold text');
+    assert.ok(flatten(bold.props.style({ pressed: false })).minHeight >= 44);
+    assert.ok(
+      flatten(pressable(screen.root, 'Send message').props.style).height >= 44,
+    );
+    act(() => input().props.onChangeText('A line\nAnother line'));
+    assert.equal(input().props.value, 'A line\nAnother line');
+    assert.equal(input(), original);
+  } finally {
+    if (screen) act(() => screen.unmount());
+  }
+});
+
+test('mobile message actions expose thread replies without covering the message with three controls', async () => {
+  const f = fixture(390);
+  let screen;
+  try {
+    await act(async () => {
+      screen = create(React.createElement(f.Screen));
+      await flush();
+      pressable(screen.root, 'Open general, 1 unread').props.onPress();
+      await flush();
+    });
+    assert.equal(pressable(screen.root, 'Add a reaction'), undefined);
+    act(() => pressable(screen.root, 'Message actions').props.onPress());
+    assert.ok(pressable(screen.root, 'Reply in thread'));
+    await act(async () => {
+      pressable(screen.root, 'Reply in thread').props.onPress();
+      await flush();
+    });
+    assert.ok(screen.root.findByProps({ testID: 'connect-thread' }));
+  } finally {
+    if (screen) act(() => screen.unmount());
+  }
+});
+
+test('channel forms keep labels and typed text across option changes, with multiline description', async () => {
+  const f = fixture(1280, 'android', 'FOUNDER', { canManage: true });
+  let screen;
+  const flatten = (style) =>
+    Object.assign({}, ...[style].flat(Infinity).filter(Boolean));
+  try {
+    await act(async () => {
+      screen = create(React.createElement(f.Screen));
+      await flush();
+    });
+    act(() => pressable(screen.root, 'Create').props.onPress());
+    const field = (label) =>
+      screen.root
+        .findAllByType('TextInput')
+        .find((node) => node.props.accessibilityLabel === label);
+    act(() => field('Channel name').props.onChangeText('mobile-team'));
+    act(() => field('Channel purpose').props.onChangeText('Shipping together'));
+    act(() =>
+      field('Channel description').props.onChangeText('Line one\nLine two'),
+    );
+    act(() =>
+      pressable(screen.root, 'Public · employees can join').props.onPress(),
+    );
+    assert.equal(field('Channel name').props.value, 'mobile-team');
+    assert.equal(field('Channel purpose').props.value, 'Shipping together');
+    assert.equal(
+      field('Channel description').props.value,
+      'Line one\nLine two',
+    );
+    assert.equal(field('Channel description').props.multiline, true);
+    for (const label of [
+      'Channel name',
+      'Channel purpose',
+      'Channel description',
+    ]) {
+      assert.match(textOf(screen.root), new RegExp(label));
+      assert.equal(flatten(field(label).props.style).fontSize, 16);
+      assert.ok(flatten(field(label).props.style).height >= 48);
+    }
+  } finally {
+    if (screen) act(() => screen.unmount());
+  }
+});
+
+test('web multiline input remeasures both growth and shrinkage without remounting', async () => {
+  const previousDocument = global.document;
+  global.document = {
+    visibilityState: 'visible',
+    addEventListener() {},
+    removeEventListener() {},
+  };
+  const f = fixture(1280, 'web');
+  let screen;
+  const flatten = (style) =>
+    Object.assign({}, ...[style].flat(Infinity).filter(Boolean));
+  try {
+    await act(async () => {
+      screen = create(React.createElement(f.Screen));
+      await flush();
+    });
+    const input = () =>
+      screen.root.findByProps({ accessibilityLabel: 'Message composer' });
+    const original = input();
+    const node = { tagName: 'TEXTAREA', style: {}, scrollHeight: 500 };
+    act(() => input().props.onChange({ target: node }));
+    assert.equal(flatten(input().props.style).height, 132);
+    assert.equal(node.style.height, '132px');
+    node.scrollHeight = 48;
+    act(() => input().props.onChange({ target: node }));
+    assert.equal(flatten(input().props.style).height, 52);
+    assert.equal(node.style.height, '52px');
+    assert.equal(input(), original);
+  } finally {
+    if (screen) act(() => screen.unmount());
+    if (previousDocument === undefined) delete global.document;
+    else global.document = previousDocument;
   }
 });
