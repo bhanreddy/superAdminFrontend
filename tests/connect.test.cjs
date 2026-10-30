@@ -355,7 +355,7 @@ test('mobile navigation opens channels then dedicated thread and returns in orde
     });
     assert.match(textOf(screen.root), /Message 1/);
     await act(async () => {
-      pressable(screen.root, '1 replies').props.onPress();
+      pressable(screen.root, '1 reply').props.onPress();
       await flush();
     });
     assert.match(textOf(screen.root), /Thread reply/);
@@ -519,7 +519,7 @@ test('a failed send retains its file across navigation and retry preserves the n
     });
     f.pick(form);
     await act(async () => {
-      pressable(screen.root, 'Attach').props.onPress();
+      pressable(screen.root, 'Attach a file').props.onPress();
       await flush();
     });
     f.fail(true);

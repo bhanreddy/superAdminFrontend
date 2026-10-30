@@ -30,6 +30,16 @@ import {
   Search,
   Bell,
   ChevronRight,
+  Plus,
+  Paperclip,
+  AtSign,
+  Bookmark,
+  Settings2,
+  ShieldCheck,
+  MoreHorizontal,
+  CheckCheck,
+  RefreshCw,
+  PenSquare,
 } from 'lucide-react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../hooks/useAuth';
@@ -88,7 +98,28 @@ export default function ConnectScreen() {
   );
 }
 function ConnectWorkspace() {
-  const { colors } = useTheme();
+  const { colors: themeColors, isDark } = useTheme();
+  const colors = useMemo(
+    () => ({
+      ...themeColors,
+      primary: isDark ? '#70ADFF' : '#176BD6',
+      textInverse: '#FFFFFF',
+      border: isDark ? '#2B3544' : themeColors.border,
+      borderSubtle: isDark ? '#202A38' : themeColors.borderSubtle,
+      textSecondary: isDark ? '#AAB6C8' : '#596678',
+      textTertiary: isDark ? '#94A0B2' : '#738093',
+    }),
+    [themeColors, isDark],
+  );
+  const actionColor = '#176BD6';
+  const rail = {
+    background: isDark ? '#101923' : '#18283E',
+    text: '#F3F6FC',
+    muted: '#AAB9CD',
+    line: '#304158',
+    selected: '#304B70',
+  };
+  const composerRef = useRef<TextInput>(null);
   const { user, role, can, isFounder } = useAuth();
   const { selectedCluster } = useCluster();
   const router = useRouter();
@@ -112,7 +143,6 @@ function ConnectWorkspace() {
     [sending, setSending] = useState(false),
     [pending, setPending] = useState<Pending[]>([]);
   const [connection, setConnection] = useState<ConnectionState>('connecting'),
-    [connectionReason, setConnectionReason] = useState(''),
     [retryConnection, setRetryConnection] = useState(0);
   const [dialog, setDialog] = useState<Dialog>(null),
     [people, setPeople] = useState<Employee[]>([]),
@@ -358,10 +388,9 @@ function ConnectWorkspace() {
         } else if (event.conversation_id === id && event.user_id === self)
           void refresh();
       },
-      (state, reason) => {
+      (state) => {
         if (version === scope.current) {
           setConnection(state);
-          setConnectionReason(reason || '');
         }
       },
       () => {
@@ -626,7 +655,7 @@ function ConnectWorkspace() {
         styles.button,
         {
           backgroundColor: primary
-            ? colors.primary
+            ? actionColor
             : pressed
               ? colors.hover
               : 'transparent',
@@ -638,7 +667,7 @@ function ConnectWorkspace() {
       <Text
         style={{
           color: primary ? colors.textInverse : colors.textSecondary,
-          fontSize: 12,
+          fontSize: 13,
           fontWeight: '600',
         }}
       >
@@ -646,6 +675,107 @@ function ConnectWorkspace() {
       </Text>
     </Pressable>
   );
+  function iconButton(
+    label: string,
+    Icon: typeof Search,
+    onPress: () => void,
+    disabled = false,
+  ) {
+    return (
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        disabled={disabled}
+        onPress={onPress}
+        style={({ pressed }) => [
+          styles.icon,
+          {
+            backgroundColor: pressed ? colors.hover : 'transparent',
+            opacity: disabled ? 0.4 : 1,
+          },
+        ]}
+      >
+        <Icon size={19} color={colors.textSecondary} />
+      </Pressable>
+    );
+  }
+  function startDirectMessage() {
+    setPeopleQuery('');
+    setDialog('people');
+  }
+  function emptyConversation() {
+    return (
+      <View
+        style={[
+          styles.emptyConversation,
+          { paddingHorizontal: mobile ? 24 : 48 },
+        ]}
+      >
+        <View
+          style={[
+            styles.emptyEmblem,
+            {
+              backgroundColor: colors.primaryMuted,
+              borderColor: colors.border,
+            },
+          ]}
+        >
+          {dm ? (
+            <Text style={[styles.emptyInitial, { color: colors.primary }]}>
+              {currentTitle.slice(0, 1).toUpperCase()}
+            </Text>
+          ) : (
+            <Hash size={36} strokeWidth={1.5} color={colors.primary} />
+          )}
+        </View>
+        <Text style={[styles.eyebrow, { color: colors.textTertiary }]}>
+          {dm
+            ? 'A LITTLE HELLO GOES A LONG WAY'
+            : 'YOUR TEAM, ON THE SAME PAGE'}
+        </Text>
+        <Text
+          style={[styles.welcomeTitle, textStyle, mobile && { fontSize: 26 }]}
+        >
+          {dm
+            ? `Start a conversation with ${currentTitle}`
+            : `Welcome to ${currentTitle}`}
+        </Text>
+        <Text style={[styles.welcomeCopy, { color: colors.textSecondary }]}>
+          {dm
+            ? 'Share an idea, ask a question, or pick up where work left off. This space is just for the two of you.'
+            : selected?.purpose ||
+              'Give your team a place to share updates, ask questions, and move work forward together.'}
+        </Text>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Write the first message"
+          onPress={() => composerRef.current?.focus()}
+          style={[styles.startButton, { backgroundColor: actionColor }]}
+        >
+          <PenSquare size={16} color={colors.textInverse} />
+          <Text
+            style={{
+              color: colors.textInverse,
+              fontWeight: '600',
+              fontSize: 14,
+            }}
+          >
+            Write the first message
+          </Text>
+        </Pressable>
+        <View style={[styles.row, { marginTop: 18, gap: 6 }]}>
+          <Lock size={12} color={colors.textTertiary} />
+          <Text style={{ color: colors.textTertiary, fontSize: 12 }}>
+            {dm
+              ? 'Private direct message'
+              : selected?.visibility === 'private'
+                ? 'Only channel members can read messages'
+                : 'A space for your company'}
+          </Text>
+        </View>
+      </View>
+    );
+  }
   function avatar(name: string) {
     return (
       <View style={[styles.avatar, { backgroundColor: colors.primaryMuted }]}>
@@ -728,8 +858,8 @@ function ConnectWorkspace() {
             selectable
             style={{
               color: m.deleted_at ? colors.textTertiary : colors.textPrimary,
-              fontSize: 14,
-              lineHeight: 21,
+              fontSize: 15,
+              lineHeight: 24,
             }}
           >
             {m.deleted_at ? 'Message deleted' : bodyOf(m)}
@@ -753,10 +883,17 @@ function ConnectWorkspace() {
           {!m.deleted_at && (
             <View style={[styles.row, { flexWrap: 'wrap', marginTop: 5 }]}>
               {!m.parent_id &&
-                button(`${m.reply_count || 0} replies`, () => {
-                  void openThread(m);
-                })}
-              {EMOJI.map((emoji) => {
+                button(
+                  m.reply_count
+                    ? `${m.reply_count} ${m.reply_count === 1 ? 'reply' : 'replies'}`
+                    : 'Reply in thread',
+                  () => {
+                    void openThread(m);
+                  },
+                )}
+              {EMOJI.filter((emoji) =>
+                m.reactions.some((r) => r.emoji === emoji),
+              ).map((emoji) => {
                 const reactions = m.reactions.filter((r) => r.emoji === emoji),
                   mine = reactions.some((r) => r.user_id === self);
                 return (
@@ -791,7 +928,7 @@ function ConnectWorkspace() {
                   </Pressable>
                 );
               })}
-              {button('Message actions', () => {
+              {iconButton('Message actions', MoreHorizontal, () => {
                 setActionMessage(m);
                 setDialog('message');
               })}
@@ -805,12 +942,7 @@ function ConnectWorkspace() {
   const [deleteTarget, setDeleteTarget] = useState<Message | null>(null);
   function composer() {
     return (
-      <View
-        style={[
-          styles.composer,
-          { borderTopColor: colors.border, backgroundColor: colors.surface },
-        ]}
-      >
+      <View style={[styles.composer, { backgroundColor: colors.surface }]}>
         {pickedFile && (
           <View style={styles.row}>
             <Text
@@ -861,10 +993,11 @@ function ConnectWorkspace() {
         <View
           style={[
             styles.composeBox,
-            { borderColor: colors.border, backgroundColor: colors.background },
+            { borderColor: colors.border, backgroundColor: colors.surface },
           ]}
         >
           <TextInput
+            ref={composerRef}
             accessibilityLabel={
               editing
                 ? 'Edit message'
@@ -877,7 +1010,9 @@ function ConnectWorkspace() {
                 ? 'Channel archived'
                 : thread
                   ? 'Reply in thread…'
-                  : 'Write a message · @ to mention'
+                  : dm
+                    ? `Message ${currentTitle}…`
+                    : `Message ${currentTitle}…`
             }
             placeholderTextColor={colors.textTertiary}
             value={draft}
@@ -887,51 +1022,104 @@ function ConnectWorkspace() {
             editable={!sending && !selected?.archived_at}
             style={[styles.composerInput, textStyle]}
           />
-          {!editing &&
-            button(
-              'Attach',
+          <View
+            style={[
+              styles.composeToolbar,
+              { borderTopColor: colors.borderSubtle },
+            ]}
+          >
+            {!editing &&
+              iconButton(
+                'Attach a file',
+                Paperclip,
+                () => {
+                  void action(async () => {
+                    const form = await pickConnectFile();
+                    if (form) setPickedFile(form);
+                  });
+                },
+                sending || !!selected?.archived_at,
+              )}
+            {iconButton(
+              'Mention a colleague',
+              AtSign,
               () => {
-                void action(async () => {
-                  const form = await pickConnectFile();
-                  if (form) setPickedFile(form);
-                });
+                setDraft(
+                  (old) => old + (old && !old.endsWith(' ') ? ' @' : '@'),
+                );
+                composerRef.current?.focus();
               },
               sending || !!selected?.archived_at,
             )}
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={sending ? 'Sending message' : 'Send message'}
-            disabled={
-              sending ||
-              (!draft.trim() && !pickedFile) ||
-              !!selected?.archived_at
-            }
-            onPress={() => {
-              void sendDraft();
-            }}
-            style={[
-              styles.send,
-              {
-                backgroundColor: colors.primary,
-                opacity: (draft.trim() || pickedFile) && !sending ? 1 : 0.4,
-              },
-            ]}
-          >
-            {sending ? (
-              <ActivityIndicator size="small" color={colors.textInverse} />
-            ) : (
-              <Send size={17} color={colors.textInverse} />
-            )}
-          </Pressable>
+            <Text style={{ flex: 1, color: colors.textTertiary, fontSize: 12 }}>
+              {pickedFile ? 'File attached' : '@ to mention'}
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={sending ? 'Sending message' : 'Send message'}
+              disabled={
+                sending ||
+                (!draft.trim() && !pickedFile) ||
+                !!selected?.archived_at
+              }
+              onPress={() => {
+                void sendDraft();
+              }}
+              style={[
+                styles.send,
+                {
+                  backgroundColor: actionColor,
+                  opacity: (draft.trim() || pickedFile) && !sending ? 1 : 0.4,
+                },
+              ]}
+            >
+              {sending ? (
+                <ActivityIndicator size="small" color={colors.textInverse} />
+              ) : (
+                <>
+                  <Send size={16} color={colors.textInverse} />
+                  {!mobile && (
+                    <Text
+                      style={{
+                        color: colors.textInverse,
+                        fontSize: 13,
+                        fontWeight: '600',
+                      }}
+                    >
+                      {editing ? 'Save' : 'Send'}
+                    </Text>
+                  )}
+                </>
+              )}
+            </Pressable>
+          </View>
         </View>
         <Text
           style={[styles.meta, { color: colors.textTertiary, marginTop: 6 }]}
         >
           {thread
             ? 'Replies stay with this message.'
-            : 'Company employees only. Mention people who belong to this conversation.'}
+            : 'Keep the conversation moving. Share a message, file, or idea.'}
         </Text>
       </View>
+    );
+  }
+  function railButton(label: string, Icon: typeof Search, onPress: () => void) {
+    return (
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        onPress={onPress}
+        style={({ pressed }) => [
+          styles.railButton,
+          { backgroundColor: pressed ? rail.line : 'transparent' },
+        ]}
+      >
+        <Icon size={17} color={rail.muted} />
+        <Text style={{ color: rail.text, fontSize: 13, fontWeight: '500' }}>
+          {label}
+        </Text>
+      </Pressable>
     );
   }
   function conversationList() {
@@ -941,29 +1129,50 @@ function ConnectWorkspace() {
         style={[
           styles.channels,
           {
-            width: mobile ? '100%' : 240,
-            borderRightColor: colors.border,
-            backgroundColor: colors.surface,
+            width: mobile ? '100%' : 280,
+            borderRightColor: rail.line,
+            backgroundColor: rail.background,
           },
         ]}
       >
-        <View style={[styles.row, { padding: 16 }]}>
-          <Text style={[styles.sectionTitle, textStyle]}>Your workspace</Text>
-          <View style={{ flex: 1 }} />
-          {button('New DM', () => {
-            setDialog('people');
-            setPeopleQuery('');
-          })}
+        <View
+          style={[
+            styles.row,
+            { paddingHorizontal: 22, paddingTop: 26, paddingBottom: 18 },
+          ]}
+        >
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.eyebrow, { color: rail.muted, fontSize: 10 }]}>
+              WORKSPACE
+            </Text>
+            <Text
+              style={{
+                color: rail.text,
+                fontSize: 20,
+                fontWeight: '700',
+                marginTop: 6,
+              }}
+            >
+              Your conversations
+            </Text>
+          </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="New DM"
+            onPress={startDirectMessage}
+            style={[styles.railCompose, { backgroundColor: rail.line }]}
+          >
+            <PenSquare size={18} color={rail.text} />
+          </Pressable>
         </View>
         <ScrollView
-          contentContainerStyle={{ paddingHorizontal: 10, paddingBottom: 20 }}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 14, paddingBottom: 20 }}
         >
           <View style={styles.sectionHeading}>
-            <Text style={[styles.label, { color: colors.textTertiary }]}>
-              CHANNELS
-            </Text>
+            <Text style={[styles.label, { color: rail.muted }]}>Channels</Text>
             {context?.can_manage &&
-              button('Create', () => {
+              railButton('Create', Plus, () => {
                 setChannelName('');
                 setPurpose('');
                 setDescription('');
@@ -973,10 +1182,19 @@ function ConnectWorkspace() {
               })}
           </View>
           {!context?.channels.length && (
-            <Text style={[styles.empty, { color: colors.textSecondary }]}>
-              No channels yet. A company administrator can create the first
-              channel.
-            </Text>
+            <View style={[styles.railEmpty, { borderColor: rail.line }]}>
+              <Hash size={22} color={rail.muted} />
+              <Text
+                style={{ color: rail.text, fontSize: 14, fontWeight: '600' }}
+              >
+                Make room for teamwork
+              </Text>
+              <Text style={{ color: rail.muted, fontSize: 13, lineHeight: 20 }}>
+                {context?.can_manage
+                  ? 'Create a channel for a team, project, or the whole company.'
+                  : 'Your company channels will appear here once an administrator creates one.'}
+              </Text>
+            </View>
           )}
           {context?.channels.map((c) => (
             <Pressable
@@ -996,21 +1214,20 @@ function ConnectWorkspace() {
                 styles.channelRow,
                 {
                   backgroundColor:
-                    c.id === active ? colors.primaryMuted : 'transparent',
+                    c.id === active ? rail.selected : 'transparent',
                 },
               ]}
             >
               {c.visibility === 'private' ? (
-                <Lock size={15} color={colors.textTertiary} />
+                <Lock size={15} color={rail.muted} />
               ) : (
-                <Hash size={16} color={colors.textTertiary} />
+                <Hash size={16} color={rail.muted} />
               )}
               <Text
                 numberOfLines={1}
                 style={{
                   flex: 1,
-                  color:
-                    c.id === active ? colors.primary : colors.textSecondary,
+                  color: rail.text,
                   fontWeight: c.unread_count ? '700' : '400',
                 }}
               >
@@ -1026,7 +1243,7 @@ function ConnectWorkspace() {
                   style={[
                     styles.badge,
                     {
-                      backgroundColor: colors.primary,
+                      backgroundColor: actionColor,
                       color: colors.textInverse,
                     },
                   ]}
@@ -1037,12 +1254,12 @@ function ConnectWorkspace() {
             </Pressable>
           ))}
           <View style={[styles.sectionHeading, { marginTop: 22 }]}>
-            <Text style={[styles.label, { color: colors.textTertiary }]}>
-              DIRECT MESSAGES
+            <Text style={[styles.label, { color: rail.muted }]}>
+              Direct messages
             </Text>
           </View>
           {!context?.direct_messages.length && (
-            <Text style={[styles.empty, { color: colors.textTertiary }]}>
+            <Text style={[styles.empty, { color: rail.muted }]}>
               Start a private conversation with a colleague.
             </Text>
           )}
@@ -1056,7 +1273,7 @@ function ConnectWorkspace() {
                 styles.channelRow,
                 {
                   backgroundColor:
-                    d.id === active ? colors.primaryMuted : 'transparent',
+                    d.id === active ? rail.selected : 'transparent',
                 },
               ]}
             >
@@ -1065,7 +1282,7 @@ function ConnectWorkspace() {
                 numberOfLines={1}
                 style={{
                   flex: 1,
-                  color: colors.textSecondary,
+                  color: rail.text,
                   fontWeight: d.unread_count ? '700' : '400',
                 }}
               >
@@ -1076,7 +1293,7 @@ function ConnectWorkspace() {
                   style={[
                     styles.badge,
                     {
-                      backgroundColor: colors.primary,
+                      backgroundColor: actionColor,
                       color: colors.textInverse,
                     },
                   ]}
@@ -1087,18 +1304,25 @@ function ConnectWorkspace() {
             </Pressable>
           ))}
         </ScrollView>
-        {button('Saved messages', () => {
-          void action(async () => {
-            setBookmarks(await connectApi.saved());
-            setDialog('saved');
-          });
-        })}
-        {context?.can_manage &&
-          button('Company access', () => {
-            setPeopleQuery('');
-            setDialog('company');
+        <View style={[styles.railFooter, { borderTopColor: rail.line }]}>
+          <View style={styles.sectionHeading}>
+            <Text style={[styles.eyebrow, { color: rail.muted, fontSize: 10 }]}>
+              YOUR TOOLS
+            </Text>
+          </View>
+          {railButton('Saved messages', Bookmark, () => {
+            void action(async () => {
+              setBookmarks(await connectApi.saved());
+              setDialog('saved');
+            });
           })}
-        {button('Notification preferences', () => setDialog('settings'))}
+          {context?.can_manage &&
+            railButton('Company access', ShieldCheck, () => {
+              setPeopleQuery('');
+              setDialog('company');
+            })}
+          {railButton('Preferences', Settings2, () => setDialog('settings'))}
+        </View>
       </View>
     );
   }
@@ -1112,14 +1336,25 @@ function ConnectWorkspace() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={[styles.root, { backgroundColor: colors.background }]}
     >
-      <View style={[styles.top, { borderBottomColor: colors.border }]}>
-        <View style={[styles.logo, { backgroundColor: colors.primaryMuted }]}>
-          <MessageCircle color={colors.primary} size={22} />
+      <View
+        style={[
+          styles.top,
+          mobile && { paddingHorizontal: 16, gap: 10 },
+          { borderBottomColor: colors.border, backgroundColor: colors.surface },
+        ]}
+      >
+        <View style={[styles.logo, { backgroundColor: actionColor }]}>
+          <MessageCircle color={colors.textInverse} size={22} strokeWidth={2} />
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={[styles.title, textStyle]}>NexSyrus Connect</Text>
+          <Text
+            numberOfLines={1}
+            style={[styles.title, textStyle, mobile && { fontSize: 18 }]}
+          >
+            NexSyrus Connect
+          </Text>
           <Text style={{ color: colors.textTertiary, fontSize: 12 }}>
-            Company conversations, in one place
+            A shared space for great work
           </Text>
         </View>
         <Pressable
@@ -1133,9 +1368,17 @@ function ConnectWorkspace() {
               .then(setSearchEmployees)
               .catch(() => {});
           }}
-          style={styles.icon}
+          style={[
+            mobile ? styles.icon : styles.searchTrigger,
+            { borderColor: colors.border, backgroundColor: colors.background },
+          ]}
         >
-          <Search color={colors.textSecondary} size={20} />
+          <Search color={colors.textSecondary} size={18} />
+          {!mobile && (
+            <Text style={{ color: colors.textSecondary, fontSize: 13 }}>
+              Search conversations
+            </Text>
+          )}
         </Pressable>
         <Pressable
           accessibilityRole="button"
@@ -1154,7 +1397,7 @@ function ConnectWorkspace() {
             <Text
               style={[
                 styles.dot,
-                { backgroundColor: colors.primary, color: colors.textInverse },
+                { backgroundColor: actionColor, color: colors.textInverse },
               ]}
             >
               {context.unread_notifications}
@@ -1200,10 +1443,49 @@ function ConnectWorkspace() {
             >
               {!active ? (
                 <View style={styles.center}>
-                  <MessageCircle size={40} color={colors.textTertiary} />
-                  <Text style={[styles.empty, textStyle]}>
-                    Choose a channel or start a direct message.
+                  <View
+                    style={[
+                      styles.emptyEmblem,
+                      {
+                        backgroundColor: colors.primaryMuted,
+                        borderColor: colors.border,
+                      },
+                    ]}
+                  >
+                    <MessageCircle size={30} color={colors.primary} />
+                  </View>
+                  <Text style={[styles.welcomeTitle, textStyle]}>
+                    Good work starts with a conversation.
                   </Text>
+                  <Text
+                    style={[
+                      styles.welcomeCopy,
+                      { color: colors.textSecondary },
+                    ]}
+                  >
+                    Choose a channel from your workspace, or reach out to a
+                    colleague directly.
+                  </Text>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Start a direct message"
+                    onPress={startDirectMessage}
+                    style={[
+                      styles.startButton,
+                      { backgroundColor: actionColor },
+                    ]}
+                  >
+                    <PenSquare size={17} color={colors.textInverse} />
+                    <Text
+                      style={{
+                        color: colors.textInverse,
+                        fontSize: 14,
+                        fontWeight: '600',
+                      }}
+                    >
+                      Start a conversation
+                    </Text>
+                  </Pressable>
                 </View>
               ) : (
                 <>
@@ -1234,7 +1516,24 @@ function ConnectWorkspace() {
                         <ArrowLeft size={20} color={colors.textPrimary} />
                       </Pressable>
                     )}
-                    <View style={{ flex: 1 }}>
+                    {!mobile &&
+                      (dm ? (
+                        avatar(currentTitle)
+                      ) : (
+                        <View
+                          style={[
+                            styles.headerSymbol,
+                            { backgroundColor: colors.primaryMuted },
+                          ]}
+                        >
+                          {selected?.visibility === 'private' ? (
+                            <Lock size={22} color={colors.primary} />
+                          ) : (
+                            <Hash size={24} color={colors.primary} />
+                          )}
+                        </View>
+                      ))}
+                    <View style={{ flex: 1, minWidth: 0 }}>
                       <Text
                         numberOfLines={1}
                         style={[styles.sectionTitle, textStyle]}
@@ -1250,7 +1549,9 @@ function ConnectWorkspace() {
                         }}
                       >
                         {selected?.purpose ||
-                          (dm ? 'Private conversation' : 'Company channel')}
+                          (dm
+                            ? 'Direct message · Just the two of you'
+                            : 'Company channel')}
                       </Text>
                     </View>
                     {!!selected &&
@@ -1270,7 +1571,7 @@ function ConnectWorkspace() {
                           setDialog('pins');
                         });
                       })}
-                    {button('Mark read', () => {
+                    {iconButton('Mark read', CheckCheck, () => {
                       void action(async () => {
                         const max = Math.max(
                           0,
@@ -1284,7 +1585,7 @@ function ConnectWorkspace() {
                   <View
                     style={[
                       styles.connectionBar,
-                      { backgroundColor: colors.background },
+                      { borderBottomColor: colors.borderSubtle },
                     ]}
                   >
                     <View
@@ -1302,7 +1603,7 @@ function ConnectWorkspace() {
                       numberOfLines={2}
                       style={{
                         color: colors.textTertiary,
-                        fontSize: 11,
+                        fontSize: 12,
                         flex: 1,
                       }}
                     >
@@ -1310,9 +1611,9 @@ function ConnectWorkspace() {
                         ? 'Live updates connected'
                         : connection === 'connecting'
                           ? 'Connecting live updates…'
-                          : connectionReason || 'Offline · refresh to retry'}
+                          : 'Live updates unavailable · refresh for new messages'}
                     </Text>
-                    {button('Refresh', () => {
+                    {iconButton('Refresh messages', RefreshCw, () => {
                       void refresh();
                       if (connection !== 'live')
                         setRetryConnection((n) => n + 1);
@@ -1375,20 +1676,12 @@ function ConnectWorkspace() {
                                 </View>
                               ) : null
                             }
-                            ListEmptyComponent={
-                              <View style={styles.center}>
-                                <Text
-                                  style={[
-                                    styles.empty,
-                                    { color: colors.textSecondary },
-                                  ]}
-                                >
-                                  This conversation is ready. Send the first
-                                  message.
-                                </Text>
-                              </View>
-                            }
-                            contentContainerStyle={{ paddingBottom: 12 }}
+                            ListEmptyComponent={emptyConversation()}
+                            showsVerticalScrollIndicator={false}
+                            contentContainerStyle={{
+                              paddingBottom: 12,
+                              flexGrow: roots.length ? 0 : 1,
+                            }}
                           />
                         )}
                         {pending
@@ -1684,6 +1977,45 @@ function ConnectWorkspace() {
               )}
               {dialog === 'message' && actionMessage && (
                 <>
+                  <Text
+                    style={[
+                      styles.label,
+                      { color: colors.textSecondary, marginBottom: 12 },
+                    ]}
+                  >
+                    Add a reaction
+                  </Text>
+                  <View style={[styles.row, { marginBottom: 16 }]}>
+                    {EMOJI.map((emoji) => (
+                      <Pressable
+                        key={emoji}
+                        accessibilityRole="button"
+                        accessibilityLabel={`React ${emoji}`}
+                        onPress={() => {
+                          void action(async () => {
+                            const updated = await connectApi.react(
+                              actionMessage.id,
+                              emoji,
+                              actionMessage.reactions.some(
+                                (r) => r.emoji === emoji && r.user_id === self,
+                              ),
+                            );
+                            setMessages((old) => mergeMessages(old, [updated]));
+                            setDialog(null);
+                          });
+                        }}
+                        style={[
+                          styles.reaction,
+                          {
+                            borderColor: colors.border,
+                            backgroundColor: colors.background,
+                          },
+                        ]}
+                      >
+                        <Text style={{ fontSize: 22 }}>{emoji}</Text>
+                      </Pressable>
+                    ))}
+                  </View>
                   {button(
                     'Save message',
                     () => {
@@ -2451,12 +2783,13 @@ function ConnectWorkspace() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, minHeight: 500, borderRadius: 18, overflow: 'hidden' },
+  root: { flex: 1, minHeight: 500, borderRadius: 16, overflow: 'hidden' },
   top: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    padding: 18,
+    paddingHorizontal: 24,
+    paddingVertical: 16,
     borderBottomWidth: 1,
   },
   logo: {
@@ -2466,17 +2799,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  title: { fontSize: 21, fontWeight: '700', letterSpacing: -0.4 },
+  title: { fontSize: 22, fontWeight: '700', letterSpacing: -0.7 },
   icon: {
     minWidth: 44,
     minHeight: 44,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: 8,
   },
   workspace: { flex: 1, flexDirection: 'row', minHeight: 0 },
   channels: { borderRightWidth: 1 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  sectionTitle: { fontSize: 15, fontWeight: '700' },
+  sectionTitle: { fontSize: 17, fontWeight: '700', letterSpacing: -0.3 },
   sectionHeading: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -2484,14 +2818,14 @@ const styles = StyleSheet.create({
     minHeight: 42,
     paddingHorizontal: 8,
   },
-  label: { fontSize: 10, fontWeight: '700', letterSpacing: 1.2 },
+  label: { fontSize: 12, fontWeight: '600', letterSpacing: 0.3 },
   channelRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 9,
-    minHeight: 44,
-    paddingHorizontal: 10,
-    paddingVertical: 7,
+    minHeight: 48,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
     borderRadius: 8,
   },
   badge: {
@@ -2506,16 +2840,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    paddingHorizontal: 18,
-    minHeight: 70,
+    paddingHorizontal: 24,
+    minHeight: 80,
     borderBottomWidth: 1,
   },
   connectionBar: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    paddingHorizontal: 16,
-    minHeight: 34,
+    paddingHorizontal: 24,
+    minHeight: 36,
+    borderBottomWidth: 1,
   },
   statusDot: { width: 6, height: 6, borderRadius: 3 },
   discussion: { flexDirection: 'row', flex: 1, minHeight: 0 },
@@ -2524,20 +2859,19 @@ const styles = StyleSheet.create({
   message: {
     flexDirection: 'row',
     gap: 10,
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
+    paddingHorizontal: 24,
+    paddingVertical: 16,
   },
   messageContent: { flex: 1, minWidth: 0 },
   avatar: {
-    width: 30,
-    height: 30,
+    width: 36,
+    height: 36,
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  sender: { fontSize: 13, fontWeight: '700' },
-  meta: { fontSize: 10 },
+  sender: { fontSize: 14, fontWeight: '700' },
+  meta: { fontSize: 11 },
   reaction: {
     minHeight: 32,
     minWidth: 32,
@@ -2566,28 +2900,121 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 10,
   },
-  composer: { padding: 14, borderTopWidth: 1 },
+  composer: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 14 },
   composeBox: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
     borderWidth: 1,
-    borderRadius: 12,
-    padding: 9,
-    gap: 8,
+    borderRadius: 14,
+    overflow: 'hidden',
   },
   composerInput: {
-    flex: 1,
-    minHeight: 38,
-    maxHeight: 140,
-    fontSize: 14,
-    padding: 6,
+    minHeight: 64,
+    maxHeight: 160,
+    fontSize: 15,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 12,
+    textAlignVertical: 'top',
   },
   send: {
-    width: 40,
-    height: 40,
+    minWidth: 40,
+    height: 36,
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    gap: 8,
     borderRadius: 9,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  composeToolbar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderTopWidth: 1,
+  },
+  railButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    minHeight: 42,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+  },
+  railCompose: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  railFooter: { padding: 14, borderTopWidth: 1 },
+  railEmpty: {
+    marginHorizontal: 6,
+    marginTop: 8,
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 16,
+    gap: 10,
+  },
+  eyebrow: { fontSize: 11, fontWeight: '700', letterSpacing: 1.4 },
+  emptyConversation: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 24,
+  },
+  emptyEmblem: {
+    width: 64,
+    height: 64,
+    borderRadius: 20,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  emptyInitial: { fontSize: 28, fontWeight: '600' },
+  welcomeTitle: {
+    fontSize: 30,
+    fontWeight: '700',
+    letterSpacing: -1,
+    textAlign: 'center',
+    marginTop: 12,
+    maxWidth: 620,
+  },
+  welcomeCopy: {
+    fontSize: 15,
+    lineHeight: 25,
+    textAlign: 'center',
+    maxWidth: 440,
+    marginTop: 14,
+  },
+  startButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 9,
+    paddingHorizontal: 18,
+    minHeight: 44,
+    borderRadius: 9,
+    marginTop: 20,
+  },
+  headerSymbol: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 4,
+  },
+  searchTrigger: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    borderWidth: 1,
+    borderRadius: 9,
+    minHeight: 40,
+    width: 240,
+    paddingHorizontal: 14,
   },
   suggestions: { borderWidth: 1, borderRadius: 10, marginBottom: 8 },
   person: {
