@@ -40,6 +40,18 @@ import {
   CheckCheck,
   RefreshCw,
   PenSquare,
+  Home,
+  ChevronDown,
+  ChevronRight as SectionClosed,
+  SmilePlus,
+  X,
+  Pin,
+  Users,
+  Bold,
+  Italic,
+  Strikethrough,
+  Code,
+  MessageSquare,
 } from 'lucide-react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../hooks/useAuth';
@@ -85,6 +97,7 @@ type Dialog =
   | 'task'
   | 'message'
   | 'company'
+  | 'threads'
   | null;
 const EMOJI = ['👍', '❤️', '🎉', '👀', '✅'];
 
@@ -102,23 +115,31 @@ function ConnectWorkspace() {
   const colors = useMemo(
     () => ({
       ...themeColors,
-      primary: isDark ? '#70ADFF' : '#176BD6',
+      primary: isDark ? '#69B6E8' : '#1264A3',
+      background: isDark ? '#1A1D21' : '#FFFFFF',
+      surface: isDark ? '#1A1D21' : '#FFFFFF',
+      textPrimary: isDark ? '#D1D2D3' : '#1D1C1D',
       textInverse: '#FFFFFF',
-      border: isDark ? '#2B3544' : themeColors.border,
-      borderSubtle: isDark ? '#202A38' : themeColors.borderSubtle,
-      textSecondary: isDark ? '#AAB6C8' : '#596678',
-      textTertiary: isDark ? '#94A0B2' : '#738093',
+      border: isDark ? '#3B3E42' : '#DDDDDD',
+      borderSubtle: isDark ? '#303338' : '#EEEEEE',
+      textSecondary: isDark ? '#B8BABD' : '#616061',
+      textTertiary: isDark ? '#ABADB0' : '#616061',
     }),
     [themeColors, isDark],
   );
-  const actionColor = '#176BD6';
+  const actionColor = '#007A5A';
   const rail = {
-    background: isDark ? '#101923' : '#18283E',
-    text: '#F3F6FC',
-    muted: '#AAB9CD',
-    line: '#304158',
-    selected: '#304B70',
+    background: isDark ? '#241D29' : '#F4EDF6',
+    text: isDark ? '#E7DDEB' : '#3D2E42',
+    muted: isDark ? '#C5B9CC' : '#68566E',
+    line: isDark ? '#413448' : '#DFD3E3',
+    selected: '#1264A3',
   };
+  const [channelsOpen, setChannelsOpen] = useState(true);
+  const [dmsOpen, setDmsOpen] = useState(true);
+  const [emojiOpen, setEmojiOpen] = useState(false);
+  const [selection, setSelection] = useState({ start: 0, end: 0 });
+  const [hoveredMessage, setHoveredMessage] = useState<string | null>(null);
   const composerRef = useRef<TextInput>(null);
   const { user, role, can, isFounder } = useAuth();
   const { selectedCluster } = useCluster();
@@ -708,78 +729,198 @@ function ConnectWorkspace() {
       <View
         style={[
           styles.emptyConversation,
-          { paddingHorizontal: mobile ? 24 : 48 },
+          { paddingHorizontal: mobile ? 20 : 24 },
         ]}
       >
         <View
           style={[
             styles.emptyEmblem,
-            {
-              backgroundColor: colors.primaryMuted,
-              borderColor: colors.border,
-            },
+            { backgroundColor: isDark ? '#4A354E' : '#E8DAED' },
           ]}
         >
           {dm ? (
-            <Text style={[styles.emptyInitial, { color: colors.primary }]}>
+            <Text style={[styles.emptyInitial, { color: rail.text }]}>
               {currentTitle.slice(0, 1).toUpperCase()}
             </Text>
           ) : (
-            <Hash size={36} strokeWidth={1.5} color={colors.primary} />
+            <Hash size={36} color={rail.text} />
           )}
         </View>
-        <Text style={[styles.eyebrow, { color: colors.textTertiary }]}>
-          {dm
-            ? 'A LITTLE HELLO GOES A LONG WAY'
-            : 'YOUR TEAM, ON THE SAME PAGE'}
-        </Text>
-        <Text
-          style={[styles.welcomeTitle, textStyle, mobile && { fontSize: 26 }]}
-        >
-          {dm
-            ? `Start a conversation with ${currentTitle}`
-            : `Welcome to ${currentTitle}`}
-        </Text>
+        <Text style={[styles.welcomeTitle, textStyle]}>{currentTitle}</Text>
         <Text style={[styles.welcomeCopy, { color: colors.textSecondary }]}>
           {dm
-            ? 'Share an idea, ask a question, or pick up where work left off. This space is just for the two of you.'
-            : selected?.purpose ||
-              'Give your team a place to share updates, ask questions, and move work forward together.'}
+            ? `This is the very beginning of your direct message history with ${currentTitle}.`
+            : `This is the very beginning of the ${currentTitle} channel.`}
         </Text>
+        {!!selected?.purpose && (
+          <Text style={[styles.welcomeCopy, { color: colors.textSecondary }]}>
+            {selected.purpose}
+          </Text>
+        )}
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Write the first message"
           onPress={() => composerRef.current?.focus()}
-          style={[styles.startButton, { backgroundColor: actionColor }]}
+          style={styles.introAction}
         >
-          <PenSquare size={16} color={colors.textInverse} />
+          <PenSquare size={15} color={colors.primary} />
           <Text
-            style={{
-              color: colors.textInverse,
-              fontWeight: '600',
-              fontSize: 14,
-            }}
+            style={{ color: colors.primary, fontSize: 14, fontWeight: '600' }}
           >
-            Write the first message
+            Send a message
           </Text>
         </Pressable>
-        <View style={[styles.row, { marginTop: 18, gap: 6 }]}>
-          <Lock size={12} color={colors.textTertiary} />
-          <Text style={{ color: colors.textTertiary, fontSize: 12 }}>
-            {dm
-              ? 'Private direct message'
-              : selected?.visibility === 'private'
-                ? 'Only channel members can read messages'
-                : 'A space for your company'}
-          </Text>
-        </View>
       </View>
     );
   }
-  function avatar(name: string) {
+  function openSearch() {
+    setDialog('search');
+    void connectApi
+      .employees()
+      .then(setSearchEmployees)
+      .catch(() => {});
+  }
+  function openNotices() {
+    void action(async () => {
+      setNotices(await connectApi.notifications());
+      setDialog('notifications');
+    });
+  }
+  function openSaved() {
+    void action(async () => {
+      setBookmarks(await connectApi.saved());
+      setDialog('saved');
+    });
+  }
+  function createChannel() {
+    setChannelName('');
+    setPurpose('');
+    setDescription('');
+    setPrivateChannel(false);
+    setAnnouncement(false);
+    setDialog('create');
+  }
+  function home() {
+    setDialog(null);
+    setActive(null);
+    activeRef.current = null;
+    setThread(null);
+    setDraft('');
+    setEditing(null);
+  }
+  function navigationRail() {
+    const nav = (
+      label: string,
+      Icon: typeof Search,
+      onPress: () => void,
+      selected = false,
+    ) => (
+      <Pressable
+        key={label}
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        onPress={onPress}
+        style={styles.appNavItem}
+      >
+        <View
+          style={[
+            styles.appNavIcon,
+            { backgroundColor: selected ? '#FFFFFF33' : 'transparent' },
+          ]}
+        >
+          <Icon size={23} color="#FFFFFF" strokeWidth={1.7} />
+          {label === 'Activity' && !!context?.unread_notifications && (
+            <View style={[styles.navUnread, { backgroundColor: '#E01E5A' }]} />
+          )}
+        </View>
+        <Text style={styles.appNavLabel}>{label}</Text>
+      </Pressable>
+    );
     return (
-      <View style={[styles.avatar, { backgroundColor: colors.primaryMuted }]}>
-        <Text style={{ color: colors.primary, fontWeight: '700' }}>
+      <View style={styles.appRail}>
+        <View style={styles.workspaceMonogram}>
+          <Text style={{ color: '#4A154B', fontWeight: '800', fontSize: 25 }}>
+            N
+          </Text>
+        </View>
+        {nav('Home', Home, home, !dialog)}
+        {nav('DMs', MessageCircle, startDirectMessage, dialog === 'people')}
+        {nav('Activity', Bell, openNotices, dialog === 'notifications')}
+        {nav('Later', Bookmark, openSaved, dialog === 'saved')}
+        {nav(
+          'More',
+          MoreHorizontal,
+          () => setDialog('settings'),
+          dialog === 'settings',
+        )}
+        <View style={{ flex: 1 }} />
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Your preferences"
+          onPress={() => setDialog('settings')}
+          style={styles.selfAvatar}
+        >
+          <Text style={{ color: '#FFFFFF', fontWeight: '700' }}>
+            {(context?.self.full_name || 'You').slice(0, 1).toUpperCase()}
+          </Text>
+        </Pressable>
+      </View>
+    );
+  }
+  function formatDraft(delimiter: string) {
+    const start = Math.min(selection.start, draft.length),
+      end = Math.min(selection.end, draft.length);
+    const value = draft.slice(start, end) || 'text';
+    setDraft(
+      draft.slice(0, start) + delimiter + value + delimiter + draft.slice(end),
+    );
+    composerRef.current?.focus();
+  }
+  function dateDivider(date: string) {
+    return (
+      <View style={styles.dateDivider}>
+        <View style={[styles.dateLine, { backgroundColor: colors.border }]} />
+        <Text
+          style={[
+            styles.dateLabel,
+            {
+              color: colors.textPrimary,
+              borderColor: colors.border,
+              backgroundColor: colors.surface,
+            },
+          ]}
+        >
+          {new Date(date).toLocaleDateString(undefined, {
+            weekday: 'long',
+            month: 'long',
+            day: 'numeric',
+          })}
+        </Text>
+        <View style={[styles.dateLine, { backgroundColor: colors.border }]} />
+      </View>
+    );
+  }
+  function avatar(name: string, small = false) {
+    return (
+      <View
+        style={[
+          styles.avatar,
+          small && { width: 22, height: 22, borderRadius: 4 },
+          {
+            backgroundColor: ['#337C91', '#9B594E', '#6E5BA7', '#4D7861'][
+              Array.from(name).reduce((sum, ch) => sum + ch.charCodeAt(0), 0) %
+                4
+            ],
+          },
+        ]}
+      >
+        <Text
+          style={{
+            color: '#FFFFFF',
+            fontWeight: '700',
+            fontSize: small ? 11 : 14,
+          }}
+        >
           {name
             .split(' ')
             .map((n) => n[0])
@@ -791,153 +932,226 @@ function ConnectWorkspace() {
     );
   }
   function bodyOf(m: Message) {
-    return m.body
-      .split(/(<@[a-f0-9-]{36}>|https?:\/\/[^\s<>]+)/gi)
-      .map((part, i) => {
-        const id = part.match(/^<@(.+)>$/)?.[1];
-        const mention = m.mentions.find((x) => x.user_id === id);
-        if (/^https?:\/\//i.test(part)) {
-          try {
-            const url = new URL(part);
-            if (!url.username && !url.password)
-              return (
-                <Text
-                  key={i}
-                  accessibilityRole="link"
-                  onPress={() => {
-                    void Linking.openURL(url.href);
-                  }}
-                  style={{
-                    color: colors.primary,
-                    textDecorationLine: 'underline',
-                  }}
-                >
-                  {part}
-                </Text>
-              );
-          } catch {}
-        }
-        return (
-          <Text
-            key={i}
-            style={
-              id
-                ? {
-                    color: colors.primary,
-                    backgroundColor: colors.primaryMuted,
-                    fontWeight: '600',
-                  }
-                : undefined
-            }
-          >
-            {id ? '@' + (mention?.name || 'employee') : part}
-          </Text>
-        );
-      });
+    const render = (body: string): React.ReactNode =>
+      body
+        .split(
+          /(`[^`\n]+`|<@[a-f0-9-]{36}>|https?:\/\/[^\s<>]+|\*[^*\n]+\*|_[^_\n]+_|~[^~\n]+~)/gi,
+        )
+        .map((part, i) => {
+          if (/^(`[^`]+`|\*[^*]+\*|_[^_]+_|~[^~]+~)$/.test(part))
+            return (
+              <Text
+                key={i}
+                style={
+                  part[0] === '*'
+                    ? { fontWeight: '700' }
+                    : part[0] === '_'
+                      ? { fontStyle: 'italic' }
+                      : part[0] === '~'
+                        ? { textDecorationLine: 'line-through' }
+                        : {
+                            fontFamily:
+                              Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+                            backgroundColor: colors.hover,
+                            color: isDark ? '#E891A6' : '#C22D50',
+                          }
+                }
+              >
+                {part[0] === '`'
+                  ? part.slice(1, -1)
+                  : render(part.slice(1, -1))}
+              </Text>
+            );
+          const id = part.match(/^<@(.+)>$/)?.[1];
+          const mention = m.mentions.find((x) => x.user_id === id);
+          if (/^https?:\/\//i.test(part)) {
+            try {
+              const url = new URL(part);
+              if (!url.username && !url.password)
+                return (
+                  <Text
+                    key={i}
+                    accessibilityRole="link"
+                    onPress={() => {
+                      void Linking.openURL(url.href);
+                    }}
+                    style={{
+                      color: colors.primary,
+                      textDecorationLine: 'underline',
+                    }}
+                  >
+                    {part}
+                  </Text>
+                );
+            } catch {}
+          }
+          return (
+            <Text
+              key={i}
+              style={
+                id
+                  ? {
+                      color: colors.primary,
+                      backgroundColor: colors.primaryMuted,
+                      fontWeight: '600',
+                    }
+                  : undefined
+              }
+            >
+              {id ? '@' + (mention?.name || 'employee') : part}
+            </Text>
+          );
+        });
+    return render(m.body);
   }
   const renderMessage = useCallback(
-    ({ item: m }: { item: Message }) => (
-      <View
-        style={[styles.message, { borderBottomColor: colors.borderSubtle }]}
-      >
-        {avatar(m.sender_name)}
-        <View style={styles.messageContent}>
-          <View style={styles.row}>
-            <Text style={[styles.sender, textStyle]}>{m.sender_name}</Text>
-            <Text style={[styles.meta, { color: colors.textTertiary }]}>
-              {new Date(m.created_at).toLocaleString(undefined, {
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
-              {m.edited_at ? ' · edited' : ''}
+    ({ item: m, index }: { item: Message; index?: number }) => (
+      <View>
+        {!m.parent_id &&
+          index !== undefined &&
+          (index === 0 ||
+            new Date(roots[index - 1]?.created_at).toDateString() !==
+              new Date(m.created_at).toDateString()) &&
+          dateDivider(m.created_at)}
+        <Pressable
+          accessible={false}
+          onHoverIn={() => setHoveredMessage(m.id)}
+          onHoverOut={() => setHoveredMessage(null)}
+          style={[
+            styles.message,
+            {
+              backgroundColor:
+                hoveredMessage === m.id ? colors.hover : 'transparent',
+            },
+          ]}
+        >
+          {avatar(m.sender_name)}
+          <View style={styles.messageContent}>
+            <View style={styles.row}>
+              <Text style={[styles.sender, textStyle]}>{m.sender_name}</Text>
+              <Text style={[styles.meta, { color: colors.textTertiary }]}>
+                {new Date(m.created_at).toLocaleString(undefined, {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+                {m.edited_at ? ' · edited' : ''}
+              </Text>
+            </View>
+            <Text
+              selectable
+              style={{
+                color: m.deleted_at ? colors.textTertiary : colors.textPrimary,
+                fontSize: 15,
+                lineHeight: 22,
+              }}
+            >
+              {m.deleted_at ? 'Message deleted' : bodyOf(m)}
             </Text>
+            {!m.deleted_at &&
+              m.attachments?.map((file) => (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`Download ${file.filename}`}
+                  key={file.id}
+                  onPress={() => {
+                    void action(() => downloadConnectFile(file));
+                  }}
+                  style={[styles.notice, { borderColor: colors.border }]}
+                >
+                  <Text style={{ color: colors.primary, fontSize: 12 }}>
+                    {file.filename} · {Math.ceil(file.byte_size / 1024)} KB
+                  </Text>
+                </Pressable>
+              ))}
+            {!m.deleted_at && (
+              <View style={[styles.row, { flexWrap: 'wrap', marginTop: 5 }]}>
+                {!m.parent_id &&
+                  !!m.reply_count &&
+                  button(
+                    m.reply_count
+                      ? `${m.reply_count} ${m.reply_count === 1 ? 'reply' : 'replies'}`
+                      : 'Reply in thread',
+                    () => {
+                      void openThread(m);
+                    },
+                  )}
+                {EMOJI.filter((emoji) =>
+                  m.reactions.some((r) => r.emoji === emoji),
+                ).map((emoji) => {
+                  const reactions = m.reactions.filter(
+                      (r) => r.emoji === emoji,
+                    ),
+                    mine = reactions.some((r) => r.user_id === self);
+                  return (
+                    <Pressable
+                      key={emoji}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${mine ? 'Remove' : 'Add'} ${emoji} reaction`}
+                      onPress={() => {
+                        void action(async () => {
+                          const updated = await connectApi.react(
+                            m.id,
+                            emoji,
+                            mine,
+                          );
+                          setMessages((old) => mergeMessages(old, [updated]));
+                        });
+                      }}
+                      style={[
+                        styles.reaction,
+                        {
+                          borderColor: mine ? colors.primary : colors.border,
+                          backgroundColor: mine
+                            ? colors.primaryMuted
+                            : 'transparent',
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={{ color: colors.textSecondary, fontSize: 12 }}
+                      >
+                        {emoji}
+                        {reactions.length ? ' ' + reactions.length : ''}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            )}
           </View>
-          <Text
-            selectable
-            style={{
-              color: m.deleted_at ? colors.textTertiary : colors.textPrimary,
-              fontSize: 15,
-              lineHeight: 24,
-            }}
-          >
-            {m.deleted_at ? 'Message deleted' : bodyOf(m)}
-          </Text>
-          {!m.deleted_at &&
-            m.attachments?.map((file) => (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={`Download ${file.filename}`}
-                key={file.id}
-                onPress={() => {
-                  void action(() => downloadConnectFile(file));
-                }}
-                style={[styles.notice, { borderColor: colors.border }]}
-              >
-                <Text style={{ color: colors.primary, fontSize: 12 }}>
-                  {file.filename} · {Math.ceil(file.byte_size / 1024)} KB
-                </Text>
-              </Pressable>
-            ))}
           {!m.deleted_at && (
-            <View style={[styles.row, { flexWrap: 'wrap', marginTop: 5 }]}>
-              {!m.parent_id &&
-                button(
-                  m.reply_count
-                    ? `${m.reply_count} ${m.reply_count === 1 ? 'reply' : 'replies'}`
-                    : 'Reply in thread',
-                  () => {
-                    void openThread(m);
-                  },
-                )}
-              {EMOJI.filter((emoji) =>
-                m.reactions.some((r) => r.emoji === emoji),
-              ).map((emoji) => {
-                const reactions = m.reactions.filter((r) => r.emoji === emoji),
-                  mine = reactions.some((r) => r.user_id === self);
-                return (
-                  <Pressable
-                    key={emoji}
-                    accessibilityRole="button"
-                    accessibilityLabel={`${mine ? 'Remove' : 'Add'} ${emoji} reaction`}
-                    onPress={() => {
-                      void action(async () => {
-                        const updated = await connectApi.react(
-                          m.id,
-                          emoji,
-                          mine,
-                        );
-                        setMessages((old) => mergeMessages(old, [updated]));
-                      });
-                    }}
-                    style={[
-                      styles.reaction,
-                      {
-                        borderColor: mine ? colors.primary : colors.border,
-                        backgroundColor: mine
-                          ? colors.primaryMuted
-                          : 'transparent',
-                      },
-                    ]}
-                  >
-                    <Text style={{ color: colors.textSecondary, fontSize: 12 }}>
-                      {emoji}
-                      {reactions.length ? ' ' + reactions.length : ''}
-                    </Text>
-                  </Pressable>
-                );
-              })}
+            <View
+              style={[
+                styles.messageTools,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor:
+                    hoveredMessage === m.id ? colors.border : 'transparent',
+                },
+              ]}
+            >
+              {(hoveredMessage === m.id || mobile) && (
+                <>
+                  {iconButton('Add a reaction', SmilePlus, () => {
+                    setActionMessage(m);
+                    setDialog('message');
+                  })}
+                  {!m.parent_id &&
+                    iconButton('Reply in thread', MessageSquare, () => {
+                      void openThread(m);
+                    })}
+                </>
+              )}
               {iconButton('Message actions', MoreHorizontal, () => {
                 setActionMessage(m);
                 setDialog('message');
               })}
             </View>
           )}
-        </View>
+        </Pressable>
       </View>
     ),
-    [colors, self, thread],
+    [colors, self, thread, hoveredMessage, mobile, roots],
   );
   const [deleteTarget, setDeleteTarget] = useState<Message | null>(null);
   function composer() {
@@ -990,14 +1204,75 @@ function ConnectWorkspace() {
             ))}
           </View>
         )}
+        {emojiOpen && (
+          <View
+            style={[
+              styles.emojiPicker,
+              { borderColor: colors.border, backgroundColor: colors.surface },
+            ]}
+          >
+            {['😀', '👍', '❤️', '🎉', '👀', '✅', '🙏', '🚀'].map((emoji) => (
+              <Pressable
+                key={emoji}
+                accessibilityRole="button"
+                accessibilityLabel={`Insert ${emoji}`}
+                onPress={() => {
+                  setDraft((old) => old + emoji);
+                  setEmojiOpen(false);
+                  composerRef.current?.focus();
+                }}
+                style={styles.emojiChoice}
+              >
+                <Text style={{ fontSize: 23 }}>{emoji}</Text>
+              </Pressable>
+            ))}
+          </View>
+        )}
         <View
           style={[
             styles.composeBox,
             { borderColor: colors.border, backgroundColor: colors.surface },
           ]}
         >
+          <View
+            style={[styles.formatToolbar, { backgroundColor: colors.hover }]}
+          >
+            {iconButton(
+              'Bold text',
+              Bold,
+              () => formatDraft('*'),
+              sending || !!selected?.archived_at,
+            )}
+            {iconButton(
+              'Italic text',
+              Italic,
+              () => formatDraft('_'),
+              sending || !!selected?.archived_at,
+            )}
+            {iconButton(
+              'Strike through text',
+              Strikethrough,
+              () => formatDraft('~'),
+              sending || !!selected?.archived_at,
+            )}
+            <View
+              style={[
+                styles.toolbarDivider,
+                { backgroundColor: colors.border },
+              ]}
+            />
+            {iconButton(
+              'Inline code',
+              Code,
+              () => formatDraft('`'),
+              sending || !!selected?.archived_at,
+            )}
+          </View>
           <TextInput
             ref={composerRef}
+            onSelectionChange={(event) =>
+              setSelection(event.nativeEvent.selection)
+            }
             accessibilityLabel={
               editing
                 ? 'Edit message'
@@ -1017,6 +1292,28 @@ function ConnectWorkspace() {
             placeholderTextColor={colors.textTertiary}
             value={draft}
             onChangeText={setDraft}
+            onKeyPress={(event) => {
+              const key = event.nativeEvent as typeof event.nativeEvent & {
+                shiftKey?: boolean;
+                isComposing?: boolean;
+                keyCode?: number;
+              };
+              if (
+                Platform.OS === 'web' &&
+                key.key === 'Enter' &&
+                !key.shiftKey &&
+                !key.isComposing &&
+                key.keyCode !== 229
+              ) {
+                event.preventDefault();
+                if (
+                  !sending &&
+                  !selected?.archived_at &&
+                  (draft.trim() || pickedFile)
+                )
+                  void sendDraft();
+              }
+            }}
             multiline
             maxLength={8000}
             editable={!sending && !selected?.archived_at}
@@ -1031,7 +1328,7 @@ function ConnectWorkspace() {
             {!editing &&
               iconButton(
                 'Attach a file',
-                Paperclip,
+                Plus,
                 () => {
                   void action(async () => {
                     const form = await pickConnectFile();
@@ -1040,6 +1337,12 @@ function ConnectWorkspace() {
                 },
                 sending || !!selected?.archived_at,
               )}
+            {iconButton(
+              'Insert emoji',
+              SmilePlus,
+              () => setEmojiOpen(!emojiOpen),
+              sending || !!selected?.archived_at,
+            )}
             {iconButton(
               'Mention a colleague',
               AtSign,
@@ -1052,7 +1355,7 @@ function ConnectWorkspace() {
               sending || !!selected?.archived_at,
             )}
             <Text style={{ flex: 1, color: colors.textTertiary, fontSize: 12 }}>
-              {pickedFile ? 'File attached' : '@ to mention'}
+              {pickedFile ? 'File attached' : ''}
             </Text>
             <Pressable
               accessibilityRole="button"
@@ -1068,8 +1371,10 @@ function ConnectWorkspace() {
               style={[
                 styles.send,
                 {
-                  backgroundColor: actionColor,
-                  opacity: (draft.trim() || pickedFile) && !sending ? 1 : 0.4,
+                  backgroundColor:
+                    (draft.trim() || pickedFile) && !sending
+                      ? actionColor
+                      : colors.hover,
                 },
               ]}
             >
@@ -1077,18 +1382,14 @@ function ConnectWorkspace() {
                 <ActivityIndicator size="small" color={colors.textInverse} />
               ) : (
                 <>
-                  <Send size={16} color={colors.textInverse} />
-                  {!mobile && (
-                    <Text
-                      style={{
-                        color: colors.textInverse,
-                        fontSize: 13,
-                        fontWeight: '600',
-                      }}
-                    >
-                      {editing ? 'Save' : 'Send'}
-                    </Text>
-                  )}
+                  <Send
+                    size={17}
+                    color={
+                      (draft.trim() || pickedFile) && !sending
+                        ? colors.textInverse
+                        : colors.textTertiary
+                    }
+                  />
                 </>
               )}
             </Pressable>
@@ -1099,7 +1400,9 @@ function ConnectWorkspace() {
         >
           {thread
             ? 'Replies stay with this message.'
-            : 'Keep the conversation moving. Share a message, file, or idea.'}
+            : Platform.OS === 'web'
+              ? 'Enter to send · Shift + Enter for a new line'
+              : 'Use @ to mention someone in this conversation.'}
         </Text>
       </View>
     );
@@ -1123,206 +1426,255 @@ function ConnectWorkspace() {
     );
   }
   function conversationList() {
+    const section = (
+      title: string,
+      open: boolean,
+      toggle: () => void,
+      add?: () => void,
+    ) => (
+      <View style={styles.sectionHeading}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`${open ? 'Collapse' : 'Expand'} ${title}`}
+          accessibilityState={{ expanded: open }}
+          onPress={toggle}
+          style={[styles.row, { flex: 1, minHeight: 36 }]}
+        >
+          {open ? (
+            <ChevronDown size={14} color={rail.muted} />
+          ) : (
+            <SectionClosed size={14} color={rail.muted} />
+          )}
+          <Text style={[styles.label, { color: rail.muted }]}>{title}</Text>
+        </Pressable>
+        {add && (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={title === 'Channels' ? 'Create' : 'New DM'}
+            onPress={add}
+            style={styles.sectionAdd}
+          >
+            <Plus size={16} color={rail.muted} />
+          </Pressable>
+        )}
+      </View>
+    );
     return (
       <View
         testID="connect-conversations"
         style={[
           styles.channels,
           {
-            width: mobile ? '100%' : 280,
+            width: mobile ? '100%' : 252,
             borderRightColor: rail.line,
             backgroundColor: rail.background,
           },
         ]}
       >
         <View
-          style={[
-            styles.row,
-            { paddingHorizontal: 22, paddingTop: 26, paddingBottom: 18 },
-          ]}
+          style={[styles.workspaceHeader, { borderBottomColor: rail.line }]}
         >
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.eyebrow, { color: rail.muted, fontSize: 10 }]}>
-              WORKSPACE
-            </Text>
-            <Text
-              style={{
-                color: rail.text,
-                fontSize: 20,
-                fontWeight: '700',
-                marginTop: 6,
-              }}
-            >
-              Your conversations
-            </Text>
-          </View>
+          <Text
+            numberOfLines={1}
+            style={{
+              flex: 1,
+              color: rail.text,
+              fontSize: 19,
+              fontWeight: '800',
+              letterSpacing: -0.4,
+            }}
+          >
+            {context?.organization.name || 'NexSyrus'}
+          </Text>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="New DM"
-            onPress={startDirectMessage}
-            style={[styles.railCompose, { backgroundColor: rail.line }]}
+            accessibilityLabel="Workspace preferences"
+            onPress={() => setDialog('settings')}
+            style={styles.sectionAdd}
           >
-            <PenSquare size={18} color={rail.text} />
+            <ChevronDown size={17} color={rail.text} />
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="New message"
+            onPress={startDirectMessage}
+            style={styles.sectionAdd}
+          >
+            <PenSquare size={19} color={rail.text} />
           </Pressable>
         </View>
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 14, paddingBottom: 20 }}
+          contentContainerStyle={{
+            paddingHorizontal: 10,
+            paddingTop: 12,
+            paddingBottom: 24,
+          }}
         >
-          <View style={styles.sectionHeading}>
-            <Text style={[styles.label, { color: rail.muted }]}>Channels</Text>
-            {context?.can_manage &&
-              railButton('Create', Plus, () => {
-                setChannelName('');
-                setPurpose('');
-                setDescription('');
-                setPrivateChannel(false);
-                setAnnouncement(false);
-                setDialog('create');
-              })}
-          </View>
-          {!context?.channels.length && (
-            <View style={[styles.railEmpty, { borderColor: rail.line }]}>
-              <Hash size={22} color={rail.muted} />
-              <Text
-                style={{ color: rail.text, fontSize: 14, fontWeight: '600' }}
-              >
-                Make room for teamwork
-              </Text>
-              <Text style={{ color: rail.muted, fontSize: 13, lineHeight: 20 }}>
-                {context?.can_manage
-                  ? 'Create a channel for a team, project, or the whole company.'
-                  : 'Your company channels will appear here once an administrator creates one.'}
-              </Text>
-            </View>
+          {railButton('Threads', MessageSquare, () => setDialog('threads'))}
+          {railButton('Later', Bookmark, openSaved)}
+          {railButton('Activity', Bell, openNotices)}
+          <View
+            style={[styles.sidebarDivider, { backgroundColor: rail.line }]}
+          />
+          {section(
+            'Channels',
+            channelsOpen,
+            () => setChannelsOpen(!channelsOpen),
+            context?.can_manage ? createChannel : undefined,
           )}
-          {context?.channels.map((c) => (
-            <Pressable
-              key={c.id}
-              accessibilityRole="button"
-              accessibilityLabel={`Open ${c.name}${c.unread_count ? `, ${c.unread_count} unread` : ''}`}
-              onPress={() => {
-                if (c.joined) chooseConversation(c.id);
-                else
-                  void action(async () => {
-                    await connectApi.membership(c.id, self!);
-                    await refreshContext();
-                    chooseConversation(c.id);
-                  });
-              }}
-              style={[
-                styles.channelRow,
-                {
-                  backgroundColor:
-                    c.id === active ? rail.selected : 'transparent',
-                },
-              ]}
-            >
-              {c.visibility === 'private' ? (
-                <Lock size={15} color={rail.muted} />
-              ) : (
-                <Hash size={16} color={rail.muted} />
-              )}
-              <Text
-                numberOfLines={1}
-                style={{
-                  flex: 1,
-                  color: rail.text,
-                  fontWeight: c.unread_count ? '700' : '400',
-                }}
-              >
-                {c.name}
-                {c.archived_at ? ' · archived' : ''}
-              </Text>
-              {!c.joined ? (
-                <Text style={{ color: colors.primary, fontSize: 11 }}>
-                  Join
+          {channelsOpen && (
+            <>
+              {!context?.channels.length && (
+                <Text style={[styles.sidebarHint, { color: rail.muted }]}>
+                  {context?.can_manage
+                    ? 'Create a channel to bring your team together.'
+                    : 'Your company channels will appear here.'}
                 </Text>
-              ) : c.unread_count > 0 ? (
-                <Text
-                  style={[
-                    styles.badge,
+              )}
+              {context?.channels.map((c) => (
+                <Pressable
+                  key={c.id}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Open ${c.name}${c.unread_count ? `, ${c.unread_count} unread` : ''}`}
+                  onPress={() => {
+                    if (c.joined) chooseConversation(c.id);
+                    else
+                      void action(async () => {
+                        await connectApi.membership(c.id, self!);
+                        await refreshContext();
+                        chooseConversation(c.id);
+                      });
+                  }}
+                  style={({ pressed }) => [
+                    styles.channelRow,
                     {
-                      backgroundColor: actionColor,
-                      color: colors.textInverse,
+                      backgroundColor:
+                        c.id === active
+                          ? rail.selected
+                          : pressed
+                            ? rail.line
+                            : 'transparent',
                     },
                   ]}
                 >
-                  {c.unread_count}
-                </Text>
-              ) : null}
-            </Pressable>
-          ))}
-          <View style={[styles.sectionHeading, { marginTop: 22 }]}>
-            <Text style={[styles.label, { color: rail.muted }]}>
-              Direct messages
-            </Text>
-          </View>
-          {!context?.direct_messages.length && (
-            <Text style={[styles.empty, { color: rail.muted }]}>
-              Start a private conversation with a colleague.
-            </Text>
+                  {c.visibility === 'private' ? (
+                    <Lock
+                      size={15}
+                      color={c.id === active ? '#FFFFFF' : rail.muted}
+                    />
+                  ) : (
+                    <Hash
+                      size={17}
+                      color={c.id === active ? '#FFFFFF' : rail.muted}
+                    />
+                  )}
+                  <Text
+                    numberOfLines={1}
+                    style={{
+                      flex: 1,
+                      fontSize: 15,
+                      color: c.id === active ? '#FFFFFF' : rail.text,
+                      fontWeight: c.unread_count ? '700' : '400',
+                    }}
+                  >
+                    {c.name}
+                    {c.archived_at ? ' · archived' : ''}
+                  </Text>
+                  {!c.joined ? (
+                    <Text
+                      style={{
+                        color: c.id === active ? '#FFFFFF' : colors.primary,
+                        fontSize: 12,
+                      }}
+                    >
+                      Join
+                    </Text>
+                  ) : (
+                    c.unread_count > 0 && (
+                      <Text
+                        style={[
+                          styles.badge,
+                          {
+                            backgroundColor:
+                              c.id === active ? '#FFFFFF' : '#9D204E',
+                            color: c.id === active ? '#1264A3' : '#FFFFFF',
+                          },
+                        ]}
+                      >
+                        {c.unread_count}
+                      </Text>
+                    )
+                  )}
+                </Pressable>
+              ))}
+              {context?.can_manage &&
+                railButton('Add channels', Plus, createChannel)}
+            </>
           )}
-          {context?.direct_messages.map((d) => (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={`Open DM with ${d.name}`}
-              key={d.id}
-              onPress={() => chooseConversation(d.id)}
-              style={[
-                styles.channelRow,
-                {
-                  backgroundColor:
-                    d.id === active ? rail.selected : 'transparent',
-                },
-              ]}
-            >
-              {avatar(d.name)}
-              <Text
-                numberOfLines={1}
-                style={{
-                  flex: 1,
-                  color: rail.text,
-                  fontWeight: d.unread_count ? '700' : '400',
-                }}
-              >
-                {d.name}
-              </Text>
-              {d.unread_count > 0 && (
-                <Text
-                  style={[
-                    styles.badge,
+          <View style={{ height: 14 }} />
+          {section(
+            'Direct messages',
+            dmsOpen,
+            () => setDmsOpen(!dmsOpen),
+            startDirectMessage,
+          )}
+          {dmsOpen && (
+            <>
+              {context?.direct_messages.map((d) => (
+                <Pressable
+                  key={d.id}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Open DM with ${d.name}`}
+                  onPress={() => chooseConversation(d.id)}
+                  style={({ pressed }) => [
+                    styles.channelRow,
                     {
-                      backgroundColor: actionColor,
-                      color: colors.textInverse,
+                      backgroundColor:
+                        d.id === active
+                          ? rail.selected
+                          : pressed
+                            ? rail.line
+                            : 'transparent',
                     },
                   ]}
                 >
-                  {d.unread_count}
-                </Text>
-              )}
-            </Pressable>
-          ))}
+                  {avatar(d.name, true)}
+                  <Text
+                    numberOfLines={1}
+                    style={{
+                      flex: 1,
+                      color: d.id === active ? '#FFFFFF' : rail.text,
+                      fontSize: 15,
+                      fontWeight: d.unread_count ? '700' : '400',
+                    }}
+                  >
+                    {d.name}
+                  </Text>
+                  {!!d.unread_count && (
+                    <Text
+                      style={[
+                        styles.badge,
+                        { backgroundColor: '#9D204E', color: '#FFFFFF' },
+                      ]}
+                    >
+                      {d.unread_count}
+                    </Text>
+                  )}
+                </Pressable>
+              ))}
+              {railButton('Add teammates', Plus, startDirectMessage)}
+            </>
+          )}
         </ScrollView>
-        <View style={[styles.railFooter, { borderTopColor: rail.line }]}>
-          <View style={styles.sectionHeading}>
-            <Text style={[styles.eyebrow, { color: rail.muted, fontSize: 10 }]}>
-              YOUR TOOLS
-            </Text>
-          </View>
-          {railButton('Saved messages', Bookmark, () => {
-            void action(async () => {
-              setBookmarks(await connectApi.saved());
-              setDialog('saved');
-            });
-          })}
-          {context?.can_manage &&
-            railButton('Company access', ShieldCheck, () => {
+        {context?.can_manage && (
+          <View style={[styles.railFooter, { borderTopColor: rail.line }]}>
+            {railButton('Company access', ShieldCheck, () => {
               setPeopleQuery('');
               setDialog('company');
             })}
-          {railButton('Preferences', Settings2, () => setDialog('settings'))}
-        </View>
+          </View>
+        )}
       </View>
     );
   }
@@ -1336,72 +1688,43 @@ function ConnectWorkspace() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={[styles.root, { backgroundColor: colors.background }]}
     >
-      <View
-        style={[
-          styles.top,
-          mobile && { paddingHorizontal: 16, gap: 10 },
-          { borderBottomColor: colors.border, backgroundColor: colors.surface },
-        ]}
-      >
-        <View style={[styles.logo, { backgroundColor: actionColor }]}>
-          <MessageCircle color={colors.textInverse} size={22} strokeWidth={2} />
-        </View>
-        <View style={{ flex: 1 }}>
-          <Text
-            numberOfLines={1}
-            style={[styles.title, textStyle, mobile && { fontSize: 18 }]}
-          >
-            NexSyrus Connect
-          </Text>
-          <Text style={{ color: colors.textTertiary, fontSize: 12 }}>
-            A shared space for great work
-          </Text>
-        </View>
+      <View style={styles.top}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Search Connect"
-          disabled={!context}
-          onPress={() => {
-            setDialog('search');
-            void connectApi
-              .employees()
-              .then(setSearchEmployees)
-              .catch(() => {});
-          }}
-          style={[
-            mobile ? styles.icon : styles.searchTrigger,
-            { borderColor: colors.border, backgroundColor: colors.background },
-          ]}
+          accessibilityLabel="Back to console"
+          onPress={() => router.push('/(app)')}
+          style={[styles.row, !mobile && { width: 280 }]}
         >
-          <Search color={colors.textSecondary} size={18} />
+          <ArrowLeft size={17} color="#E9D8EC" />
           {!mobile && (
-            <Text style={{ color: colors.textSecondary, fontSize: 13 }}>
-              Search conversations
+            <Text style={[styles.brandLabel, { width: undefined }]}>
+              NexSyrus Connect
             </Text>
           )}
         </Pressable>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`Notifications, ${context?.unread_notifications || 0} unread`}
+          accessibilityLabel="Search Connect"
           disabled={!context}
-          onPress={() => {
-            void action(async () => {
-              setNotices(await connectApi.notifications());
-              setDialog('notifications');
-            });
-          }}
-          style={styles.icon}
+          onPress={openSearch}
+          style={[styles.searchTrigger, mobile && { flex: 1 }]}
         >
-          <Bell color={colors.textSecondary} size={20} />
+          <Search size={16} color="#FFFFFF" />
+          <Text numberOfLines={1} style={{ color: '#FFFFFF', fontSize: 13 }}>
+            Search {context?.organization.name || 'NexSyrus'}
+          </Text>
+        </Pressable>
+        {!mobile && <View style={{ flex: 1 }} />}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Notifications, ${context?.unread_notifications || 0} unread`}
+          onPress={openNotices}
+          disabled={!context}
+          style={styles.topIcon}
+        >
+          <Bell size={18} color="#FFFFFF" />
           {!!context?.unread_notifications && (
-            <Text
-              style={[
-                styles.dot,
-                { backgroundColor: actionColor, color: colors.textInverse },
-              ]}
-            >
-              {context.unread_notifications}
-            </Text>
+            <View style={[styles.navUnread, { backgroundColor: '#E01E5A' }]} />
           )}
         </Pressable>
       </View>
@@ -1435,6 +1758,7 @@ function ConnectWorkspace() {
         </View>
       ) : (
         <View style={styles.workspace}>
+          {!mobile && navigationRail()}
           {(!mobile || !active) && conversationList()}
           {(!mobile || !!active) && (
             <View
@@ -1538,7 +1862,11 @@ function ConnectWorkspace() {
                         numberOfLines={1}
                         style={[styles.sectionTitle, textStyle]}
                       >
-                        {mobile && thread ? 'Thread' : currentTitle}
+                        {mobile && thread
+                          ? 'Thread'
+                          : selected && !mobile
+                            ? selected.name
+                            : currentTitle}
                       </Text>
                       <Text
                         numberOfLines={1}
@@ -1555,7 +1883,7 @@ function ConnectWorkspace() {
                       </Text>
                     </View>
                     {!!selected &&
-                      button('Members', () => {
+                      iconButton('Members', Users, () => {
                         void action(async () => {
                           setMembers(await connectApi.members(active));
                           setDescription(selected.description);
@@ -1565,7 +1893,7 @@ function ConnectWorkspace() {
                       })}
                     {!!selected &&
                       !mobile &&
-                      button('Pins', () => {
+                      iconButton('Pins', Pin, () => {
                         void action(async () => {
                           setBookmarks(await connectApi.pins(active));
                           setDialog('pins');
@@ -1582,43 +1910,42 @@ function ConnectWorkspace() {
                       });
                     })}
                   </View>
-                  <View
-                    style={[
-                      styles.connectionBar,
-                      { borderBottomColor: colors.borderSubtle },
-                    ]}
-                  >
+                  {connection !== 'live' && (
                     <View
                       style={[
-                        styles.statusDot,
+                        styles.connectionBar,
                         {
-                          backgroundColor:
-                            connection === 'live'
-                              ? colors.success
-                              : colors.warning,
+                          borderBottomColor: colors.borderSubtle,
+                          backgroundColor: isDark ? '#332B16' : '#FFFAEC',
                         },
                       ]}
-                    />
-                    <Text
-                      numberOfLines={2}
-                      style={{
-                        color: colors.textTertiary,
-                        fontSize: 12,
-                        flex: 1,
-                      }}
                     >
-                      {connection === 'live'
-                        ? 'Live updates connected'
-                        : connection === 'connecting'
+                      <View
+                        style={[
+                          styles.statusDot,
+                          {
+                            backgroundColor: colors.warning,
+                          },
+                        ]}
+                      />
+                      <Text
+                        numberOfLines={2}
+                        style={{
+                          color: colors.textTertiary,
+                          fontSize: 12,
+                          flex: 1,
+                        }}
+                      >
+                        {connection === 'connecting'
                           ? 'Connecting live updates…'
-                          : 'Live updates unavailable · refresh for new messages'}
-                    </Text>
-                    {iconButton('Refresh messages', RefreshCw, () => {
-                      void refresh();
-                      if (connection !== 'live')
+                          : 'Live updates paused. Refresh to check for messages.'}
+                      </Text>
+                      {iconButton('Refresh messages', RefreshCw, () => {
+                        void refresh();
                         setRetryConnection((n) => n + 1);
-                    })}
-                  </View>
+                      })}
+                    </View>
+                  )}
                   <View style={styles.discussion}>
                     {(!mobile || !thread) && (
                       <View style={styles.mainMessages}>
@@ -1680,7 +2007,10 @@ function ConnectWorkspace() {
                             showsVerticalScrollIndicator={false}
                             contentContainerStyle={{
                               paddingBottom: 12,
-                              flexGrow: roots.length ? 0 : 1,
+                              flexGrow: 1,
+                              justifyContent: roots.length
+                                ? 'flex-start'
+                                : 'flex-end',
                             }}
                           />
                         )}
@@ -1791,7 +2121,7 @@ function ConnectWorkspace() {
                             setThread(null);
                             setDraft('');
                           })}
-                          {button('Close thread', () => {
+                          {iconButton('Close thread', X, () => {
                             setThread(null);
                             setDraft('');
                             setEditing(null);
@@ -1880,9 +2210,11 @@ function ConnectWorkspace() {
                                   ? 'Create a school checklist task'
                                   : dialog === 'message'
                                     ? 'Message actions'
-                                    : dialog === 'company'
-                                      ? 'Company access'
-                                      : 'Preferences & availability'}
+                                    : dialog === 'threads'
+                                      ? 'Threads'
+                                      : dialog === 'company'
+                                        ? 'Company access'
+                                        : 'Preferences & availability'}
               </Text>
               <View style={{ flex: 1 }} />
               {button('Close', () => {
@@ -1891,6 +2223,58 @@ function ConnectWorkspace() {
               })}
             </View>
             <ScrollView keyboardShouldPersistTaps="handled">
+              {dialog === 'threads' && (
+                <>
+                  <Text
+                    style={[
+                      styles.welcomeCopy,
+                      { color: colors.textSecondary, marginBottom: 16 },
+                    ]}
+                  >
+                    Replies in {currentTitle}. Open a thread to keep the
+                    discussion going.
+                  </Text>
+                  {!roots.some((m) => m.reply_count) && (
+                    <Text
+                      style={[styles.empty, { color: colors.textSecondary }]}
+                    >
+                      No threads in this conversation yet. Reply to a message to
+                      start one.
+                    </Text>
+                  )}
+                  {roots
+                    .filter((m) => m.reply_count)
+                    .map((m) => (
+                      <Pressable
+                        key={m.id}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Open thread from ${m.sender_name}`}
+                        onPress={() => {
+                          setDialog(null);
+                          void openThread(m);
+                        }}
+                        style={[styles.notice, { borderColor: colors.border }]}
+                      >
+                        <Text style={[styles.sender, textStyle]}>
+                          {m.sender_name}
+                        </Text>
+                        <Text
+                          numberOfLines={3}
+                          style={[
+                            styles.welcomeCopy,
+                            { color: colors.textSecondary },
+                          ]}
+                        >
+                          {m.deleted_at ? 'Message deleted' : bodyOf(m)}
+                        </Text>
+                        <Text style={{ color: colors.primary, marginTop: 8 }}>
+                          {m.reply_count}{' '}
+                          {m.reply_count === 1 ? 'reply' : 'replies'}
+                        </Text>
+                      </Pressable>
+                    ))}
+                </>
+              )}
               {dialog === 'company' && (
                 <>
                   <Text style={[styles.empty, { color: colors.textSecondary }]}>
@@ -2783,14 +3167,148 @@ function ConnectWorkspace() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, minHeight: 500, borderRadius: 16, overflow: 'hidden' },
+  root: { flex: 1, minHeight: 0, overflow: 'hidden' },
   top: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    paddingHorizontal: 24,
-    paddingVertical: 16,
+    height: 44,
+    paddingHorizontal: 16,
+    backgroundColor: '#350D36',
+  },
+  brandLabel: { color: '#E9D8EC', width: 280, fontSize: 12, fontWeight: '600' },
+  topIcon: {
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  appRail: {
+    width: 68,
+    paddingVertical: 12,
+    alignItems: 'center',
+    backgroundColor: '#4A154B',
+  },
+  workspaceMonogram: {
+    width: 40,
+    height: 40,
+    borderRadius: 5,
+    backgroundColor: '#E9D9ED',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 18,
+  },
+  appNavItem: { width: 64, minHeight: 70, alignItems: 'center', gap: 5 },
+  appNavIcon: {
+    width: 40,
+    height: 36,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  appNavLabel: { color: '#F4EAF6', fontSize: 11, fontWeight: '600' },
+  navUnread: {
+    position: 'absolute',
+    top: 3,
+    right: 3,
+    width: 9,
+    height: 9,
+    borderRadius: 5,
+    borderColor: '#4A154B',
+    borderWidth: 1,
+  },
+  selfAvatar: {
+    width: 34,
+    height: 34,
+    borderRadius: 7,
+    backgroundColor: '#477D76',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  workspaceHeader: {
+    height: 56,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
     borderBottomWidth: 1,
+  },
+  sectionAdd: {
+    width: 28,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sidebarDivider: { height: 1, marginVertical: 12, marginHorizontal: 6 },
+  sidebarHint: {
+    fontSize: 13,
+    lineHeight: 19,
+    paddingHorizontal: 22,
+    paddingVertical: 8,
+  },
+  sidebarAvatar: {
+    width: 22,
+    height: 22,
+    overflow: 'hidden',
+    borderRadius: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    transform: [{ scale: 0.62 }],
+    marginHorizontal: -4,
+  },
+  introAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    alignSelf: 'flex-start',
+    minHeight: 36,
+    marginTop: 8,
+  },
+  dateDivider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 12,
+  },
+  dateLine: { flex: 1, height: 1 },
+  dateLabel: {
+    borderWidth: 1,
+    borderRadius: 18,
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    fontWeight: '600',
+    fontSize: 12,
+  },
+  messageTools: {
+    position: 'absolute',
+    top: -10,
+    right: 16,
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderRadius: 6,
+    paddingHorizontal: 2,
+  },
+  formatToolbar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  toolbarDivider: { width: 1, height: 18, marginHorizontal: 5 },
+  emojiPicker: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    padding: 8,
+    borderWidth: 1,
+    borderRadius: 8,
+    marginBottom: 8,
+    alignSelf: 'flex-start',
+  },
+  emojiChoice: {
+    width: 36,
+    height: 38,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   logo: {
     height: 42,
@@ -2801,8 +3319,8 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 22, fontWeight: '700', letterSpacing: -0.7 },
   icon: {
-    minWidth: 44,
-    minHeight: 44,
+    minWidth: 32,
+    minHeight: 32,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 8,
@@ -2810,23 +3328,23 @@ const styles = StyleSheet.create({
   workspace: { flex: 1, flexDirection: 'row', minHeight: 0 },
   channels: { borderRightWidth: 1 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  sectionTitle: { fontSize: 17, fontWeight: '700', letterSpacing: -0.3 },
+  sectionTitle: { fontSize: 18, fontWeight: '700', letterSpacing: -0.3 },
   sectionHeading: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    minHeight: 42,
+    minHeight: 34,
     paddingHorizontal: 8,
   },
-  label: { fontSize: 12, fontWeight: '600', letterSpacing: 0.3 },
+  label: { fontSize: 14, fontWeight: '500' },
   channelRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 9,
-    minHeight: 48,
+    minHeight: 30,
     paddingHorizontal: 12,
-    paddingVertical: 9,
-    borderRadius: 8,
+    paddingVertical: 4,
+    borderRadius: 5,
   },
   badge: {
     fontSize: 10,
@@ -2841,7 +3359,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     paddingHorizontal: 24,
-    minHeight: 80,
+    minHeight: 56,
     borderBottomWidth: 1,
   },
   connectionBar: {
@@ -2849,7 +3367,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     paddingHorizontal: 24,
-    minHeight: 36,
+    minHeight: 30,
     borderBottomWidth: 1,
   },
   statusDot: { width: 6, height: 6, borderRadius: 3 },
@@ -2860,20 +3378,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
     paddingHorizontal: 24,
-    paddingVertical: 16,
+    paddingVertical: 8,
+    paddingRight: 52,
   },
   messageContent: { flex: 1, minWidth: 0 },
   avatar: {
     width: 36,
     height: 36,
-    borderRadius: 10,
+    borderRadius: 5,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  sender: { fontSize: 14, fontWeight: '700' },
-  meta: { fontSize: 11 },
+  sender: { fontSize: 15, fontWeight: '700' },
+  meta: { fontSize: 12 },
   reaction: {
-    minHeight: 32,
+    minHeight: 26,
     minWidth: 32,
     borderWidth: 1,
     borderRadius: 8,
@@ -2882,8 +3401,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   button: {
-    minHeight: 40,
-    paddingHorizontal: 10,
+    minHeight: 30,
+    paddingHorizontal: 8,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 8,
@@ -2900,28 +3419,28 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 10,
   },
-  composer: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 14 },
+  composer: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 10 },
   composeBox: {
     borderWidth: 1,
-    borderRadius: 14,
+    borderRadius: 8,
     overflow: 'hidden',
   },
   composerInput: {
-    minHeight: 64,
+    minHeight: 52,
     maxHeight: 160,
     fontSize: 15,
     paddingHorizontal: 16,
-    paddingTop: 16,
+    paddingTop: 12,
     paddingBottom: 12,
     textAlignVertical: 'top',
   },
   send: {
-    minWidth: 40,
-    height: 36,
-    paddingHorizontal: 12,
+    minWidth: 32,
+    height: 30,
+    paddingHorizontal: 8,
     flexDirection: 'row',
     gap: 8,
-    borderRadius: 9,
+    borderRadius: 5,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -2931,24 +3450,23 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 8,
     paddingVertical: 6,
-    borderTopWidth: 1,
   },
   railButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    minHeight: 42,
+    gap: 10,
+    minHeight: 30,
     paddingHorizontal: 12,
     borderRadius: 8,
   },
   railCompose: {
     width: 36,
     height: 36,
-    borderRadius: 10,
+    borderRadius: 5,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  railFooter: { padding: 14, borderTopWidth: 1 },
+  railFooter: { padding: 10, borderTopWidth: 1 },
   railEmpty: {
     marginHorizontal: 6,
     marginTop: 8,
@@ -2959,35 +3477,33 @@ const styles = StyleSheet.create({
   },
   eyebrow: { fontSize: 11, fontWeight: '700', letterSpacing: 1.4 },
   emptyConversation: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 24,
+    alignItems: 'flex-start',
+    paddingTop: 40,
+    paddingBottom: 22,
   },
   emptyEmblem: {
     width: 64,
     height: 64,
-    borderRadius: 20,
-    borderWidth: 1,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   emptyInitial: { fontSize: 28, fontWeight: '600' },
   welcomeTitle: {
     fontSize: 30,
     fontWeight: '700',
     letterSpacing: -1,
-    textAlign: 'center',
-    marginTop: 12,
+    textAlign: 'left',
+    marginTop: 8,
     maxWidth: 620,
   },
   welcomeCopy: {
     fontSize: 15,
-    lineHeight: 25,
-    textAlign: 'center',
-    maxWidth: 440,
-    marginTop: 14,
+    lineHeight: 23,
+    textAlign: 'left',
+    maxWidth: 640,
+    marginTop: 8,
   },
   startButton: {
     flexDirection: 'row',
@@ -2995,13 +3511,13 @@ const styles = StyleSheet.create({
     gap: 9,
     paddingHorizontal: 18,
     minHeight: 44,
-    borderRadius: 9,
+    borderRadius: 5,
     marginTop: 20,
   },
   headerSymbol: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
+    width: 28,
+    height: 28,
+    borderRadius: 5,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 4,
@@ -3009,12 +3525,15 @@ const styles = StyleSheet.create({
   searchTrigger: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
+    height: 28,
+    flex: 2,
+    maxWidth: 640,
+    paddingHorizontal: 10,
+    backgroundColor: '#FFFFFF26',
     borderWidth: 1,
-    borderRadius: 9,
-    minHeight: 40,
-    width: 240,
-    paddingHorizontal: 14,
+    borderColor: '#FFFFFF38',
+    borderRadius: 6,
   },
   suggestions: { borderWidth: 1, borderRadius: 10, marginBottom: 8 },
   person: {
@@ -3051,12 +3570,12 @@ const styles = StyleSheet.create({
     width: '100%',
     maxHeight: '90%',
     padding: 20,
-    borderRadius: 18,
+    borderRadius: 10,
     borderWidth: 1,
   },
   input: {
     borderWidth: 1,
-    borderRadius: 9,
+    borderRadius: 5,
     padding: 12,
     fontSize: 14,
     marginBottom: 10,

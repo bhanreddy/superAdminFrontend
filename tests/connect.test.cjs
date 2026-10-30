@@ -182,7 +182,7 @@ test('late realtime session response cannot subscribe after disposal', async () 
   assert.equal(created, false);
 });
 
-function fixture(width = 390) {
+function fixture(width = 390, platform = 'android') {
   let currentUser = 'employee-a',
     failSend = false,
     denied = false,
@@ -285,7 +285,7 @@ function fixture(width = 390) {
       },
     ),
     StyleSheet: { create: (x) => x },
-    Platform: { OS: 'android' },
+    Platform: { OS: platform },
     AppState: {
       addEventListener: (_type, fn) => {
         events.foreground = fn;
@@ -552,5 +552,160 @@ test('a failed send retains its file across navigation and retry preserves the n
     );
   } finally {
     act(() => screen?.unmount());
+  }
+});
+
+test('Slack sidebar sections collapse without changing the selected conversation or exposing channel creation', async () => {
+  const f = fixture(1280);
+  let screen;
+  try {
+    await act(async () => {
+      screen = create(React.createElement(f.Screen));
+      await flush();
+    });
+    assert.ok(pressable(screen.root, 'Open general, 1 unread'));
+    assert.equal(pressable(screen.root, 'Create'), undefined);
+    act(() => pressable(screen.root, 'Collapse Channels').props.onPress());
+    assert.equal(pressable(screen.root, 'Open general, 1 unread'), undefined);
+    assert.ok(screen.root.findByProps({ testID: 'connect-conversation' }));
+    assert.match(textOf(screen.root), /Message 1/);
+    act(() => pressable(screen.root, 'Expand Channels').props.onPress());
+    assert.ok(pressable(screen.root, 'Open general, 1 unread'));
+  } finally {
+    if (screen) act(() => screen.unmount());
+  }
+});
+
+test('composer formats the selected text, inserts emoji, sends the result and renders formatting', async () => {
+  const f = fixture(1280);
+  let screen;
+  try {
+    await act(async () => {
+      screen = create(React.createElement(f.Screen));
+      await flush();
+    });
+    const input = () =>
+      screen.root.findByProps({ accessibilityLabel: 'Message composer' });
+    act(() => {
+      input().props.onChangeText('Release ready');
+      input().props.onSelectionChange({
+        nativeEvent: { selection: { start: 0, end: 7 } },
+      });
+    });
+    act(() => pressable(screen.root, 'Bold text').props.onPress());
+    assert.equal(input().props.value, '*Release* ready');
+    act(() => pressable(screen.root, 'Insert emoji').props.onPress());
+    act(() => pressable(screen.root, 'Insert 🚀').props.onPress());
+    assert.equal(input().props.value, '*Release* ready🚀');
+    await act(async () => {
+      pressable(screen.root, 'Send message').props.onPress();
+      await flush();
+    });
+    assert.equal(f.sent[0].body, '*Release* ready🚀');
+    assert.equal(input().props.value, '');
+    assert.ok(
+      screen.root
+        .findAllByType('Text')
+        .some(
+          (node) =>
+            node.props.style?.fontWeight === '700' &&
+            textOf(node) === 'Release',
+        ),
+    );
+  } finally {
+    if (screen) act(() => screen.unmount());
+  }
+});
+
+test('Connect fills the app area and returning to the console restores its navigation shell', () => {
+  let pathname = '/connect';
+  const load = uiLoader({
+    'react-native': {
+      View: 'View',
+      Pressable: 'Pressable',
+      Platform: { OS: 'android' },
+      StyleSheet: { create: (x) => x },
+      useWindowDimensions: () => ({ width: 1280 }),
+    },
+    'expo-router': { usePathname: () => pathname },
+    'expo-status-bar': { StatusBar: () => null },
+    [path.join(frontend, 'src/components/layout/Sidebar.tsx')]: {
+      Sidebar: () => React.createElement('Sidebar'),
+    },
+    [path.join(frontend, 'src/components/layout/TopBar.tsx')]: {
+      TopBar: () => React.createElement('TopBar'),
+    },
+    [path.join(frontend, 'src/contexts/ThemeContext.tsx')]: {
+      useTheme: () => ({
+        colors: {},
+        layout: { mobileBreakpoint: 900, topbarHeight: 60 },
+        zIndex: {},
+      }),
+    },
+  });
+  const { DashboardLayout } = load(
+    path.join(frontend, 'src/components/layout/DashboardLayout.tsx'),
+  );
+  let screen;
+  const render = () =>
+    React.createElement(
+      DashboardLayout,
+      null,
+      React.createElement('Content', { route: pathname }),
+    );
+  try {
+    act(() => {
+      screen = create(render());
+    });
+    assert.equal(screen.root.findAllByType('Sidebar').length, 0);
+    assert.equal(screen.root.findAllByType('TopBar').length, 0);
+    assert.equal(screen.root.findByType('Content').props.route, '/connect');
+    pathname = '/';
+    act(() => screen.update(render()));
+    assert.equal(screen.root.findAllByType('Sidebar').length, 1);
+    assert.equal(screen.root.findAllByType('TopBar').length, 1);
+  } finally {
+    if (screen) act(() => screen.unmount());
+  }
+});
+
+test('web composer sends on Enter while preserving Shift+Enter and composition input', async () => {
+  const previousDocument = global.document;
+  global.document = {
+    visibilityState: 'visible',
+    addEventListener() {},
+    removeEventListener() {},
+  };
+  const f = fixture(1280, 'web');
+  let screen,
+    prevented = 0;
+  try {
+    await act(async () => {
+      screen = create(React.createElement(f.Screen));
+      await flush();
+    });
+    const input = () =>
+      screen.root.findByProps({ accessibilityLabel: 'Message composer' });
+    act(() => input().props.onChangeText('A keyboard message'));
+    const event = (extra = {}) => ({
+      nativeEvent: { key: 'Enter', ...extra },
+      preventDefault: () => prevented++,
+    });
+    act(() => input().props.onKeyPress(event({ shiftKey: true })));
+    act(() => input().props.onKeyPress(event({ isComposing: true })));
+    act(() => input().props.onKeyPress(event({ keyCode: 229 })));
+    assert.equal(f.sent.length, 0);
+    assert.equal(prevented, 0);
+    await act(async () => {
+      input().props.onKeyPress(event());
+      await flush();
+    });
+    assert.equal(f.sent.length, 1);
+    assert.equal(f.sent[0].body, 'A keyboard message');
+    assert.equal(prevented, 1);
+  } finally {
+    if (screen) act(() => screen.unmount());
+    if (previousDocument === undefined) delete global.document;
+    else global.document = previousDocument;
   }
 });

@@ -33,7 +33,7 @@ if(url.endsWith('/presence')||url.endsWith('/saved')||url.endsWith('/pins')||url
 if(url.endsWith('/search'))return response({messages:messages.filter(m=>m.body.toLowerCase().includes((p.q||'').toLowerCase())),channels:[],employees:[]});
 if(url.endsWith('/members'))return response(people.map(e=>({user_id:e.id,full_name:e.full_name,employee_id:e.employee_id,role:e.id===ids.self?'manager':'member'})));
 return response({});},
-post(url,body={}){if(url.includes('/conversations/')&&url.endsWith('/messages')){const m={...messages[0],...body,id:crypto.randomUUID(),sequence:messages.length+1,sender_id:ids.self,sender_name:'Demo Founder',reply_count:0,reactions:[],created_at:new Date().toISOString()};messages.push(m);return response(m);}return response({});},
+post(url,body={}){if(url.includes('/conversations/')&&url.endsWith('/messages')){const m={conversation_id:url.split('/')[5],parent_id:null,mentions:[],attachments:[],edited_at:null,deleted_at:null,revision:0,...body,id:crypto.randomUUID(),sequence:messages.length+1,sender_id:ids.self,sender_name:'Demo Founder',reply_count:0,reactions:[],created_at:new Date().toISOString()};messages.push(m);return response(m);}return response({});},
 put:()=>response({}),patch:()=>response({}),delete:()=>response({})};
 `;
 const mocks = new Map(

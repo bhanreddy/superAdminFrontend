@@ -7,6 +7,7 @@ import {
   Pressable,
   Animated,
 } from 'react-native';
+import { usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
@@ -19,8 +20,15 @@ interface DashboardLayoutProps {
 export const DashboardLayout = React.memo(function DashboardLayout({
   children,
 }: DashboardLayoutProps) {
-  const { colors, layout: layoutTokens, isDark, zIndex, clayShadows } = useTheme();
+  const {
+    colors,
+    layout: layoutTokens,
+    isDark,
+    zIndex,
+    clayShadows,
+  } = useTheme();
   const { width: screenWidth } = useWindowDimensions();
+  const isConnect = usePathname() === '/connect';
   const isMobile = screenWidth < layoutTokens.mobileBreakpoint;
   const isCompactMobile = screenWidth < 480;
 
@@ -47,7 +55,8 @@ export const DashboardLayout = React.memo(function DashboardLayout({
         const el = document.createElement('link');
         el.id = 'inter-font-link';
         el.rel = 'stylesheet';
-        el.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap';
+        el.href =
+          'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap';
         document.head.appendChild(el);
       }
     } catch {}
@@ -55,21 +64,32 @@ export const DashboardLayout = React.memo(function DashboardLayout({
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
-      <StatusBar style={isDark ? 'light' : 'dark'} backgroundColor={colors.background} />
+      <StatusBar
+        style={isDark ? 'light' : 'dark'}
+        backgroundColor={colors.background}
+      />
 
       {/* Desktop sidebar */}
-      {!isMobile && (
+      {!isConnect && !isMobile && (
         <Sidebar collapsed={collapsed} onToggle={toggleSidebar} />
       )}
 
       {/* Mobile sidebar overlay */}
-      {isMobile && mobileOpen && (
+      {!isConnect && isMobile && mobileOpen && (
         <View style={[styles.mobileSidebarOverlay, { zIndex: zIndex.sidebar }]}>
           <Pressable
-            style={[styles.mobileSidebarBackdrop, { backgroundColor: colors.overlay }]}
+            style={[
+              styles.mobileSidebarBackdrop,
+              { backgroundColor: colors.overlay },
+            ]}
             onPress={closeMobileSidebar}
           />
-          <View style={[styles.mobileSidebarPanel, { width: layoutTokens.sidebarWidth }]}>
+          <View
+            style={[
+              styles.mobileSidebarPanel,
+              { width: layoutTokens.sidebarWidth },
+            ]}
+          >
             <Sidebar collapsed={false} onToggle={closeMobileSidebar} />
           </View>
         </View>
@@ -77,10 +97,9 @@ export const DashboardLayout = React.memo(function DashboardLayout({
 
       {/* Main content area */}
       <View style={styles.mainArea}>
-        <TopBar
-          onMenuPress={toggleSidebar}
-          showMenu={isMobile}
-        />
+        {!isConnect && (
+          <TopBar onMenuPress={toggleSidebar} showMenu={isMobile} />
+        )}
 
         {/* Content — transparent scroll surface. Padding lives here directly so
             page elements are its immediate children: no wrapper div, no container. */}
@@ -88,9 +107,20 @@ export const DashboardLayout = React.memo(function DashboardLayout({
           style={[
             styles.scroller,
             {
-              paddingTop: isMobile ? 16 : layoutTokens.topbarHeight + 28,
-              paddingHorizontal: isCompactMobile ? 12 : isMobile ? 16 : 40,
-              paddingBottom: 48,
+              paddingTop: isConnect
+                ? 0
+                : isMobile
+                  ? 16
+                  : layoutTokens.topbarHeight + 28,
+              paddingHorizontal: isConnect
+                ? 0
+                : isCompactMobile
+                  ? 12
+                  : isMobile
+                    ? 16
+                    : 40,
+              paddingBottom: isConnect ? 0 : 48,
+              ...(isConnect ? { overflow: 'hidden' as const } : {}),
             },
           ]}
         >
@@ -105,7 +135,7 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     flexDirection: 'row',
-    height: Platform.OS === 'web' ? '100vh' as any : '100%',
+    height: Platform.OS === 'web' ? ('100vh' as any) : '100%',
     overflow: 'hidden',
   },
   mainArea: {
