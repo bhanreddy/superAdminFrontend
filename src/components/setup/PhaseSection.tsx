@@ -132,7 +132,7 @@ export function PhaseSection({
       ]}
     >
       {/* ── Header ─────────────────────────────────────────────────────── */}
-      <Pressable
+      <Pressable accessibilityRole="button"
         style={({ pressed }) => [
           styles.header,
           { opacity: pressed ? 0.85 : 1 },

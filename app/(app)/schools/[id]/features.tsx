@@ -68,7 +68,7 @@ const getFeatureIcon = (key: string, group: string) => {
   if (k.includes('value') || k.includes('life')) return Compass;
   if (k.includes('transport') || k.includes('bus')) return Bus;
   if (k.includes('science') || k.includes('project')) return Atom;
-  
+
   switch (group) {
     case 'drawer':
       return Menu;
@@ -241,7 +241,7 @@ export default function SchoolFeatureFlagsScreen() {
                         <View style={[styles.iconContainer, { backgroundColor: colors.primaryMuted }]}>
                           <FeatureIcon size={18} color={colors.primary} />
                         </View>
-                        
+
                         <View style={{ flex: 1, paddingRight: 16 }}>
                           <View style={styles.labelRow}>
                             <Text style={[styles.label, { color: colors.textPrimary }]}>{f.label}</Text>
@@ -249,7 +249,7 @@ export default function SchoolFeatureFlagsScreen() {
                               <Badge label="core" variant="info" size="sm" />
                             )}
                           </View>
-                          
+
                           <View style={styles.badgeRow}>
                             <Badge
                               label={f.source === 'overridden' ? 'overridden' : 'default'}
@@ -261,7 +261,7 @@ export default function SchoolFeatureFlagsScreen() {
                               <Text style={[styles.metaText, { color: colors.textTertiary }]}>enforced server-side</Text>
                             )}
                             {canWrite && f.source === 'overridden' && f.toggleable && (
-                              <Pressable
+                              <Pressable accessibilityRole="button"
                                 onPress={() => onReset(f)}
                                 disabled={savingKey === f.key}
                                 style={({ pressed, hovered }: any) => [
@@ -280,7 +280,7 @@ export default function SchoolFeatureFlagsScreen() {
                             )}
                           </View>
                         </View>
-                        
+
                         <Switch
                           value={f.enabled}
                           onValueChange={(next) => onToggle(f, next)}

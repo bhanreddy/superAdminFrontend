@@ -416,15 +416,15 @@ export default function SprintCommandCenterScreen() {
             </View>
 
             <View style={styles.topActions}>
-              <Pressable
-                style={[styles.btn, { backgroundColor: colors.primary, borderColor: colors.primary }, clayStyle(clayShadows.buttonPrimary)]}
+              <Pressable accessibilityRole="button"
+                style={[styles.btn, { backgroundColor: colors.primaryFill, borderColor: colors.primary }, clayStyle(clayShadows.buttonPrimary)]}
                 onPress={handleOpenStandup}
               >
                 <Copy size={13} color="#ffffff" />
                 <Text style={styles.btnPrimaryText}>Copy Standup</Text>
               </Pressable>
 
-              <Pressable
+              <Pressable accessibilityRole="button"
                 style={[
                   styles.btn,
                   {
@@ -439,7 +439,7 @@ export default function SprintCommandCenterScreen() {
                 <Text style={[styles.btnText, { color: colors.textPrimary }]}>Logs</Text>
               </Pressable>
 
-              <Pressable
+              <Pressable accessibilityLabel="Refresh" accessibilityRole="button"
                 style={[
                   styles.btn,
                   {
@@ -453,7 +453,7 @@ export default function SprintCommandCenterScreen() {
                 <RefreshCw size={13} color={colors.textSecondary} />
               </Pressable>
 
-              <Pressable
+              <Pressable accessibilityRole="button"
                 style={[
                   styles.btn,
                   {
@@ -479,7 +479,7 @@ export default function SprintCommandCenterScreen() {
               {days.map((dm) => {
                 const isActive = currentView === 'room' && activeDay === dm.day;
                 return (
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     key={dm.day}
                     onPress={() => {
                       setActiveDay(dm.day);
@@ -530,7 +530,7 @@ export default function SprintCommandCenterScreen() {
                 clayStyle(clayShadows.subtle),
               ]}
             >
-              <Pressable
+              <Pressable accessibilityRole="button"
                 onPress={() => setCurrentView('room')}
                 style={[
                   styles.toggleBtn,
@@ -552,7 +552,7 @@ export default function SprintCommandCenterScreen() {
                   Day View
                 </Text>
               </Pressable>
-              <Pressable
+              <Pressable accessibilityRole="button"
                 onPress={() => setCurrentView('matrix')}
                 style={[
                   styles.toggleBtn,
@@ -703,7 +703,7 @@ export default function SprintCommandCenterScreen() {
                   onChangeText={setSearchQuery}
                 />
                 {Boolean(searchQuery) && (
-                  <Pressable onPress={() => setSearchQuery('')}>
+                  <Pressable accessibilityLabel="Clear search" accessibilityRole="button" onPress={() => setSearchQuery('')}>
                     <X size={15} color={colors.textSecondary} />
                   </Pressable>
                 )}
@@ -712,7 +712,7 @@ export default function SprintCommandCenterScreen() {
               <View style={styles.filterRow}>
                 <Text style={[styles.filterLbl, { color: colors.textSecondary }]}>Role:</Text>
                 {(['all', 'tech', 'curr', 'sales', 'scale'] as const).map((r) => (
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     key={r}
                     onPress={() => setSelectedRoleFilter(r)}
                     style={[
@@ -744,7 +744,7 @@ export default function SprintCommandCenterScreen() {
               <View style={styles.filterRow}>
                 <Text style={[styles.filterLbl, { color: colors.textSecondary }]}>Status:</Text>
                 {(['all', 'todo', 'doing', 'blocked', 'done'] as const).map((s) => (
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     key={s}
                     onPress={() => setSelectedStatusFilter(s)}
                     style={[
@@ -893,7 +893,7 @@ export default function SprintCommandCenterScreen() {
               <Text style={[styles.modalHeadTitle, { color: colors.textPrimary }]}>
                 Daily Standup Report Generator
               </Text>
-              <Pressable onPress={() => setStandupModalOpen(false)} style={styles.closeBtn}>
+              <Pressable accessibilityLabel="Close dialog" accessibilityRole="button" onPress={() => setStandupModalOpen(false)} style={styles.closeBtn}>
                 <X size={18} color={colors.textSecondary} />
               </Pressable>
             </View>
@@ -914,10 +914,10 @@ export default function SprintCommandCenterScreen() {
               value={standupText}
             />
             <View style={styles.modalFoot}>
-              <Pressable
+              <Pressable accessibilityRole="button"
                 style={[
                   styles.btn,
-                  { backgroundColor: colors.primary, borderColor: colors.primary },
+                  { backgroundColor: colors.primaryFill, borderColor: colors.primary },
                   standupCopied && { backgroundColor: colors.success, borderColor: colors.success },
                   clayStyle(clayShadows.buttonPrimary),
                 ]}
@@ -950,14 +950,14 @@ export default function SprintCommandCenterScreen() {
               <>
                 <View style={styles.modalHead}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                    <Text style={[styles.modalNumPill, { backgroundColor: colors.primary }]}>
+                    <Text style={[styles.modalNumPill, { backgroundColor: colors.primaryFill }]}>
                       #{editingTask.num}
                     </Text>
                     <Text style={[styles.modalHeadTitle, { color: colors.textPrimary }]} numberOfLines={1}>
                       {roleThemes[editingTask.role].name} Deliverable
                     </Text>
                   </View>
-                  <Pressable onPress={() => setEditingTask(null)} style={styles.closeBtn}>
+                  <Pressable accessibilityLabel="Close dialog" accessibilityRole="button" onPress={() => setEditingTask(null)} style={styles.closeBtn}>
                     <X size={18} color={colors.textSecondary} />
                   </Pressable>
                 </View>
@@ -979,7 +979,7 @@ export default function SprintCommandCenterScreen() {
                       styles.fieldInput,
                       {
                         backgroundColor: isDark ? '#0F0F14' : '#F5F5F7',
-                        borderColor: Boolean(editBlockerReason) ? colors.error : colors.border,
+                        borderColor: editBlockerReason ? colors.error : colors.border,
                         color: colors.textPrimary,
                       },
                       Boolean(editBlockerReason) && {
@@ -999,7 +999,7 @@ export default function SprintCommandCenterScreen() {
                     Assignee (Founder / Member):
                   </Text>
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexDirection: 'row' }}>
-                    <Pressable
+                    <Pressable accessibilityRole="button"
                       onPress={() => setEditAssigneeId(null)}
                       style={[
                         styles.assigneeChip,
@@ -1026,7 +1026,7 @@ export default function SprintCommandCenterScreen() {
                       </Text>
                     </Pressable>
                     {members.map((m) => (
-                      <Pressable
+                      <Pressable accessibilityRole="button"
                         key={m.id}
                         onPress={() => setEditAssigneeId(m.id)}
                         style={[
@@ -1084,7 +1084,7 @@ export default function SprintCommandCenterScreen() {
                 </View>
 
                 <View style={styles.modalFoot}>
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     style={[
                       styles.btn,
                       {
@@ -1097,8 +1097,8 @@ export default function SprintCommandCenterScreen() {
                   >
                     <Text style={[styles.btnText, { color: colors.textPrimary }]}>Cancel</Text>
                   </Pressable>
-                  <Pressable
-                    style={[styles.btn, { backgroundColor: colors.primary, borderColor: colors.primary }, clayStyle(clayShadows.buttonPrimary)]}
+                  <Pressable accessibilityRole="button"
+                    style={[styles.btn, { backgroundColor: colors.primaryFill, borderColor: colors.primary }, clayStyle(clayShadows.buttonPrimary)]}
                     onPress={handleSaveTaskDetails}
                     disabled={savingTask}
                   >
@@ -1132,7 +1132,7 @@ export default function SprintCommandCenterScreen() {
               <Text style={[styles.modalHeadTitle, { color: colors.textPrimary }]}>
                 Sprint Activity Logs
               </Text>
-              <Pressable onPress={() => setActivityModalOpen(false)} style={styles.closeBtn}>
+              <Pressable accessibilityLabel="Close dialog" accessibilityRole="button" onPress={() => setActivityModalOpen(false)} style={styles.closeBtn}>
                 <X size={18} color={colors.textSecondary} />
               </Pressable>
             </View>
@@ -1224,7 +1224,7 @@ function TaskCard({ task, isDark, colors, clayShadows, statusColor, onSetStatus,
           #{task.num}
         </Text>
         <Text style={[styles.cardDayTag, { color: colors.textTertiary }]}>Day {task.day}</Text>
-        <Pressable onPress={onOpenDetails} style={styles.cardEditTrigger}>
+        <Pressable accessibilityRole="button" onPress={onOpenDetails} style={styles.cardEditTrigger}>
           <Text style={[styles.cardEditText, { color: colors.textSecondary }]}>•••</Text>
         </Pressable>
       </View>
@@ -1296,7 +1296,7 @@ function TaskCard({ task, isDark, colors, clayShadows, statusColor, onSetStatus,
             <option value="done" style={{ background: isDark ? '#121216' : '#FFFFFF', color: colors.success }}>Done</option>
           </select>
         ) : (
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => {
               const next: Record<SprintTaskStatus, SprintTaskStatus> = {
                 todo: 'doing',

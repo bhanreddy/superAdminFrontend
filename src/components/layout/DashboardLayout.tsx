@@ -1,32 +1,26 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   StyleSheet,
   useWindowDimensions,
   Platform,
   Pressable,
-  Animated,
+  Modal,
 } from 'react-native';
 import { usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
-import { useTheme, clayStyle } from '../../contexts/ThemeContext';
+import { useTheme, WorkspaceThemeProvider } from '../../contexts/ThemeContext';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
-export const DashboardLayout = React.memo(function DashboardLayout({
+const DashboardShell = React.memo(function DashboardShell({
   children,
 }: DashboardLayoutProps) {
-  const {
-    colors,
-    layout: layoutTokens,
-    isDark,
-    zIndex,
-    clayShadows,
-  } = useTheme();
+  const { colors, layout: layoutTokens, isDark, zIndex } = useTheme();
   const { width: screenWidth } = useWindowDimensions();
   const isConnect = usePathname() === '/connect';
   const isMobile = screenWidth < layoutTokens.mobileBreakpoint;
@@ -63,7 +57,10 @@ export const DashboardLayout = React.memo(function DashboardLayout({
   }
 
   return (
-    <View style={[styles.root, { backgroundColor: colors.background }]}>
+    <View
+      nativeID="nexsyrus-workspace"
+      style={[styles.root, { backgroundColor: colors.background }]}
+    >
       <StatusBar
         style={isDark ? 'light' : 'dark'}
         backgroundColor={colors.background}
@@ -76,23 +73,38 @@ export const DashboardLayout = React.memo(function DashboardLayout({
 
       {/* Mobile sidebar overlay */}
       {!isConnect && isMobile && mobileOpen && (
-        <View style={[styles.mobileSidebarOverlay, { zIndex: zIndex.sidebar }]}>
-          <Pressable
-            style={[
-              styles.mobileSidebarBackdrop,
-              { backgroundColor: colors.overlay },
-            ]}
-            onPress={closeMobileSidebar}
-          />
+        <Modal
+          transparent
+          visible={mobileOpen}
+          animationType="none"
+          onRequestClose={closeMobileSidebar}
+        >
           <View
-            style={[
-              styles.mobileSidebarPanel,
-              { width: layoutTokens.sidebarWidth },
-            ]}
+            style={[styles.mobileSidebarOverlay, { zIndex: zIndex.sidebar }]}
           >
-            <Sidebar collapsed={false} onToggle={closeMobileSidebar} />
+            <Pressable
+              style={[
+                styles.mobileSidebarBackdrop,
+                { backgroundColor: colors.overlay },
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel="Dismiss navigation"
+              onPress={closeMobileSidebar}
+            />
+            <View
+              style={[
+                styles.mobileSidebarPanel,
+                { width: layoutTokens.sidebarWidth },
+              ]}
+            >
+              <Sidebar
+                collapsed={false}
+                onToggle={closeMobileSidebar}
+                onNavigate={closeMobileSidebar}
+              />
+            </View>
           </View>
-        </View>
+        </Modal>
       )}
 
       {/* Main content area */}
@@ -107,18 +119,16 @@ export const DashboardLayout = React.memo(function DashboardLayout({
           style={[
             styles.scroller,
             {
-              paddingTop: isConnect
-                ? 0
-                : isMobile
-                  ? 16
-                  : layoutTokens.topbarHeight + 28,
+              paddingTop: isConnect ? 0 : isMobile ? 16 : 28,
               paddingHorizontal: isConnect
                 ? 0
                 : isCompactMobile
                   ? 12
                   : isMobile
                     ? 16
-                    : 40,
+                    : screenWidth < 1200
+                      ? 24
+                      : 36,
               paddingBottom: isConnect ? 0 : 48,
               ...(isConnect ? { overflow: 'hidden' as const } : {}),
             },
@@ -140,6 +150,7 @@ const styles = StyleSheet.create({
   },
   mainArea: {
     flex: 1,
+    minWidth: 0,
     flexDirection: 'column',
     overflow: 'hidden',
   },
@@ -159,4 +170,15 @@ const styles = StyleSheet.create({
   mobileSidebarPanel: {
     height: '100%',
   },
+});
+
+export const DashboardLayout = React.memo(function DashboardLayout({
+  children,
+}: DashboardLayoutProps) {
+  const pathname = usePathname() || '/';
+  return (
+    <WorkspaceThemeProvider path={pathname}>
+      <DashboardShell>{children}</DashboardShell>
+    </WorkspaceThemeProvider>
+  );
 });

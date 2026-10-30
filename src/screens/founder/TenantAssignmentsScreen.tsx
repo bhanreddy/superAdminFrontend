@@ -157,7 +157,7 @@ export default function TenantAssignmentsScreen() {
 
 function OwnerPill({ label, active, isDark, colors, onPress }: { label: string; active: boolean; isDark: boolean; colors: any; onPress: () => void }) {
   return (
-    <Pressable
+    <Pressable accessibilityRole="button"
       onPress={onPress}
       style={({ pressed }) => [
         st.ownerPill,

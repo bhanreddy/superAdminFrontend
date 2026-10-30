@@ -13,6 +13,8 @@ import type { Router } from 'expo-router';
 import { ChevronLeft, GraduationCap, School, Hash, Calendar, User } from 'lucide-react-native';
 import { superAdminApi } from '../../../src/services/apiService';
 import { Student } from '../../../src/types/student';
+import { useTheme } from '../../../src/contexts/ThemeContext';
+import type { ThemeColors } from '../../../src/constants/theme';
 
 const D = {
   radius: { sm: 10, md: 14, lg: 20 },
@@ -26,20 +28,13 @@ const D = {
   },
 };
 
-const P = {
-  bg: '#0F1117',
-  surface: '#181B24',
-  surfaceAlt: '#1E2230',
-  border: '#2A2F42',
-  borderSoft: '#232738',
-  accent: '#6C8EFF',
-  accentDim: 'rgba(108,142,255,0.12)',
-  textPrimary: '#F0F2FF',
-  textSecondary: '#8B91A8',
-  textTertiary: '#555C75',
-  success: '#34D399',
-  successDim: 'rgba(52,211,153,0.12)',
-};
+const palette = (colors: ThemeColors) => ({
+  bg: colors.background, surface: colors.card, surfaceAlt: colors.surface,
+  border: colors.border, borderSoft: colors.border,
+  accent: colors.primary, accentDim: colors.primaryDim,
+  textPrimary: colors.textPrimary, textSecondary: colors.textSecondary,
+  textTertiary: colors.textSecondary, success: colors.success, successDim: colors.successDim,
+});
 
 function formatDate(iso: string | undefined) {
   if (!iso) return '—';
@@ -54,6 +49,9 @@ function formatDate(iso: string | undefined) {
 }
 
 export default function StudentDetailScreen() {
+  const { colors } = useTheme();
+  const P = useMemo(() => palette(colors), [colors]);
+  const styles = useMemo(() => createStyles(P), [P]);
   const router = useRouter();
   const params = useLocalSearchParams<{ id: string }>();
   const id = useMemo(() => {
@@ -129,7 +127,7 @@ export default function StudentDetailScreen() {
             ? 'Check your connection and try again from the students list.'
             : 'This profile may have been removed or the link is invalid.'}
         </Text>
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => (router.canGoBack() ? router.back() : router.replace('/(app)/students/' as any))}
           style={({ pressed }) => [styles.backLink, pressed && { opacity: 0.8 }]}
         >
@@ -145,7 +143,7 @@ export default function StudentDetailScreen() {
       style={[styles.root, { backgroundColor: P.bg }]}
       contentContainerStyle={styles.scrollContent}
     >
-      <Pressable
+      <Pressable accessibilityRole="button"
         onPress={() => (router.canGoBack() ? router.back() : router.replace('/(app)/students/' as any))}
         style={({ pressed }) => [styles.backRow, pressed && { opacity: 0.75 }]}
       >
@@ -207,6 +205,8 @@ function Row({
   router?: Router;
   isLast?: boolean;
 }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(palette(colors)), [colors]);
   const isSchoolLink = label === 'School' && schoolId != null && router;
 
   const content = (
@@ -230,7 +230,7 @@ function Row({
 
   if (isSchoolLink) {
     return (
-      <Pressable
+      <Pressable accessibilityRole="button"
         onPress={() => router.push(`/(app)/schools/${schoolId}` as any)}
         style={({ pressed }) => [pressed && { opacity: 0.85 }]}
       >
@@ -242,7 +242,7 @@ function Row({
   return content;
 }
 
-const styles = StyleSheet.create({
+const createStyles = (P: ReturnType<typeof palette>) => StyleSheet.create({
   root: { flex: 1 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   pad: { paddingHorizontal: D.space.xl },

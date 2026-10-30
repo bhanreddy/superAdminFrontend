@@ -6,6 +6,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { authService } from '../../services/authService';
 import { Action, Notice, Panel, ui } from './BooksUi';
 import { message } from '../../api/books';
+import { FingerprintSettings } from '../../components/auth/FingerprintSecurity';
 export default function BooksAccountScreen() {
   const { user, role, mustChangePassword, signOut } = useAuth();
   const { colors } = useTheme();
@@ -28,6 +29,7 @@ export default function BooksAccountScreen() {
   return <ScrollView contentContainerStyle={{ padding: 28, gap: 20, maxWidth: 680, width: '100%' }}>
     <Text style={[ui.title, { color: colors.textPrimary }]}>My CA account</Text>
     <Text style={{ color: colors.textSecondary }}>{user?.email}</Text>
+    <FingerprintSettings />
     {mustChangePassword && <Notice text="Choose your own password before opening Books. After saving, sign in again with your new password." />}
     {!!error && <Notice error text={error} />}
     <Panel>

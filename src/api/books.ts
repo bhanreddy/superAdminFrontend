@@ -46,6 +46,7 @@ export interface Account {
   name: string;
   type: string;
   is_cash: boolean;
+  cash_flow_activity?: string | null;
   balance?: string | number;
 }
 export interface Settings {
@@ -146,7 +147,22 @@ export interface DocumentInput {
   paid_account?: string;
   state_code?: string;
 }
+export interface StatementAccount { code: string; name: string; type: string; amount: number }
+export interface LedgerReport {
+  organization_name: string; currency: string; account: Account; from: string; to: string; opening_balance: number; closing_balance: number;
+  period_debit: number; period_credit: number; total: number; page: number; page_size: number;
+  data: { id: string; journal_id: string; date: string; reference: string; source: string; notes: string;
+    debit: string; credit: string; running_balance: number; reversal_of: string | null }[];
+}
 export interface Report {
+  organization_name: string;
+  currency: string;
+  profit_loss: { income: StatementAccount[]; expenses: StatementAccount[]; total_income: number; total_expenses: number; net_profit: number };
+  balance_sheet: { as_of: string; assets: StatementAccount[]; liabilities: StatementAccount[]; equity: StatementAccount[];
+    total_assets: number; total_liabilities: number; owner_equity: number; prior_earnings: number; period_earnings: number;
+    accumulated_earnings: number; total_equity: number; liabilities_and_equity: number; difference: number };
+  cash_flow: { method: string; opening_cash: number; closing_cash: number; net_change: number; difference: number; classification_complete: boolean;
+    activities: { activity: string; inflow: number; outflow: number; net: number; journal_count: number }[] };
   from: string;
   to: string;
   income: number;
@@ -165,6 +181,9 @@ export interface Report {
     credit: string;
     period_debit: string;
     period_credit: string;
+    opening_balance: number;
+    balance: number;
+    period_balance: number;
   })[];
   aging: {
     id: string;
@@ -176,7 +195,7 @@ export interface Report {
     source?: string;
     due_date: string | null;
   }[];
-  cashflow: { month: string; inflow: string; outflow: string }[];
+  cashflow: { month: string; inflow: string | number; outflow: string | number }[];
   taxes: {
     kind: string;
     taxable: string;
@@ -209,9 +228,7 @@ export const singular: Record<DocumentKind, string> = {
   vendor_credit: 'Vendor credit',
   delivery_challan: 'Delivery challan',
 };
-export const money = (n: unknown) =>
-  `₹${(Number(n || 0) / 100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-export const decimal = (n: unknown) => (Number(n || 0) / 100).toFixed(2);
+export { money, decimal } from '../utils/booksMoney';
 export const today = () =>
   new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
 export const message = (e: any) =>

@@ -1,0 +1,302 @@
+{
+  "routes": [
+    {
+      "source": "app/(app)/admins/add.tsx",
+      "route": "/admins/add"
+    },
+    {
+      "source": "app/(app)/admins/index.tsx",
+      "route": "/admins"
+    },
+    {
+      "source": "app/(app)/books/access.tsx",
+      "route": "/books/access"
+    },
+    {
+      "source": "app/(app)/books/account.tsx",
+      "route": "/books/account"
+    },
+    {
+      "source": "app/(app)/books/index.tsx",
+      "route": "/books"
+    },
+    {
+      "source": "app/(app)/checklist/index.tsx",
+      "route": "/checklist"
+    },
+    {
+      "source": "app/(app)/clusters/[id]/edit.tsx",
+      "route": "/clusters/[id]/edit"
+    },
+    {
+      "source": "app/(app)/clusters/add.tsx",
+      "route": "/clusters/add"
+    },
+    {
+      "source": "app/(app)/clusters/index.tsx",
+      "route": "/clusters"
+    },
+    {
+      "source": "app/(app)/complaints/index.tsx",
+      "route": "/complaints"
+    },
+    {
+      "source": "app/(app)/connect.tsx",
+      "route": "/connect"
+    },
+    {
+      "source": "app/(app)/console/analytics.tsx",
+      "route": "/console/analytics"
+    },
+    {
+      "source": "app/(app)/console/audit-logs.tsx",
+      "route": "/console/audit-logs"
+    },
+    {
+      "source": "app/(app)/console/backups.tsx",
+      "route": "/console/backups"
+    },
+    {
+      "source": "app/(app)/console/billing.tsx",
+      "route": "/console/billing"
+    },
+    {
+      "source": "app/(app)/console/books.tsx",
+      "route": "/console/books"
+    },
+    {
+      "source": "app/(app)/console/collection-approvals.tsx",
+      "route": "/console/collection-approvals"
+    },
+    {
+      "source": "app/(app)/console/collections.tsx",
+      "route": "/console/collections"
+    },
+    {
+      "source": "app/(app)/console/crm.tsx",
+      "route": "/console/crm"
+    },
+    {
+      "source": "app/(app)/console/enquiries.tsx",
+      "route": "/console/enquiries"
+    },
+    {
+      "source": "app/(app)/console/expense-approvals.tsx",
+      "route": "/console/expense-approvals"
+    },
+    {
+      "source": "app/(app)/console/expenses.tsx",
+      "route": "/console/expenses"
+    },
+    {
+      "source": "app/(app)/console/festival-posters.tsx",
+      "route": "/console/festival-posters"
+    },
+    {
+      "source": "app/(app)/console/field-feedback.tsx",
+      "route": "/console/field-feedback"
+    },
+    {
+      "source": "app/(app)/console/import-history.tsx",
+      "route": "/console/import-history"
+    },
+    {
+      "source": "app/(app)/console/index.tsx",
+      "route": "/console"
+    },
+    {
+      "source": "app/(app)/console/lead/[id].tsx",
+      "route": "/console/lead/[id]"
+    },
+    {
+      "source": "app/(app)/console/notifications.tsx",
+      "route": "/console/notifications"
+    },
+    {
+      "source": "app/(app)/console/payroll.tsx",
+      "route": "/console/payroll"
+    },
+    {
+      "source": "app/(app)/console/sales-command.tsx",
+      "route": "/console/sales-command"
+    },
+    {
+      "source": "app/(app)/console/school-import.tsx",
+      "route": "/console/school-import"
+    },
+    {
+      "source": "app/(app)/console/school-intake/[id].tsx",
+      "route": "/console/school-intake/[id]"
+    },
+    {
+      "source": "app/(app)/console/school-intake/index.tsx",
+      "route": "/console/school-intake"
+    },
+    {
+      "source": "app/(app)/console/school-prospects/[id].tsx",
+      "route": "/console/school-prospects/[id]"
+    },
+    {
+      "source": "app/(app)/console/school-prospects/index.tsx",
+      "route": "/console/school-prospects"
+    },
+    {
+      "source": "app/(app)/console/settings.tsx",
+      "route": "/console/settings"
+    },
+    {
+      "source": "app/(app)/console/sprint.tsx",
+      "route": "/console/sprint"
+    },
+    {
+      "source": "app/(app)/console/tenant-assignments.tsx",
+      "route": "/console/tenant-assignments"
+    },
+    {
+      "source": "app/(app)/console/tracking-links.tsx",
+      "route": "/console/tracking-links"
+    },
+    {
+      "source": "app/(app)/console/units.tsx",
+      "route": "/console/units"
+    },
+    {
+      "source": "app/(app)/content-programs.tsx",
+      "route": "/content-programs"
+    },
+    {
+      "source": "app/(app)/field/performance.tsx",
+      "route": "/field/performance"
+    },
+    {
+      "source": "app/(app)/field/planner.tsx",
+      "route": "/field/planner"
+    },
+    {
+      "source": "app/(app)/field/route.tsx",
+      "route": "/field/route"
+    },
+    {
+      "source": "app/(app)/field/today.tsx",
+      "route": "/field/today"
+    },
+    {
+      "source": "app/(app)/field/visit/[id].tsx",
+      "route": "/field/visit/[id]"
+    },
+    {
+      "source": "app/(app)/index.tsx",
+      "route": "/"
+    },
+    {
+      "source": "app/(app)/manage-content.tsx",
+      "route": "/manage-content"
+    },
+    {
+      "source": "app/(app)/media-qr.tsx",
+      "route": "/media-qr"
+    },
+    {
+      "source": "app/(app)/medical/[id]/build-config.tsx",
+      "route": "/medical/[id]/build-config"
+    },
+    {
+      "source": "app/(app)/medical/add.tsx",
+      "route": "/medical/add"
+    },
+    {
+      "source": "app/(app)/medical/list.tsx",
+      "route": "/medical/list"
+    },
+    {
+      "source": "app/(app)/messenger/[id].tsx",
+      "route": "/messenger/[id]"
+    },
+    {
+      "source": "app/(app)/messenger/index.tsx",
+      "route": "/messenger"
+    },
+    {
+      "source": "app/(app)/microservices/dcgd.tsx",
+      "route": "/microservices/dcgd"
+    },
+    {
+      "source": "app/(app)/microservices/dcgdContent.tsx",
+      "route": "/microservices/dcgdContent"
+    },
+    {
+      "source": "app/(app)/requirements/index.tsx",
+      "route": "/requirements"
+    },
+    {
+      "source": "app/(app)/sales/playbook.tsx",
+      "route": "/sales/playbook"
+    },
+    {
+      "source": "app/(app)/sales/training.tsx",
+      "route": "/sales/training"
+    },
+    {
+      "source": "app/(app)/schools/[id]/app-config.tsx",
+      "route": "/schools/[id]/app-config"
+    },
+    {
+      "source": "app/(app)/schools/[id]/build-config.tsx",
+      "route": "/schools/[id]/build-config"
+    },
+    {
+      "source": "app/(app)/schools/[id]/features.tsx",
+      "route": "/schools/[id]/features"
+    },
+    {
+      "source": "app/(app)/schools/[id]/index.tsx",
+      "route": "/schools/[id]"
+    },
+    {
+      "source": "app/(app)/schools/[id]/setup-guide.tsx",
+      "route": "/schools/[id]/setup-guide"
+    },
+    {
+      "source": "app/(app)/schools/add.tsx",
+      "route": "/schools/add"
+    },
+    {
+      "source": "app/(app)/schools/index.tsx",
+      "route": "/schools"
+    },
+    {
+      "source": "app/(app)/students/[id].tsx",
+      "route": "/students/[id]"
+    },
+    {
+      "source": "app/(app)/students/import.tsx",
+      "route": "/students/import"
+    },
+    {
+      "source": "app/(app)/students/index.tsx",
+      "route": "/students"
+    },
+    {
+      "source": "app/(app)/users/index.tsx",
+      "route": "/users"
+    },
+    {
+      "source": "app/(auth)/ca-login.tsx",
+      "route": "/ca-login"
+    },
+    {
+      "source": "app/(auth)/login.tsx",
+      "route": "/login"
+    },
+    {
+      "source": "app/cluster-selector.tsx",
+      "route": "/cluster-selector"
+    },
+    {
+      "source": "app/index.tsx",
+      "route": "/"
+    }
+  ],
+  "unresolved": [],
+  "staticReferences": 229
+}

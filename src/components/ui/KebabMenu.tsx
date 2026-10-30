@@ -4,12 +4,13 @@ import {
   Text,
   StyleSheet,
   Pressable,
-  Animated,
+
   Platform,
   Modal,
   TouchableWithoutFeedback,
   Dimensions,
 } from 'react-native';
+import { Animated } from '../../utils/accessibleAnimation';
 import { MoreVertical } from 'lucide-react-native';
 import { useTheme, clayStyle } from '../../contexts/ThemeContext';
 
@@ -76,6 +77,9 @@ export const KebabMenu = React.memo(function KebabMenu({ items }: KebabMenuProps
   return (
     <View style={sty.root}>
       <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="More actions"
+        accessibilityState={{ expanded: open }} aria-expanded={open}
         ref={triggerRef as any}
         onPress={handleOpen}
         style={({ pressed, hovered }: any) => [
@@ -122,6 +126,8 @@ export const KebabMenu = React.memo(function KebabMenu({ items }: KebabMenuProps
             {items.map((item, i) => (
               <Pressable
                 key={i}
+                accessibilityRole="button"
+                accessibilityLabel={item.label}
                 onPress={() => handleItemPress(item)}
                 style={({ pressed, hovered }: any) => [
                   sty.menuItem,
@@ -160,8 +166,8 @@ const sty = StyleSheet.create({
     position: 'relative',
   },
   trigger: {
-    width: 36,
-    height: 36,
+    width: 44,
+    height: 44,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
@@ -180,6 +186,7 @@ const sty = StyleSheet.create({
       : {}),
   } as any,
   menuItem: {
+    minHeight: 44,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,

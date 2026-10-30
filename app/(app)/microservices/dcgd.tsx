@@ -201,17 +201,17 @@ export default function DcgdManageScreen() {
             <View style={{ gap: 8 }}>
               {sortedPrograms.map((p, idx) => (
                 <Card key={p.id} variant="default" noPadding>
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     onPress={() => router.push(`/(app)/microservices/dcgdContent?programId=${p.id}&programName=${encodeURIComponent(p.name)}` as any)}
                     style={({ pressed }) => [st.programRow, { opacity: pressed ? 0.9 : 1 }, Platform.OS === 'web' ? { cursor: 'pointer' } as any : {}]}
                   >
                     {/* Reorder */}
                     <View style={st.reorderCol}>
-                      <Pressable onPress={() => moveProgram(p.id, -1)} disabled={idx === 0} style={[st.reorderBtn, { opacity: idx === 0 ? 0.2 : 1 }]} hitSlop={6}>
+                      <Pressable accessibilityLabel="Move up" accessibilityRole="button" onPress={() => moveProgram(p.id, -1)} disabled={idx === 0} style={[st.reorderBtn, { opacity: idx === 0 ? 0.2 : 1 }]} hitSlop={6}>
                         <ChevronUp size={14} color={colors.textSecondary} />
                       </Pressable>
                       <Text style={[st.orderNum, { color: colors.textTertiary }]}>{p.display_order}</Text>
-                      <Pressable onPress={() => moveProgram(p.id, 1)} disabled={idx === sortedPrograms.length - 1} style={[st.reorderBtn, { opacity: idx === sortedPrograms.length - 1 ? 0.2 : 1 }]} hitSlop={6}>
+                      <Pressable accessibilityLabel="Move down" accessibilityRole="button" onPress={() => moveProgram(p.id, 1)} disabled={idx === sortedPrograms.length - 1} style={[st.reorderBtn, { opacity: idx === sortedPrograms.length - 1 ? 0.2 : 1 }]} hitSlop={6}>
                         <ChevronDown size={14} color={colors.textSecondary} />
                       </Pressable>
                     </View>

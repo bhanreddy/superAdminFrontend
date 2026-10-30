@@ -113,7 +113,7 @@ export default function NotificationsScreen() {
                   <Text style={[styles.body, { color: colors.textSecondary }]}>{n.body}</Text>
                 ) : null}
                 <View style={styles.actions}>
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     style={({ pressed }) => [styles.act, ...pressableWebStyles(pressed, { pressedOpacity: 0.8 })]}
                     onPress={safePressHandler(() => toggleRead(n))}
                   >
@@ -126,7 +126,7 @@ export default function NotificationsScreen() {
                       {n.read_at ? 'Mark unread' : 'Mark read'}
                     </Text>
                   </Pressable>
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     style={({ pressed }) => [styles.act, ...pressableWebStyles(pressed, { pressedOpacity: 0.8 })]}
                     onPress={() => remove(n)}
                   >

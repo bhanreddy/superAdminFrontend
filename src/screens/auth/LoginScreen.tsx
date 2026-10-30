@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -7,31 +7,40 @@ import {
   Platform,
   Image,
   Dimensions,
+  useWindowDimensions,
   ScrollView,
 } from 'react-native';
-import Animated, { FadeInUp, FadeInDown, FadeIn } from 'react-native-reanimated';
+import Animated, {
+  FadeInUp,
+  FadeInDown,
+  FadeIn,
+} from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
-import { darkTheme } from '../../constants/theme';
+import type { ThemeColors } from '../../constants/theme';
+import { useTheme } from '../../contexts/ThemeContext';
 import { Link } from 'expo-router';
 import { authService } from '../../services/authService';
 import { useAuth } from '../../contexts/AuthContext';
 
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
 const IS_WEB = Platform.OS === 'web';
-const colors = darkTheme.colors;
 
 function asErrorText(value: unknown, fallback: string): string {
   if (typeof value === 'string' && value.trim()) return value.trim();
   if (value && typeof value === 'object') {
     const obj = value as Record<string, unknown>;
-    if (typeof obj.message === 'string' && obj.message.trim()) return obj.message.trim();
+    if (typeof obj.message === 'string' && obj.message.trim())
+      return obj.message.trim();
   }
   return fallback;
 }
 
 export default function LoginScreen({ caMode = false }: { caMode?: boolean }) {
+  const { colors, isDark, reducedMotion, reducedTransparency } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+  const { height: windowHeight, width: windowWidth } = useWindowDimensions();
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -63,7 +72,9 @@ export default function LoginScreen({ caMode = false }: { caMode?: boolean }) {
       if (!mounted.current) return;
 
       if (res.error) {
-        setErrorMsg(asErrorText(res.error.message ?? res.error, 'Login failed.'));
+        setErrorMsg(
+          asErrorText(res.error.message ?? res.error, 'Login failed.'),
+        );
         return;
       }
 
@@ -87,29 +98,36 @@ export default function LoginScreen({ caMode = false }: { caMode?: boolean }) {
     <View style={styles.outerContainer}>
       {/* Ambient gradient base */}
       <LinearGradient
-        colors={['#07080F', '#0C1020', '#0A0B12']}
+        colors={[colors.background, colors.background, colors.background]}
         start={{ x: 0.1, y: 0 }}
         end={{ x: 0.9, y: 1 }}
         style={StyleSheet.absoluteFill}
       />
-
-      <View pointerEvents="none" style={styles.glowOrb1} />
-      <View pointerEvents="none" style={styles.glowOrb2} />
-      <View pointerEvents="none" style={styles.glowOrb3} />
 
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[
+            styles.scrollContent,
+            { minHeight: windowHeight },
+          ]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
           bounces={false}
         >
-          <View style={styles.content}>
+          <View
+            style={[
+              styles.content,
+              windowWidth < 400 && { paddingHorizontal: 16 },
+            ]}
+          >
             {/* Header / Brand */}
-            <Animated.View entering={FadeInDown.duration(320)} style={styles.header}>
+            <Animated.View
+              entering={reducedMotion ? undefined : FadeInDown.duration(320)}
+              style={styles.header}
+            >
               <View style={styles.logoShell}>
                 <LinearGradient
                   colors={['rgba(255,255,255,0.16)', 'rgba(255,255,255,0.04)']}
@@ -128,10 +146,18 @@ export default function LoginScreen({ caMode = false }: { caMode?: boolean }) {
               </View>
 
               <Text style={styles.title}>NexSyrus</Text>
-              <Text style={styles.subtitle}>{caMode ? 'Chartered Accountant Access' : 'SuperAdmin Management Console'}</Text>
+              <Text style={styles.subtitle}>
+                {caMode
+                  ? 'Chartered Accountant Access'
+                  : 'Your team. Your work. Connected.'}
+              </Text>
 
               <LinearGradient
-                colors={['transparent', 'rgba(10, 132, 255, 0.55)', 'transparent']}
+                colors={[
+                  'transparent',
+                  'rgba(10, 132, 255, 0.55)',
+                  'transparent',
+                ]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.decorLine}
@@ -139,9 +165,12 @@ export default function LoginScreen({ caMode = false }: { caMode?: boolean }) {
             </Animated.View>
 
             {/* Glass Login Card */}
-            <Animated.View entering={FadeInUp.duration(340).delay(80)} style={styles.formCard}>
+            <Animated.View
+              entering={reducedMotion ? undefined : FadeInUp.duration(340).delay(80)}
+              style={styles.formCard}
+            >
               <LinearGradient
-                colors={['rgba(255,255,255,0.12)', 'rgba(255,255,255,0.03)']}
+                colors={reducedTransparency ? [colors.card, colors.card] : ['rgba(255,255,255,0.12)', 'rgba(255,255,255,0.03)']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 0, y: 1 }}
                 style={styles.formCardSheen}
@@ -149,12 +178,24 @@ export default function LoginScreen({ caMode = false }: { caMode?: boolean }) {
               />
 
               <View style={styles.formBody}>
-                <Text style={styles.formTitle}>{caMode ? 'Sign in to your Books workspace' : 'Sign in to your role dashboard'}</Text>
+                <Text style={styles.formTitle}>
+                  {caMode
+                    ? 'Sign in to your Books workspace'
+                    : 'Welcome back to your workspace'}
+                </Text>
 
                 <Input
-                  tone="dark"
-                  label={caMode ? "CA email / Employee ID" : "Email / Phone / Employee ID"}
-                  placeholder={caMode ? "ca.murali@nexsyrus.com" : "e.g. admin@nexsyrus.com or SE-011"}
+                  tone={isDark ? 'dark' : 'auto'}
+                  label={
+                    caMode
+                      ? 'CA email / Employee ID'
+                      : 'Email / Phone / Employee ID'
+                  }
+                  placeholder={
+                    caMode
+                      ? 'e.g. ca@nexsyrus.com'
+                      : 'e.g. admin@nexsyrus.com or SE-011'
+                  }
                   value={identifier}
                   onChangeText={(t) => {
                     setIdentifier(t);
@@ -166,7 +207,7 @@ export default function LoginScreen({ caMode = false }: { caMode?: boolean }) {
                 />
 
                 <Input
-                  tone="dark"
+                  tone={isDark ? 'dark' : 'auto'}
                   label="Password"
                   placeholder="Enter your password"
                   value={password}
@@ -182,7 +223,10 @@ export default function LoginScreen({ caMode = false }: { caMode?: boolean }) {
                 />
 
                 {errorMsg ? (
-                  <View style={styles.errorContainer} accessibilityLiveRegion="polite">
+                  <View
+                    style={styles.errorContainer}
+                    accessibilityLiveRegion="polite"
+                  >
                     <Text style={styles.errorText}>{errorMsg}</Text>
                   </View>
                 ) : null}
@@ -195,16 +239,31 @@ export default function LoginScreen({ caMode = false }: { caMode?: boolean }) {
                   style={styles.button}
                 />
 
-                <Text style={styles.footerText}>{caMode ? 'Lead CA and accounting team access.' : 'Single Source of Truth · Multi-Role RBAC'}</Text>
-                <Link href={(caMode ? '/(auth)/login' : '/(auth)/ca-login') as any} style={[styles.footerText, { color: '#64D2FF', marginTop: 16 }]}>
+                <Text style={styles.footerText}>
+                  {caMode
+                    ? 'Lead CA and accounting team access.'
+                    : 'One workspace for your schools, teams and operations.'}
+                </Text>
+                <Link
+                  href={(caMode ? '/(auth)/login' : '/(auth)/ca-login') as any}
+                  style={[
+                    styles.footerText,
+                    { color: colors.info, marginTop: 16 },
+                  ]}
+                >
                   {caMode ? 'SuperAdmin / staff sign in' : 'CA sign in'}
                 </Link>
               </View>
             </Animated.View>
 
-            <Animated.View entering={FadeIn.delay(220).duration(280)} style={styles.bottomBrand}>
+            <Animated.View
+              entering={reducedMotion ? undefined : FadeIn.delay(220).duration(280)}
+              style={styles.bottomBrand}
+            >
               <View style={styles.bottomDot} />
-              <Text style={styles.bottomBrandText}>Powered by NexSyrus Cloud</Text>
+              <Text style={styles.bottomBrandText}>
+                Powered by NexSyrus Cloud
+              </Text>
             </Animated.View>
           </View>
         </ScrollView>
@@ -213,10 +272,10 @@ export default function LoginScreen({ caMode = false }: { caMode?: boolean }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   outerContainer: {
     flex: 1,
-    backgroundColor: '#07080F',
+    backgroundColor: colors.background,
   },
   container: {
     flex: 1,
@@ -311,12 +370,11 @@ const styles = StyleSheet.create({
     letterSpacing: -0.6,
   },
   subtitle: {
-    fontSize: 12.5,
+    fontSize: 13,
     fontWeight: '600',
     color: colors.primaryHover,
     marginTop: 6,
-    letterSpacing: 1.6,
-    textTransform: 'uppercase',
+    letterSpacing: 0.2,
   },
   decorLine: {
     width: 96,
@@ -327,11 +385,11 @@ const styles = StyleSheet.create({
 
   formCard: {
     width: '100%',
-    borderRadius: 24,
+    borderRadius: 20,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
-    backgroundColor: 'rgba(16, 18, 30, 0.82)',
+    borderColor: colors.border,
+    backgroundColor: colors.card,
     ...(Platform.OS === 'web'
       ? { boxShadow: '0 24px 64px rgba(0,0,0,0.45)' }
       : {
@@ -353,7 +411,7 @@ const styles = StyleSheet.create({
   formTitle: {
     fontSize: 14.5,
     fontWeight: '500',
-    color: 'rgba(245,245,247,0.75)',
+    color: colors.textSecondary,
     marginBottom: 20,
     textAlign: 'center',
     letterSpacing: 0.2,
@@ -368,7 +426,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   errorText: {
-    color: '#FF8A80',
+    color: colors.error,
     fontSize: 13,
     fontWeight: '500',
     textAlign: 'center',
@@ -380,9 +438,10 @@ const styles = StyleSheet.create({
   },
 
   footerText: {
-    fontSize: 11.5,
-    fontWeight: '500',
-    color: 'rgba(245,245,247,0.4)',
+    fontSize: 13,
+    fontWeight: '400',
+    lineHeight: 20,
+    color: colors.textSecondary,
     textAlign: 'center',
     marginTop: 20,
     letterSpacing: 0.3,
@@ -403,7 +462,7 @@ const styles = StyleSheet.create({
   bottomBrandText: {
     fontSize: 12,
     fontWeight: '500',
-    color: 'rgba(245,245,247,0.45)',
+    color: colors.textSecondary,
     letterSpacing: 0.3,
   },
 });

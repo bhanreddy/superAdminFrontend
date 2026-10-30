@@ -1,3 +1,4 @@
+import { navigateBack } from '../../../src/utils/navigation';
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
@@ -7,12 +8,13 @@ import {
   Platform,
   ScrollView,
   Pressable,
-  Animated,
+
   TextInput,
   StatusBar,
   Dimensions,
   Modal,
 } from 'react-native';
+import { Animated } from '../../../src/utils/accessibleAnimation';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
@@ -183,7 +185,7 @@ const FloatInput = ({
           selectionColor={isDark ? C.gold : colors.primary}
         />
         {secure ? (
-          <Pressable
+          <Pressable accessibilityRole="button" accessibilityLabel={shown ? 'Hide password' : 'Show password'}
             style={({ pressed }) => [fi.iconRight, ...pressableWebStyles(pressed, { pressedOpacity: 0.85 })]}
             onPress={() => setShown(!shown)}
           >
@@ -264,7 +266,7 @@ const ConfirmSheet = ({ visible, onHide, onConfirm, data, loading, error }: any)
     <Modal transparent visible={show} animationType="none">
       <View style={cs.root}>
         <Animated.View style={[cs.backdrop, { opacity: fade, backgroundColor: isDark ? 'black' : 'rgba(0,0,0,0.5)' }]}>
-          <Pressable style={({ pressed }) => [StyleSheet.absoluteFill, ...pressableWebStyles(pressed, { pressedOpacity: 1 })]} onPress={onHide} />
+          <Pressable accessibilityRole="button" accessibilityLabel="Dismiss confirmation" style={({ pressed }) => [StyleSheet.absoluteFill, ...pressableWebStyles(pressed, { pressedOpacity: 1 })]} onPress={onHide} />
         </Animated.View>
         <Animated.View style={[cs.sheet, { transform: [{ translateY: slide }], backgroundColor: isDark ? C.layer2 : colors.surface, borderTopColor: isDark ? C.borderGold : colors.border }]}>
           <View style={[cs.handle, { backgroundColor: isDark ? C.layer3 : colors.border }]} />
@@ -308,7 +310,7 @@ const ConfirmSheet = ({ visible, onHide, onConfirm, data, loading, error }: any)
           ) : null}
 
           <View style={cs.actions}>
-            <Pressable
+            <Pressable accessibilityRole="button"
               style={({ pressed }) => [
                 cs.btnSub,
                 { backgroundColor: isDark ? C.layer3 : colors.background, borderColor: colors.border },
@@ -318,7 +320,7 @@ const ConfirmSheet = ({ visible, onHide, onConfirm, data, loading, error }: any)
             >
               <Text style={[cs.btnSubTxt, { color: colors.textSecondary }]}>Review Details</Text>
             </Pressable>
-            <Pressable
+            <Pressable accessibilityRole="button"
               style={({ pressed }) => [
                 cs.btnMain,
                 { backgroundColor: isDark ? C.gold : colors.primary },
@@ -418,7 +420,7 @@ export default function AddAdminScreen() {
         password,
       });
       setShowConfirm(false);
-      router.back();
+      navigateBack(router, '/(app)/admins');
     } catch (err: any) {
       const errorMsg =
         err.response?.data?.error ||
@@ -447,13 +449,13 @@ export default function AddAdminScreen() {
 
           {/* Header */}
           <Animated.View style={[s.nav, { opacity: formFade }]}>
-            <Pressable
+            <Pressable accessibilityRole="button" accessibilityLabel="Go back"
               style={({ pressed }) => [
                 s.backBtn,
                 { backgroundColor: colors.surface, borderColor: colors.border },
                 ...pressableWebStyles(pressed, { pressedOpacity: 0.85 }),
               ]}
-              onPress={() => router.back()}
+              onPress={() => navigateBack(router, '/(app)/admins')}
             >
               <ArrowLeft size={20} color={colors.textPrimary} strokeWidth={2.5} />
             </Pressable>
@@ -515,7 +517,7 @@ export default function AddAdminScreen() {
 
       {/* Bottom Action */}
       <View style={[s.footer, { backgroundColor: colors.background, borderColor: colors.border }]}>
-        <Pressable
+        <Pressable accessibilityRole="button"
           style={({ pressed }) => [
             s.submitBtn,
             !canContinue && s.btnDisabled,

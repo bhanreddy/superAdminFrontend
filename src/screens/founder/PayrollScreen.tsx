@@ -8,7 +8,7 @@ import React, {
 import {
   ActivityIndicator,
   Alert,
-  Animated,
+
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -23,7 +23,8 @@ import {
   TextInput,
   useWindowDimensions,
   View,
-} from "react-native";
+} from 'react-native';
+import { Animated } from '../../utils/accessibleAnimation';
 import { LinearGradient } from "expo-linear-gradient";
 import * as DocumentPicker from "expo-document-picker";
 import {
@@ -233,7 +234,7 @@ function PrimaryButton({
   compact?: boolean;
 }) {
   return (
-    <Pressable
+    <Pressable accessibilityRole="button"
       disabled={disabled}
       onPress={onPress}
       style={({ pressed, hovered }: any) => [
@@ -672,7 +673,7 @@ export default function PayrollScreen() {
             ]}
           >
             {(["PEOPLE", "PAYROLL", "DOCUMENTS"] as Tab[]).map((item) => (
-              <Pressable
+              <Pressable accessibilityRole="button"
                 key={item}
                 onPress={() => setTab(item)}
                 style={[
@@ -732,7 +733,7 @@ export default function PayrollScreen() {
               <View
                 style={[styles.periodPicker, { borderColor: colors.border }]}
               >
-                <Pressable
+                <Pressable accessibilityLabel="Previous period" accessibilityRole="button"
                   onPress={() => shiftPeriod(-1)}
                   style={styles.arrowButton}
                 >
@@ -743,7 +744,7 @@ export default function PayrollScreen() {
                 >
                   {monthLabel(year, month)}
                 </Text>
-                <Pressable
+                <Pressable accessibilityLabel="Next period" accessibilityRole="button"
                   onPress={() => shiftPeriod(1)}
                   style={styles.arrowButton}
                 >
@@ -777,7 +778,7 @@ export default function PayrollScreen() {
                 {error}
               </Text>
             </View>
-            <Pressable onPress={() => load()}>
+            <Pressable accessibilityRole="button" onPress={() => load()}>
               <Text style={{ color: PURPLE, fontWeight: "800" }}>Retry</Text>
             </Pressable>
           </View>
@@ -995,7 +996,7 @@ function EmployeeCard({
         </Text>
       </View>
       <View style={styles.employeeActions}>
-        <Pressable
+        <Pressable accessibilityLabel="Edit record" accessibilityRole="button"
           onPress={onEdit}
           style={({ pressed }) => [
             styles.iconButton,
@@ -1005,7 +1006,7 @@ function EmployeeCard({
         >
           <Pencil size={15} color={colors.textSecondary} />
         </Pressable>
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={onDocument}
           style={({ pressed }) => [
             styles.outlineButton,
@@ -1086,12 +1087,12 @@ function PayrollCard({
         />
       </View>
       <View style={styles.payActions}>
-        <Pressable onPress={onPayslip} style={styles.textButton}>
+        <Pressable accessibilityRole="button" onPress={onPayslip} style={styles.textButton}>
           <FileText size={15} color={PURPLE} />
           <Text style={styles.textButtonLabel}>View payslip</Text>
         </Pressable>
         {run.status !== "PAID" && (
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={onPaid}
             style={[styles.textButton, { backgroundColor: `${GREEN}12` }]}
           >
@@ -1136,7 +1137,7 @@ function DocumentCard({
       : DOC_TYPES.find((d) => d.type === doc.document_type) || DOC_TYPES[0];
   const Icon = meta.icon;
   return (
-    <Pressable
+    <Pressable accessibilityRole="button"
       onPress={onOpen}
       style={({ pressed, hovered }: any) => [
         styles.documentCard,
@@ -1301,7 +1302,7 @@ function EmployeeModal({
                 One profile powers payroll and every HR document.
               </Text>
             </View>
-            <Pressable onPress={onClose} style={styles.closeButton}>
+            <Pressable accessibilityLabel="Close dialog" accessibilityRole="button" onPress={onClose} style={styles.closeButton}>
               <X size={20} color={colors.textSecondary} />
             </Pressable>
           </View>
@@ -1452,7 +1453,7 @@ function EmployeeModal({
             </View>
           </ScrollView>
           <View style={[styles.modalFoot, { borderColor: colors.border }]}>
-            <Pressable onPress={onClose} style={styles.cancelButton}>
+            <Pressable accessibilityRole="button" onPress={onClose} style={styles.cancelButton}>
               <Text
                 style={[styles.cancelText, { color: colors.textSecondary }]}
               >
@@ -1541,7 +1542,7 @@ function Choice({
 }) {
   const { colors } = useTheme();
   return (
-    <Pressable
+    <Pressable accessibilityRole="button"
       onPress={onPress}
       style={[
         styles.choice,
@@ -1666,7 +1667,7 @@ function SignatureStampCard({
         </Text>
         {!compact && (
           <View style={styles.signatureActions}>
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={upload}
               disabled={busy}
               style={({ pressed }) => [
@@ -1689,7 +1690,7 @@ function SignatureStampCard({
               </Text>
             </Pressable>
             {signature ? (
-              <Pressable
+              <Pressable accessibilityLabel="Remove image" accessibilityRole="button"
                 onPress={() => saveImage(null)}
                 disabled={busy}
                 style={({ pressed }) => [
@@ -1708,7 +1709,7 @@ function SignatureStampCard({
         )}
       </View>
       {compact ? (
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={upload}
           disabled={busy}
           style={({ pressed }) => [
@@ -1814,7 +1815,7 @@ function DocumentModal({
                 {employee?.full_name} · {employee?.employee_code}
               </Text>
             </View>
-            <Pressable onPress={onClose} style={styles.closeButton}>
+            <Pressable accessibilityLabel="Close dialog" accessibilityRole="button" onPress={onClose} style={styles.closeButton}>
               <X size={20} color={colors.textSecondary} />
             </Pressable>
           </View>
@@ -1853,7 +1854,7 @@ function DocumentModal({
           </View>
           <View style={styles.docChoiceList}>
             {DOC_TYPES.map(({ type, label, sub, icon: Icon, color }) => (
-              <Pressable
+              <Pressable accessibilityRole="button"
                 key={type}
                 disabled={Boolean(busy)}
                 onPress={() => generate(type)}

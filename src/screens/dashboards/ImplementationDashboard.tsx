@@ -56,7 +56,11 @@ export default function ImplementationDashboard() {
   const loadData = useCallback(async () => {
     try {
       const res: any = await superAdminApi.getSchools();
-      const list = Array.isArray(res) ? res : Array.isArray(res?.data) ? res.data : [];
+      const list = Array.isArray(res)
+        ? res
+        : Array.isArray(res?.data)
+          ? res.data
+          : [];
       setSchools(list);
     } catch (err) {
       console.error('Error fetching implementation schools:', err);
@@ -76,40 +80,85 @@ export default function ImplementationDashboard() {
   }, [loadData]);
 
   const totalAssigned = schools.length;
-  const inProgressCount = schools.filter(s => s.onboarding_status !== 'live').length;
-  const liveCount = schools.filter(s => s.onboarding_status === 'live').length;
+  const inProgressCount = schools.filter(
+    (s) => s.onboarding_status !== 'live',
+  ).length;
+  const liveCount = schools.filter(
+    (s) => s.onboarding_status === 'live',
+  ).length;
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <ScrollView
-        contentContainerStyle={[styles.content, { paddingBottom: bottomTabPad }]}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: bottomTabPad },
+        ]}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.primary}
+          />
+        }
       >
         {/* Top Header Card */}
         <LinearGradient
           colors={isDark ? ['#0d1d33', '#060d17'] : ['#e9f3ff', '#d9ecff']}
-          style={[styles.headerCard, { borderColor: isDark ? 'rgba(56, 189, 248, 0.25)' : 'rgba(2, 132, 199, 0.25)' }]}
+          style={[
+            styles.headerCard,
+            {
+              borderColor: isDark
+                ? 'rgba(56, 189, 248, 0.25)'
+                : 'rgba(2, 132, 199, 0.25)',
+            },
+          ]}
         >
           <View style={styles.headerTop}>
             <View style={{ flex: 1 }}>
               <View style={styles.roleBadgeRow}>
-                <View style={[styles.rolePill, { backgroundColor: 'rgba(56, 189, 248, 0.15)', borderColor: 'rgba(56, 189, 248, 0.35)' }]}>
+                <View
+                  style={[
+                    styles.rolePill,
+                    {
+                      backgroundColor: 'rgba(56, 189, 248, 0.15)',
+                      borderColor: 'rgba(56, 189, 248, 0.35)',
+                    },
+                  ]}
+                >
                   <Layers size={13} color="#38BDF8" />
                   <Text style={[styles.rolePillText, { color: '#38BDF8' }]}>
                     {roleLabel.toUpperCase()}
                   </Text>
                 </View>
-                <View style={[styles.empPill, { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }]}>
-                  <Text style={[styles.empText, { color: colors.textSecondary }]}>
+                <View
+                  style={[
+                    styles.empPill,
+                    {
+                      backgroundColor: isDark
+                        ? 'rgba(255,255,255,0.06)'
+                        : 'rgba(0,0,0,0.06)',
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[styles.empText, { color: colors.textSecondary }]}
+                  >
                     {employeeId || 'IE-DEPLOY'}
                   </Text>
                 </View>
               </View>
 
-              <Text style={[styles.welcomeTitle, { color: colors.textPrimary }]}>
-                {isManager ? 'Implementation Operations Desk' : 'My Assigned Deployments'}
+              <Text
+                style={[styles.welcomeTitle, { color: colors.textPrimary }]}
+              >
+                {isManager
+                  ? 'Implementation Operations Desk'
+                  : 'My Assigned Deployments'}
               </Text>
-              <Text style={[styles.welcomeSub, { color: colors.textSecondary }]}>
+              <Text
+                style={[styles.welcomeSub, { color: colors.textSecondary }]}
+              >
                 {isManager
                   ? 'Track onboarding velocity, data import completion, and rollout checklists across all clusters.'
                   : `Managing implementation milestones for ${totalAssigned} assigned partner institution${totalAssigned === 1 ? '' : 's'}.`}
@@ -117,42 +166,80 @@ export default function ImplementationDashboard() {
             </View>
 
             <View style={styles.headerActionCol}>
-              <Pressable
-                style={[styles.quickActionButton, { backgroundColor: '#0284C7' }]}
+              <Pressable accessibilityRole="button"
+                style={[
+                  styles.quickActionButton,
+                  { backgroundColor: '#0284C7' },
+                ]}
                 onPress={() => router.push('/checklist' as any)}
               >
                 <CheckSquare size={16} color="#FFFFFF" />
                 <Text style={styles.quickActionText}>Open Checklists</Text>
               </Pressable>
-              <Pressable
-                style={[styles.secondaryActionButton, { borderColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)' }]}
+              <Pressable accessibilityRole="button"
+                style={[
+                  styles.secondaryActionButton,
+                  {
+                    borderColor: isDark
+                      ? 'rgba(255,255,255,0.15)'
+                      : 'rgba(0,0,0,0.15)',
+                  },
+                ]}
                 onPress={() => router.push('/schools' as any)}
               >
                 <School size={15} color={colors.textPrimary} />
-                <Text style={[styles.secondaryActionText, { color: colors.textPrimary }]}>View All Schools</Text>
+                <Text
+                  style={[
+                    styles.secondaryActionText,
+                    { color: colors.textPrimary },
+                  ]}
+                >
+                  View All Schools
+                </Text>
               </Pressable>
             </View>
           </View>
 
           {/* Quick Metrics Bar */}
-          <View style={[styles.statsRow, { borderTopColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)' }]}>
+          <View
+            style={[
+              styles.statsRow,
+              {
+                borderTopColor: isDark
+                  ? 'rgba(255,255,255,0.08)'
+                  : 'rgba(0,0,0,0.08)',
+              },
+            ]}
+          >
             <View style={styles.statCell}>
-              <Text style={[styles.statValue, { color: '#38BDF8' }]}>{totalAssigned}</Text>
+              <Text style={[styles.statValue, { color: '#38BDF8' }]}>
+                {totalAssigned}
+              </Text>
               <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
                 {isManager ? 'Active Schools' : 'Assigned Schools'}
               </Text>
             </View>
             <View style={styles.statCell}>
-              <Text style={[styles.statValue, { color: '#F59E0B' }]}>{inProgressCount}</Text>
-              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Under Onboarding</Text>
+              <Text style={[styles.statValue, { color: '#F59E0B' }]}>
+                {inProgressCount}
+              </Text>
+              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+                Under Onboarding
+              </Text>
             </View>
             <View style={styles.statCell}>
-              <Text style={[styles.statValue, { color: '#10B981' }]}>{liveCount}</Text>
-              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Live in Production</Text>
+              <Text style={[styles.statValue, { color: '#10B981' }]}>
+                {liveCount}
+              </Text>
+              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+                Live in Production
+              </Text>
             </View>
             <View style={styles.statCell}>
               <Text style={[styles.statValue, { color: '#6366F1' }]}>100%</Text>
-              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Server SLA</Text>
+              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+                Server SLA
+              </Text>
             </View>
           </View>
         </LinearGradient>
@@ -165,8 +252,10 @@ export default function ImplementationDashboard() {
               Active Implementation Workflows
             </Text>
           </View>
-          <Pressable onPress={() => router.push('/checklist' as any)}>
-            <Text style={[styles.sectionActionText, { color: colors.primary }]}>Detailed Checklist →</Text>
+          <Pressable accessibilityRole="button" onPress={() => router.push('/checklist' as any)}>
+            <Text style={[styles.sectionActionText, { color: colors.primary }]}>
+              Detailed Checklist →
+            </Text>
           </Pressable>
         </View>
 
@@ -174,14 +263,26 @@ export default function ImplementationDashboard() {
         {loading ? (
           <View style={styles.loadingBox}>
             <ActivityIndicator size="large" color={colors.primary} />
-            <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Loading school deployment pipelines...</Text>
+            <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+              Loading school deployment pipelines...
+            </Text>
           </View>
         ) : schools.length === 0 ? (
-          <View style={[styles.emptyCard, { backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : '#FFFFFF' }]}>
+          <View
+            style={[
+              styles.emptyCard,
+              {
+                backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : '#FFFFFF',
+              },
+            ]}
+          >
             <School size={36} color={colors.textSecondary} />
-            <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>No Schools Assigned</Text>
+            <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>
+              No Schools Assigned
+            </Text>
             <Text style={[styles.emptySub, { color: colors.textSecondary }]}>
-              You currently have no schools linked to your implementation portfolio. Contact your manager or Founder to assign schools.
+              You currently have no schools linked to your implementation
+              portfolio. Contact your manager or Founder to assign schools.
             </Text>
           </View>
         ) : (
@@ -195,8 +296,12 @@ export default function ImplementationDashboard() {
                     styles.schoolCard,
                     clayStyle(clayShadows.clay),
                     {
-                      backgroundColor: isDark ? 'rgba(22, 27, 34, 0.85)' : '#FFFFFF',
-                      borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+                      backgroundColor: isDark
+                        ? 'rgba(22, 27, 34, 0.85)'
+                        : '#FFFFFF',
+                      borderColor: isDark
+                        ? 'rgba(255,255,255,0.08)'
+                        : 'rgba(0,0,0,0.08)',
                     },
                   ]}
                 >
@@ -205,10 +310,21 @@ export default function ImplementationDashboard() {
                       <School size={22} color={colors.primary} />
                     </View>
                     <View style={{ flex: 1 }}>
-                      <Text style={[styles.schoolName, { color: colors.textPrimary }]} numberOfLines={1}>
+                      <Text
+                        style={[
+                          styles.schoolName,
+                          { color: colors.textPrimary },
+                        ]}
+                        numberOfLines={1}
+                      >
                         {s.name}
                       </Text>
-                      <Text style={[styles.schoolCode, { color: colors.textSecondary }]}>
+                      <Text
+                        style={[
+                          styles.schoolCode,
+                          { color: colors.textSecondary },
+                        ]}
+                      >
                         Code: {s.code} • ID #{s.id}
                       </Text>
                     </View>
@@ -216,12 +332,21 @@ export default function ImplementationDashboard() {
                       style={[
                         styles.badgePill,
                         {
-                          backgroundColor: isLive ? 'rgba(16, 185, 129, 0.12)' : 'rgba(245, 158, 11, 0.12)',
-                          borderColor: isLive ? 'rgba(16, 185, 129, 0.3)' : 'rgba(245, 158, 11, 0.3)',
+                          backgroundColor: isLive
+                            ? 'rgba(16, 185, 129, 0.12)'
+                            : 'rgba(245, 158, 11, 0.12)',
+                          borderColor: isLive
+                            ? 'rgba(16, 185, 129, 0.3)'
+                            : 'rgba(245, 158, 11, 0.3)',
                         },
                       ]}
                     >
-                      <Text style={[styles.badgeText, { color: isLive ? '#10B981' : '#F59E0B' }]}>
+                      <Text
+                        style={[
+                          styles.badgeText,
+                          { color: isLive ? '#10B981' : '#F59E0B' },
+                        ]}
+                      >
                         {isLive ? 'LIVE' : 'ONBOARDING'}
                       </Text>
                     </View>
@@ -230,28 +355,62 @@ export default function ImplementationDashboard() {
                   <View style={styles.schoolCardDivider} />
 
                   <View style={styles.actionsRow}>
-                    <Pressable
-                      style={[styles.cardBtn, { backgroundColor: isDark ? 'rgba(56, 189, 248, 0.12)' : '#e0f2fe' }]}
-                      onPress={() => router.push(`/checklist?schoolId=${s.id}` as any)}
+                    <Pressable accessibilityRole="button"
+                      style={[
+                        styles.cardBtn,
+                        {
+                          backgroundColor: isDark
+                            ? 'rgba(56, 189, 248, 0.12)'
+                            : '#e0f2fe',
+                        },
+                      ]}
+                      onPress={() =>
+                        router.push(`/checklist?schoolId=${s.id}` as any)
+                      }
                     >
                       <CheckSquare size={14} color="#0284C7" />
-                      <Text style={[styles.cardBtnText, { color: '#0284C7' }]}>Checklist</Text>
+                      <Text style={[styles.cardBtnText, { color: '#0284C7' }]}>
+                        Checklist
+                      </Text>
                     </Pressable>
 
-                    <Pressable
-                      style={[styles.cardBtn, { backgroundColor: isDark ? 'rgba(99, 102, 241, 0.12)' : '#e0e7ff' }]}
+                    <Pressable accessibilityRole="button"
+                      style={[
+                        styles.cardBtn,
+                        {
+                          backgroundColor: isDark
+                            ? 'rgba(99, 102, 241, 0.12)'
+                            : '#e0e7ff',
+                        },
+                      ]}
                       onPress={() => router.push(`/schools/${s.id}` as any)}
                     >
                       <UploadCloud size={14} color="#6366F1" />
-                      <Text style={[styles.cardBtnText, { color: '#6366F1' }]}>Data Import</Text>
+                      <Text style={[styles.cardBtnText, { color: '#6366F1' }]}>
+                        Data Import
+                      </Text>
                     </Pressable>
 
-                    <Pressable
-                      style={[styles.cardBtn, { backgroundColor: isDark ? 'rgba(255, 255, 255, 0.06)' : '#f1f5f9' }]}
+                    <Pressable accessibilityRole="button"
+                      style={[
+                        styles.cardBtn,
+                        {
+                          backgroundColor: isDark
+                            ? 'rgba(255, 255, 255, 0.06)'
+                            : '#f1f5f9',
+                        },
+                      ]}
                       onPress={() => router.push(`/schools/${s.id}` as any)}
                     >
                       <Settings size={14} color={colors.textSecondary} />
-                      <Text style={[styles.cardBtnText, { color: colors.textSecondary }]}>Config</Text>
+                      <Text
+                        style={[
+                          styles.cardBtnText,
+                          { color: colors.textSecondary },
+                        ]}
+                      >
+                        Config
+                      </Text>
                     </Pressable>
                   </View>
                 </View>
@@ -261,17 +420,37 @@ export default function ImplementationDashboard() {
         )}
 
         {/* Section: Implementation Guidelines & Support */}
-        <View style={[styles.guideCard, { backgroundColor: isDark ? 'rgba(14, 23, 42, 0.65)' : '#F8FAFC', borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)' }]}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+        <View
+          style={[
+            styles.guideCard,
+            {
+              backgroundColor: isDark ? 'rgba(14, 23, 42, 0.65)' : '#F8FAFC',
+              borderColor: isDark
+                ? 'rgba(255,255,255,0.08)'
+                : 'rgba(0,0,0,0.08)',
+            },
+          ]}
+        >
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 10,
+              marginBottom: 8,
+            }}
+          >
             <Sparkles size={18} color="#38BDF8" />
             <Text style={[styles.guideTitle, { color: colors.textPrimary }]}>
               Implementation SOP & Data Readiness Rules
             </Text>
           </View>
           <Text style={[styles.guideText, { color: colors.textSecondary }]}>
-            • Ensure School Logo, Academic Year, and Class Sections are configured before running Student CSV imports.{'\n'}
-            • Mark any blocker immediately in the Checklist tab with reasons to alert the Implementation Manager and Founder.{'\n'}
-            • When student data import reaches 100% and APK is tested, request Final Sign-Off for production switch.
+            • Ensure School Logo, Academic Year, and Class Sections are
+            configured before running Student CSV imports.{'\n'}• Mark any
+            blocker immediately in the Checklist tab with reasons to alert the
+            Implementation Manager and Founder.{'\n'}• When student data import
+            reaches 100% and APK is tested, request Final Sign-Off for
+            production switch.
           </Text>
         </View>
       </ScrollView>
@@ -281,7 +460,7 @@ export default function ImplementationDashboard() {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  content: { padding: 20 },
+  content: { padding: 0 },
   headerCard: {
     borderRadius: 20,
     borderWidth: 1,
@@ -314,7 +493,12 @@ const styles = StyleSheet.create({
   rolePillText: { fontSize: 11, fontWeight: '700', letterSpacing: 0.5 },
   empPill: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
   empText: { fontSize: 11, fontWeight: '600' },
-  welcomeTitle: { fontSize: 24, fontWeight: '800', letterSpacing: -0.5, marginBottom: 4 },
+  welcomeTitle: {
+    fontSize: 24,
+    fontWeight: '800',
+    letterSpacing: -0.5,
+    marginBottom: 4,
+  },
   welcomeSub: { fontSize: 13, lineHeight: 18, maxWidth: 580 },
   headerActionCol: { flexDirection: 'row', gap: 10, flexWrap: 'wrap' },
   quickActionButton: {
@@ -345,7 +529,12 @@ const styles = StyleSheet.create({
   },
   statCell: { flex: 1, minWidth: 120 },
   statValue: { fontSize: 22, fontWeight: '800', marginBottom: 2 },
-  statLabel: { fontSize: 11, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5 },
+  statLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -366,7 +555,12 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.06)',
   },
   emptyTitle: { fontSize: 16, fontWeight: '700' },
-  emptySub: { fontSize: 13, textAlign: 'center', maxWidth: 440, lineHeight: 18 },
+  emptySub: {
+    fontSize: 13,
+    textAlign: 'center',
+    maxWidth: 440,
+    lineHeight: 18,
+  },
   schoolsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',

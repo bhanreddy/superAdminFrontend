@@ -729,7 +729,7 @@ function ConnectWorkspace() {
     >
       <Text
         style={{
-          color: primary ? colors.textInverse : colors.textSecondary,
+          color: primary ? colors.onPrimary : colors.textSecondary,
           fontSize: 13,
           fontWeight: '600',
         }}
@@ -1293,14 +1293,14 @@ function ConnectWorkspace() {
               ]}
             >
               {sending ? (
-                <ActivityIndicator size="small" color={colors.textInverse} />
+                <ActivityIndicator size="small" color={colors.onPrimary} />
               ) : (
                 <>
                   <Send
                     size={17}
                     color={
                       (draft.trim() || pickedFile) && !sending
-                        ? colors.textInverse
+                        ? colors.onPrimary
                         : colors.textTertiary
                     }
                   />
@@ -1350,7 +1350,7 @@ function ConnectWorkspace() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={`${open ? 'Collapse' : 'Expand'} ${title}`}
-          accessibilityState={{ expanded: open }}
+          accessibilityState={{ expanded: open }} aria-expanded={open}
           onPress={toggle}
           style={[styles.row, { flex: 1, minHeight: 36 }]}
         >
@@ -1601,6 +1601,8 @@ function ConnectWorkspace() {
         { backgroundColor: colors.background },
         viewport && {
           flex: 0,
+          flexBasis: 'auto',
+          flexShrink: 0,
           height: viewport.height,
           maxHeight: viewport.height,
           transform: [{ translateY: viewport.offsetTop }],
@@ -1718,10 +1720,10 @@ function ConnectWorkspace() {
                       { backgroundColor: actionColor },
                     ]}
                   >
-                    <PenSquare size={17} color={colors.textInverse} />
+                    <PenSquare size={17} color={colors.onPrimary} />
                     <Text
                       style={{
-                        color: colors.textInverse,
+                        color: colors.onPrimary,
                         fontSize: 14,
                         fontWeight: '600',
                       }}

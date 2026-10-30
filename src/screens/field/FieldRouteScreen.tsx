@@ -160,7 +160,7 @@ export default function FieldRouteScreen() {
           />
         }
       >
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => router.push('/(app)/field/today' as any)}
           style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12 }}
         >
@@ -231,7 +231,7 @@ export default function FieldRouteScreen() {
                 {/* Buttons Row */}
                 <View style={styles.btnRow}>
                   {isInProgress || isDone ? (
-                    <Pressable
+                    <Pressable accessibilityRole="button"
                       onPress={() => router.push(`/(app)/field/visit/${v.id}` as any)}
                       style={[styles.checkBtn, isDone ? { backgroundColor: '#30D158' } : { backgroundColor: '#FF9F0A' }]}
                     >
@@ -239,7 +239,7 @@ export default function FieldRouteScreen() {
                       <Text style={styles.checkText}>{isDone ? 'Review Visit' : 'Open Workspace'}</Text>
                     </Pressable>
                   ) : (
-                    <Pressable
+                    <Pressable accessibilityRole="button"
                       onPress={() => checkIn(v)}
                       disabled={Boolean(checking)}
                       style={styles.checkBtn}
@@ -255,7 +255,7 @@ export default function FieldRouteScreen() {
                     </Pressable>
                   )}
 
-                  <Pressable
+                  <Pressable accessibilityLabel="Open directions" accessibilityRole="button"
                     onPress={() =>
                       Linking.openURL(
                         `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
@@ -269,7 +269,7 @@ export default function FieldRouteScreen() {
                   </Pressable>
 
                   {phone && (
-                    <Pressable
+                    <Pressable accessibilityLabel="Call school" accessibilityRole="button"
                       onPress={() => Linking.openURL(`tel:${phone}`).catch(() => {})}
                       style={[styles.iconBtn, { borderColor: colors.glassBorder }]}
                     >
@@ -278,7 +278,7 @@ export default function FieldRouteScreen() {
                   )}
 
                   {phone && (
-                    <Pressable
+                    <Pressable accessibilityLabel="Open WhatsApp chat" accessibilityRole="button"
                       onPress={() => Linking.openURL(`https://wa.me/91${phone.replace(/\D/g, '')}`).catch(() => {})}
                       style={[styles.iconBtn, { borderColor: colors.glassBorder }]}
                     >
@@ -286,7 +286,7 @@ export default function FieldRouteScreen() {
                     </Pressable>
                   )}
 
-                  <Pressable
+                  <Pressable accessibilityLabel="Open visit details" accessibilityRole="button"
                     onPress={() => router.push(`/(app)/field/visit/${v.id}` as any)}
                     style={[styles.iconBtn, { borderColor: colors.glassBorder }]}
                   >
@@ -305,7 +305,7 @@ export default function FieldRouteScreen() {
             <Text style={{ color: colors.textSecondary, textAlign: 'center', marginTop: 4 }}>
               Plan your visits using the Planner or add an unplanned school on the go.
             </Text>
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={() => router.push('/(app)/field/planner' as any)}
               style={[styles.checkBtn, { marginTop: 14 }]}
             >

@@ -12,10 +12,11 @@ import {
   ScrollView,
   Pressable,
   RefreshControl,
-  Animated,
+
   useWindowDimensions,
   Platform,
 } from 'react-native';
+import { Animated } from '../../src/utils/accessibleAnimation';
 import { useRouter, Redirect } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -36,6 +37,7 @@ import { useTheme, clayStyle } from '../../src/contexts/ThemeContext';
 import { founderGradients } from '../../src/screens/founder/founderUi';
 import { Badge } from '../../src/components/ui/Badge';
 import { Skeleton } from '../../src/components/ui/Skeleton';
+import { EmptyState } from '../../src/components/ui/EmptyState';
 import SalesManagerDashboard from '../../src/screens/dashboards/SalesManagerDashboard';
 import SalesExecutiveDashboard from '../../src/screens/dashboards/SalesExecutiveDashboard';
 import ImplementationDashboard from '../../src/screens/dashboards/ImplementationDashboard';
@@ -280,15 +282,17 @@ const AttentionItem = React.memo(function AttentionItem({
   const { colors, isDark, clayShadows } = useTheme();
   const pulse = useRef(new Animated.Value(1)).current;
   useEffect(() => {
-    Animated.loop(
+    const animation = Animated.loop(
       Animated.sequence([
         Animated.timing(pulse, { toValue: 1.15, duration: 1200, useNativeDriver: true }),
         Animated.timing(pulse, { toValue: 1, duration: 1200, useNativeDriver: true }),
       ])
-    ).start();
+    );
+    animation.start();
+    return () => animation.stop();
   }, []);
   return (
-    <Pressable onPress={onPress} style={[s.attnItemWrap, fullWidth && { width: '100%' }]}>
+    <Pressable accessibilityRole="button" onPress={onPress} style={[s.attnItemWrap, fullWidth && { width: '100%' }]}>
       <LinearGradient
         colors={isDark ? [`${accentColor}22`, `${accentColor}08`] : [`${accentColor}14`, `${accentColor}04`]}
         style={[
@@ -339,7 +343,7 @@ const PrimaryMetricCard = React.memo(function PrimaryMetricCard({
   const pressOut = () => Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true, tension: 200, friction: 15 }).start();
 
   return (
-    <Pressable onPress={onPress} onPressIn={pressIn} onPressOut={pressOut}>
+    <Pressable accessibilityRole="button" onPress={onPress} onPressIn={pressIn} onPressOut={pressOut}>
       <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
         <LinearGradient
           colors={isDark
@@ -412,7 +416,7 @@ const PremiumStatCard = React.memo(function PremiumStatCard({
   const pressOut = () => Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true, tension: 200, friction: 15 }).start();
 
   return (
-    <Pressable onPress={onPress} onPressIn={pressIn} onPressOut={pressOut} style={s.statCardWrap}>
+    <Pressable accessibilityRole="button" onPress={onPress} onPressIn={pressIn} onPressOut={pressOut} style={s.statCardWrap}>
       <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
         <LinearGradient
           colors={isDark
@@ -492,7 +496,7 @@ const QuickAction = React.memo(function QuickAction({
   const glowOpacity = glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 0.25] });
 
   return (
-    <Pressable
+    <Pressable accessibilityRole="button"
       onPress={onPress}
       onPressIn={pressIn}
       onPressOut={pressOut}
@@ -852,7 +856,7 @@ const SuperAdminCard = React.memo(function SuperAdminCard({
   const pressOut = () => Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true, tension: 200, friction: 15 }).start();
 
   return (
-    <Pressable onPress={onPress} onPressIn={pressIn} onPressOut={pressOut}>
+    <Pressable accessibilityRole="button" onPress={onPress} onPressIn={pressIn} onPressOut={pressOut}>
       <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
         <LinearGradient
           colors={isDark
@@ -908,12 +912,14 @@ const PremiumAvatar = React.memo(function PremiumAvatar({ name, compact = false 
   const initials = name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
   const pulseAnim = useRef(new Animated.Value(1)).current;
   useEffect(() => {
-    Animated.loop(
+    const animation = Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, { toValue: 1.08, duration: 1800, useNativeDriver: true }),
         Animated.timing(pulseAnim, { toValue: 1, duration: 1800, useNativeDriver: true }),
       ])
-    ).start();
+    );
+    animation.start();
+    return () => animation.stop();
   }, []);
   return (
     <View style={[s.avatarWrap, compact && s.avatarWrapCompact]}>
@@ -983,6 +989,8 @@ function FounderDashboardScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [founderLoading, setFounderLoading] = useState(true);
+  const [adminError, setAdminError] = useState('');
+  const [metricsError, setMetricsError] = useState('');
   const [pending, setPending] = useState<Record<string, unknown> | null>(null);
   const [incomeRows, setIncomeRows] = useState<Record<string, unknown>[]>([]);
   const [expenseRows, setExpenseRows] = useState<Record<string, unknown>[]>([]);
@@ -997,11 +1005,13 @@ function FounderDashboardScreen() {
 
   // - Data fetching (preserved) -
   const fetchAdminStats = async () => {
-    try { setDashboardStats(await superAdminApi.getDashboardStats()); } catch { } finally { setLoading(false); }
+    setLoading(true); setAdminError('');
+    try { setDashboardStats(await superAdminApi.getDashboardStats()); } catch { setAdminError('School statistics could not be loaded.'); } finally { setLoading(false); }
   };
 
   const fetchFounderMetrics = useCallback(async () => {
     if (!hasFounderAccess) { setFounderLoading(false); return; }
+    setFounderLoading(true); setMetricsError('');
     try {
       const [pm, inc, exp, enq, closed, expRoi, conv, cpl, todayN, unas, summary] = await Promise.all([
         founderDb.fetchPendingMetricsSummary(), founderDb.fetchMonthlyIncomeSummary(),
@@ -1015,7 +1025,7 @@ function FounderDashboardScreen() {
       setClosedRows(closed); setExpenseRoiRows(expRoi); setConvRows(conv); setCplRows(cpl);
       setEnquiriesToday(todayN); setUnassignedCount(unas);
       setFinancialSummary(summary);
-    } catch { } finally { setFounderLoading(false); }
+    } catch { setMetricsError('Business metrics could not be loaded.'); } finally { setFounderLoading(false); }
   }, [hasFounderAccess]);
 
   useFocusEffect(useCallback(() => {
@@ -1025,7 +1035,7 @@ function FounderDashboardScreen() {
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     Promise.all([
-      superAdminApi.getDashboardStats().then(setDashboardStats).catch(() => { }),
+      fetchAdminStats(),
       hasFounderAccess ? fetchFounderMetrics() : Promise.resolve(),
     ]).finally(() => setRefreshing(false));
   }, [hasFounderAccess, fetchFounderMetrics]);
@@ -1203,6 +1213,10 @@ function FounderDashboardScreen() {
   const greeting = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
   const isDataLoading = loading || (hasFounderAccess && founderLoading);
   const handleRoutePress = useCallback((route: string) => { router.push(route as any); }, [router]);
+
+  // Failed reads must never look like genuine zero-valued business metrics.
+  if (adminError || metricsError) return <EmptyState title="Dashboard unavailable" description={[adminError, metricsError].filter(Boolean).join(' ')} actionLabel="Try again" onAction={() => { void fetchAdminStats(); void fetchFounderMetrics(); }} />;
+  if (isDataLoading && !refreshing) return <View accessibilityLabel="Loading dashboard" accessibilityState={{ busy: true }} aria-busy={true} style={{ padding: 40, gap: 16 }}><Skeleton height={80} /><Skeleton height={160} /><Skeleton height={240} /></View>;
 
   // - Render -
   return (

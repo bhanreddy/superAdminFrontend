@@ -23,8 +23,8 @@ export function CodeBlock({ content }: CodeBlockProps) {
     <View style={[styles.container, { backgroundColor: isDark ? '#0D0D14' : colors.surface, borderColor: colors.border }]}>
       <View style={[styles.header, { borderBottomColor: colors.border, backgroundColor: isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)' }]}>
         <Text style={[styles.headerTitle, { color: colors.textSecondary }]}>Environment / JSON</Text>
-        <Pressable 
-          style={[styles.copyButton, { backgroundColor: isDark ? colors.surface : colors.background }]} 
+        <Pressable accessibilityRole="button"
+          style={[styles.copyButton, { backgroundColor: isDark ? colors.surface : colors.background }]}
           onPress={handleCopy}
         >
           {copied ? (

@@ -57,6 +57,7 @@ import { useTheme, clayStyle } from '../../contexts/ThemeContext';
 import { useAuth } from '../../hooks/useAuth';
 import { useFounderAuth } from '../../hooks/useFounderAuth';
 import * as founderDb from '../../services/founderSupabase';
+import { EmptyState } from '../../components/ui/EmptyState';
 import { computeFounderDashboardMetrics } from '../../utils/founderDashboardMetrics';
 import {
   ConsoleAmbientBackground,
@@ -79,7 +80,10 @@ function n(v: unknown): number {
   return Number.isFinite(x) ? x : 0;
 }
 
-function pick(row: Record<string, unknown> | null | undefined, keys: string[]): number {
+function pick(
+  row: Record<string, unknown> | null | undefined,
+  keys: string[],
+): number {
   if (!row) return 0;
   for (const k of keys) {
     if (row[k] !== undefined && row[k] !== null) return n(row[k]);
@@ -101,26 +105,137 @@ function monthLabel(key: string): string {
 // - accent palette for breakdown rows -
 
 const ROW_ACCENTS = [
-  '#7C6FFF', '#38C8F4', '#00D4AD', '#FFB020',
-  '#FF6B7A', '#A78BFA', '#34D399', '#F472B6',
+  '#7C6FFF',
+  '#38C8F4',
+  '#00D4AD',
+  '#FFB020',
+  '#FF6B7A',
+  '#A78BFA',
+  '#34D399',
+  '#F472B6',
 ];
 
-function FinancialSummaryGrid({ summary, colors, isDark }: { summary: founderDb.FinancialSummary; colors: any; isDark: boolean }) {
+function FinancialSummaryGrid({
+  summary,
+  colors,
+  isDark,
+}: {
+  summary: founderDb.FinancialSummary;
+  colors: any;
+  isDark: boolean;
+}) {
   const cards = [
-    { label: 'Books revenue', value: founderDb.formatInr(summary.revenue), color: '#00D4AD' },
-    { label: 'Client billing collected', value: founderDb.formatInr(summary.client_billing_collected), color: '#7C6FFF' },
-    { label: 'Books expenses', value: founderDb.formatInr(summary.expenses), color: '#FF6B7A' },
-    { label: 'Net profit', value: founderDb.formatInr(summary.net_profit), color: summary.net_profit >= 0 ? '#7C6FFF' : '#FF6B7A' },
-    { label: 'Profit margin', value: summary.profit_margin == null ? '—' : `${summary.profit_margin.toFixed(1)}%`, color: '#38C8F4' },
+    {
+      label: 'Books revenue',
+      value: founderDb.formatInr(summary.revenue),
+      color: colors.success,
+    },
+    {
+      label: 'Client billing collected',
+      value: founderDb.formatInr(summary.client_billing_collected),
+      color: colors.primary,
+    },
+    {
+      label: 'Books expenses',
+      value: founderDb.formatInr(summary.expenses),
+      color: colors.error,
+    },
+    {
+      label: 'Net profit',
+      value: founderDb.formatInr(summary.net_profit),
+      color: summary.net_profit >= 0 ? colors.success : colors.error,
+    },
+    {
+      label: 'Profit margin',
+      value:
+        summary.profit_margin == null
+          ? '—'
+          : `${summary.profit_margin.toFixed(1)}%`,
+      color: colors.info,
+    },
   ];
   return (
-    <View style={[styles.financialGrid, { borderColor: colors.clayBorderColor, backgroundColor: isDark ? 'rgba(18,20,34,0.68)' : 'rgba(250,251,255,0.85)' }]}>
+    <View
+      style={[
+        styles.financialGrid,
+        {
+          borderColor: colors.clayBorderColor,
+          backgroundColor: isDark
+            ? 'rgba(18,20,34,0.68)'
+            : 'rgba(250,251,255,0.85)',
+        },
+      ]}
+    >
       <View style={styles.financialGridHead}>
-        <View><Text style={[styles.financialGridTitle, { color: colors.textPrimary }]}>Financial Summary</Text><Text style={[styles.financialGridSub, { color: colors.textSecondary }]}>Revenue, expenses and profit use the Nexsyrus Books ledger, including connected finances. Client billing collected shows recorded receipts.</Text></View>
-        <View style={[styles.financialScope, { backgroundColor: 'rgba(124,111,255,0.12)' }]}><Text style={{ color: '#7C6FFF', fontSize: 10, fontWeight: '800' }}>BOOKS</Text></View>
+        <View>
+          <Text
+            style={[styles.financialGridTitle, { color: colors.textPrimary }]}
+          >
+            Financial Summary
+          </Text>
+          <Text
+            style={[styles.financialGridSub, { color: colors.textSecondary }]}
+          >
+            Revenue, expenses and profit use the Nexsyrus Books ledger,
+            including connected finances. Client billing collected shows
+            recorded receipts.
+          </Text>
+        </View>
+        <View
+          style={[
+            styles.financialScope,
+            { backgroundColor: 'rgba(124,111,255,0.12)' },
+          ]}
+        >
+          <Text
+            style={{ color: colors.primary, fontSize: 10, fontWeight: '800' }}
+          >
+            BOOKS
+          </Text>
+        </View>
       </View>
-      {summary.business_unit_id !== 'ALL' && <Text style={{ color: colors.textSecondary, fontSize: 12, marginBottom: 12 }}>Selected unit collections: {founderDb.formatInr(summary.business_unit_collections)}. Books totals remain platform-wide.</Text>}
-      <View style={styles.financialCards}>{cards.map((card) => <View key={card.label} style={[styles.financialCard, { borderColor: `${card.color}28`, backgroundColor: `${card.color}0C` }]}><Text style={[styles.financialCardLabel, { color: colors.textSecondary }]}>{card.label}</Text><Text style={[styles.financialCardValue, { color: card.color }]} numberOfLines={1}>{card.value}</Text></View>)}</View>
+      {summary.business_unit_id !== 'ALL' && (
+        <Text
+          style={{
+            color: colors.textSecondary,
+            fontSize: 12,
+            marginBottom: 12,
+          }}
+        >
+          Selected unit collections:{' '}
+          {founderDb.formatInr(summary.business_unit_collections)}. Books totals
+          remain platform-wide.
+        </Text>
+      )}
+      <View style={styles.financialCards}>
+        {cards.map((card) => (
+          <View
+            key={card.label}
+            style={[
+              styles.financialCard,
+              {
+                borderColor: `${card.color}28`,
+                backgroundColor: `${card.color}0C`,
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.financialCardLabel,
+                { color: colors.textSecondary },
+              ]}
+            >
+              {card.label}
+            </Text>
+            <Text
+              style={[styles.financialCardValue, { color: card.color }]}
+              numberOfLines={1}
+            >
+              {card.value}
+            </Text>
+          </View>
+        ))}
+      </View>
     </View>
   );
 }
@@ -152,10 +267,15 @@ function PremiumSectionTitle({
   colors: any;
 }) {
   return (
-    <Animated.View entering={FadeInDown.duration(400)} style={styles.sectionHeader}>
+    <Animated.View
+      entering={FadeInDown.duration(400)}
+      style={styles.sectionHeader}
+    >
       <View style={[styles.sectionAccentBar, { backgroundColor: accent }]} />
       {icon && <View style={styles.sectionIcon}>{icon}</View>}
-      <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>{title}</Text>
+      <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+        {title}
+      </Text>
     </Animated.View>
   );
 }
@@ -163,39 +283,72 @@ function PremiumSectionTitle({
 // - QuickActionRow -
 
 const QUICK_ACTIONS = [
-  { label: '10-Day RED ALERT', icon: Zap, route: '/(app)/console/sprint', gradient: ['#EF4444', '#991B1B'] },
-  { label: 'Add Expense', icon: Plus, route: '/(app)/console/expenses', gradient: ['#FF6B7A', '#DC2626'] },
-  { label: 'Enquiries', icon: MessageCircle, route: '/(app)/console/enquiries', gradient: ['#38C8F4', '#2563EB'] },
-  { label: 'Analytics', icon: BarChart2, route: '/(app)/console/analytics', gradient: ['#FFB020', '#D97706'] },
+  {
+    label: '10-Day RED ALERT',
+    icon: Zap,
+    route: '/(app)/console/sprint',
+    gradient: ['#EF4444', '#991B1B'],
+  },
+  {
+    label: 'Add Expense',
+    icon: Plus,
+    route: '/(app)/console/expenses',
+    gradient: ['#FF6B7A', '#DC2626'],
+  },
+  {
+    label: 'Enquiries',
+    icon: MessageCircle,
+    route: '/(app)/console/enquiries',
+    gradient: ['#38C8F4', '#2563EB'],
+  },
+  {
+    label: 'Analytics',
+    icon: BarChart2,
+    route: '/(app)/console/analytics',
+    gradient: ['#FFB020', '#D97706'],
+  },
 ] as const;
 
 function QuickActionRow({ colors, isDark }: { colors: any; isDark: boolean }) {
   const router = useRouter();
   return (
-    <Animated.View entering={FadeInDown.delay(300).springify()} style={styles.quickActionRow}>
+    <Animated.View
+      entering={FadeInDown.delay(300).springify()}
+      style={styles.quickActionRow}
+    >
       {QUICK_ACTIONS.map((action, i) => {
         const Icon = action.icon;
         return (
-          <Pressable
+          <Pressable accessibilityRole="button"
             key={action.label}
             onPress={() => router.push(action.route as any)}
-            style={({ pressed, hovered }: any) => [
-              styles.quickActionBtn,
-              {
-                backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.8)',
-                borderColor: hovered ? action.gradient[0] + '55' : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'),
-                transform: [{ scale: pressed ? 0.95 : hovered ? 1.03 : 1 }],
-              },
-              Platform.OS === 'web' ? {
-                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                cursor: 'pointer',
-                boxShadow: hovered
-                  ? `0 8px 24px ${action.gradient[0]}22`
-                  : isDark
-                    ? '0 2px 8px rgba(0,0,0,0.2)'
-                    : '0 2px 8px rgba(0,0,0,0.04)',
-              } as any : {},
-            ] as any}
+            style={({ pressed, hovered }: any) =>
+              [
+                styles.quickActionBtn,
+                {
+                  backgroundColor: isDark
+                    ? 'rgba(255,255,255,0.05)'
+                    : 'rgba(255,255,255,0.8)',
+                  borderColor: hovered
+                    ? action.gradient[0] + '55'
+                    : isDark
+                      ? 'rgba(255,255,255,0.08)'
+                      : 'rgba(0,0,0,0.06)',
+                  transform: [{ scale: pressed ? 0.95 : hovered ? 1.03 : 1 }],
+                },
+                Platform.OS === 'web'
+                  ? ({
+                      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                      cursor: 'pointer',
+                      boxShadow: hovered
+                        ? `0 8px 24px ${action.gradient[0]}22`
+                        : isDark
+                          ? '0 2px 8px rgba(0,0,0,0.2)'
+                          : '0 2px 8px rgba(0,0,0,0.04)',
+                    } as any)
+                  : {},
+              ] as any
+            }
           >
             <LinearGradient
               colors={action.gradient as unknown as [string, string]}
@@ -203,7 +356,11 @@ function QuickActionRow({ colors, isDark }: { colors: any; isDark: boolean }) {
             >
               <Icon size={14} color="#FFF" />
             </LinearGradient>
-            <Text style={[styles.quickActionLabel, { color: colors.textPrimary }]}>{action.label}</Text>
+            <Text
+              style={[styles.quickActionLabel, { color: colors.textPrimary }]}
+            >
+              {action.label}
+            </Text>
           </Pressable>
         );
       })}
@@ -218,42 +375,76 @@ function PipelineFunnel({
   colors,
   isDark,
 }: {
-  steps: { label: string; value: number; accent: string; icon: React.ReactNode }[];
+  steps: {
+    label: string;
+    value: number;
+    accent: string;
+    icon: React.ReactNode;
+  }[];
   colors: any;
   isDark: boolean;
 }) {
   return (
-    <Animated.View entering={FadeInDown.delay(80).springify()} style={styles.pipelineRow}>
+    <Animated.View
+      entering={FadeInDown.delay(80).springify()}
+      style={styles.pipelineRow}
+    >
       {steps.map((step, i) => (
         <React.Fragment key={step.label}>
-          <Animated.View entering={FadeInRight.delay(i * 100 + 100).springify()} style={styles.pipelineStep}>
-            <View style={[
-              styles.pipelineCard,
-              {
-                backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.85)',
-                borderColor: step.accent + '33',
-              },
-              Platform.OS === 'web' ? {
-                boxShadow: isDark
-                  ? `0 4px 16px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.05)`
-                  : `0 4px 16px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.8)`,
-              } as any : {},
-            ]}>
-              <View style={[styles.pipelineIconWrap, { backgroundColor: step.accent + '20' }]}>
+          <Animated.View
+            entering={FadeInRight.delay(i * 100 + 100).springify()}
+            style={styles.pipelineStep}
+          >
+            <View
+              style={[
+                styles.pipelineCard,
+                {
+                  backgroundColor: isDark
+                    ? 'rgba(255,255,255,0.05)'
+                    : 'rgba(255,255,255,0.85)',
+                  borderColor: step.accent + '33',
+                },
+                Platform.OS === 'web'
+                  ? ({
+                      boxShadow: isDark
+                        ? `0 4px 16px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.05)`
+                        : `0 4px 16px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.8)`,
+                    } as any)
+                  : {},
+              ]}
+            >
+              <View
+                style={[
+                  styles.pipelineIconWrap,
+                  { backgroundColor: step.accent + '20' },
+                ]}
+              >
                 {step.icon}
               </View>
-              <Text style={[styles.pipelineValue, { color: colors.textPrimary }]}>
+              <Text
+                style={[styles.pipelineValue, { color: colors.textPrimary }]}
+              >
                 {step.value.toLocaleString('en-IN')}
               </Text>
-              <Text style={[styles.pipelineLabel, { color: colors.textSecondary }]}>
+              <Text
+                style={[styles.pipelineLabel, { color: colors.textSecondary }]}
+              >
                 {step.label}
               </Text>
               {/* Bottom accent line */}
-              <View style={[styles.pipelineAccentLine, { backgroundColor: step.accent }]} />
+              <View
+                style={[
+                  styles.pipelineAccentLine,
+                  { backgroundColor: step.accent },
+                ]}
+              />
             </View>
           </Animated.View>
           {i < steps.length - 1 && (
-            <Animated.View entering={FadeInRight.delay(i * 100 + 150).springify()} style={styles.pipelineArrow}>
+            <Animated.View
+              entering={FadeInRight.delay(i * 100 + 150).springify()}
+              style={styles.pipelineArrow}
+            >
               <ArrowRight size={16} color={colors.textSecondary + '66'} />
             </Animated.View>
           )}
@@ -273,7 +464,12 @@ function RankBadge({ rank }: { rank: number }) {
   const color = RANK_COLORS[rank - 1];
   const Icon = RANK_ICONS[rank - 1];
   return (
-    <View style={[styles.rankBadge, { backgroundColor: color + '20', borderColor: color + '44' }]}>
+    <View
+      style={[
+        styles.rankBadge,
+        { backgroundColor: color + '20', borderColor: color + '44' },
+      ]}
+    >
       <Icon size={8} color={color} />
       <Text style={[styles.rankText, { color }]}>#{rank}</Text>
     </View>
@@ -293,7 +489,12 @@ function BreakdownList({
   items: { label: string; value: number }[];
   type: 'currency' | 'count';
   accent?: string;
-  colors: { textPrimary: string; textSecondary: string; border: string };
+  colors: {
+    primary: string;
+    textPrimary: string;
+    textSecondary: string;
+    border: string;
+  };
 }) {
   const max = Math.max(1, ...items.map((i) => i.value));
   const total = items.reduce((s, i) => s + i.value, 0);
@@ -301,23 +502,37 @@ function BreakdownList({
   return (
     <GlassCard>
       <View style={styles.breakdownHeader}>
-        <View style={[styles.breakdownAccentDot, { backgroundColor: accent }]} />
-        <Text style={[styles.breakdownTitle, { color: colors.textPrimary }]}>{title}</Text>
+        <View
+          style={[styles.breakdownAccentDot, { backgroundColor: accent }]}
+        />
+        <Text style={[styles.breakdownTitle, { color: colors.textPrimary }]}>
+          {title}
+        </Text>
         {total > 0 && (
-          <Text style={[styles.breakdownTotal, { color: colors.textSecondary }]}>
-            {type === 'currency' ? founderDb.formatInr(total, 0) : total.toLocaleString('en-IN')} total
+          <Text
+            style={[styles.breakdownTotal, { color: colors.textSecondary }]}
+          >
+            {type === 'currency'
+              ? founderDb.formatInr(total, 0)
+              : total.toLocaleString('en-IN')}{' '}
+            total
           </Text>
         )}
       </View>
       {items.length === 0 ? (
         <View style={styles.breakdownEmptyWrap}>
           <PieChart size={24} color={colors.textSecondary + '44'} />
-          <Text style={[styles.breakdownEmpty, { color: colors.textSecondary }]}>No data this period.</Text>
+          <Text
+            style={[styles.breakdownEmpty, { color: colors.textSecondary }]}
+          >
+            No data this period.
+          </Text>
         </View>
       ) : (
         items.slice(0, 8).map((item, i) => {
           const pct = (item.value / max) * 100;
-          const percentOfTotal = total > 0 ? ((item.value / total) * 100).toFixed(1) : '0';
+          const percentOfTotal =
+            total > 0 ? ((item.value / total) * 100).toFixed(1) : '0';
           const rowAccent = ROW_ACCENTS[i % ROW_ACCENTS.length];
           return (
             <Animated.View
@@ -329,7 +544,10 @@ function BreakdownList({
                 <View style={styles.breakdownRowLeft}>
                   {i < 3 && <RankBadge rank={i + 1} />}
                   <Text
-                    style={[styles.breakdownLbl, { color: colors.textSecondary }]}
+                    style={[
+                      styles.breakdownLbl,
+                      { color: colors.textSecondary },
+                    ]}
                     numberOfLines={1}
                   >
                     {item.label}
@@ -339,7 +557,9 @@ function BreakdownList({
                   <Text style={[styles.breakdownPct, { color: rowAccent }]}>
                     {percentOfTotal}%
                   </Text>
-                  <Text style={[styles.breakdownVal, { color: colors.textPrimary }]}>
+                  <Text
+                    style={[styles.breakdownVal, { color: colors.textPrimary }]}
+                  >
                     {type === 'currency'
                       ? founderDb.formatInr(item.value, 0)
                       : item.value.toLocaleString('en-IN')}
@@ -347,10 +567,18 @@ function BreakdownList({
                 </View>
               </View>
               {/* progress bar */}
-              <View style={[styles.progressTrack, { backgroundColor: colors.border }]}>
+              <View
+                style={[
+                  styles.progressTrack,
+                  { backgroundColor: colors.border },
+                ]}
+              >
                 <Animated.View
                   entering={FadeInRight.delay(i * 40 + 120).duration(600)}
-                  style={[styles.progressFill, { width: `${pct}%` as any, overflow: 'hidden' }]}
+                  style={[
+                    styles.progressFill,
+                    { width: `${pct}%` as any, overflow: 'hidden' },
+                  ]}
                 >
                   <LinearGradient
                     colors={[rowAccent + 'CC', rowAccent + '44']}
@@ -380,7 +608,7 @@ function AnimatedBar({
   delay?: number;
 }) {
   const height = useSharedValue(0);
-  
+
   React.useEffect(() => {
     height.value = withTiming(targetHeight, { duration: 800 + delay });
   }, [targetHeight, delay]);
@@ -403,7 +631,9 @@ function AnimatedBar({
           style={StyleSheet.absoluteFill}
         />
       </Animated.View>
-      <Animated.View style={[styles.barGlowCap, { backgroundColor: colors[0] }, capStyle]} />
+      <Animated.View
+        style={[styles.barGlowCap, { backgroundColor: colors[0] }, capStyle]}
+      />
     </View>
   );
 }
@@ -419,7 +649,12 @@ function PremiumBarChart({
   incomeByKey: Record<string, number>;
   expenseByKey: Record<string, number>;
   maxTrend: number;
-  colors: { textPrimary: string; textSecondary: string; border: string };
+  colors: {
+    primary: string;
+    textPrimary: string;
+    textSecondary: string;
+    border: string;
+  };
 }) {
   const BAR_HEIGHT = 100;
   const gridLines = [0.25, 0.5, 0.75, 1.0];
@@ -443,8 +678,14 @@ function PremiumBarChart({
 
         <View style={[styles.chartRow, { height: BAR_HEIGHT + 24 }]}>
           {chartKeys.map((k, idx) => {
-            const incH = Math.max(4, ((incomeByKey[k] || 0) / maxTrend) * BAR_HEIGHT);
-            const expH = Math.max(4, ((expenseByKey[k] || 0) / maxTrend) * BAR_HEIGHT);
+            const incH = Math.max(
+              4,
+              ((incomeByKey[k] || 0) / maxTrend) * BAR_HEIGHT,
+            );
+            const expH = Math.max(
+              4,
+              ((expenseByKey[k] || 0) / maxTrend) * BAR_HEIGHT,
+            );
             return (
               <Animated.View
                 key={k}
@@ -453,33 +694,66 @@ function PremiumBarChart({
               >
                 <View style={[styles.barPair, { height: BAR_HEIGHT }]}>
                   {/* income bar */}
-                  <AnimatedBar targetHeight={incH} colors={['#00D4AD', '#00D4AD44']} delay={idx * 50} />
+                  <AnimatedBar
+                    targetHeight={incH}
+                    colors={['#00D4AD', '#00D4AD44']}
+                    delay={idx * 50}
+                  />
                   {/* expense bar */}
-                  <AnimatedBar targetHeight={expH} colors={['#FF6B7A', '#FF6B7A44']} delay={idx * 50 + 100} />
+                  <AnimatedBar
+                    targetHeight={expH}
+                    colors={['#FF6B7A', '#FF6B7A44']}
+                    delay={idx * 50 + 100}
+                  />
                 </View>
-                <Text style={[styles.chartLbl, { color: colors.textSecondary }]}>{monthLabel(k)}</Text>
+                <Text
+                  style={[styles.chartLbl, { color: colors.textSecondary }]}
+                >
+                  {monthLabel(k)}
+                </Text>
               </Animated.View>
             );
           })}
         </View>
 
         {chartKeys.length === 0 && (
-          <Text style={{ color: colors.textSecondary, fontSize: 13, textAlign: 'center', paddingVertical: 8 }}>
+          <Text
+            style={{
+              color: colors.textSecondary,
+              fontSize: 13,
+              textAlign: 'center',
+              paddingVertical: 8,
+            }}
+          >
             No monthly series yet.
           </Text>
         )}
       </View>
 
-      <GradientDivider color="#7C6FFF" />
+      <GradientDivider color={colors.primary} />
 
       <View style={styles.legend}>
         <View style={styles.legendItem}>
-          <LinearGradient colors={['#00D4AD', '#00D4AD88']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.legendPill} />
-          <Text style={{ color: '#9090A8', fontSize: 11, fontWeight: '600' }}>Income</Text>
+          <LinearGradient
+            colors={['#00D4AD', '#00D4AD88']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.legendPill}
+          />
+          <Text style={{ color: '#9090A8', fontSize: 11, fontWeight: '600' }}>
+            Income
+          </Text>
         </View>
         <View style={styles.legendItem}>
-          <LinearGradient colors={['#FF6B7A', '#FF6B7A88']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.legendPill} />
-          <Text style={{ color: '#9090A8', fontSize: 11, fontWeight: '600' }}>Expense</Text>
+          <LinearGradient
+            colors={['#FF6B7A', '#FF6B7A88']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.legendPill}
+          />
+          <Text style={{ color: '#9090A8', fontSize: 11, fontWeight: '600' }}>
+            Expense
+          </Text>
         </View>
       </View>
     </GlassCard>
@@ -489,16 +763,16 @@ function PremiumBarChart({
 // - NavIcon map -
 
 const NAV_ICON_MAP: Record<string, any> = {
-  'Expenses': Receipt,
+  Expenses: Receipt,
   'Expense approvals': CheckSquare,
   'Collection approvals': ClipboardCheck,
-  'Collections': Wallet,
-  'Enquiries': MessageSquare,
-  'Analytics': BarChart2,
+  Collections: Wallet,
+  Enquiries: MessageSquare,
+  Analytics: BarChart2,
   'Business units': Building2,
-  'Notifications': Bell,
+  Notifications: Bell,
   'Audit logs': FileText,
-  'Settings': Settings,
+  Settings: Settings,
 };
 
 // - PremiumNavCard -
@@ -509,8 +783,10 @@ function safeGradient(g: string[]): [string, string] {
   // If both stops are very dark (luminance < 0.05), use a visible fallback
   const isDark = (hex: string) => {
     const n = parseInt(hex.replace('#', ''), 16);
-    const r = (n >> 16) & 255, gr = (n >> 8) & 255, b = n & 255;
-    return (0.299 * r + 0.587 * gr + 0.114 * b) < 30;
+    const r = (n >> 16) & 255,
+      gr = (n >> 8) & 255,
+      b = n & 255;
+    return 0.299 * r + 0.587 * gr + 0.114 * b < 30;
   };
   if (isDark(g[0]) && isDark(g[1])) return ['#6B6B9A', '#4A4870'];
   return [g[0], g[1]];
@@ -523,7 +799,13 @@ function PremiumNavCard({
   isDark,
   fullWidth,
 }: {
-  item: { label: string; sub: string; route: string; gradient: string[]; icon: string };
+  item: {
+    label: string;
+    sub: string;
+    route: string;
+    gradient: string[];
+    icon: string;
+  };
   index: number;
   colors: any;
   isDark: boolean;
@@ -543,30 +825,45 @@ function PremiumNavCard({
       entering={FadeInDown.delay(220 + index * 45).springify()}
       style={[
         animStyle,
-        IS_WEB && (fullWidth ? { width: '100%', flexGrow: 1 } : { width: '48%', minWidth: 280, flexGrow: 1 }) as any,
+        IS_WEB &&
+          ((fullWidth
+            ? { width: '100%', flexGrow: 1 }
+            : { width: '48%', minWidth: 280, flexGrow: 1 }) as any),
       ]}
     >
       <Link href={item.route as any} asChild>
         <Pressable
-          onPressIn={() => { scale.value = withSpring(0.97, { damping: 18, stiffness: 320 }); }}
-          onPressOut={() => { scale.value = withSpring(1, { damping: 17, stiffness: 280 }); }}
-          style={({ pressed, hovered }: any) => [
-            styles.navCardOuter,
-            {
-              backgroundColor: isDark
-                ? hovered ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.03)'
-                : hovered ? colors.glassBackground : colors.surface,
-              borderColor: hovered
-                ? accentColor + '66'
-                : isDark ? 'rgba(255,255,255,0.08)' : colors.border,
-              opacity: pressed ? 0.85 : 1,
-              transform: [{ scale: hovered && !pressed ? 1.01 : 1 }],
-              shadowColor: accentColor,
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: hovered ? 0.15 : 0,
-              shadowRadius: 12,
-            },
-          ] as any}
+          onPressIn={() => {
+            scale.value = withSpring(0.97, { damping: 18, stiffness: 320 });
+          }}
+          onPressOut={() => {
+            scale.value = withSpring(1, { damping: 17, stiffness: 280 });
+          }}
+          style={({ pressed, hovered }: any) =>
+            [
+              styles.navCardOuter,
+              {
+                backgroundColor: isDark
+                  ? hovered
+                    ? 'rgba(255,255,255,0.06)'
+                    : 'rgba(255,255,255,0.03)'
+                  : hovered
+                    ? colors.glassBackground
+                    : colors.surface,
+                borderColor: hovered
+                  ? accentColor + '66'
+                  : isDark
+                    ? 'rgba(255,255,255,0.08)'
+                    : colors.border,
+                opacity: pressed ? 0.85 : 1,
+                transform: [{ scale: hovered && !pressed ? 1.01 : 1 }],
+                shadowColor: accentColor,
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: hovered ? 0.15 : 0,
+                shadowRadius: 12,
+              },
+            ] as any
+          }
         >
           {/* - LEFT ACCENT STRIP: real flex child, not absolute - */}
           <LinearGradient
@@ -579,22 +876,46 @@ function PremiumNavCard({
           {/* - CONTENT ROW - */}
           <View style={styles.navContent}>
             {/* icon box */}
-            <View style={[styles.navIconBox, { backgroundColor: accentColor + '25' }]}>
+            <View
+              style={[
+                styles.navIconBox,
+                { backgroundColor: accentColor + '25' },
+              ]}
+            >
               <NavIcon size={20} color={accentColor} />
             </View>
 
             {/* labels */}
             <View style={{ flex: 1 }}>
-              <Text style={[styles.navLabel, { color: isDark ? '#EEEEF8' : colors.textPrimary }]}>
+              <Text
+                style={[
+                  styles.navLabel,
+                  { color: isDark ? '#EEEEF8' : colors.textPrimary },
+                ]}
+              >
                 {item.label}
               </Text>
-              <Text style={[styles.navSub, { color: isDark ? 'rgba(255,255,255,0.50)' : colors.textSecondary }]}>
+              <Text
+                style={[
+                  styles.navSub,
+                  {
+                    color: isDark
+                      ? 'rgba(255,255,255,0.50)'
+                      : colors.textSecondary,
+                  },
+                ]}
+              >
                 {item.sub}
               </Text>
             </View>
 
             {/* chevron */}
-            <View style={[styles.navChevronBox, { backgroundColor: accentColor + '20' }]}>
+            <View
+              style={[
+                styles.navChevronBox,
+                { backgroundColor: accentColor + '20' },
+              ]}
+            >
               <ChevronRight color={accentColor} size={16} />
             </View>
           </View>
@@ -626,7 +947,10 @@ function StatPill({
   fullWidth?: boolean;
 }) {
   return (
-    <Animated.View entering={FadeInDown.delay(delay).springify()} style={fullWidth ? { width: '100%' } : { flex: 1 }}>
+    <Animated.View
+      entering={FadeInDown.delay(delay).springify()}
+      style={fullWidth ? { width: '100%' } : { flex: 1 }}
+    >
       <View
         style={[
           styles.statPill,
@@ -636,15 +960,33 @@ function StatPill({
           },
         ]}
       >
-        <View style={[styles.statPillIcon, { backgroundColor: accent + '25' }]}>{icon}</View>
-        <Text style={[styles.statPillVal, { color: isDark ? '#EEEEF8' : colors.textPrimary }]}>{value}</Text>
-        <Text style={[styles.statPillLbl, { color: isDark ? 'rgba(255,255,255,0.50)' : colors.textSecondary }]}>{label}</Text>
+        <View style={[styles.statPillIcon, { backgroundColor: accent + '25' }]}>
+          {icon}
+        </View>
+        <Text
+          style={[
+            styles.statPillVal,
+            { color: isDark ? '#EEEEF8' : colors.textPrimary },
+          ]}
+        >
+          {value}
+        </Text>
+        <Text
+          style={[
+            styles.statPillLbl,
+            { color: isDark ? 'rgba(255,255,255,0.50)' : colors.textSecondary },
+          ]}
+        >
+          {label}
+        </Text>
       </View>
     </Animated.View>
   );
 }
 
-function isDarkColor(_hex: string) { return true; }
+function isDarkColor(_hex: string) {
+  return true;
+}
 
 // - ClosedDealsTrend -
 
@@ -656,12 +998,15 @@ function ClosedDealsTrend({
   colors: any;
 }) {
   const items = rows.slice(-6);
-  const maxVal = Math.max(1, ...items.map((r) => pick(r, ['count', 'deals', 'closed', 'total'])));
+  const maxVal = Math.max(
+    1,
+    ...items.map((r) => pick(r, ['count', 'deals', 'closed', 'total'])),
+  );
 
   return (
     <GlassCard>
       <View style={styles.closedHeader}>
-        <Activity size={16} color="#7C6FFF" />
+        <Activity size={16} color={colors.primary} />
         <Text style={[styles.closedTitle, { color: colors.textPrimary }]}>
           Last {items.length} periods
         </Text>
@@ -675,14 +1020,18 @@ function ClosedDealsTrend({
             <View key={idx} style={styles.closedBar}>
               <AnimatedBar
                 targetHeight={h}
-                colors={isLast ? ['#7C6FFF', '#7C6FFF66'] : ['#4A4880', '#4A488044']}
+                colors={
+                  isLast ? ['#7C6FFF', '#7C6FFF66'] : ['#4A4880', '#4A488044']
+                }
                 delay={idx * 60}
               />
-              <Text style={[styles.closedBarLbl, { color: colors.textSecondary }]}>
+              <Text
+                style={[styles.closedBarLbl, { color: colors.textSecondary }]}
+              >
                 {monthLabel(monthKey(r))}
               </Text>
               {isLast && (
-                <Text style={[styles.closedBarVal, { color: '#7C6FFF' }]}>
+                <Text style={[styles.closedBarVal, { color: colors.primary }]}>
                   {val}
                 </Text>
               )}
@@ -720,7 +1069,9 @@ function CategoryGrid({
               styles.catChip,
               {
                 borderColor: accent + '33',
-                backgroundColor: isDark ? 'rgba(255,255,255,0.025)' : colors.surface,
+                backgroundColor: isDark
+                  ? 'rgba(255,255,255,0.025)'
+                  : colors.surface,
               },
             ]}
           >
@@ -731,15 +1082,28 @@ function CategoryGrid({
               style={StyleSheet.absoluteFill}
             />
             <View style={[styles.catDot, { backgroundColor: accent }]} />
-            <Text style={[styles.catChipLbl, { color: colors.textSecondary }]} numberOfLines={1}>
+            <Text
+              style={[styles.catChipLbl, { color: colors.textSecondary }]}
+              numberOfLines={1}
+            >
               {item.category}
             </Text>
             <Text style={[styles.catChipAmt, { color: colors.textPrimary }]}>
               {founderDb.formatInr(item.amount, 0)}
             </Text>
             {/* mini progress strip at bottom */}
-            <View style={[styles.catProgressTrack, { backgroundColor: colors.border }]}>
-              <View style={[styles.catProgressFill, { width: `${pct}%` as any, backgroundColor: accent }]} />
+            <View
+              style={[
+                styles.catProgressTrack,
+                { backgroundColor: colors.border },
+              ]}
+            >
+              <View
+                style={[
+                  styles.catProgressFill,
+                  { width: `${pct}%` as any, backgroundColor: accent },
+                ]}
+              />
             </View>
           </Animated.View>
         );
@@ -777,8 +1141,10 @@ export default function FounderDashboardScreen() {
   // Dynamic greeting
   const now = new Date();
   const hour = now.getHours();
-  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
-  const firstName = (founder?.full_name || currentAdmin?.full_name || '').split(' ')[0] || '';
+  const greeting =
+    hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const firstName =
+    (founder?.full_name || currentAdmin?.full_name || '').split(' ')[0] || '';
   const greetingText = firstName ? `${greeting}, ${firstName}` : greeting;
 
   // Formatted date
@@ -790,23 +1156,34 @@ export default function FounderDashboardScreen() {
   });
 
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const [financialError, setFinancialError] = useState('');
+  const [financialLoading, setFinancialLoading] = useState(true);
+  const [financialAttempt, setFinancialAttempt] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const [pending, setPending] = useState<Record<string, unknown> | null>(null);
   const [incomeRows, setIncomeRows] = useState<Record<string, unknown>[]>([]);
   const [expenseRows, setExpenseRows] = useState<Record<string, unknown>[]>([]);
   const [enquiryRows, setEnquiryRows] = useState<Record<string, unknown>[]>([]);
   const [closedRows, setClosedRows] = useState<Record<string, unknown>[]>([]);
-  const [expenseRoiRows, setExpenseRoiRows] = useState<Record<string, unknown>[]>([]);
+  const [expenseRoiRows, setExpenseRoiRows] = useState<
+    Record<string, unknown>[]
+  >([]);
   const [convRows, setConvRows] = useState<Record<string, unknown>[]>([]);
   const [cplRows, setCplRows] = useState<Record<string, unknown>[]>([]);
   const [enquiriesToday, setEnquiriesToday] = useState(0);
   const [unassignedCount, setUnassignedCount] = useState(0);
-  const [financialPeriod, setFinancialPeriod] = useState<founderDb.CollectionPeriodFilter>('ALL');
+  const [financialPeriod, setFinancialPeriod] =
+    useState<founderDb.CollectionPeriodFilter>('ALL');
   const [financialUnitId, setFinancialUnitId] = useState('ALL');
-  const [financialUnits, setFinancialUnits] = useState<{ id: string; name: string }[]>([]);
-  const [financialSummary, setFinancialSummary] = useState<founderDb.FinancialSummary | null>(null);
+  const [financialUnits, setFinancialUnits] = useState<
+    { id: string; name: string }[]
+  >([]);
+  const [financialSummary, setFinancialSummary] =
+    useState<founderDb.FinancialSummary | null>(null);
 
   const load = useCallback(async () => {
+    setLoadError(''); setLoading(true);
     try {
       const [pm, inc, exp, enq, closed, expRoi, conv, cpl, todayN, unas] =
         await Promise.all([
@@ -832,7 +1209,7 @@ export default function FounderDashboardScreen() {
       setEnquiriesToday(todayN);
       setUnassignedCount(unas);
     } catch {
-      // silently handle dashboard load failure
+      setLoadError('Business metrics could not be loaded. Check your connection and retry.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -846,16 +1223,25 @@ export default function FounderDashboardScreen() {
   );
 
   useEffect(() => {
-    founderDb.listBusinessUnits(true)
-      .then((units) => setFinancialUnits(units.map((unit) => ({ id: unit.id, name: unit.name }))))
+    founderDb
+      .listBusinessUnits(true)
+      .then((units) =>
+        setFinancialUnits(
+          units.map((unit) => ({ id: unit.id, name: unit.name })),
+        ),
+      )
       .catch(() => setFinancialUnits([]));
   }, []);
 
   useEffect(() => {
+    let active = true;
+    setFinancialLoading(true); setFinancialError(''); setFinancialSummary(null);
     founderDb.getFinancialSummary({ period: financialPeriod, business_unit_id: financialUnitId })
-      .then(setFinancialSummary)
-      .catch(() => setFinancialSummary(null));
-  }, [financialPeriod, financialUnitId]);
+      .then(summary => { if (active) setFinancialSummary(summary); })
+      .catch(() => { if (active) setFinancialError('The financial summary could not be loaded.'); })
+      .finally(() => { if (active) setFinancialLoading(false); });
+    return () => { active = false; };
+  }, [financialPeriod, financialUnitId, financialAttempt]);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -870,13 +1256,25 @@ export default function FounderDashboardScreen() {
         expenseRows,
         enquiryRows,
         monthlyClosedDeals: closedRows,
-        monthlyExpenseRoi: expenseRoiRows.length > 0 ? expenseRoiRows : expenseRows,
+        monthlyExpenseRoi:
+          expenseRoiRows.length > 0 ? expenseRoiRows : expenseRows,
         conversionRows: convRows,
         costPerLeadRows: cplRows,
         enquiriesToday,
         unassignedEnquiries: unassignedCount,
       }),
-    [pending, incomeRows, expenseRows, enquiryRows, closedRows, expenseRoiRows, convRows, cplRows, enquiriesToday, unassignedCount],
+    [
+      pending,
+      incomeRows,
+      expenseRows,
+      enquiryRows,
+      closedRows,
+      expenseRoiRows,
+      convRows,
+      cplRows,
+      enquiriesToday,
+      unassignedCount,
+    ],
   );
 
   const chartKeys = useMemo(() => {
@@ -889,7 +1287,14 @@ export default function FounderDashboardScreen() {
   const incomeByKey: Record<string, number> = useMemo(() => {
     const o: Record<string, number> = {};
     incomeRows.forEach((r) => {
-      o[monthKey(r)] = pick(r, ['total_income', 'total_amount', 'amount', 'income', 'sum', 'total']);
+      o[monthKey(r)] = pick(r, [
+        'total_income',
+        'total_amount',
+        'amount',
+        'income',
+        'sum',
+        'total',
+      ]);
     });
     return o;
   }, [incomeRows]);
@@ -897,60 +1302,179 @@ export default function FounderDashboardScreen() {
   const expenseByKey: Record<string, number> = useMemo(() => {
     const o: Record<string, number> = {};
     expenseRows.forEach((r) => {
-      o[monthKey(r)] = pick(r, ['total_expense', 'total_amount', 'amount', 'expense', 'sum', 'total']);
+      o[monthKey(r)] = pick(r, [
+        'total_expense',
+        'total_amount',
+        'amount',
+        'expense',
+        'sum',
+        'total',
+      ]);
     });
     return o;
   }, [expenseRows]);
 
   const maxTrend = Math.max(
     1,
-    ...chartKeys.map((k) => Math.max(incomeByKey[k] || 0, expenseByKey[k] || 0)),
+    ...chartKeys.map((k) =>
+      Math.max(incomeByKey[k] || 0, expenseByKey[k] || 0),
+    ),
   );
 
   // Sparkline data for KPI tiles (last 4 months)
-  const incomeSparkline = useMemo(() => chartKeys.slice(-4).map(k => incomeByKey[k] || 0), [chartKeys, incomeByKey]);
-  const expenseSparkline = useMemo(() => chartKeys.slice(-4).map(k => expenseByKey[k] || 0), [chartKeys, expenseByKey]);
+  const incomeSparkline = useMemo(
+    () => chartKeys.slice(-4).map((k) => incomeByKey[k] || 0),
+    [chartKeys, incomeByKey],
+  );
+  const expenseSparkline = useMemo(
+    () => chartKeys.slice(-4).map((k) => expenseByKey[k] || 0),
+    [chartKeys, expenseByKey],
+  );
   const enquirySparkline = useMemo(() => {
-    const keys = Array.from(new Set(enquiryRows.map(r => monthKey(r)))).sort().slice(-4);
-    return keys.map(k => {
-      const rows = enquiryRows.filter(r => monthKey(r) === k);
-      return rows.reduce((s, r) => s + pick(r, ['total_enquiries', 'count', 'enquiries', 'leads']), 0);
+    const keys = Array.from(new Set(enquiryRows.map((r) => monthKey(r))))
+      .sort()
+      .slice(-4);
+    return keys.map((k) => {
+      const rows = enquiryRows.filter((r) => monthKey(r) === k);
+      return rows.reduce(
+        (s, r) =>
+          s + pick(r, ['total_enquiries', 'count', 'enquiries', 'leads']),
+        0,
+      );
     });
   }, [enquiryRows]);
 
   // Chart totals for summary line
-  const totalIncome = useMemo(() => chartKeys.reduce((s, k) => s + (incomeByKey[k] || 0), 0), [chartKeys, incomeByKey]);
-  const totalExpense = useMemo(() => chartKeys.reduce((s, k) => s + (expenseByKey[k] || 0), 0), [chartKeys, expenseByKey]);
-  const chartMarginPct = totalIncome > 0 ? (((totalIncome - totalExpense) / totalIncome) * 100).toFixed(1) : '0';
-
+  const totalIncome = useMemo(
+    () => chartKeys.reduce((s, k) => s + (incomeByKey[k] || 0), 0),
+    [chartKeys, incomeByKey],
+  );
+  const totalExpense = useMemo(
+    () => chartKeys.reduce((s, k) => s + (expenseByKey[k] || 0), 0),
+    [chartKeys, expenseByKey],
+  );
+  const chartMarginPct =
+    totalIncome > 0
+      ? (((totalIncome - totalExpense) / totalIncome) * 100).toFixed(1)
+      : '0';
 
   const navItems = useMemo(
     () => [
-      { label: 'Expenses', sub: 'Track & receipts', route: '/(app)/console/expenses', gradient: founderGradients.danger, icon: 'INR' },
-      { label: 'Books & accounting', sub: 'Sales, purchases & ledger', route: '/(app)/books', gradient: founderGradients.info, icon: 'INR' },
-      { label: 'People & payroll', sub: 'Salaries & HR docs', route: '/(app)/console/payroll', gradient: founderGradients.primary, icon: 'HR' },
+      {
+        label: 'Expenses',
+        sub: 'Track & receipts',
+        route: '/(app)/console/expenses',
+        gradient: founderGradients.danger,
+        icon: 'INR',
+      },
+      {
+        label: 'Books & accounting',
+        sub: 'Sales, purchases & ledger',
+        route: '/(app)/books',
+        gradient: founderGradients.info,
+        icon: 'INR',
+      },
+      {
+        label: 'People & payroll',
+        sub: 'Salaries & HR docs',
+        route: '/(app)/console/payroll',
+        gradient: founderGradients.primary,
+        icon: 'HR',
+      },
       ...(canApproveReject
         ? ([
-          { label: 'Expense approvals', sub: 'Pending queue', route: '/(app)/console/expense-approvals' as const, gradient: founderGradients.warning, icon: 'ok' },
-          { label: 'Collection approvals', sub: 'Pending collections', route: '/(app)/console/collection-approvals' as const, gradient: founderGradients.info, icon: '*' },
-        ] as const)
+            {
+              label: 'Expense approvals',
+              sub: 'Pending queue',
+              route: '/(app)/console/expense-approvals' as const,
+              gradient: founderGradients.warning,
+              icon: 'ok',
+            },
+            {
+              label: 'Collection approvals',
+              sub: 'Pending collections',
+              route: '/(app)/console/collection-approvals' as const,
+              gradient: founderGradients.info,
+              icon: '*',
+            },
+          ] as const)
         : []),
-      { label: 'Collections', sub: 'Units & approvals', route: '/(app)/console/billing?tab=collections', gradient: founderGradients.success, icon: '*' },
-      { label: 'Enquiries', sub: 'Pipeline & deals', route: '/(app)/console/enquiries', gradient: founderGradients.info, icon: '*' },
-      { label: 'Field feedback', sub: 'Capture and route', route: '/(app)/console/field-feedback', gradient: founderGradients.primary, icon: '*' },
-      { label: 'Analytics', sub: 'Sources & leaderboard', route: '/(app)/console/analytics', gradient: founderGradients.warning, icon: '*' },
-      { label: 'Business units', sub: 'Units directory', route: '/(app)/console/units', gradient: founderGradients.primary, icon: '*' },
-      { label: 'Notifications', sub: 'Alerts & updates', route: '/(app)/console/notifications', gradient: founderGradients.success, icon: '*' },
+      {
+        label: 'Collections',
+        sub: 'Units & approvals',
+        route: '/(app)/console/billing?tab=collections',
+        gradient: founderGradients.success,
+        icon: '*',
+      },
+      {
+        label: 'Enquiries',
+        sub: 'Pipeline & deals',
+        route: '/(app)/console/enquiries',
+        gradient: founderGradients.info,
+        icon: '*',
+      },
+      {
+        label: 'Field feedback',
+        sub: 'Capture and route',
+        route: '/(app)/console/field-feedback',
+        gradient: founderGradients.primary,
+        icon: '*',
+      },
+      {
+        label: 'Analytics',
+        sub: 'Sources & leaderboard',
+        route: '/(app)/console/analytics',
+        gradient: founderGradients.warning,
+        icon: '*',
+      },
+      {
+        label: 'Business units',
+        sub: 'Units directory',
+        route: '/(app)/console/units',
+        gradient: founderGradients.primary,
+        icon: '*',
+      },
+      {
+        label: 'Notifications',
+        sub: 'Alerts & updates',
+        route: '/(app)/console/notifications',
+        gradient: founderGradients.success,
+        icon: '*',
+      },
       ...(isApprover || isSuperAdmin
-        ? [{ label: 'Audit logs', sub: 'Activity trail', route: '/(app)/console/audit-logs', gradient: founderGradients.cardDark, icon: '*' } as const]
+        ? [
+            {
+              label: 'Audit logs',
+              sub: 'Activity trail',
+              route: '/(app)/console/audit-logs',
+              gradient: founderGradients.cardDark,
+              icon: '*',
+            } as const,
+          ]
         : []),
       ...(isSuperAdmin
-        ? [{ label: 'Festival posters', sub: 'App popup banners', route: '/(app)/console/festival-posters', gradient: founderGradients.info, icon: '*' } as const]
+        ? [
+            {
+              label: 'Festival posters',
+              sub: 'App popup banners',
+              route: '/(app)/console/festival-posters',
+              gradient: founderGradients.info,
+              icon: '*',
+            } as const,
+          ]
         : []),
-      { label: 'Settings', sub: isApprover || isSuperAdmin ? 'Security & controls' : 'Security', route: '/(app)/console/settings', gradient: founderGradients.primary, icon: '⚙' },
+      {
+        label: 'Settings',
+        sub: isApprover || isSuperAdmin ? 'Security & controls' : 'Security',
+        route: '/(app)/console/settings',
+        gradient: founderGradients.primary,
+        icon: '⚙',
+      },
     ],
     [canApproveReject, isApprover, isSuperAdmin],
   );
+
+  if (loadError) return <EmptyState title="Dashboard unavailable" description={loadError} actionLabel="Try again" onAction={() => void load()} />;
 
   return (
     <ConsoleAmbientBackground>
@@ -963,27 +1487,29 @@ export default function FounderDashboardScreen() {
         ]}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#7C6FFF" />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#7C6FFF"
+          />
         }
       >
         {/* - HERO HEADER - */}
-        <Animated.View entering={FadeInDown.duration(500)} style={[
-          styles.header,
-          {
-            backgroundColor: isDark ? 'rgba(33,31,45,0.7)' : 'rgba(251,250,248,0.85)',
-            borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
-          },
-          Platform.OS === 'web' ? {
-            backdropFilter: 'blur(24px)',
-            WebkitBackdropFilter: 'blur(24px)',
-            boxShadow: isDark
-              ? '0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)'
-              : '0 8px 32px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.8)',
-          } as any : {},
-        ]}>
+        <Animated.View
+          entering={FadeInDown.duration(500)}
+          style={[
+            styles.header,
+            {
+              backgroundColor: colors.card,
+              borderColor: isDark
+                ? 'rgba(255,255,255,0.08)'
+                : 'rgba(0,0,0,0.06)',
+            },
+          ]}
+        >
           {/* ambient header glow */}
           <LinearGradient
-            colors={isDark ? ['#7C6FFF15', '#38C8F408', 'transparent'] : ['#7C6FFF10', '#38C8F405', 'transparent']}
+            colors={[colors.primaryMuted, colors.card, colors.card]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.headerGlow}
@@ -993,26 +1519,44 @@ export default function FounderDashboardScreen() {
           <View style={styles.headerRow}>
             <View style={{ flex: 1 }}>
               <View style={styles.kickerRow}>
-                <Zap size={11} color="#7C6FFF" />
-                <Text style={[styles.kicker, { color: '#7C6FFF' }]}>NexSyrus</Text>
+                <Zap size={11} color={colors.primary} />
+                <Text style={[styles.kicker, { color: colors.primary }]}>
+                  NexSyrus
+                </Text>
               </View>
-              <Text style={[styles.title, { color: colors.textPrimary }]}>{greetingText}</Text>
+              <Text
+                style={[
+                  styles.title,
+                  {
+                    color: colors.textPrimary,
+                    fontSize: screenWidth < 600 ? 24 : 30,
+                  },
+                ]}
+              >
+                {greetingText}
+              </Text>
               <View style={styles.dateRow}>
                 <Calendar size={12} color={colors.textSecondary} />
-                <Text style={[styles.dateText, { color: colors.textSecondary }]}>{dateStr}</Text>
+                <Text
+                  style={[styles.dateText, { color: colors.textSecondary }]}
+                >
+                  {dateStr}
+                </Text>
               </View>
             </View>
-            <LinearGradient
-              colors={founderGradients.primary as [string, string]}
-              style={styles.rolePill}
-            >
-              <View style={styles.rolePillDot} />
-              <Text style={styles.rolePillText}>{roleLabel}</Text>
-            </LinearGradient>
+            {screenWidth >= 600 && (
+              <LinearGradient
+                colors={founderGradients.primary as [string, string]}
+                style={styles.rolePill}
+              >
+                <View style={styles.rolePillDot} />
+                <Text style={styles.rolePillText}>{roleLabel}</Text>
+              </LinearGradient>
+            )}
           </View>
 
           {/* Gradient divider */}
-          <GradientDivider color="#7C6FFF" />
+          <GradientDivider color={colors.primary} />
 
           {/* Quick Actions */}
           <QuickActionRow colors={colors} isDark={isDark} />
@@ -1020,24 +1564,38 @@ export default function FounderDashboardScreen() {
 
         {/* ── 11-DAY SPRINT COMMAND CENTER HERO BANNER ── */}
         <Animated.View entering={FadeInDown.delay(150).duration(400)}>
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => router.push('/(app)/console/sprint' as any)}
             style={({ pressed, hovered }: any) => [
               styles.sprintHeroBanner,
               {
-                backgroundColor: isDark ? 'rgba(17, 24, 39, 0.88)' : 'rgba(255, 255, 255, 0.95)',
-                borderColor: hovered ? '#ef4444' : (isDark ? 'rgba(239, 68, 68, 0.35)' : 'rgba(220, 38, 38, 0.35)'),
+                backgroundColor: isDark
+                  ? 'rgba(17, 24, 39, 0.88)'
+                  : 'rgba(255, 255, 255, 0.95)',
+                borderColor: hovered
+                  ? '#ef4444'
+                  : isDark
+                    ? 'rgba(239, 68, 68, 0.35)'
+                    : 'rgba(220, 38, 38, 0.35)',
                 transform: [{ scale: pressed ? 0.99 : hovered ? 1.006 : 1 }],
               },
-              Platform.OS === 'web' ? {
-                cursor: 'pointer',
-                boxShadow: hovered ? '0 12px 28px rgba(239, 68, 68, 0.22)' : '0 4px 16px rgba(0,0,0,0.15)',
-                transition: 'all 0.2s ease',
-              } as any : {},
+              Platform.OS === 'web'
+                ? ({
+                    cursor: 'pointer',
+                    boxShadow: hovered
+                      ? '0 12px 28px rgba(239, 68, 68, 0.22)'
+                      : '0 4px 16px rgba(0,0,0,0.15)',
+                    transition: 'all 0.2s ease',
+                  } as any)
+                : {},
             ]}
           >
             <LinearGradient
-              colors={['rgba(239, 68, 68, 0.18)', 'rgba(153, 27, 27, 0.08)', 'transparent']}
+              colors={[
+                'rgba(239, 68, 68, 0.18)',
+                'rgba(153, 27, 27, 0.08)',
+                'transparent',
+              ]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={StyleSheet.absoluteFillObject}
@@ -1049,37 +1607,151 @@ export default function FounderDashboardScreen() {
                   <Text style={styles.sprintZapPillText}>RED ALERT ACTIVE</Text>
                 </View>
                 <View style={styles.sprintTargetPill}>
-                  <Sparkles size={11} color="#fca5a5" style={{ marginRight: 4 }} />
+                  <Sparkles
+                    size={11}
+                    color="#fca5a5"
+                    style={{ marginRight: 4 }}
+                  />
                   <Text style={styles.sprintTargetText}>10 DAYS</Text>
                 </View>
               </View>
-              <Text style={[styles.sprintHeroTitle, { color: colors.textPrimary }]}>
+              <Text
+                style={[styles.sprintHeroTitle, { color: colors.textPrimary }]}
+              >
                 NexSyrus RED ALERT — 100 Hard Deliverables
               </Text>
-              <Text style={[styles.sprintHeroSub, { color: colors.textSecondary }]}>
-                Live execution control across Tech, Curriculum Research, Sales Strategy, and Sales Scale owners.
+              <Text
+                style={[styles.sprintHeroSub, { color: colors.textSecondary }]}
+              >
+                Live execution control across Tech, Curriculum Research, Sales
+                Strategy, and Sales Scale owners.
               </Text>
             </View>
             <View style={styles.sprintHeroRight}>
               <View style={styles.sprintEnterBtn}>
                 <Text style={styles.sprintEnterBtnText}>Open Cockpit</Text>
-                <ArrowRight size={14} color="#ffffff" style={{ marginLeft: 6 }} />
+                <ArrowRight
+                  size={14}
+                  color="#ffffff"
+                  style={{ marginLeft: 6 }}
+                />
               </View>
             </View>
           </Pressable>
         </Animated.View>
 
-        <View style={[styles.financialFilters, { borderColor: colors.clayBorderColor, backgroundColor: isDark ? 'rgba(255,255,255,0.035)' : 'rgba(255,255,255,0.78)' }]}>
+        <View
+          style={[
+            styles.financialFilters,
+            {
+              borderColor: colors.clayBorderColor,
+              backgroundColor: isDark
+                ? 'rgba(255,255,255,0.035)'
+                : 'rgba(255,255,255,0.78)',
+            },
+          ]}
+        >
           <View style={styles.financialFilterGroup}>
-            <Text style={[styles.financialFilterLabel, { color: colors.textSecondary }]}>Period</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.financialFilterScroll}>
-              {(['THIS_MONTH', 'LAST_MONTH', 'THIS_YEAR', 'ALL'] as founderDb.CollectionPeriodFilter[]).map((period) => <Pressable key={period} onPress={() => setFinancialPeriod(period)} style={[styles.financialFilterChip, { borderColor: financialPeriod === period ? '#7C6FFF' : colors.border, backgroundColor: financialPeriod === period ? 'rgba(124,111,255,0.14)' : 'transparent' }]}><Text style={{ color: financialPeriod === period ? '#7C6FFF' : colors.textSecondary, fontSize: 11, fontWeight: '800' }}>{period.replace('_', ' ')}</Text></Pressable>)}
+            <Text
+              style={[
+                styles.financialFilterLabel,
+                { color: colors.textSecondary },
+              ]}
+            >
+              Period
+            </Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.financialFilterScroll}
+            >
+              {(
+                [
+                  'THIS_MONTH',
+                  'LAST_MONTH',
+                  'THIS_YEAR',
+                  'ALL',
+                ] as founderDb.CollectionPeriodFilter[]
+              ).map((period) => (
+                <Pressable accessibilityRole="button"
+                  key={period}
+                  onPress={() => setFinancialPeriod(period)}
+                  style={[
+                    styles.financialFilterChip,
+                    {
+                      borderColor:
+                        financialPeriod === period ? '#7C6FFF' : colors.border,
+                      backgroundColor:
+                        financialPeriod === period
+                          ? 'rgba(124,111,255,0.14)'
+                          : 'transparent',
+                    },
+                  ]}
+                >
+                  <Text
+                    style={{
+                      color:
+                        financialPeriod === period
+                          ? colors.primary
+                          : colors.textSecondary,
+                      fontSize: 13,
+                      fontWeight: '600',
+                    }}
+                  >
+                    {period.replace('_', ' ')}
+                  </Text>
+                </Pressable>
+              ))}
             </ScrollView>
           </View>
           <View style={styles.financialFilterGroup}>
-            <Text style={[styles.financialFilterLabel, { color: colors.textSecondary }]}>Business unit</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.financialFilterScroll}>
-              {[{ id: 'ALL', name: 'All units' }, ...financialUnits].map((unit) => <Pressable key={unit.id} onPress={() => setFinancialUnitId(unit.id)} style={[styles.financialFilterChip, { borderColor: financialUnitId === unit.id ? '#00D4AD' : colors.border, backgroundColor: financialUnitId === unit.id ? 'rgba(0,212,173,0.12)' : 'transparent' }]}><Text style={{ color: financialUnitId === unit.id ? '#00A88A' : colors.textSecondary, fontSize: 11, fontWeight: '800' }}>{unit.name}</Text></Pressable>)}
+            <Text
+              style={[
+                styles.financialFilterLabel,
+                { color: colors.textSecondary },
+              ]}
+            >
+              Business unit
+            </Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.financialFilterScroll}
+            >
+              {[{ id: 'ALL', name: 'All units' }, ...financialUnits].map(
+                (unit) => (
+                  <Pressable accessibilityRole="button"
+                    key={unit.id}
+                    onPress={() => setFinancialUnitId(unit.id)}
+                    style={[
+                      styles.financialFilterChip,
+                      {
+                        borderColor:
+                          financialUnitId === unit.id
+                            ? '#00D4AD'
+                            : colors.border,
+                        backgroundColor:
+                          financialUnitId === unit.id
+                            ? 'rgba(0,212,173,0.12)'
+                            : 'transparent',
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={{
+                        color:
+                          financialUnitId === unit.id
+                            ? colors.success
+                            : colors.textSecondary,
+                        fontSize: 13,
+                        fontWeight: '600',
+                      }}
+                    >
+                      {unit.name}
+                    </Text>
+                  </Pressable>
+                ),
+              )}
             </ScrollView>
           </View>
         </View>
@@ -1088,7 +1760,7 @@ export default function FounderDashboardScreen() {
         {loading && !refreshing ? (
           <View style={styles.loader}>
             <View style={styles.loaderRing}>
-              <ActivityIndicator color="#7C6FFF" size="large" />
+              <ActivityIndicator color={colors.primary} size="large" />
             </View>
             <Text style={[styles.loaderTxt, { color: colors.textSecondary }]}>
               Syncing metrics…
@@ -1097,7 +1769,27 @@ export default function FounderDashboardScreen() {
         ) : (
           <>
             {/* - CASH FINANCIALS - */}
-            {financialSummary ? <FinancialSummaryGrid summary={financialSummary} colors={colors} isDark={isDark} /> : <View style={styles.summaryLoading}><ActivityIndicator color="#7C6FFF" /><Text style={[styles.summaryLoadingText, { color: colors.textSecondary }]}>Syncing financial summary…</Text></View>}
+            {financialSummary ? (
+              <FinancialSummaryGrid
+                summary={financialSummary}
+                colors={colors}
+                isDark={isDark}
+              />
+            ) : financialError || !financialLoading ? (
+              <EmptyState title="Financial summary unavailable" description={financialError || 'No summary was returned.'} actionLabel="Try again" onAction={() => setFinancialAttempt(value => value + 1)} />
+            ) : (
+              <View style={styles.summaryLoading}>
+                <ActivityIndicator color={colors.primary} />
+                <Text
+                  style={[
+                    styles.summaryLoadingText,
+                    { color: colors.textSecondary },
+                  ]}
+                >
+                  Syncing financial summary…
+                </Text>
+              </View>
+            )}
 
             {/* Top paying unit - full-width stat pill */}
             <Animated.View entering={FadeInDown.delay(240).springify()}>
@@ -1108,12 +1800,24 @@ export default function FounderDashboardScreen() {
                   end={{ x: 1, y: 0.5 }}
                   style={StyleSheet.absoluteFill}
                 />
-                <View style={[styles.topUnitIconBox, { backgroundColor: '#7C6FFF22' }]}>
-                  <Briefcase size={18} color="#7C6FFF" />
+                <View
+                  style={[
+                    styles.topUnitIconBox,
+                    { backgroundColor: '#7C6FFF22' },
+                  ]}
+                >
+                  <Briefcase size={18} color={colors.primary} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={[styles.topUnitLbl, { color: colors.textSecondary }]}>Top paying unit</Text>
-                  <Text style={[styles.topUnitVal, { color: colors.textPrimary }]} numberOfLines={1}>
+                  <Text
+                    style={[styles.topUnitLbl, { color: colors.textSecondary }]}
+                  >
+                    Top paying unit
+                  </Text>
+                  <Text
+                    style={[styles.topUnitVal, { color: colors.textPrimary }]}
+                    numberOfLines={1}
+                  >
                     {m.topPayingUnit}
                   </Text>
                 </View>
@@ -1146,11 +1850,69 @@ export default function FounderDashboardScreen() {
               colors={colors}
             />
             <View style={[styles.kpiGrid, IS_WEB && styles.kpiGridWeb]}>
-              <KpiTile label="Revenue (month)" value={founderDb.formatInr(m.revenueThisMonth)} gradient={founderGradients.success} delay={60} icon={<Wallet size={16} color="#FFF" />} sparklineData={incomeSparkline} />
-              <KpiTile label="Expense (ROI view)" value={founderDb.formatInr(m.expenseThisMonthRoi)} gradient={founderGradients.danger} delay={90} icon={<TrendingDown size={16} color="#FFF" />} sparklineData={expenseSparkline} />
-              <KpiTile label="Net profit (projected)" value={founderDb.formatInr(m.netProfitRoi)} gradient={m.netProfitRoi >= 0 ? founderGradients.primary : founderGradients.danger} delay={120} icon={<Activity size={16} color="#FFF" />} />
-              <KpiTile label={m.conversionMonthly && m.conversionRate != null ? 'Conversion %' : 'Sales Command'} value={m.conversionMonthly && m.conversionRate != null ? `${m.conversionRate.toFixed(1)}%` : 'Open'} gradient={founderGradients.info} delay={150} icon={<Target size={16} color="#FFF" />} onPress={m.conversionMonthly ? undefined : () => router.push('/(app)/console/sales-command' as never)} accessibilityLabel={m.conversionMonthly ? 'Monthly conversion' : 'Open Sales Command. Monthly sales series is not available.'} />
-              <KpiTile label="Cost per lead" value={founderDb.formatInr(m.costPerLead, m.costPerLead % 1 === 0 ? 0 : 2)} gradient={founderGradients.warning} delay={180} icon={<Users size={16} color="#FFF" />} sparklineData={enquirySparkline} />
+              <KpiTile
+                label="Revenue (month)"
+                value={founderDb.formatInr(m.revenueThisMonth)}
+                gradient={founderGradients.success}
+                delay={60}
+                icon={<Wallet size={16} color="#FFF" />}
+                sparklineData={incomeSparkline}
+              />
+              <KpiTile
+                label="Expense (ROI view)"
+                value={founderDb.formatInr(m.expenseThisMonthRoi)}
+                gradient={founderGradients.danger}
+                delay={90}
+                icon={<TrendingDown size={16} color="#FFF" />}
+                sparklineData={expenseSparkline}
+              />
+              <KpiTile
+                label="Net profit (projected)"
+                value={founderDb.formatInr(m.netProfitRoi)}
+                gradient={
+                  m.netProfitRoi >= 0
+                    ? founderGradients.primary
+                    : founderGradients.danger
+                }
+                delay={120}
+                icon={<Activity size={16} color="#FFF" />}
+              />
+              <KpiTile
+                label={
+                  m.conversionMonthly && m.conversionRate != null
+                    ? 'Conversion %'
+                    : 'Sales Command'
+                }
+                value={
+                  m.conversionMonthly && m.conversionRate != null
+                    ? `${m.conversionRate.toFixed(1)}%`
+                    : 'Open'
+                }
+                gradient={founderGradients.info}
+                delay={150}
+                icon={<Target size={16} color="#FFF" />}
+                onPress={
+                  m.conversionMonthly
+                    ? undefined
+                    : () => router.push('/(app)/console/sales-command' as never)
+                }
+                accessibilityLabel={
+                  m.conversionMonthly
+                    ? 'Monthly conversion'
+                    : 'Open Sales Command. Monthly sales series is not available.'
+                }
+              />
+              <KpiTile
+                label="Cost per lead"
+                value={founderDb.formatInr(
+                  m.costPerLead,
+                  m.costPerLead % 1 === 0 ? 0 : 2,
+                )}
+                gradient={founderGradients.warning}
+                delay={180}
+                icon={<Users size={16} color="#FFF" />}
+                sparklineData={enquirySparkline}
+              />
             </View>
 
             {/* - EXPENSE OVERVIEW - */}
@@ -1161,10 +1923,34 @@ export default function FounderDashboardScreen() {
               colors={colors}
             />
             <View style={[styles.kpiGrid, IS_WEB && styles.kpiGridWeb]}>
-              <KpiTile label="Approved (month)" value={founderDb.formatInr(m.totalApprovedThisMonth)} gradient={founderGradients.success} delay={40} icon={<CheckSquare size={16} color="#FFF" />} />
-              <KpiTile label="Pending amount" value={founderDb.formatInr(m.pendingTotal)} gradient={founderGradients.warning} delay={70} icon={<Receipt size={16} color="#FFF" />} />
-              <KpiTile label="Approved count" value={m.approvedCount.toLocaleString('en-IN')} gradient={founderGradients.info} delay={100} icon={<Briefcase size={16} color="#FFF" />} />
-              <KpiTile label="Rejected count" value={m.rejectedCount.toLocaleString('en-IN')} gradient={founderGradients.danger} delay={130} icon={<Building2 size={16} color="#FFF" />} />
+              <KpiTile
+                label="Approved (month)"
+                value={founderDb.formatInr(m.totalApprovedThisMonth)}
+                gradient={founderGradients.success}
+                delay={40}
+                icon={<CheckSquare size={16} color="#FFF" />}
+              />
+              <KpiTile
+                label="Pending amount"
+                value={founderDb.formatInr(m.pendingTotal)}
+                gradient={founderGradients.warning}
+                delay={70}
+                icon={<Receipt size={16} color="#FFF" />}
+              />
+              <KpiTile
+                label="Approved count"
+                value={m.approvedCount.toLocaleString('en-IN')}
+                gradient={founderGradients.info}
+                delay={100}
+                icon={<Briefcase size={16} color="#FFF" />}
+              />
+              <KpiTile
+                label="Rejected count"
+                value={m.rejectedCount.toLocaleString('en-IN')}
+                gradient={founderGradients.danger}
+                delay={130}
+                icon={<Building2 size={16} color="#FFF" />}
+              />
             </View>
 
             {/* - ENQUIRY PIPELINE (Funnel) - */}
@@ -1176,9 +1962,26 @@ export default function FounderDashboardScreen() {
             />
             <PipelineFunnel
               steps={[
-                { label: 'New today', value: m.newEnquiriesToday, accent: '#7C6FFF', icon: <Sparkles size={16} color="#7C6FFF" /> },
-                { label: m.enquiryMonthly ? 'Total (month)' : 'Month total unavailable', value: m.enquiryMonthly ? m.totalEnquiriesMonth : 0, accent: '#38C8F4', icon: <Users size={16} color="#38C8F4" /> },
-                { label: 'Unassigned', value: m.unassignedEnquiries, accent: '#FFB020', icon: <Target size={16} color="#FFB020" /> },
+                {
+                  label: 'New today',
+                  value: m.newEnquiriesToday,
+                  accent: '#7C6FFF',
+                  icon: <Sparkles size={16} color={colors.primary} />,
+                },
+                {
+                  label: m.enquiryMonthly
+                    ? 'Total (month)'
+                    : 'Month total unavailable',
+                  value: m.enquiryMonthly ? m.totalEnquiriesMonth : 0,
+                  accent: '#38C8F4',
+                  icon: <Users size={16} color="#38C8F4" />,
+                },
+                {
+                  label: 'Unassigned',
+                  value: m.unassignedEnquiries,
+                  accent: '#FFB020',
+                  icon: <Target size={16} color="#FFB020" />,
+                },
               ]}
               colors={colors}
               isDark={isDark}
@@ -1191,60 +1994,173 @@ export default function FounderDashboardScreen() {
               icon={<BarChart2 size={14} color="#A78BFA" />}
               colors={colors}
             />
-            <View style={[styles.breakdownGrid, IS_WEB && isDesktop && styles.breakdownGridDesktop]}>
-              <View style={IS_WEB && isDesktop ? { flex: 1, minWidth: 0 } : undefined}>
+            <View
+              style={[
+                styles.breakdownGrid,
+                IS_WEB && isDesktop && styles.breakdownGridDesktop,
+              ]}
+            >
+              <View
+                style={
+                  IS_WEB && isDesktop ? { flex: 1, minWidth: 0 } : undefined
+                }
+              >
                 <BreakdownList
                   title="Expense by category"
-                  items={m.expenseCategoryBreakdown.map((x) => ({ label: x.category, value: x.amount }))}
+                  items={m.expenseCategoryBreakdown.map((x) => ({
+                    label: x.category,
+                    value: x.amount,
+                  }))}
                   type="currency"
                   accent="#FF6B7A"
-                  colors={{ textPrimary: colors.textPrimary, textSecondary: colors.textSecondary, border: colors.border }}
+                  colors={{
+                    primary: colors.primary,
+                    textPrimary: colors.textPrimary,
+                    textSecondary: colors.textSecondary,
+                    border: colors.border,
+                  }}
                 />
               </View>
-              <View style={IS_WEB && isDesktop ? { flex: 1, minWidth: 0 } : undefined}>
+              <View
+                style={
+                  IS_WEB && isDesktop ? { flex: 1, minWidth: 0 } : undefined
+                }
+              >
                 <BreakdownList
                   title="Leads by website"
-                  items={m.enquiriesByWebsite.map((x) => ({ label: x.website, value: x.count }))}
+                  items={m.enquiriesByWebsite.map((x) => ({
+                    label: x.website,
+                    value: x.count,
+                  }))}
                   type="count"
                   accent="#38C8F4"
-                  colors={{ textPrimary: colors.textPrimary, textSecondary: colors.textSecondary, border: colors.border }}
+                  colors={{
+                    primary: colors.primary,
+                    textPrimary: colors.textPrimary,
+                    textSecondary: colors.textSecondary,
+                    border: colors.border,
+                  }}
                 />
               </View>
             </View>
             <View style={{ height: 12 }} />
             <BreakdownList
               title="Leads by category"
-              items={m.enquiriesByCategory.map((x) => ({ label: x.category, value: x.count }))}
+              items={m.enquiriesByCategory.map((x) => ({
+                label: x.category,
+                value: x.count,
+              }))}
               type="count"
               accent="#00D4AD"
-              colors={{ textPrimary: colors.textPrimary, textSecondary: colors.textSecondary, border: colors.border }}
+              colors={{
+                primary: colors.primary,
+                textPrimary: colors.textPrimary,
+                textSecondary: colors.textSecondary,
+                border: colors.border,
+              }}
             />
 
             {/* - REVENUE VS EXPENSE CHART - */}
             <PremiumSectionTitle
               title="Revenue vs expense"
               accent="#7C6FFF"
-              icon={<Activity size={14} color="#7C6FFF" />}
+              icon={<Activity size={14} color={colors.primary} />}
               colors={colors}
             />
             {/* Chart summary line */}
-            <Animated.View entering={FadeInDown.delay(60).springify()} style={styles.chartSummaryRow}>
+            <Animated.View
+              entering={FadeInDown.delay(60).springify()}
+              style={styles.chartSummaryRow}
+            >
               <View style={styles.chartSummaryItem}>
-                <View style={[styles.chartSummaryDot, { backgroundColor: '#00D4AD' }]} />
-                <Text style={[styles.chartSummaryLbl, { color: colors.textSecondary }]}>Total Income</Text>
-                <Text style={[styles.chartSummaryVal, { color: colors.textPrimary }]}>{founderDb.formatInr(totalIncome, 0)}</Text>
+                <View
+                  style={[
+                    styles.chartSummaryDot,
+                    { backgroundColor: '#00D4AD' },
+                  ]}
+                />
+                <Text
+                  style={[
+                    styles.chartSummaryLbl,
+                    { color: colors.textSecondary },
+                  ]}
+                >
+                  Total Income
+                </Text>
+                <Text
+                  style={[
+                    styles.chartSummaryVal,
+                    { color: colors.textPrimary },
+                  ]}
+                >
+                  {founderDb.formatInr(totalIncome, 0)}
+                </Text>
               </View>
-              <View style={[styles.chartSummarySep, { backgroundColor: colors.border }]} />
+              <View
+                style={[
+                  styles.chartSummarySep,
+                  { backgroundColor: colors.border },
+                ]}
+              />
               <View style={styles.chartSummaryItem}>
-                <View style={[styles.chartSummaryDot, { backgroundColor: '#FF6B7A' }]} />
-                <Text style={[styles.chartSummaryLbl, { color: colors.textSecondary }]}>Total Expense</Text>
-                <Text style={[styles.chartSummaryVal, { color: colors.textPrimary }]}>{founderDb.formatInr(totalExpense, 0)}</Text>
+                <View
+                  style={[
+                    styles.chartSummaryDot,
+                    { backgroundColor: '#FF6B7A' },
+                  ]}
+                />
+                <Text
+                  style={[
+                    styles.chartSummaryLbl,
+                    { color: colors.textSecondary },
+                  ]}
+                >
+                  Total Expense
+                </Text>
+                <Text
+                  style={[
+                    styles.chartSummaryVal,
+                    { color: colors.textPrimary },
+                  ]}
+                >
+                  {founderDb.formatInr(totalExpense, 0)}
+                </Text>
               </View>
-              <View style={[styles.chartSummarySep, { backgroundColor: colors.border }]} />
+              <View
+                style={[
+                  styles.chartSummarySep,
+                  { backgroundColor: colors.border },
+                ]}
+              />
               <View style={styles.chartSummaryItem}>
-                <View style={[styles.chartSummaryDot, { backgroundColor: Number(chartMarginPct) >= 0 ? '#00D4AD' : '#FF6B7A' }]} />
-                <Text style={[styles.chartSummaryLbl, { color: colors.textSecondary }]}>Margin</Text>
-                <Text style={[styles.chartSummaryVal, { color: Number(chartMarginPct) >= 0 ? '#00D4AD' : '#FF6B7A' }]}>{chartMarginPct}%</Text>
+                <View
+                  style={[
+                    styles.chartSummaryDot,
+                    {
+                      backgroundColor:
+                        Number(chartMarginPct) >= 0 ? '#00D4AD' : '#FF6B7A',
+                    },
+                  ]}
+                />
+                <Text
+                  style={[
+                    styles.chartSummaryLbl,
+                    { color: colors.textSecondary },
+                  ]}
+                >
+                  Margin
+                </Text>
+                <Text
+                  style={[
+                    styles.chartSummaryVal,
+                    {
+                      color:
+                        Number(chartMarginPct) >= 0 ? '#00D4AD' : '#FF6B7A',
+                    },
+                  ]}
+                >
+                  {chartMarginPct}%
+                </Text>
               </View>
             </Animated.View>
             <PremiumBarChart
@@ -1272,7 +2188,7 @@ export default function FounderDashboardScreen() {
             <PremiumSectionTitle
               title="Quick navigation"
               accent="#7C6FFF"
-              icon={<LayoutGrid size={14} color="#7C6FFF" />}
+              icon={<LayoutGrid size={14} color={colors.primary} />}
               colors={colors}
             />
             <View style={[styles.navList, IS_WEB && styles.navListWeb]}>
@@ -1290,22 +2206,40 @@ export default function FounderDashboardScreen() {
 
             {/* - PREMIUM FOOTER - */}
             <Animated.View entering={FadeInDown.delay(600)}>
-              <View style={[styles.footerMark, {
-                borderColor: isDark ? 'rgba(124,111,255,0.15)' : 'rgba(124,111,255,0.1)',
-                backgroundColor: isDark ? 'rgba(124,111,255,0.04)' : 'rgba(124,111,255,0.03)',
-              }]}>
+              <View
+                style={[
+                  styles.footerMark,
+                  {
+                    borderColor: isDark
+                      ? 'rgba(124,111,255,0.15)'
+                      : 'rgba(124,111,255,0.1)',
+                    backgroundColor: isDark
+                      ? 'rgba(124,111,255,0.04)'
+                      : 'rgba(124,111,255,0.03)',
+                  },
+                ]}
+              >
                 <LinearGradient
                   colors={['#7C6FFF12', 'transparent']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                   style={StyleSheet.absoluteFill}
                 />
-                <Zap size={12} color="#7C6FFF" />
-                <Text style={[styles.footerTxt, { color: colors.textSecondary }]}>
+                <Zap size={12} color={colors.primary} />
+                <Text
+                  style={[styles.footerTxt, { color: colors.textSecondary }]}
+                >
                   Powered by NexSyrus
                 </Text>
-                <View style={[styles.footerSep, { backgroundColor: colors.border }]} />
-                <Text style={[styles.footerTxt, { color: colors.textSecondary, opacity: 0.6 }]}>
+                <View
+                  style={[styles.footerSep, { backgroundColor: colors.border }]}
+                />
+                <Text
+                  style={[
+                    styles.footerTxt,
+                    { color: colors.textSecondary, opacity: 0.6 },
+                  ]}
+                >
                   v1.0 · {new Date().getFullYear()}
                 </Text>
               </View>
@@ -1322,30 +2256,89 @@ export default function FounderDashboardScreen() {
 const styles = StyleSheet.create({
   scroll: { flex: 1 },
   content: {
-    paddingHorizontal: 18,
-    paddingTop: 56,
+    paddingHorizontal: 0,
+    paddingTop: 0,
   },
   contentWeb: {
     maxWidth: 1200,
     alignSelf: 'center' as any,
     width: '100%' as any,
-    paddingHorizontal: 32,
+    paddingHorizontal: 0,
   },
-  financialFilters: { borderWidth: 1, borderRadius: 18, padding: 14, gap: 12, marginBottom: 18 },
+  financialFilters: {
+    borderWidth: 1,
+    borderRadius: 18,
+    padding: 14,
+    gap: 12,
+    marginBottom: 18,
+  },
   financialFilterGroup: { gap: 7 },
-  financialFilterLabel: { fontSize: 10, fontWeight: '900', letterSpacing: 0.9, textTransform: 'uppercase' as any },
+  financialFilterLabel: {
+    fontSize: 12,
+    fontWeight: '900',
+    letterSpacing: 0.9,
+    textTransform: 'uppercase' as any,
+  },
   financialFilterScroll: { gap: 8, paddingRight: 8 },
-  financialFilterChip: { borderWidth: 1, borderRadius: 12, paddingHorizontal: 11, paddingVertical: 8 },
-  financialGrid: { borderWidth: 1, borderRadius: 20, padding: 16, marginBottom: 18 },
-  financialGridHead: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 14 },
+  financialFilterChip: {
+    minHeight: 44,
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 11,
+    paddingVertical: 8,
+  },
+  financialGrid: {
+    borderWidth: 1,
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 18,
+  },
+  financialGridHead: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 12,
+    marginBottom: 14,
+  },
   financialGridTitle: { fontSize: 17, fontWeight: '900', letterSpacing: -0.35 },
-  financialGridSub: { fontSize: 11, lineHeight: 16, marginTop: 3, maxWidth: 440 },
+  financialGridSub: {
+    fontSize: 13,
+    lineHeight: 19,
+    marginTop: 3,
+    maxWidth: 440,
+  },
   financialScope: { borderRadius: 9, paddingHorizontal: 8, paddingVertical: 5 },
   financialCards: { flexDirection: 'row', flexWrap: 'wrap', gap: 9 },
-  financialCard: { flexGrow: 1, flexBasis: '44%', minWidth: 138, borderWidth: 1, borderRadius: 14, padding: 12 },
-  financialCardLabel: { fontSize: 9, fontWeight: '800', textTransform: 'uppercase' as any, letterSpacing: 0.5 },
-  financialCardValue: { fontSize: 17, fontWeight: '900', letterSpacing: -0.35, marginTop: 5 },
-  summaryLoading: { minHeight: 164, borderRadius: 20, alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 18 },
+  financialCard: {
+    flexGrow: 1,
+    flexBasis: '44%',
+    minWidth: 138,
+    borderWidth: 1,
+    borderRadius: 14,
+    padding: 12,
+  },
+  financialCardLabel: {
+    fontSize: 12,
+    fontWeight: '800',
+    textTransform: 'uppercase' as any,
+    letterSpacing: 0.5,
+  },
+  financialCardValue: {
+    fontSize: 17,
+    fontWeight: '900',
+    letterSpacing: -0.35,
+    marginTop: 5,
+  },
+  summaryLoading: {
+    minHeight: 164,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    marginBottom: 18,
+  },
   summaryLoadingText: { fontSize: 12, fontWeight: '700' },
 
   // - header -
@@ -1360,10 +2353,21 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     borderRadius: 24,
   },
-  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  headerRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
   kickerRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  kicker: { fontSize: 11, fontWeight: '700', letterSpacing: 1.2, textTransform: 'uppercase' as any },
-  title: { fontSize: 26, fontWeight: '900', letterSpacing: -0.8, marginTop: 6 },
+  kicker: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1.2,
+    textTransform: 'uppercase' as any,
+  },
+  title: { fontSize: 28, fontWeight: '700', letterSpacing: -0.8, marginTop: 6 },
   dateRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 },
   dateText: { fontSize: 12, fontWeight: '600', letterSpacing: 0.2 },
   sub: { marginTop: 6, fontSize: 13, fontWeight: '500' },
@@ -1375,17 +2379,30 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 20,
   },
-  rolePillDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.7)' },
-  rolePillText: { color: '#FFF', fontWeight: '800', fontSize: 12, letterSpacing: 0.2 },
+  rolePillDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: 'rgba(255,255,255,0.7)',
+  },
+  rolePillText: {
+    color: '#FFF',
+    fontWeight: '800',
+    fontSize: 12,
+    letterSpacing: 0.2,
+  },
 
   // - quick actions -
   quickActionRow: {
+    flexWrap: 'wrap',
     flexDirection: 'row',
     gap: 10,
     marginTop: 14,
   },
   quickActionBtn: {
-    flex: 1,
+    flexGrow: 1,
+    flexBasis: '40%',
+    minHeight: 44,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
@@ -1420,7 +2437,12 @@ const styles = StyleSheet.create({
   },
   sectionAccentBar: { width: 3, height: 18, borderRadius: 2 },
   sectionIcon: {},
-  sectionTitle: { fontSize: 13, fontWeight: '800', letterSpacing: 0.6, textTransform: 'uppercase' as any },
+  sectionTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    letterSpacing: 0.6,
+    textTransform: 'uppercase' as any,
+  },
 
   // - loader -
   loader: { paddingVertical: 56, alignItems: 'center', gap: 16 },
@@ -1437,7 +2459,11 @@ const styles = StyleSheet.create({
   loaderTxt: { fontSize: 13, fontWeight: '600', letterSpacing: 0.2 },
 
   // - kpi grid -
-  kpiGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
+  kpiGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
   kpiGridWeb: { gap: 12 },
 
   // - top unit card -
@@ -1451,8 +2477,19 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     overflow: 'hidden' as any,
   },
-  topUnitIconBox: { width: 40, height: 40, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  topUnitLbl: { fontSize: 10, fontWeight: '700', letterSpacing: 0.5, textTransform: 'uppercase' as any },
+  topUnitIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  topUnitLbl: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase' as any,
+  },
   topUnitVal: { fontSize: 16, fontWeight: '800', marginTop: 2 },
 
   // - pipeline funnel -
@@ -1526,7 +2563,7 @@ const styles = StyleSheet.create({
   // - category grid -
   catGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 8 },
   catChip: {
-    width: IS_WEB ? '48%' as any : (width - 46) / 2,
+    width: IS_WEB ? ('48%' as any) : (width - 46) / 2,
     padding: 14,
     borderRadius: 16,
     borderWidth: 1,
@@ -1534,9 +2571,24 @@ const styles = StyleSheet.create({
     position: 'relative' as any,
   },
   catDot: { width: 6, height: 6, borderRadius: 3, marginBottom: 8 },
-  catChipLbl: { fontSize: 10, fontWeight: '700', textTransform: 'uppercase' as any, letterSpacing: 0.6 },
-  catChipAmt: { fontSize: 17, fontWeight: '900', marginTop: 4, letterSpacing: -0.3 },
-  catProgressTrack: { height: 3, borderRadius: 2, marginTop: 10, overflow: 'hidden' as any },
+  catChipLbl: {
+    fontSize: 10,
+    fontWeight: '700',
+    textTransform: 'uppercase' as any,
+    letterSpacing: 0.6,
+  },
+  catChipAmt: {
+    fontSize: 17,
+    fontWeight: '900',
+    marginTop: 4,
+    letterSpacing: -0.3,
+  },
+  catProgressTrack: {
+    height: 3,
+    borderRadius: 2,
+    marginTop: 10,
+    overflow: 'hidden' as any,
+  },
   catProgressFill: { height: '100%' as any, borderRadius: 2 },
 
   // - stat row (kept for compatibility) -
@@ -1550,22 +2602,51 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     overflow: 'hidden' as any,
   },
-  statPillIcon: { width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
+  statPillIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
   statPillVal: { fontSize: 22, fontWeight: '900', letterSpacing: -0.4 },
-  statPillLbl: { fontSize: 10, fontWeight: '700', letterSpacing: 0.4, textTransform: 'uppercase' as any, marginTop: 4 },
+  statPillLbl: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.4,
+    textTransform: 'uppercase' as any,
+    marginTop: 4,
+  },
 
   // - breakdown -
   breakdownGrid: { gap: 12 },
   breakdownGridDesktop: { flexDirection: 'row', gap: 16 },
-  breakdownHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14 },
+  breakdownHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 14,
+  },
   breakdownAccentDot: { width: 8, height: 8, borderRadius: 4 },
   breakdownTitle: { fontSize: 14, fontWeight: '800', flex: 1 },
   breakdownTotal: { fontSize: 11, fontWeight: '700', letterSpacing: 0.3 },
   breakdownEmptyWrap: { alignItems: 'center', gap: 8, paddingVertical: 20 },
   breakdownEmpty: { fontSize: 13, textAlign: 'center' },
   breakdownRow: { marginBottom: 12 },
-  breakdownRowTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-  breakdownRowLeft: { flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1, marginRight: 8 },
+  breakdownRowTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  breakdownRowLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    flex: 1,
+    marginRight: 8,
+  },
   breakdownRowRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   breakdownLbl: { fontSize: 13, fontWeight: '600' },
   breakdownPct: { fontSize: 11, fontWeight: '700' },
@@ -1595,7 +2676,14 @@ const styles = StyleSheet.create({
 
   // - chart -
   chartContainer: { position: 'relative' as any, paddingBottom: 8 },
-  gridLine: { position: 'absolute' as any, left: 0, right: 0, height: StyleSheet.hairlineWidth, borderBottomWidth: StyleSheet.hairlineWidth, borderStyle: 'dashed' as any },
+  gridLine: {
+    position: 'absolute' as any,
+    left: 0,
+    right: 0,
+    height: StyleSheet.hairlineWidth,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderStyle: 'dashed' as any,
+  },
   chartRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -1606,20 +2694,60 @@ const styles = StyleSheet.create({
   barPair: { flexDirection: 'row', alignItems: 'flex-end', gap: 4 },
   barWrapper: { position: 'relative' as any, alignItems: 'center' },
   bar: { width: 10, borderRadius: 5, overflow: 'hidden' as any },
-  barGlowCap: { position: 'absolute' as any, width: 10, height: 3, borderRadius: 2, opacity: 0.9 },
-  chartLbl: { marginTop: 8, fontSize: 9, fontWeight: '700', letterSpacing: 0.3 },
+  barGlowCap: {
+    position: 'absolute' as any,
+    width: 10,
+    height: 3,
+    borderRadius: 2,
+    opacity: 0.9,
+  },
+  chartLbl: {
+    marginTop: 8,
+    fontSize: 9,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+  },
   legend: { flexDirection: 'row', gap: 16, marginTop: 12 },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   legendPill: { width: 20, height: 4, borderRadius: 2 },
 
   // - closed deals -
-  closedHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14 },
+  closedHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 14,
+  },
   closedTitle: { fontSize: 13, fontWeight: '700' },
-  closedSparkline: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, height: 72 },
-  closedBar: { flex: 1, alignItems: 'center', justifyContent: 'flex-end', height: 72 },
-  closedBarFill: { width: '100%' as any, borderRadius: 4, overflow: 'hidden' as any },
-  closedBarLbl: { fontSize: 9, fontWeight: '700', marginTop: 5, letterSpacing: 0.2 },
-  closedBarVal: { position: 'absolute' as any, top: 0, fontSize: 11, fontWeight: '800' },
+  closedSparkline: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 8,
+    height: 72,
+  },
+  closedBar: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    height: 72,
+  },
+  closedBarFill: {
+    width: '100%' as any,
+    borderRadius: 4,
+    overflow: 'hidden' as any,
+  },
+  closedBarLbl: {
+    fontSize: 9,
+    fontWeight: '700',
+    marginTop: 5,
+    letterSpacing: 0.2,
+  },
+  closedBarVal: {
+    position: 'absolute' as any,
+    top: 0,
+    fontSize: 11,
+    fontWeight: '800',
+  },
 
   // - nav -
   navList: { gap: 10, marginBottom: 22 },
@@ -1647,11 +2775,30 @@ const styles = StyleSheet.create({
     gap: 12,
     padding: 14,
   },
-  navAccentStrip: { position: 'absolute' as any, left: 0, top: 0, bottom: 0, width: 3, borderRadius: 2 },
-  navIconBox: { width: 42, height: 42, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  navAccentStrip: {
+    position: 'absolute' as any,
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 3,
+    borderRadius: 2,
+  },
+  navIconBox: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   navLabel: { fontSize: 15, fontWeight: '800', letterSpacing: -0.1 },
   navSub: { fontSize: 11, marginTop: 2, fontWeight: '500' },
-  navChevronBox: { width: 30, height: 30, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  navChevronBox: {
+    width: 30,
+    height: 30,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 
   // - footer -
   footerMark: {

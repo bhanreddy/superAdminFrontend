@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Pressable, Platform } from 'react-native';
 import { ChevronRight } from 'lucide-react-native';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useRouter, useSegments } from 'expo-router';
+import { usePathname, useRouter, useSegments } from 'expo-router';
 
 interface BreadcrumbItem {
   label: string;
@@ -35,14 +35,29 @@ function segmentToLabel(segment: string): string {
   return segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, ' ');
 }
 
-export const Breadcrumb = React.memo(function Breadcrumb({ items }: BreadcrumbProps) {
+export const Breadcrumb = React.memo(function Breadcrumb({
+  items,
+}: BreadcrumbProps) {
   const { colors, isDark } = useTheme();
   const segments = useSegments();
+  const pathname = usePathname();
   const router = useRouter();
+  const pathSegments = pathname.split('/').filter(Boolean);
+  const parents: Record<string, string> = {
+    '/medical': '/medical/list', '/field': '/field/today',
+    '/field/visit': '/field/today', '/sales': '/sales/playbook',
+    '/microservices': '/microservices/dcgd', '/console/lead': '/console/enquiries',
+  };
 
-  const breadcrumbs: BreadcrumbItem[] = items || segments
-    .map((s) => ({ label: segmentToLabel(s), segment: s }))
-    .filter((b) => b.label.length > 0);
+  const breadcrumbs: BreadcrumbItem[] =
+    items ||
+    segments
+      .map((s) => ({ label: segmentToLabel(s), segment: s }))
+      .filter((b) => b.label.length > 0)
+      .map((item, index) => {
+        const path = '/' + pathSegments.slice(0, index + 1).join('/');
+        return { ...item, href: parents[path] || (/^\/clusters\/[^/]+$/.test(path) ? '/clusters' : path) };
+      });
 
   if (breadcrumbs.length === 0) return null;
 
@@ -53,19 +68,27 @@ export const Breadcrumb = React.memo(function Breadcrumb({ items }: BreadcrumbPr
         return (
           <View key={i} style={styles.row}>
             {i > 0 && (
-              <ChevronRight size={12} color={colors.textTertiary} style={styles.separator} />
+              <ChevronRight
+                size={12}
+                color={colors.textTertiary}
+                style={styles.separator}
+              />
             )}
             {isLast ? (
-              <View style={[
-                styles.currentPill,
-                {
-                  backgroundColor: isDark ? 'rgba(129,140,248,0.1)' : 'rgba(99,102,241,0.08)',
-                },
-              ]}>
-                <Text style={[styles.current, { color: colors.primary }]}>{item.label}</Text>
+              <View
+                style={[
+                  styles.currentPill,
+                  {
+                    backgroundColor: 'transparent',
+                  },
+                ]}
+              >
+                <Text style={[styles.current, { color: colors.primary }]}>
+                  {item.label}
+                </Text>
               </View>
-            ) : (
-              <Pressable
+            ) : item.href ? (
+              <Pressable accessibilityRole="button"
                 onPress={() => {
                   if (item.href) router.push(item.href as any);
                 }}
@@ -74,14 +97,18 @@ export const Breadcrumb = React.memo(function Breadcrumb({ items }: BreadcrumbPr
                   {
                     opacity: pressed ? 0.6 : hovered ? 0.8 : 1,
                   },
-                  Platform.OS === 'web' ? { cursor: item.href ? 'pointer' : 'default' } as any : {},
+                  Platform.OS === 'web'
+                    ? ({ cursor: item.href ? 'pointer' : 'default' } as any)
+                    : {},
                 ]}
               >
-                <Text style={[styles.linkText, { color: colors.textTertiary }]}>
+                <Text
+                  style={[styles.linkText, { color: colors.textSecondary }]}
+                >
                   {item.label}
                 </Text>
               </Pressable>
-            )}
+            ) : <Text style={[styles.linkText, { color: colors.textSecondary }]}>{item.label}</Text>}
           </View>
         );
       })}
@@ -117,7 +144,7 @@ const styles = StyleSheet.create({
   },
   currentPill: {
     paddingVertical: 3,
-    paddingHorizontal: 10,
+    paddingHorizontal: 0,
     borderRadius: 8,
   },
   current: {

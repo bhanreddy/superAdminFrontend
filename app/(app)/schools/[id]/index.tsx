@@ -131,12 +131,12 @@ function TabBar({ active, onChange, colors, tabs }: { active: TabId; onChange: (
         const isActive = tab.id === active;
         const Icon = tab.icon;
         return (
-          <Pressable key={tab.id} onPress={() => onChange(tab.id)} style={tabStyles.tab}>
+          <Pressable accessibilityRole="button" key={tab.id} onPress={() => onChange(tab.id)} style={tabStyles.tab}>
             <Icon size={16} color={isActive ? colors.primary : colors.textSecondary} />
             <Text style={[tabStyles.label, { color: isActive ? colors.primary : colors.textSecondary, fontWeight: isActive ? '700' : '500' }]}>
               {tab.label}
             </Text>
-            {isActive && <View style={[tabStyles.indicator, { backgroundColor: colors.primary }]} />}
+            {isActive && <View style={[tabStyles.indicator, { backgroundColor: colors.primaryFill }]} />}
           </Pressable>
         );
       })}
@@ -247,6 +247,7 @@ function Field({
         },
       ]}>
         <TextInput
+          accessibilityLabel={label}
           style={[fieldStyles.input, { color: colors.textPrimary }]}
           placeholder={placeholder}
           placeholderTextColor={isDark ? `${colors.textSecondary}B3` : INPUT_PLACEHOLDER_COLOR}
@@ -259,7 +260,7 @@ function Field({
           onBlur={() => setFocused(false)}
         />
         {secureTextEntry && (
-          <Pressable onPress={() => setHidden(h => !h)} style={fieldStyles.eyeBtn}>
+          <Pressable accessibilityRole="button" accessibilityLabel={hidden ? 'Show password' : 'Hide password'} onPress={() => setHidden(h => !h)} style={fieldStyles.eyeBtn}>
             {hidden ? <Eye size={16} color={colors.textSecondary} /> : <EyeOff size={16} color={colors.textSecondary} />}
           </Pressable>
         )}
@@ -289,13 +290,13 @@ function GenderPicker({ value, onChange, colors }: { value: number; onChange: (v
         {OPTIONS.map((opt, i) => {
           const isActive = value === opt.id;
           return (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={opt.id}
               onPress={() => onChange(opt.id)}
               style={[
                 genderStyles.option,
                 i < OPTIONS.length - 1 && { borderRightWidth: StyleSheet.hairlineWidth, borderRightColor: colors.border },
-                isActive && { backgroundColor: colors.primary },
+                isActive && { backgroundColor: colors.primaryFill },
               ]}
             >
               <Text style={[genderStyles.optText, { color: isActive ? '#fff' : colors.textSecondary, fontWeight: isActive ? '700' : '500' }]}>
@@ -521,7 +522,7 @@ export default function SchoolDetailScreen() {
         <InfoRow icon={Hash} label="School ID" value={school.id.toString()} accent={colors.primary} colors={colors} />
         <InfoRow icon={Hash} label="Code" value={school.code} accent={colors.primary} colors={colors} />
         {school.address && <InfoRow icon={Map} label="Address" value={school.address} colors={colors} />}
-        <InfoRow icon={Calendar} label="Created" value={new Date(school.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} colors={colors} />
+        <InfoRow icon={Calendar} label="Created" value={school.created_at && Number.isFinite(new Date(school.created_at).getTime()) ? new Date(school.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Not recorded'} colors={colors} />
         {healthStats?.last_activity && (
           <InfoRow icon={Clock} label="Last Active" value={formattedLastActivity} colors={colors} />
         )}

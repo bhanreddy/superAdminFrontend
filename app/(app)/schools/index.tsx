@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState, useMemo, useRef } from 'react';
-import { View, Text, StyleSheet, Pressable, Platform, Animated, Easing, ScrollView, useWindowDimensions, Alert } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Platform,  Easing, ScrollView, useWindowDimensions, Alert } from 'react-native';
+import { Animated } from '../../../src/utils/accessibleAnimation';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
@@ -231,7 +232,7 @@ export default function SchoolsListScreen() {
     {
       key: 'name', title: 'School', flex: 3, sortable: true,
       render: (item) => (
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => goToSchool(item)}
           style={({ hovered }: any) => [
             st.nameCell,
@@ -308,7 +309,7 @@ export default function SchoolsListScreen() {
       render: (item) => (
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 4 }}>
           {!isPhone && (
-            <Pressable
+            <Pressable accessibilityLabel="Open build configuration" accessibilityRole="button"
               onPress={() => goToBuildConfig(item)}
               style={({ pressed, hovered }: any) => [
                 st.iconButton,
@@ -470,7 +471,7 @@ export default function SchoolsListScreen() {
               let label = filter === 'pending_build' ? 'Pending' : filter;
               label = label.charAt(0).toUpperCase() + label.slice(1);
               return (
-                <Pressable
+                <Pressable accessibilityRole="button"
                   key={filter}
                   onPress={() => setStatusFilter(filter)}
                   style={({ pressed, hovered }: any) => [

@@ -1,0 +1,440 @@
+[
+  {
+    "source": "app/(app)/admins/add.tsx",
+    "route": "/admins/add",
+    "url": "/admins/add",
+    "index": 0
+  },
+  {
+    "source": "app/(app)/admins/index.tsx",
+    "route": "/admins",
+    "url": "/admins",
+    "index": 1
+  },
+  {
+    "source": "app/(app)/books/access.tsx",
+    "route": "/books/access",
+    "url": "/books/access",
+    "index": 2
+  },
+  {
+    "source": "app/(app)/books/account.tsx",
+    "route": "/books/account",
+    "url": "/books/account",
+    "index": 3
+  },
+  {
+    "source": "app/(app)/books/index.tsx",
+    "route": "/books",
+    "url": "/books",
+    "index": 4
+  },
+  {
+    "source": "app/(app)/checklist/index.tsx",
+    "route": "/checklist",
+    "url": "/checklist",
+    "index": 5
+  },
+  {
+    "source": "app/(app)/clusters/[id]/edit.tsx",
+    "route": "/clusters/[id]/edit",
+    "url": "/clusters/101/edit",
+    "index": 6
+  },
+  {
+    "source": "app/(app)/clusters/add.tsx",
+    "route": "/clusters/add",
+    "url": "/clusters/add",
+    "index": 7
+  },
+  {
+    "source": "app/(app)/clusters/index.tsx",
+    "route": "/clusters",
+    "url": "/clusters",
+    "index": 8
+  },
+  {
+    "source": "app/(app)/complaints/index.tsx",
+    "route": "/complaints",
+    "url": "/complaints",
+    "index": 9
+  },
+  {
+    "source": "app/(app)/connect.tsx",
+    "route": "/connect",
+    "url": "/connect",
+    "index": 10
+  },
+  {
+    "source": "app/(app)/console/analytics.tsx",
+    "route": "/console/analytics",
+    "url": "/console/analytics",
+    "index": 11
+  },
+  {
+    "source": "app/(app)/console/audit-logs.tsx",
+    "route": "/console/audit-logs",
+    "url": "/console/audit-logs",
+    "index": 12
+  },
+  {
+    "source": "app/(app)/console/backups.tsx",
+    "route": "/console/backups",
+    "url": "/console/backups",
+    "index": 13
+  },
+  {
+    "source": "app/(app)/console/billing.tsx",
+    "route": "/console/billing",
+    "url": "/console/billing",
+    "index": 14
+  },
+  {
+    "source": "app/(app)/console/books.tsx",
+    "route": "/console/books",
+    "url": "/console/books",
+    "index": 15
+  },
+  {
+    "source": "app/(app)/console/collection-approvals.tsx",
+    "route": "/console/collection-approvals",
+    "url": "/console/collection-approvals",
+    "index": 16
+  },
+  {
+    "source": "app/(app)/console/collections.tsx",
+    "route": "/console/collections",
+    "url": "/console/collections",
+    "index": 17
+  },
+  {
+    "source": "app/(app)/console/crm.tsx",
+    "route": "/console/crm",
+    "url": "/console/crm",
+    "index": 18
+  },
+  {
+    "source": "app/(app)/console/enquiries.tsx",
+    "route": "/console/enquiries",
+    "url": "/console/enquiries",
+    "index": 19
+  },
+  {
+    "source": "app/(app)/console/expense-approvals.tsx",
+    "route": "/console/expense-approvals",
+    "url": "/console/expense-approvals",
+    "index": 20
+  },
+  {
+    "source": "app/(app)/console/expenses.tsx",
+    "route": "/console/expenses",
+    "url": "/console/expenses",
+    "index": 21
+  },
+  {
+    "source": "app/(app)/console/festival-posters.tsx",
+    "route": "/console/festival-posters",
+    "url": "/console/festival-posters",
+    "index": 22
+  },
+  {
+    "source": "app/(app)/console/field-feedback.tsx",
+    "route": "/console/field-feedback",
+    "url": "/console/field-feedback",
+    "index": 23
+  },
+  {
+    "source": "app/(app)/console/import-history.tsx",
+    "route": "/console/import-history",
+    "url": "/console/import-history",
+    "index": 24
+  },
+  {
+    "source": "app/(app)/console/index.tsx",
+    "route": "/console",
+    "url": "/console",
+    "index": 25
+  },
+  {
+    "source": "app/(app)/console/lead/[id].tsx",
+    "route": "/console/lead/[id]",
+    "url": "/console/lead/101",
+    "index": 26
+  },
+  {
+    "source": "app/(app)/console/notifications.tsx",
+    "route": "/console/notifications",
+    "url": "/console/notifications",
+    "index": 27
+  },
+  {
+    "source": "app/(app)/console/payroll.tsx",
+    "route": "/console/payroll",
+    "url": "/console/payroll",
+    "index": 28
+  },
+  {
+    "source": "app/(app)/console/sales-command.tsx",
+    "route": "/console/sales-command",
+    "url": "/console/sales-command",
+    "index": 29
+  },
+  {
+    "source": "app/(app)/console/school-import.tsx",
+    "route": "/console/school-import",
+    "url": "/console/school-import",
+    "index": 30
+  },
+  {
+    "source": "app/(app)/console/school-intake/[id].tsx",
+    "route": "/console/school-intake/[id]",
+    "url": "/console/school-intake/101",
+    "index": 31
+  },
+  {
+    "source": "app/(app)/console/school-intake/index.tsx",
+    "route": "/console/school-intake",
+    "url": "/console/school-intake",
+    "index": 32
+  },
+  {
+    "source": "app/(app)/console/school-prospects/[id].tsx",
+    "route": "/console/school-prospects/[id]",
+    "url": "/console/school-prospects/101",
+    "index": 33
+  },
+  {
+    "source": "app/(app)/console/school-prospects/index.tsx",
+    "route": "/console/school-prospects",
+    "url": "/console/school-prospects",
+    "index": 34
+  },
+  {
+    "source": "app/(app)/console/settings.tsx",
+    "route": "/console/settings",
+    "url": "/console/settings",
+    "index": 35
+  },
+  {
+    "source": "app/(app)/console/sprint.tsx",
+    "route": "/console/sprint",
+    "url": "/console/sprint",
+    "index": 36
+  },
+  {
+    "source": "app/(app)/console/tenant-assignments.tsx",
+    "route": "/console/tenant-assignments",
+    "url": "/console/tenant-assignments",
+    "index": 37
+  },
+  {
+    "source": "app/(app)/console/tracking-links.tsx",
+    "route": "/console/tracking-links",
+    "url": "/console/tracking-links",
+    "index": 38
+  },
+  {
+    "source": "app/(app)/console/units.tsx",
+    "route": "/console/units",
+    "url": "/console/units",
+    "index": 39
+  },
+  {
+    "source": "app/(app)/content-programs.tsx",
+    "route": "/content-programs",
+    "url": "/content-programs",
+    "index": 40
+  },
+  {
+    "source": "app/(app)/field/performance.tsx",
+    "route": "/field/performance",
+    "url": "/field/performance",
+    "index": 41
+  },
+  {
+    "source": "app/(app)/field/planner.tsx",
+    "route": "/field/planner",
+    "url": "/field/planner",
+    "index": 42
+  },
+  {
+    "source": "app/(app)/field/route.tsx",
+    "route": "/field/route",
+    "url": "/field/route",
+    "index": 43
+  },
+  {
+    "source": "app/(app)/field/today.tsx",
+    "route": "/field/today",
+    "url": "/field/today",
+    "index": 44
+  },
+  {
+    "source": "app/(app)/field/visit/[id].tsx",
+    "route": "/field/visit/[id]",
+    "url": "/field/visit/101",
+    "index": 45
+  },
+  {
+    "source": "app/(app)/index.tsx",
+    "route": "/",
+    "url": "/",
+    "index": 46
+  },
+  {
+    "source": "app/(app)/manage-content.tsx",
+    "route": "/manage-content",
+    "url": "/manage-content",
+    "index": 47
+  },
+  {
+    "source": "app/(app)/media-qr.tsx",
+    "route": "/media-qr",
+    "url": "/media-qr",
+    "index": 48
+  },
+  {
+    "source": "app/(app)/medical/[id]/build-config.tsx",
+    "route": "/medical/[id]/build-config",
+    "url": "/medical/101/build-config",
+    "index": 49
+  },
+  {
+    "source": "app/(app)/medical/add.tsx",
+    "route": "/medical/add",
+    "url": "/medical/add",
+    "index": 50
+  },
+  {
+    "source": "app/(app)/medical/list.tsx",
+    "route": "/medical/list",
+    "url": "/medical/list",
+    "index": 51
+  },
+  {
+    "source": "app/(app)/messenger/[id].tsx",
+    "route": "/messenger/[id]",
+    "url": "/messenger/101",
+    "index": 52
+  },
+  {
+    "source": "app/(app)/messenger/index.tsx",
+    "route": "/messenger",
+    "url": "/messenger",
+    "index": 53
+  },
+  {
+    "source": "app/(app)/microservices/dcgd.tsx",
+    "route": "/microservices/dcgd",
+    "url": "/microservices/dcgd",
+    "index": 54
+  },
+  {
+    "source": "app/(app)/microservices/dcgdContent.tsx",
+    "route": "/microservices/dcgdContent",
+    "url": "/microservices/dcgdContent",
+    "index": 55
+  },
+  {
+    "source": "app/(app)/requirements/index.tsx",
+    "route": "/requirements",
+    "url": "/requirements",
+    "index": 56
+  },
+  {
+    "source": "app/(app)/sales/playbook.tsx",
+    "route": "/sales/playbook",
+    "url": "/sales/playbook",
+    "index": 57
+  },
+  {
+    "source": "app/(app)/sales/training.tsx",
+    "route": "/sales/training",
+    "url": "/sales/training",
+    "index": 58
+  },
+  {
+    "source": "app/(app)/schools/[id]/app-config.tsx",
+    "route": "/schools/[id]/app-config",
+    "url": "/schools/101/app-config",
+    "index": 59
+  },
+  {
+    "source": "app/(app)/schools/[id]/build-config.tsx",
+    "route": "/schools/[id]/build-config",
+    "url": "/schools/101/build-config",
+    "index": 60
+  },
+  {
+    "source": "app/(app)/schools/[id]/features.tsx",
+    "route": "/schools/[id]/features",
+    "url": "/schools/101/features",
+    "index": 61
+  },
+  {
+    "source": "app/(app)/schools/[id]/index.tsx",
+    "route": "/schools/[id]",
+    "url": "/schools/101",
+    "index": 62
+  },
+  {
+    "source": "app/(app)/schools/[id]/setup-guide.tsx",
+    "route": "/schools/[id]/setup-guide",
+    "url": "/schools/101/setup-guide",
+    "index": 63
+  },
+  {
+    "source": "app/(app)/schools/add.tsx",
+    "route": "/schools/add",
+    "url": "/schools/add",
+    "index": 64
+  },
+  {
+    "source": "app/(app)/schools/index.tsx",
+    "route": "/schools",
+    "url": "/schools",
+    "index": 65
+  },
+  {
+    "source": "app/(app)/students/[id].tsx",
+    "route": "/students/[id]",
+    "url": "/students/101",
+    "index": 66
+  },
+  {
+    "source": "app/(app)/students/import.tsx",
+    "route": "/students/import",
+    "url": "/students/import",
+    "index": 67
+  },
+  {
+    "source": "app/(app)/students/index.tsx",
+    "route": "/students",
+    "url": "/students",
+    "index": 68
+  },
+  {
+    "source": "app/(app)/users/index.tsx",
+    "route": "/users",
+    "url": "/users",
+    "index": 69
+  },
+  {
+    "source": "app/(auth)/ca-login.tsx",
+    "route": "/ca-login",
+    "url": "/ca-login",
+    "index": 70
+  },
+  {
+    "source": "app/(auth)/login.tsx",
+    "route": "/login",
+    "url": "/login",
+    "index": 71
+  },
+  {
+    "source": "app/cluster-selector.tsx",
+    "route": "/cluster-selector",
+    "url": "/cluster-selector",
+    "index": 72
+  }
+]

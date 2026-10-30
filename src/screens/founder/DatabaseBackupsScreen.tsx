@@ -217,8 +217,8 @@ export function DatabaseBackupsScreen() {
     <View style={styles.container}>
       {/* ── Header ────────────────────────────────────────────────────────── */}
       <View style={styles.headerRow}>
-        <View style={{ gap: 4 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+        <View style={{ gap: 4, flexGrow: 1, flexShrink: 1, flexBasis: 320, minWidth: 0 }}>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
             <Text style={[styles.pageTitle, { color: colors.textPrimary }]}>Database Backups</Text>
             <View style={[styles.infraBadge, { backgroundColor: `${colors.primary}20` }]}>
               <Text style={[styles.infraBadgeText, { color: colors.primary }]}>INFRASTRUCTURE</Text>
@@ -230,7 +230,7 @@ export function DatabaseBackupsScreen() {
         </View>
 
         <View style={styles.headerActions}>
-          <Pressable
+          <Pressable accessibilityRole="button"
             style={[styles.refreshButton, { borderColor: colors.border }]}
             onPress={handleRefresh}
             disabled={refreshing}
@@ -243,7 +243,7 @@ export function DatabaseBackupsScreen() {
             <Text style={[styles.refreshText, { color: colors.textSecondary }]}>Refresh</Text>
           </Pressable>
 
-          <Pressable
+          <Pressable accessibilityRole="button"
             style={styles.runManualBtn}
             onPress={() => setShowTriggerModal(true)}
           >
@@ -418,11 +418,11 @@ export function DatabaseBackupsScreen() {
 
         <View style={styles.filterPills}>
           {['all', 'daily', 'weekly', 'monthly', 'manual'].map((t) => (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={t}
               style={[
                 styles.filterPill,
-                selectedType === t && { backgroundColor: colors.primary },
+                selectedType === t && { backgroundColor: colors.primaryFill },
                 { borderColor: colors.border },
               ]}
               onPress={() => setSelectedType(t)}
@@ -487,7 +487,7 @@ export function DatabaseBackupsScreen() {
 
                 <View style={{ flex: 2.2, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                   <Text style={[styles.tableCellMono, { color: colors.textPrimary }]}>{job.backup_id}</Text>
-                  <Pressable onPress={() => handleCopy(job.backup_id, `id-${job.id}`)}>
+                  <Pressable accessibilityLabel="Copy details" accessibilityRole="button" onPress={() => handleCopy(job.backup_id, `id-${job.id}`)}>
                     {copiedField === `id-${job.id}` ? (
                       <Check size={14} color="#10B981" />
                     ) : (
@@ -526,7 +526,7 @@ export function DatabaseBackupsScreen() {
                 </View>
 
                 <View style={{ flex: 1.5, flexDirection: 'row', justifyContent: 'flex-end', gap: 8 }}>
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     style={[styles.actionBtn, { borderColor: colors.border }]}
                     onPress={() => handleOpenDetails(job)}
                   >
@@ -547,7 +547,7 @@ export function DatabaseBackupsScreen() {
               Showing page {pagination.page} of {pagination.totalPages} ({pagination.total} total runs)
             </Text>
             <View style={{ flexDirection: 'row', gap: 8 }}>
-              <Pressable
+              <Pressable accessibilityLabel="Previous page" accessibilityRole="button"
                 disabled={pagination.page <= 1}
                 style={[
                   styles.pageBtn,
@@ -557,7 +557,7 @@ export function DatabaseBackupsScreen() {
               >
                 <ChevronLeft size={16} color={colors.textPrimary} />
               </Pressable>
-              <Pressable
+              <Pressable accessibilityLabel="Next page" accessibilityRole="button"
                 disabled={pagination.page >= pagination.totalPages}
                 style={[
                   styles.pageBtn,
@@ -583,7 +583,7 @@ export function DatabaseBackupsScreen() {
                   {selectedJob?.backup_id}
                 </Text>
               </View>
-              <Pressable style={styles.modalCloseBtn} onPress={() => setSelectedJob(null)}>
+              <Pressable accessibilityLabel="Close dialog" accessibilityRole="button" style={styles.modalCloseBtn} onPress={() => setSelectedJob(null)}>
                 <X size={20} color={colors.textSecondary} />
               </Pressable>
             </View>
@@ -666,7 +666,7 @@ export function DatabaseBackupsScreen() {
                     <Text style={[styles.metaBlockValue, { color: colors.textPrimary }]}>
                       {selectedJob.storage_path || '—'}
                     </Text>
-                    <Pressable onPress={() => handleCopy(selectedJob.storage_path, 'storage_path')}>
+                    <Pressable accessibilityLabel="Copy details" accessibilityRole="button" onPress={() => handleCopy(selectedJob.storage_path, 'storage_path')}>
                       {copiedField === 'storage_path' ? (
                         <Check size={16} color="#10B981" />
                       ) : (
@@ -685,7 +685,7 @@ export function DatabaseBackupsScreen() {
                     <Text style={[styles.metaBlockValue, { color: colors.textPrimary, fontSize: 12 }]}>
                       {selectedJob.checksum_sha256 || '—'}
                     </Text>
-                    <Pressable onPress={() => handleCopy(selectedJob.checksum_sha256, 'checksum')}>
+                    <Pressable accessibilityLabel="Copy details" accessibilityRole="button" onPress={() => handleCopy(selectedJob.checksum_sha256, 'checksum')}>
                       {copiedField === 'checksum' ? (
                         <Check size={16} color="#10B981" />
                       ) : (
@@ -755,7 +755,7 @@ export function DatabaseBackupsScreen() {
                   Immediate logical dump to Google Cloud Storage
                 </Text>
               </View>
-              <Pressable style={styles.modalCloseBtn} onPress={() => setShowTriggerModal(false)}>
+              <Pressable accessibilityLabel="Close dialog" accessibilityRole="button" style={styles.modalCloseBtn} onPress={() => setShowTriggerModal(false)}>
                 <X size={20} color={colors.textSecondary} />
               </Pressable>
             </View>
@@ -780,7 +780,7 @@ export function DatabaseBackupsScreen() {
             </View>
 
             <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 12, marginTop: 12 }}>
-              <Pressable
+              <Pressable accessibilityRole="button"
                 style={[styles.cancelBtn, { borderColor: colors.border }]}
                 onPress={() => setShowTriggerModal(false)}
                 disabled={triggering}
@@ -788,7 +788,7 @@ export function DatabaseBackupsScreen() {
                 <Text style={{ color: colors.textSecondary, fontWeight: '600' }}>Cancel</Text>
               </Pressable>
 
-              <Pressable
+              <Pressable accessibilityRole="button"
                 style={[styles.runManualBtn, { opacity: triggering ? 0.7 : 1 }]}
                 onPress={handleTriggerBackup}
                 disabled={triggering}

@@ -120,7 +120,7 @@ export default function SalesExecutiveDashboard() {
             </Text>
           </View>
 
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => router.push('/(app)/schools/add' as any)}
             style={({ pressed, hovered }: any) => [
               styles.newSchoolBtn,
@@ -164,7 +164,7 @@ export default function SalesExecutiveDashboard() {
           </GlassCard>
         </View>
 
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => router.push('/(app)/schools/add?tab=sent' as any)}
           style={({ pressed }) => [{ transform: [{ scale: pressed ? 0.985 : 1 }], marginBottom: 20 }]}
         >
@@ -261,7 +261,7 @@ export default function SalesExecutiveDashboard() {
 
                 {/* Action Buttons for this school */}
                 <View style={styles.cardActions}>
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     onPress={() => router.push(`/(app)/schools/${school.id}` as any)}
                     style={({ pressed }: any) => [styles.actionBtn, pressed && { opacity: 0.8 }]}
                   >
@@ -269,7 +269,7 @@ export default function SalesExecutiveDashboard() {
                     <Text style={[styles.actionBtnText, { color: colors.primary }]}>Details</Text>
                   </Pressable>
 
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     onPress={() => router.push(`/(app)/checklist` as any)}
                     style={({ pressed }: any) => [styles.actionBtn, pressed && { opacity: 0.8 }]}
                   >
@@ -277,7 +277,7 @@ export default function SalesExecutiveDashboard() {
                     <Text style={[styles.actionBtnText, { color: '#30D158' }]}>Onboarding Checklist</Text>
                   </Pressable>
 
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     onPress={() => router.push(`/(app)/students` as any)}
                     style={({ pressed }: any) => [styles.actionBtn, pressed && { opacity: 0.8 }]}
                   >
@@ -285,7 +285,7 @@ export default function SalesExecutiveDashboard() {
                     <Text style={[styles.actionBtnText, { color: '#64D2FF' }]}>Upload Excel</Text>
                   </Pressable>
 
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     onPress={() => router.push(`/(app)/requirements` as any)}
                     style={({ pressed }: any) => [styles.actionBtn, pressed && { opacity: 0.8 }]}
                   >

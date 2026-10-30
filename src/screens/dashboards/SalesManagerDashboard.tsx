@@ -157,7 +157,7 @@ export default function SalesManagerDashboard() {
           <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
             Sales Executives & Territory Coverage
           </Text>
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => router.push('/(app)/users' as any)}
             style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
           >
@@ -221,7 +221,7 @@ export default function SalesManagerDashboard() {
           <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
             Requirements Raised by Sales Team
           </Text>
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => router.push('/(app)/requirements' as any)}
             style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
           >

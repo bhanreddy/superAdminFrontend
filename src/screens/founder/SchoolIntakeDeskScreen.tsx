@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, Pressable, RefreshControl } from 'r
 import { useRouter } from 'expo-router';
 import { ChevronRight, ShieldCheck } from 'lucide-react-native';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
+import { EmptyState } from '../../components/ui/EmptyState';
 import { useTheme } from '../../contexts/ThemeContext';
 import { ConsoleAmbientBackground, GlassCard, SkeletonActionList, bottomTabPad } from './founderUi';
 import {
@@ -34,14 +35,16 @@ export default function SchoolIntakeDeskScreen() {
   const { showToast } = useToast();
   const [items, setItems] = useState<SchoolIntake[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<(typeof FILTERS)[number]['id']>('waiting');
 
   const load = useCallback(async () => {
+    setLoadError('');
     try {
       setItems(await schoolIntakeApi.list());
     } catch (err) {
-      showToast(intakeErrorMessage(err, 'Could not load the intake desk.'), 'error');
+      setLoadError(intakeErrorMessage(err, 'Could not load the intake desk.'));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -78,12 +81,12 @@ export default function SchoolIntakeDeskScreen() {
           {FILTERS.map((item) => {
             const active = filter === item.id;
             return (
-              <Pressable
+              <Pressable accessibilityRole="button"
                 key={item.id}
                 onPress={() => setFilter(item.id)}
                 style={({ pressed }) => [
                   styles.filter,
-                  { backgroundColor: active ? colors.primary : 'rgba(127,127,127,0.12)', transform: [{ scale: pressed ? 0.97 : 1 }] },
+                  { backgroundColor: active ? colors.primaryFill : 'rgba(127,127,127,0.12)', transform: [{ scale: pressed ? 0.97 : 1 }] },
                 ]}
               >
                 <Text style={{ color: active ? '#FFF' : colors.textSecondary, fontWeight: '700', fontSize: 12 }}>{item.label}</Text>
@@ -93,7 +96,8 @@ export default function SchoolIntakeDeskScreen() {
         </View>
 
         {loading ? <SkeletonActionList count={4} /> : null}
-        {!loading && visible.length === 0 ? (
+        {loadError ? <EmptyState title="Intake queue unavailable" description={loadError} actionLabel="Try again" onAction={() => void load()} /> : null}
+        {!loading && !loadError && visible.length === 0 ? (
           <GlassCard variant="lightweight" style={styles.card}>
             <Text style={[styles.name, { color: colors.textPrimary }]}>Queue is clear</Text>
             <Text style={{ color: colors.textSecondary, fontSize: 13, lineHeight: 18 }}>
@@ -104,7 +108,7 @@ export default function SchoolIntakeDeskScreen() {
         {visible.map((item) => {
           const meta = INTAKE_STATUS[item.status as IntakeStatus] || INTAKE_STATUS.SUBMITTED;
           return (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={item.id}
               onPress={() => router.push(`/(app)/console/school-intake/${item.id}` as any)}
               style={({ pressed }) => [{ transform: [{ scale: pressed ? 0.985 : 1 }] }]}

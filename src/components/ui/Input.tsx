@@ -1,228 +1,185 @@
-import React, { useState, useRef } from 'react';
-import { View, TextInput, Text, StyleSheet, TextInputProps, Pressable, ViewStyle, Animated, Platform } from 'react-native';
-import { pressableWebStyles } from '../../utils/webPressable';
+import React, { useId, useState } from 'react';
+import {
+  View,
+  TextInput,
+  Text,
+  StyleSheet,
+  TextInputProps,
+  Pressable,
+  ViewStyle,
+  Platform,
+} from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 import { darkTheme } from '../../constants/theme';
 
 interface InputProps extends TextInputProps {
   label?: string;
-  /** Renders a minimal required indicator next to the label (no asterisk). */
   required?: boolean;
   error?: string;
   containerStyle?: ViewStyle;
-  /** Force dark field styling (e.g. branded auth screens) regardless of app theme. */
   tone?: 'auto' | 'dark';
-  /** Dense editors may opt out of JS-driven focus color animation. */
+  /** Retained for compatibility. Focus uses immediate state, with no JS animation. */
   animateFocus?: boolean;
 }
-
-const WEB_INPUT_RESET =
-  Platform.OS === 'web'
-    ? ({
-        outlineWidth: 0,
-        outlineStyle: 'none',
-        outlineColor: 'transparent',
-        boxShadow: 'none',
-      } as const)
-    : null;
-
-export const Input: React.FC<InputProps> = React.memo(({
-  label,
-  required,
-  error,
-  secureTextEntry,
-  containerStyle,
-  tone = 'auto',
-  animateFocus = true,
-  style,
-  onFocus,
-  onBlur,
-  ...props
-}) => {
-  const theme = useTheme();
-  const forceDark = tone === 'dark';
-  const isDark = forceDark || theme.isDark;
-  const colors = forceDark ? darkTheme.colors : theme.colors;
-  const [isFocused, setIsFocused] = useState(false);
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const focusAnim = useRef(new Animated.Value(0)).current;
-
-  const isPassword = secureTextEntry;
-
-  const handleFocus = () => {
-    setIsFocused(true);
-    if (!animateFocus) return;
-    Animated.spring(focusAnim, {
-      toValue: 1,
-      tension: 200,
-      friction: 20,
-      useNativeDriver: false,
-    }).start();
-  };
-
-  const handleBlur = () => {
-    setIsFocused(false);
-    if (!animateFocus) return;
-    Animated.spring(focusAnim, {
-      toValue: 0,
-      tension: 200,
-      friction: 20,
-      useNativeDriver: false,
-    }).start();
-  };
-
-  const borderColor = focusAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [
-      isDark ? 'rgba(255,255,255,0.10)' : colors.clayBorderColor,
-      `${colors.primary}70`,
-    ],
-  });
-
-  const fieldBg = isDark ? 'rgba(255,255,255,0.06)' : '#FFFFFF';
-  const labelColor = isFocused ? colors.primary : (isDark ? 'rgba(235,235,245,0.72)' : colors.textSecondary);
-  const mutedColor = isDark ? 'rgba(235,235,245,0.55)' : colors.textSecondary;
-
-  return (
-    <View style={[styles.container, containerStyle]}>
-      {label && (
-        <View style={styles.labelRow}>
-          <Text style={[styles.label, { color: labelColor }]}>
-            {label}
-          </Text>
-          {required ? (
-            <View
-              accessibilityLabel="Required field"
-              style={[styles.requiredDot, { backgroundColor: colors.primary }]}
-            />
-          ) : null}
-        </View>
-      )}
-      <Animated.View
-        style={[
-          styles.inputWrapper,
-          {
-            borderColor: error ? colors.error : animateFocus ? borderColor : isFocused ? colors.primary : colors.border,
-            backgroundColor: fieldBg,
-          },
-          // Soft Apple-grade inset tray and focus glow
-          Platform.OS === 'web' ? {
-            boxShadow: isFocused
-              ? isDark
-                ? `inset 1.5px 1.5px 4px rgba(0,0,0,0.45), inset -1.5px -1.5px 4px rgba(255,255,255,0.04), 0 0 0 3px ${colors.primary}28`
-                : `inset 1.5px 1.5px 4px rgba(0,0,0,0.08), inset -1.5px -1.5px 4px rgba(255,255,255,0.7), 0 0 0 4px ${colors.primary}25`
-              : isDark
-                ? 'inset 1.5px 1.5px 4px rgba(0,0,0,0.35), inset -1.5px -1.5px 4px rgba(255,255,255,0.04)'
-                : 'inset 1.5px 1.5px 4px rgba(0,0,0,0.05), inset -1.5px -1.5px 4px rgba(255,255,255,0.6)',
-            transition: 'border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-          } as any : {
-            shadowColor: '#000',
-            shadowOffset: { width: 1, height: 1 },
-            shadowOpacity: isDark ? 0.2 : 0.05,
-            shadowRadius: 4,
-          },
-        ]}
-      >
-        <TextInput
-          style={[
-            styles.input,
-            { color: colors.textPrimary },
-            WEB_INPUT_RESET as any,
-            style,
-          ]}
-          placeholderTextColor={isDark ? 'rgba(235,235,245,0.38)' : '#938FA8'}
-          onFocus={(e) => {
-            handleFocus();
-            onFocus?.(e);
-          }}
-          onBlur={(e) => {
-            handleBlur();
-            onBlur?.(e);
-          }}
-          secureTextEntry={isPassword && !isPasswordVisible}
-          {...props}
-        />
-        {isPassword && (
-          <Pressable
-            style={({ pressed }) => [
-              styles.eyeIcon,
-              ...pressableWebStyles(pressed, { pressedOpacity: 0.75 }),
-            ]}
-            onPress={() => setIsPasswordVisible(!isPasswordVisible)}
-            hitSlop={8}
-            accessibilityRole="button"
-            accessibilityLabel={isPasswordVisible ? 'Hide password' : 'Show password'}
-          >
-            <Text style={[styles.eyeText, { color: isFocused ? colors.primary : mutedColor }]}>
-              {isPasswordVisible ? 'Hide' : 'Show'}
+export const Input = React.memo(
+  React.forwardRef<TextInput, InputProps>(function Input(
+    {
+      label,
+      required,
+      error,
+      secureTextEntry,
+      containerStyle,
+      tone = 'auto',
+      animateFocus: _animateFocus,
+      style,
+      onFocus,
+      onBlur,
+      ...props
+    },
+    ref,
+  ) {
+    const theme = useTheme();
+    const colors = tone === 'dark' ? darkTheme.colors : theme.colors;
+    const [focused, setFocused] = useState(false);
+    const [visible, setVisible] = useState(false);
+    const id = useId();
+    const errorId = `field-error-${id}`;
+    return (
+      <View style={[styles.container, containerStyle]}>
+        {label && (
+          <View style={styles.labelRow}>
+            <Text style={[styles.label, { color: colors.textPrimary }]}>
+              {label}
             </Text>
-          </Pressable>
+            {required && (
+              <Text style={[styles.required, { color: colors.textSecondary }]}>
+                Required
+              </Text>
+            )}
+          </View>
         )}
-      </Animated.View>
-      {error ? <Text style={[styles.errorText, { color: colors.error }]}>{error}</Text> : null}
-    </View>
-  );
-});
-
+        <View
+          style={[
+            styles.wrapper,
+            {
+              backgroundColor: colors.inputBg || colors.surface,
+              borderColor: error
+                ? colors.error
+                : focused
+                  ? colors.primary
+                  : colors.border,
+            },
+            Platform.OS === 'web'
+              ? ({
+                  boxShadow: focused ? `0 0 0 3px ${colors.primary}18` : 'none',
+                  transition: 'border-color 120ms ease',
+                } as any)
+              : null,
+          ]}
+        >
+          <TextInput
+            ref={ref}
+            {...props}
+            accessibilityLabel={props.accessibilityLabel || label}
+            accessibilityHint={[props.accessibilityHint, required ? 'Required' : '', error].filter(Boolean).join('. ') || undefined}
+            {...(Platform.OS === 'web' ? {
+              'aria-required': Boolean(required),
+              'aria-invalid': Boolean(error),
+              'aria-describedby': error ? errorId : undefined,
+            } : {})}
+            style={[
+              styles.input,
+              props.multiline && styles.multiline,
+              { color: colors.textPrimary },
+              style,
+              { fontSize: 16 },
+              Platform.OS === 'web' ? ({ outlineStyle: 'none' } as any) : null,
+            ]}
+            placeholderTextColor={
+              props.placeholderTextColor || colors.textTertiary
+            }
+            selectionColor={colors.primary}
+            underlineColorAndroid="transparent"
+            secureTextEntry={Boolean(secureTextEntry && !visible)}
+            onFocus={(event) => {
+              setFocused(true);
+              onFocus?.(event);
+            }}
+            onBlur={(event) => {
+              setFocused(false);
+              onBlur?.(event);
+            }}
+          />
+          {secureTextEntry && (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={visible ? 'Hide password' : 'Show password'}
+              onPress={() => setVisible((value) => !value)}
+              style={styles.eye}
+            >
+              <Text
+                style={{
+                  color: colors.primary,
+                  fontSize: 13,
+                  fontWeight: '600',
+                }}
+              >
+                {visible ? 'Hide' : 'Show'}
+              </Text>
+            </Pressable>
+          )}
+        </View>
+        {error ? (
+          <Text
+            nativeID={errorId}
+            accessibilityRole="alert"
+            accessibilityLiveRegion="polite"
+            style={[styles.error, { color: colors.error }]}
+          >
+            {error}
+          </Text>
+        ) : null}
+      </View>
+    );
+  }),
+);
 const styles = StyleSheet.create({
-  container: {
-    marginBottom: 20,
-  },
+  container: { marginBottom: 18, minWidth: 0 },
   labelRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
     gap: 8,
-    marginBottom: 10,
+    marginBottom: 8,
   },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    letterSpacing: 0.2,
-    flexShrink: 1,
-  },
-  requiredDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    marginTop: 1,
-    opacity: 0.85,
-  },
-  inputWrapper: {
+  label: { fontSize: 14, fontWeight: '600', flexShrink: 1 },
+  required: { fontSize: 12 },
+  wrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderRadius: 16,
-    paddingLeft: 16,
-    paddingRight: 6,
-    overflow: 'hidden',
+    borderRadius: 11,
+    paddingLeft: 14,
+    paddingRight: 4,
   },
   input: {
     flex: 1,
     minWidth: 0,
     borderWidth: 0,
     backgroundColor: 'transparent',
-    paddingVertical: 14,
-    paddingRight: 8,
-    fontSize: 15,
-    fontWeight: '400',
-    letterSpacing: 0.1,
+    paddingVertical: 12,
+    paddingRight: 10,
+    fontSize: 16,
+    lineHeight: 22,
     minHeight: 48,
   },
-  eyeIcon: {
-    flexShrink: 0,
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    borderRadius: 10,
-    marginRight: 2,
+  multiline: { minHeight: 112, textAlignVertical: 'top' },
+  eye: {
+    minWidth: 48,
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 8,
   },
-  eyeText: {
-    fontSize: 12,
-    fontWeight: '600',
-    letterSpacing: 0.3,
-  },
-  errorText: {
-    fontSize: 12,
-    fontWeight: '500',
-    marginTop: 8,
-  },
+  error: { fontSize: 13, lineHeight: 19, marginTop: 7 },
 });

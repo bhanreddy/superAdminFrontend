@@ -74,16 +74,16 @@ export function StepItem({ type, title, description, isCompleted, onToggle, chil
     <View style={styles.container}>
       {/* Timeline Line */}
       {!isLast && (
-        <View 
+        <View
           style={[
-            styles.timelineLine, 
+            styles.timelineLine,
             { backgroundColor: isCompleted ? colors.success : colors.border }
-          ]} 
+          ]}
         />
       )}
 
       <View style={styles.headerRow}>
-        <Pressable
+        <Pressable accessibilityRole="checkbox" accessibilityLabel={title} accessibilityState={{ checked: isCompleted, disabled: type === 'Auto' || type === 'Action' }} aria-checked={isCompleted}
           style={styles.checkboxContainer}
           onPress={handlePress}
           disabled={type === 'Auto' || type === 'Action'}

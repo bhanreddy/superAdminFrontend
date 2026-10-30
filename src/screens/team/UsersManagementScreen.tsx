@@ -479,7 +479,7 @@ export default function UsersManagementScreen() {
         <ScrollView contentContainerStyle={[styles.content, { paddingBottom: bottomTabPad }]}>
           {/* Header */}
           <View style={styles.topHeader}>
-            <View>
+            <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 300, minWidth: 0 }}>
               <View style={styles.titleBadgeRow}>
                 <View
                   style={[
@@ -498,7 +498,7 @@ export default function UsersManagementScreen() {
             </View>
 
             {can(PERMISSIONS.USERS_CREATE) && (
-              <Pressable style={[styles.createBtn, { backgroundColor: colors.primary }]} onPress={openCreateUser}>
+              <Pressable accessibilityRole="button" style={[styles.createBtn, { backgroundColor: colors.primaryFill }]} onPress={openCreateUser}>
                 <UserPlus size={16} color="#FFFFFF" />
                 <Text style={styles.createBtnText}>Add Employee</Text>
               </Pressable>
@@ -507,10 +507,10 @@ export default function UsersManagementScreen() {
 
           {/* View Mode Switcher: Directory vs Hierarchy */}
           <View style={styles.tabSwitcher}>
-            <Pressable
+            <Pressable accessibilityRole="button"
               style={[
                 styles.tabBtn,
-                activeTab === 'DIRECTORY' && { backgroundColor: colors.primary, borderColor: colors.primary },
+                activeTab === 'DIRECTORY' && { backgroundColor: colors.primaryFill, borderColor: colors.primary },
                 activeTab !== 'DIRECTORY' && { borderColor: colors.border, backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : '#FFFFFF' },
               ]}
               onPress={() => setActiveTab('DIRECTORY')}
@@ -521,10 +521,10 @@ export default function UsersManagementScreen() {
               </Text>
             </Pressable>
 
-            <Pressable
+            <Pressable accessibilityRole="button"
               style={[
                 styles.tabBtn,
-                activeTab === 'HIERARCHY' && { backgroundColor: colors.primary, borderColor: colors.primary },
+                activeTab === 'HIERARCHY' && { backgroundColor: colors.primaryFill, borderColor: colors.primary },
                 activeTab !== 'HIERARCHY' && { borderColor: colors.border, backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : '#FFFFFF' },
               ]}
               onPress={() => setActiveTab('HIERARCHY')}
@@ -566,11 +566,11 @@ export default function UsersManagementScreen() {
                   {['ALL', ...availableRoles].map((r) => {
                     const isSelected = roleFilter === r;
                     return (
-                      <Pressable
+                      <Pressable accessibilityRole="button"
                         key={r}
                         style={[
                           styles.filterPill,
-                          isSelected && { backgroundColor: colors.primary, borderColor: colors.primary },
+                          isSelected && { backgroundColor: colors.primaryFill, borderColor: colors.primary },
                           !isSelected && {
                             borderColor: colors.border,
                             backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)',
@@ -699,7 +699,7 @@ export default function UsersManagementScreen() {
 
                         {/* Action Buttons */}
                         <View style={styles.userCardActions}>
-                          <Pressable
+                          <Pressable accessibilityRole="button"
                             style={[styles.cardActionBtn, { borderColor: colors.border }]}
                             onPress={() => openUserDetails(u)}
                           >
@@ -708,7 +708,7 @@ export default function UsersManagementScreen() {
                           </Pressable>
 
                           {can(PERMISSIONS.SCHOOLS_ASSIGN) && (
-                            <Pressable
+                            <Pressable accessibilityRole="button"
                               style={[styles.cardActionBtn, { borderColor: colors.border }]}
                               onPress={() => openAssignModal(u)}
                             >
@@ -718,7 +718,7 @@ export default function UsersManagementScreen() {
                           )}
 
                           {can(PERMISSIONS.USERS_MANAGE) && (
-                            <Pressable
+                            <Pressable accessibilityRole="button"
                               style={[styles.cardActionBtn, { borderColor: colors.border }]}
                               onPress={() => openEditUser(u)}
                             >
@@ -728,7 +728,7 @@ export default function UsersManagementScreen() {
                           )}
 
                           {can(PERMISSIONS.USERS_MANAGE) && (
-                            <Pressable
+                            <Pressable accessibilityRole="button"
                               style={[styles.cardActionBtn, { borderColor: colors.border }]}
                               onPress={() => openPermissionsModal(u)}
                             >
@@ -738,7 +738,7 @@ export default function UsersManagementScreen() {
                           )}
 
                           {can(PERMISSIONS.USERS_MANAGE) && (
-                            <Pressable
+                            <Pressable accessibilityRole="button"
                               style={[
                                 styles.cardActionBtn,
                                 {
@@ -887,7 +887,7 @@ export default function UsersManagementScreen() {
                             </Text>
                           ) : (
                             subordinates.map((sub: any) => (
-                              <Pressable
+                              <Pressable accessibilityRole="button"
                                 key={sub.id}
                                 style={[
                                   styles.subordinateCard,
@@ -934,7 +934,7 @@ export default function UsersManagementScreen() {
                   </View>
                   <View style={styles.hierarchyGrid}>
                     {(hierarchyData?.directExecutives || []).map((sub: any) => (
-                      <Pressable
+                      <Pressable accessibilityRole="button"
                         key={sub.id}
                         style={[
                           styles.treeNodeCard,
@@ -992,8 +992,8 @@ export default function UsersManagementScreen() {
                             </Text>
                           </View>
                         </View>
-                        <Pressable
-                          style={[styles.assignManagerQuickBtn, { backgroundColor: colors.primary }]}
+                        <Pressable accessibilityRole="button"
+                          style={[styles.assignManagerQuickBtn, { backgroundColor: colors.primaryFill }]}
                           onPress={() => openEditUser(sub)}
                         >
                           <GitBranch size={13} color="#FFFFFF" />
@@ -1020,7 +1020,7 @@ export default function UsersManagementScreen() {
                   <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
                     {editingUser ? 'Edit Employee Account' : 'Create Employee Account'}
                   </Text>
-                  <Pressable onPress={() => setShowCreateModal(false)}>
+                  <Pressable accessibilityLabel="Close dialog" accessibilityRole="button" onPress={() => setShowCreateModal(false)}>
                     <X size={20} color={colors.textSecondary} />
                   </Pressable>
                 </View>
@@ -1085,11 +1085,11 @@ export default function UsersManagementScreen() {
                   <Text style={[styles.formLabel, { color: colors.textSecondary }]}>Assigned Permission Role *</Text>
                   <View style={styles.rolePickerWrap}>
                     {availableRoles.map((r) => (
-                      <Pressable
+                      <Pressable accessibilityRole="button"
                         key={r}
                         style={[
                           styles.roleOption,
-                          formRole === r && { backgroundColor: colors.primary, borderColor: colors.primary },
+                          formRole === r && { backgroundColor: colors.primaryFill, borderColor: colors.primary },
                           formRole !== r && { borderColor: colors.border },
                         ]}
                         onPress={() => {
@@ -1116,10 +1116,10 @@ export default function UsersManagementScreen() {
                   </Text>
                   <View style={styles.rolePickerWrap}>
                     {(formRole === 'FOUNDER' || formRole === 'SUPER_ADMIN') && (
-                      <Pressable
+                      <Pressable accessibilityRole="button"
                         style={[
                           styles.roleOption,
-                          !formManagerId && { backgroundColor: colors.primary, borderColor: colors.primary },
+                          !formManagerId && { backgroundColor: colors.primaryFill, borderColor: colors.primary },
                           formManagerId ? { borderColor: colors.border } : null,
                         ]}
                         onPress={() => setFormManagerId('')}
@@ -1130,11 +1130,11 @@ export default function UsersManagementScreen() {
                       </Pressable>
                     )}
                     {eligibleManagers.map((manager) => (
-                      <Pressable
+                      <Pressable accessibilityRole="button"
                         key={manager.id}
                         style={[
                           styles.roleOption,
-                          formManagerId === manager.id && { backgroundColor: colors.primary, borderColor: colors.primary },
+                          formManagerId === manager.id && { backgroundColor: colors.primaryFill, borderColor: colors.primary },
                           formManagerId !== manager.id && { borderColor: colors.border },
                         ]}
                         onPress={() => setFormManagerId(manager.id)}
@@ -1168,11 +1168,11 @@ export default function UsersManagementScreen() {
                   <Text style={[styles.formLabel, { color: colors.textSecondary }]}>Account Status *</Text>
                   <View style={styles.rolePickerWrap}>
                     {(['ACTIVE', 'INACTIVE', 'SUSPENDED', 'INVITED'] as const).map((statusOption) => (
-                      <Pressable
+                      <Pressable accessibilityRole="button"
                         key={statusOption}
                         style={[
                           styles.roleOption,
-                          formStatus === statusOption && { backgroundColor: colors.primary, borderColor: colors.primary },
+                          formStatus === statusOption && { backgroundColor: colors.primaryFill, borderColor: colors.primary },
                           formStatus !== statusOption && { borderColor: colors.border },
                         ]}
                         onPress={() => setFormStatus(statusOption)}
@@ -1205,14 +1205,14 @@ export default function UsersManagementScreen() {
                 </ScrollView>
 
                 <View style={styles.modalFooter}>
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     style={[styles.cancelBtn, { borderColor: colors.border }]}
                     onPress={() => setShowCreateModal(false)}
                   >
                     <Text style={[styles.cancelBtnText, { color: colors.textSecondary }]}>Cancel</Text>
                   </Pressable>
-                  <Pressable
-                    style={[styles.submitBtn, { backgroundColor: colors.primary }]}
+                  <Pressable accessibilityRole="button"
+                    style={[styles.submitBtn, { backgroundColor: colors.primaryFill }]}
                     onPress={handleCreateUser}
                     disabled={creating}
                   >
@@ -1243,7 +1243,7 @@ export default function UsersManagementScreen() {
                       {selectedUser?.full_name} ({selectedUser?.employee_id})
                     </Text>
                   </View>
-                  <Pressable onPress={() => setShowDetailsModal(false)}>
+                  <Pressable accessibilityLabel="Close dialog" accessibilityRole="button" onPress={() => setShowDetailsModal(false)}>
                     <X size={20} color={colors.textSecondary} />
                   </Pressable>
                 </View>
@@ -1291,7 +1291,7 @@ export default function UsersManagementScreen() {
                 </ScrollView>
 
                 <View style={styles.modalFooter}>
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     style={[styles.cancelBtn, { borderColor: colors.border }]}
                     onPress={() => setShowDetailsModal(false)}
                   >
@@ -1318,7 +1318,7 @@ export default function UsersManagementScreen() {
                       {deactivatingUser?.full_name} ({deactivatingUser?.employee_id})
                     </Text>
                   </View>
-                  <Pressable onPress={() => setShowDeactivateModal(false)}>
+                  <Pressable accessibilityLabel="Close dialog" accessibilityRole="button" onPress={() => setShowDeactivateModal(false)}>
                     <X size={20} color={colors.textSecondary} />
                   </Pressable>
                 </View>
@@ -1374,11 +1374,11 @@ export default function UsersManagementScreen() {
                             {users
                               .filter((u) => u.id !== deactivatingUser?.id && u.status === 'ACTIVE' && (u.role === 'FOUNDER' || u.role.endsWith('_MANAGER')))
                               .map((mgr) => (
-                                <Pressable
+                                <Pressable accessibilityRole="button"
                                   key={mgr.id}
                                   style={[
                                     styles.roleOption,
-                                    reassignReportsTo === mgr.id && { backgroundColor: colors.primary, borderColor: colors.primary },
+                                    reassignReportsTo === mgr.id && { backgroundColor: colors.primaryFill, borderColor: colors.primary },
                                     reassignReportsTo !== mgr.id && { borderColor: colors.border },
                                   ]}
                                   onPress={() => setReassignReportsTo(mgr.id)}
@@ -1402,11 +1402,11 @@ export default function UsersManagementScreen() {
                             {users
                               .filter((u) => u.id !== deactivatingUser?.id && u.status === 'ACTIVE')
                               .map((emp) => (
-                                <Pressable
+                                <Pressable accessibilityRole="button"
                                   key={emp.id}
                                   style={[
                                     styles.roleOption,
-                                    reassignSchoolsTo === emp.id && { backgroundColor: colors.primary, borderColor: colors.primary },
+                                    reassignSchoolsTo === emp.id && { backgroundColor: colors.primaryFill, borderColor: colors.primary },
                                     reassignSchoolsTo !== emp.id && { borderColor: colors.border },
                                   ]}
                                   onPress={() => setReassignSchoolsTo(emp.id)}
@@ -1430,11 +1430,11 @@ export default function UsersManagementScreen() {
                             {users
                               .filter((u) => u.id !== deactivatingUser?.id && u.status === 'ACTIVE')
                               .map((emp) => (
-                                <Pressable
+                                <Pressable accessibilityRole="button"
                                   key={emp.id}
                                   style={[
                                     styles.roleOption,
-                                    reassignTasksTo === emp.id && { backgroundColor: colors.primary, borderColor: colors.primary },
+                                    reassignTasksTo === emp.id && { backgroundColor: colors.primaryFill, borderColor: colors.primary },
                                     reassignTasksTo !== emp.id && { borderColor: colors.border },
                                   ]}
                                   onPress={() => setReassignTasksTo(emp.id)}
@@ -1461,13 +1461,13 @@ export default function UsersManagementScreen() {
                 </ScrollView>
 
                 <View style={styles.modalFooter}>
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     style={[styles.cancelBtn, { borderColor: colors.border }]}
                     onPress={() => setShowDeactivateModal(false)}
                   >
                     <Text style={[styles.cancelBtnText, { color: colors.textSecondary }]}>Cancel</Text>
                   </Pressable>
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     style={[styles.submitBtn, { backgroundColor: '#EF4444' }]}
                     onPress={handleConfirmDeactivation}
                     disabled={deactivating || loadingImpact}
@@ -1499,7 +1499,7 @@ export default function UsersManagementScreen() {
                       {selectedUser?.full_name} ({selectedUser?.employee_id})
                     </Text>
                   </View>
-                  <Pressable onPress={() => setShowAssignModal(false)}>
+                  <Pressable accessibilityLabel="Close dialog" accessibilityRole="button" onPress={() => setShowAssignModal(false)}>
                     <X size={20} color={colors.textSecondary} />
                   </Pressable>
                 </View>
@@ -1511,7 +1511,7 @@ export default function UsersManagementScreen() {
                   {schools.map((s) => {
                     const isChecked = selectedSchoolIds.includes(s.id);
                     return (
-                      <Pressable
+                      <Pressable accessibilityRole="button"
                         key={s.id}
                         style={[
                           styles.schoolCheckRow,
@@ -1545,14 +1545,14 @@ export default function UsersManagementScreen() {
                 </ScrollView>
 
                 <View style={styles.modalFooter}>
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     style={[styles.cancelBtn, { borderColor: colors.border }]}
                     onPress={() => setShowAssignModal(false)}
                   >
                     <Text style={[styles.cancelBtnText, { color: colors.textSecondary }]}>Cancel</Text>
                   </Pressable>
-                  <Pressable
-                    style={[styles.submitBtn, { backgroundColor: colors.primary }]}
+                  <Pressable accessibilityRole="button"
+                    style={[styles.submitBtn, { backgroundColor: colors.primaryFill }]}
                     onPress={handleSaveAssignments}
                     disabled={assigning}
                   >
@@ -1583,7 +1583,7 @@ export default function UsersManagementScreen() {
                       {selectedUser?.full_name} ({selectedUser?.email})
                     </Text>
                   </View>
-                  <Pressable onPress={() => setShowResetModal(false)}>
+                  <Pressable accessibilityLabel="Close dialog" accessibilityRole="button" onPress={() => setShowResetModal(false)}>
                     <X size={20} color={colors.textSecondary} />
                   </Pressable>
                 </View>
@@ -1601,14 +1601,14 @@ export default function UsersManagementScreen() {
                 </View>
 
                 <View style={styles.modalFooter}>
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     style={[styles.cancelBtn, { borderColor: colors.border }]}
                     onPress={() => setShowResetModal(false)}
                   >
                     <Text style={[styles.cancelBtnText, { color: colors.textSecondary }]}>Cancel</Text>
                   </Pressable>
-                  <Pressable
-                    style={[styles.submitBtn, { backgroundColor: colors.primary }]}
+                  <Pressable accessibilityRole="button"
+                    style={[styles.submitBtn, { backgroundColor: colors.primaryFill }]}
                     onPress={handleResetPassword}
                     disabled={resetting}
                   >
@@ -1637,7 +1637,7 @@ export default function UsersManagementScreen() {
                     <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>Permission Overrides</Text>
                     <Text style={[styles.modalSub, { color: colors.textSecondary }]}>{selectedUser?.full_name}</Text>
                   </View>
-                  <Pressable onPress={() => setShowPermissionsModal(false)}>
+                  <Pressable accessibilityLabel="Close dialog" accessibilityRole="button" onPress={() => setShowPermissionsModal(false)}>
                     <X size={20} color={colors.textSecondary} />
                   </Pressable>
                 </View>
@@ -1650,12 +1650,12 @@ export default function UsersManagementScreen() {
                       <Text style={[styles.schoolCheckName, { color: colors.textPrimary, flex: 1 }]}>{permission}</Text>
                       <View style={styles.rolePickerWrap}>
                         {(['INHERIT', 'GRANT', 'DENY'] as const).map((mode) => (
-                          <Pressable
+                          <Pressable accessibilityRole="button"
                             key={mode}
                             style={[
                               styles.roleOption,
                               permissionModes[permission] === mode && {
-                                backgroundColor: colors.primary,
+                                backgroundColor: colors.primaryFill,
                                 borderColor: colors.primary,
                               },
                               permissionModes[permission] !== mode && { borderColor: colors.border },
@@ -1677,14 +1677,14 @@ export default function UsersManagementScreen() {
                   ))}
                 </ScrollView>
                 <View style={styles.modalFooter}>
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     style={[styles.cancelBtn, { borderColor: colors.border }]}
                     onPress={() => setShowPermissionsModal(false)}
                   >
                     <Text style={[styles.cancelBtnText, { color: colors.textSecondary }]}>Cancel</Text>
                   </Pressable>
-                  <Pressable
-                    style={[styles.submitBtn, { backgroundColor: colors.primary }]}
+                  <Pressable accessibilityRole="button"
+                    style={[styles.submitBtn, { backgroundColor: colors.primaryFill }]}
                     onPress={handleSavePermissions}
                     disabled={savingPermissions}
                   >
@@ -1708,6 +1708,7 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   content: { padding: 20 },
   topHeader: {
+    flexWrap: 'wrap',
     flexDirection: Platform.OS === 'web' ? 'row' : 'column',
     justifyContent: 'space-between',
     alignItems: Platform.OS === 'web' ? 'center' : 'flex-start',

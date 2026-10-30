@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Modal, Pressable, Platform, Animated, Easing } from 'react-native';
+import { View, Text, StyleSheet, Modal, Pressable, Platform,  Easing } from 'react-native';
+import { Animated } from '../../utils/accessibleAnimation';
 import { useTheme, clayStyle } from '../../contexts/ThemeContext';
 import { Button } from './Button';
 import { Input } from './Input';
@@ -18,7 +19,7 @@ export function DeleteSchoolModal({ visible, onClose, onConfirm, school }: Props
   const [step, setStep] = useState(1);
   const [verifyText, setVerifyText] = useState('');
   const [loading, setLoading] = useState(false);
-  
+
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -60,7 +61,7 @@ export function DeleteSchoolModal({ visible, onClose, onConfirm, school }: Props
             </View>
             <Text style={[st.title, { color: colors.textPrimary }]}>Delete School</Text>
             <Text style={[st.desc, { color: colors.textSecondary }]}>
-              You are about to delete <Text style={{ color: colors.textPrimary, fontWeight: '700' }}>{school.name}</Text>. 
+              You are about to delete <Text style={{ color: colors.textPrimary, fontWeight: '700' }}>{school.name}</Text>.
               This action will completely wipe all multitenant data including students, staff, attendance, and finance records.
             </Text>
             <View style={st.actionRow}>
@@ -97,12 +98,12 @@ export function DeleteSchoolModal({ visible, onClose, onConfirm, school }: Props
             />
             <View style={st.actionRow}>
               <Button style={{ flex: 1 }} title="Back" variant="outline" onPress={handleBack} />
-              <Button 
-                style={{ flex: 1 }} 
-                title="Verify" 
-                variant="primary" 
+              <Button
+                style={{ flex: 1 }}
+                title="Verify"
+                variant="primary"
                 disabled={verifyText !== school.name}
-                onPress={handleNext} 
+                onPress={handleNext}
               />
             </View>
           </>
@@ -127,10 +128,10 @@ export function DeleteSchoolModal({ visible, onClose, onConfirm, school }: Props
             </Text>
             <View style={st.actionRow}>
               <Button style={{ flex: 1 }} title="ABORT" variant="outline" onPress={onClose} />
-              <Button 
-                style={{ flex: 1 }} 
-                title="DELETE FOREVER" 
-                variant="danger" 
+              <Button
+                style={{ flex: 1 }}
+                title="DELETE FOREVER"
+                variant="danger"
                 loading={loading}
                 leftIcon={<Trash2 size={16} color="white" />}
                 onPress={async () => {
@@ -140,7 +141,7 @@ export function DeleteSchoolModal({ visible, onClose, onConfirm, school }: Props
                   } finally {
                     setLoading(false);
                   }
-                }} 
+                }}
               />
             </View>
           </>
@@ -151,14 +152,14 @@ export function DeleteSchoolModal({ visible, onClose, onConfirm, school }: Props
   return (
     <Modal transparent visible={visible} animationType="none" onRequestClose={onClose}>
       <Animated.View style={[st.overlay, { opacity: fadeAnim }]}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={step === 3 ? undefined : onClose} />
+        <Pressable accessibilityRole="button" style={StyleSheet.absoluteFill} onPress={step === 3 ? undefined : onClose} />
         <View style={[
           st.modal,
           { backgroundColor: colors.surface },
           clayStyle(clayShadows.clayStrong),
         ]}>
           {step < 3 && (
-            <Pressable
+            <Pressable accessibilityLabel="Close dialog" accessibilityRole="button"
               style={({ pressed, hovered }: any) => [
                 st.closeBtn,
                 {

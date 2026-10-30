@@ -4,13 +4,14 @@ import {
   Text,
   StyleSheet,
   Pressable,
-  Animated,
+
   Platform,
   ScrollView,
   Dimensions,
   Modal,
   type ScaledSize,
 } from 'react-native';
+import { Animated } from '../../utils/accessibleAnimation';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { X } from 'lucide-react-native';
 import { useTheme, clayStyle } from '../../contexts/ThemeContext';
@@ -33,10 +34,15 @@ export const Drawer = React.memo(function Drawer({
   const { colors, isDark, zIndex, clayShadows } = useTheme();
   const insets = useSafeAreaInsets();
 
-  const [windowSize, setWindowSize] = useState<ScaledSize>(() => Dimensions.get('window'));
-  const onDimensionChange = useCallback(({ window }: { window: ScaledSize }) => {
-    setWindowSize(window);
-  }, []);
+  const [windowSize, setWindowSize] = useState<ScaledSize>(() =>
+    Dimensions.get('window'),
+  );
+  const onDimensionChange = useCallback(
+    ({ window }: { window: ScaledSize }) => {
+      setWindowSize(window);
+    },
+    [],
+  );
   useEffect(() => {
     const sub = Dimensions.addEventListener('change', onDimensionChange);
     return () => sub.remove();
@@ -98,9 +104,12 @@ export const Drawer = React.memo(function Drawer({
   const padBottom = 48 + Math.max(insets.bottom, 0);
 
   const inner = (
-    <View style={[styles.root, { zIndex: zIndex.modal }]} pointerEvents={visible ? 'auto' : 'none'}>
+    <View
+      style={[styles.root, { zIndex: zIndex.modal }]}
+      pointerEvents={visible ? 'auto' : 'none'}
+    >
       <Animated.View style={[styles.backdrop, { opacity: backdropOpacity }]}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+        <Pressable accessibilityRole="button" accessibilityLabel="Dismiss panel" style={StyleSheet.absoluteFill} onPress={onClose} />
       </Animated.View>
 
       <Animated.View
@@ -112,17 +121,19 @@ export const Drawer = React.memo(function Drawer({
             backgroundColor: colors.surface,
             transform: [{ translateX: slideAnim }],
           },
-          Platform.OS === 'web' ? {
-            boxShadow: isDark
-              ? '-16px 0 40px rgba(0,0,0,0.4), -4px 0 16px rgba(0,0,0,0.3)'
-              : '-16px 0 40px rgba(0,0,0,0.06), -4px 0 16px rgba(0,0,0,0.03)',
-          } as any : {
-            shadowColor: '#000',
-            shadowOffset: { width: -8, height: 0 },
-            shadowOpacity: isDark ? 0.3 : 0.1,
-            shadowRadius: 24,
-            elevation: 10,
-          },
+          Platform.OS === 'web'
+            ? ({
+                boxShadow: isDark
+                  ? '-16px 0 40px rgba(0,0,0,0.4), -4px 0 16px rgba(0,0,0,0.3)'
+                  : '-16px 0 40px rgba(0,0,0,0.06), -4px 0 16px rgba(0,0,0,0.03)',
+              } as any)
+            : {
+                shadowColor: '#000',
+                shadowOffset: { width: -8, height: 0 },
+                shadowOpacity: isDark ? 0.3 : 0.1,
+                shadowRadius: 24,
+                elevation: 10,
+              },
         ]}
       >
         {title && (
@@ -133,16 +144,18 @@ export const Drawer = React.memo(function Drawer({
                 paddingLeft: padL,
                 paddingRight: padR,
               },
-              Platform.OS === 'web' ? {
-                boxShadow: isDark
-                  ? '0 2px 8px rgba(0,0,0,0.2)'
-                  : '0 2px 8px rgba(0,0,0,0.03)',
-              } as any : {
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: isDark ? 0.15 : 0.04,
-                shadowRadius: 6,
-              },
+              Platform.OS === 'web'
+                ? ({
+                    boxShadow: isDark
+                      ? '0 2px 8px rgba(0,0,0,0.2)'
+                      : '0 2px 8px rgba(0,0,0,0.03)',
+                  } as any)
+                : {
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: isDark ? 0.15 : 0.04,
+                    shadowRadius: 6,
+                  },
             ]}
           >
             <View style={styles.headerTitleWrap}>
@@ -154,15 +167,21 @@ export const Drawer = React.memo(function Drawer({
               </Text>
             </View>
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Close panel"
               onPress={onClose}
               style={({ pressed, hovered }: any) => [
                 styles.closeBtn,
                 {
-                  backgroundColor: hovered ? colors.hover : colors.clayInnerLight,
+                  backgroundColor: hovered
+                    ? colors.hover
+                    : colors.clayInnerLight,
                 },
                 clayStyle(clayShadows.subtle),
                 pressed && { transform: [{ scale: 0.93 }] },
-                Platform.OS === 'web' ? { cursor: 'pointer', transition: 'all 0.2s ease' } as any : {},
+                Platform.OS === 'web'
+                  ? ({ cursor: 'pointer', transition: 'all 0.2s ease' } as any)
+                  : {},
               ]}
               hitSlop={8}
             >
@@ -237,8 +256,8 @@ const styles = StyleSheet.create({
   },
   closeBtn: {
     flexShrink: 0,
-    width: 36,
-    height: 36,
+    width: 44,
+    height: 44,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',

@@ -41,7 +41,9 @@ export function toCsv(rows: Record<string, unknown>[]) {
   const quote = (v: unknown) => {
     let s =
       typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v ?? '');
-    if (/^[=+@\t\r-]/.test(s)) s = "'" + s;
+    // Signed decimal amounts must stay numeric when opened in a spreadsheet.
+    // Other formula prefixes still need neutralizing, including malicious -expressions.
+    if (/^[=+@\t\r\n-]/.test(s) && !/^-?\d+(?:\.\d+)?$/.test(s)) s = "'" + s;
     return '"' + s.replaceAll('"', '""') + '"';
   };
   return [

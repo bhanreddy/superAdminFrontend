@@ -47,7 +47,7 @@ export function Action({
             ? colors.background
             : danger
               ? '#be344b'
-              : colors.primary,
+              : colors.primaryFill,
           borderColor: secondary ? colors.border : 'transparent',
           opacity: disabled ? 0.45 : pressed ? 0.75 : 1,
         },
@@ -158,7 +158,7 @@ export function Select({
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={label}
-        accessibilityState={{ expanded: open }}
+        accessibilityState={{ expanded: open }} aria-expanded={open}
         onPress={() => {
           setQuery('');
           setOpen(true);
@@ -209,7 +209,7 @@ export function Select({
                   <Pressable
                     key={o.value}
                     role="radio"
-                    accessibilityState={{ checked: o.value === value }}
+                    accessibilityState={{ checked: o.value === value }} aria-checked={o.value === value}
                     onPress={() => {
                       onChange(o.value);
                       setOpen(false);

@@ -1,0 +1,242 @@
+[
+  {
+    "file": "app/(app)/admins/add.tsx",
+    "actions": 6
+  },
+  {
+    "file": "app/(app)/admins/index.tsx",
+    "actions": 2
+  },
+  {
+    "file": "app/(app)/clusters/[id]/edit.tsx",
+    "actions": 3
+  },
+  {
+    "file": "app/(app)/clusters/add.tsx",
+    "actions": 3
+  },
+  {
+    "file": "app/(app)/clusters/index.tsx",
+    "actions": 3
+  },
+  {
+    "file": "app/(app)/content-programs.tsx",
+    "actions": 3
+  },
+  {
+    "file": "app/(app)/index.tsx",
+    "actions": 5
+  },
+  {
+    "file": "app/(app)/medical/[id]/build-config.tsx",
+    "actions": 4
+  },
+  {
+    "file": "app/(app)/medical/list.tsx",
+    "actions": 4
+  },
+  {
+    "file": "app/(app)/messenger/[id].tsx",
+    "actions": 2
+  },
+  {
+    "file": "app/(app)/messenger/index.tsx",
+    "actions": 1
+  },
+  {
+    "file": "app/(app)/microservices/dcgd.tsx",
+    "actions": 3
+  },
+  {
+    "file": "app/(app)/microservices/dcgdContent.tsx",
+    "actions": 8
+  },
+  {
+    "file": "app/(app)/schools/[id]/app-config.tsx",
+    "actions": 4
+  },
+  {
+    "file": "app/(app)/schools/[id]/build-config.tsx",
+    "actions": 3
+  },
+  {
+    "file": "app/(app)/schools/[id]/features.tsx",
+    "actions": 1
+  },
+  {
+    "file": "app/(app)/schools/[id]/index.tsx",
+    "actions": 3
+  },
+  {
+    "file": "app/(app)/schools/[id]/setup-guide.tsx",
+    "actions": 10
+  },
+  {
+    "file": "app/(app)/schools/index.tsx",
+    "actions": 3
+  },
+  {
+    "file": "app/(app)/students/[id].tsx",
+    "actions": 3
+  },
+  {
+    "file": "app/(app)/students/import.tsx",
+    "actions": 6
+  },
+  {
+    "file": "app/(app)/students/index.tsx",
+    "actions": 2
+  },
+  {
+    "file": "app/cluster-selector.tsx",
+    "actions": 3
+  },
+  {
+    "file": "src/components/admins/AdminCard.tsx",
+    "actions": 1
+  },
+  {
+    "file": "src/components/medical/MedicalShopSubscriptionPanel.tsx",
+    "actions": 4
+  },
+  {
+    "file": "src/components/setup/CodeBlock.tsx",
+    "actions": 1
+  },
+  {
+    "file": "src/components/setup/PhaseSection.tsx",
+    "actions": 1
+  },
+  {
+    "file": "src/components/setup/StepItem.tsx",
+    "actions": 1
+  },
+  {
+    "file": "src/components/ui/Breadcrumb.tsx",
+    "actions": 1
+  },
+  {
+    "file": "src/components/ui/CustomTabBar.tsx",
+    "actions": 1
+  },
+  {
+    "file": "src/components/ui/DeleteSchoolModal.tsx",
+    "actions": 2
+  },
+  {
+    "file": "src/screens/books/BooksScreen.tsx",
+    "actions": 1
+  },
+  {
+    "file": "src/screens/checklist/ChecklistScreen.tsx",
+    "actions": 6
+  },
+  {
+    "file": "src/screens/complaints/ComplaintsScreen.tsx",
+    "actions": 17
+  },
+  {
+    "file": "src/screens/dashboards/GenericRoleDashboard.tsx",
+    "actions": 1
+  },
+  {
+    "file": "src/screens/dashboards/ImplementationDashboard.tsx",
+    "actions": 6
+  },
+  {
+    "file": "src/screens/dashboards/SalesExecutiveDashboard.tsx",
+    "actions": 6
+  },
+  {
+    "file": "src/screens/dashboards/SalesManagerDashboard.tsx",
+    "actions": 2
+  },
+  {
+    "file": "src/screens/dashboards/SupportDashboard.tsx",
+    "actions": 4
+  },
+  {
+    "file": "src/screens/field/FieldPlannerScreen.tsx",
+    "actions": 8
+  },
+  {
+    "file": "src/screens/field/FieldRouteScreen.tsx",
+    "actions": 8
+  },
+  {
+    "file": "src/screens/field/FieldTodayScreen.tsx",
+    "actions": 28
+  },
+  {
+    "file": "src/screens/field/FieldVisitDetailScreen.tsx",
+    "actions": 12
+  },
+  {
+    "file": "src/screens/founder/BillingScreen.tsx",
+    "actions": 22
+  },
+  {
+    "file": "src/screens/founder/BusinessUnitsScreen.tsx",
+    "actions": 7
+  },
+  {
+    "file": "src/screens/founder/CollectionsScreen.tsx",
+    "actions": 18
+  },
+  {
+    "file": "src/screens/founder/CrmScreen.tsx",
+    "actions": 2
+  },
+  {
+    "file": "src/screens/founder/DatabaseBackupsScreen.tsx",
+    "actions": 13
+  },
+  {
+    "file": "src/screens/founder/EnquiriesScreen.tsx",
+    "actions": 12
+  },
+  {
+    "file": "src/screens/founder/FestivalPostersScreen.tsx",
+    "actions": 5
+  },
+  {
+    "file": "src/screens/founder/FounderDashboardScreen.tsx",
+    "actions": 4
+  },
+  {
+    "file": "src/screens/founder/FounderSettingsScreen.tsx",
+    "actions": 1
+  },
+  {
+    "file": "src/screens/founder/NotificationsScreen.tsx",
+    "actions": 2
+  },
+  {
+    "file": "src/screens/founder/PayrollScreen.tsx",
+    "actions": 18
+  },
+  {
+    "file": "src/screens/founder/SchoolIntakeDeskScreen.tsx",
+    "actions": 2
+  },
+  {
+    "file": "src/screens/founder/SprintCommandCenterScreen.tsx",
+    "actions": 20
+  },
+  {
+    "file": "src/screens/founder/TenantAssignmentsScreen.tsx",
+    "actions": 1
+  },
+  {
+    "file": "src/screens/requirements/RequirementsScreen.tsx",
+    "actions": 14
+  },
+  {
+    "file": "src/screens/schools/SchoolIntakeComposerScreen.tsx",
+    "actions": 3
+  },
+  {
+    "file": "src/screens/team/UsersManagementScreen.tsx",
+    "actions": 38
+  }
+]

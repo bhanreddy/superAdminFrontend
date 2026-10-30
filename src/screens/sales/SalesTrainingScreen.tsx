@@ -79,7 +79,7 @@ export default function SalesTrainingScreen() {
         {error && <><Text accessibilityRole="alert" style={{ color: colors.textPrimary }}>{error}</Text>{button('Retry progress', () => setReload((value) => value + 1))}</>}
       </View>
       <View style={styles.filters}>
-        {trainingModules.map((item) => <Pressable key={item.id} accessibilityRole="button" accessibilityState={{ selected: item.id === activeId }} disabled={saving} onPress={() => chooseLesson(item.id)} style={[styles.filter, { borderColor: colors.border, backgroundColor: item.id === activeId ? colors.primary : card.backgroundColor }]}>
+        {trainingModules.map((item) => <Pressable key={item.id} accessibilityRole="button" accessibilityState={{ selected: item.id === activeId }} aria-selected={item.id === activeId} disabled={saving} onPress={() => chooseLesson(item.id)} style={[styles.filter, { borderColor: colors.border, backgroundColor: item.id === activeId ? colors.primary : card.backgroundColor }]}>
           <Text style={{ color: item.id === activeId ? '#FFFFFF' : colors.textPrimary }}>{completed[item.id] ? '✓ ' : ''}{item.title}</Text>
         </Pressable>)}
       </View>
@@ -94,12 +94,12 @@ export default function SalesTrainingScreen() {
         <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Practice aloud</Text>
         <Text style={[styles.body, { color: colors.textSecondary }]}>{lesson.exercise}</Text>
         {lesson.checklist.map((item) => <Text key={item} style={[styles.body, { color: colors.textSecondary }]}>• {item}</Text>)}
-        <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: practiced }} disabled={saving} onPress={() => setPracticed(!practiced)} style={[styles.filter, { borderColor: colors.border }]}>
+        <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: practiced }} aria-checked={practiced} disabled={saving} onPress={() => setPracticed(!practiced)} style={[styles.filter, { borderColor: colors.border }]}>
           <Text style={{ color: colors.textPrimary }}>{practiced ? '☑' : '☐'} I rehearsed the exercise and covered these points.</Text>
         </Pressable>
         <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Knowledge check</Text>
         <Text style={[styles.body, { color: colors.textSecondary }]}>{lesson.question}</Text>
-        {lesson.options.map((option, index) => <Pressable key={option} accessibilityRole="radio" accessibilityState={{ checked: answer === index }} disabled={saving} onPress={() => { setAnswer(index); setChecked(false); }} style={[styles.filter, { borderColor: answer === index ? colors.primary : colors.border }]}>
+        {lesson.options.map((option, index) => <Pressable key={option} accessibilityRole="radio" accessibilityState={{ checked: answer === index }} aria-checked={answer === index} disabled={saving} onPress={() => { setAnswer(index); setChecked(false); }} style={[styles.filter, { borderColor: answer === index ? colors.primary : colors.border }]}>
           <Text style={[styles.body, { color: colors.textPrimary }]}>{answer === index ? '●' : '○'} {option}</Text>
         </Pressable>)}
         {button('Check answer', () => setChecked(true), answer === null || saving)}

@@ -6,7 +6,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/logo.png",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/logo.png",
       "resizeMode": "contain",
@@ -35,6 +35,10 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
+      [
+        "expo-local-authentication",
+        { "faceIDPermission": "Allow NexSyrus Super Admin to verify your identity when unlocking the app." }
+      ],
       [
         "expo-build-properties",
         {

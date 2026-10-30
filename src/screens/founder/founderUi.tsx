@@ -7,26 +7,30 @@ import {
   Dimensions,
   Platform,
   ScrollView,
-  Animated as RNAnimated,
+
   useWindowDimensions,
 } from 'react-native';
+import { Animated as RNAnimated } from '../../utils/accessibleAnimation';
 import { pressableWebStyles } from '../../utils/webPressable';
 import { safePressHandler } from '../../utils/safePressHandler';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react-native';
 import { useTheme, clayStyle } from '../../contexts/ThemeContext';
-import { ClayView, PressScale, clayTokens } from '../../components/ui/ClayPrimitives';
+import {
+  ClayView,
+  PressScale,
+  clayTokens,
+} from '../../components/ui/ClayPrimitives';
 
 const { width: W } = Dimensions.get('window');
 
 export const founderGradients = {
-  primary: ['#818CF8', '#6366F1'] as const,
-  success: ['#34D399', '#059669'] as const,
-  danger: ['#FCA5A5', '#DC2626'] as const,
-  warning: ['#FCD34D', '#D97706'] as const,
-  info: ['#7DD3FC', '#2563EB'] as const,
+  primary: ['#3155C6', '#2848AA'] as const,
+  success: ['#15704D', '#126546'] as const,
+  danger: ['#BF3547', '#A52A3B'] as const,
+  warning: ['#9B5215', '#874510'] as const,
+  info: ['#24679E', '#1C5686'] as const,
   cardDark: ['rgba(33,31,45,0.95)', 'rgba(27,26,37,0.98)'] as const,
 };
 
@@ -48,8 +52,16 @@ export const SkeletonPulse = React.memo(function SkeletonPulse({
   useEffect(() => {
     const anim = RNAnimated.loop(
       RNAnimated.sequence([
-        RNAnimated.timing(pulse, { toValue: 1, duration: 800, useNativeDriver: true }),
-        RNAnimated.timing(pulse, { toValue: 0.3, duration: 800, useNativeDriver: true }),
+        RNAnimated.timing(pulse, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        RNAnimated.timing(pulse, {
+          toValue: 0.3,
+          duration: 800,
+          useNativeDriver: true,
+        }),
       ]),
     );
     anim.start();
@@ -63,7 +75,9 @@ export const SkeletonPulse = React.memo(function SkeletonPulse({
           width: width as any,
           height,
           borderRadius,
-          backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
+          backgroundColor: isDark
+            ? 'rgba(255,255,255,0.08)'
+            : 'rgba(0,0,0,0.06)',
           opacity: pulse,
         },
         style,
@@ -79,7 +93,12 @@ export const SkeletonStatGrid = React.memo(function SkeletonStatGrid() {
       {[0, 1, 2, 3].map((i) => (
         <SkeletonPulse key={i} width={cardW} height={130} borderRadius={22} />
       ))}
-      <SkeletonPulse width="100%" height={72} borderRadius={22} style={{ marginTop: 0 }} />
+      <SkeletonPulse
+        width="100%"
+        height={72}
+        borderRadius={22}
+        style={{ marginTop: 0 }}
+      />
     </View>
   );
 });
@@ -95,7 +114,11 @@ export const SkeletonKpiGrid = React.memo(function SkeletonKpiGrid() {
   );
 });
 
-export const SkeletonActionList = React.memo(function SkeletonActionList({ count = 3 }: { count?: number }) {
+export const SkeletonActionList = React.memo(function SkeletonActionList({
+  count = 3,
+}: {
+  count?: number;
+}) {
   return (
     <View style={{ gap: 10 }}>
       {Array.from({ length: count }).map((_, i) => (
@@ -106,13 +129,19 @@ export const SkeletonActionList = React.memo(function SkeletonActionList({ count
 });
 
 /* ── Console Ambient Background ────────────────────────────────────────────── */
-export const ConsoleAmbientBackground = React.memo(function ConsoleAmbientBackground({ children }: { children: React.ReactNode }) {
-  return (
-    <View style={{ flex: 1, backgroundColor: 'transparent' }}>
-      {children}
-    </View>
-  );
-});
+export const ConsoleAmbientBackground = React.memo(
+  function ConsoleAmbientBackground({
+    children,
+  }: {
+    children: React.ReactNode;
+  }) {
+    return (
+      <View style={{ flex: 1, backgroundColor: 'transparent' }}>
+        {children}
+      </View>
+    );
+  },
+);
 
 /* ── Glass Card ────────────────────────────────────────────────────────────── */
 export const GlassCard = React.memo(function GlassCard({
@@ -126,55 +155,22 @@ export const GlassCard = React.memo(function GlassCard({
   noPad?: boolean;
   variant?: 'regular' | 'lightweight';
 }) {
-  const { colors, isDark, clayShadows } = useTheme();
-  if (variant === 'lightweight') {
-    return (
-      <View
-        style={[
-          styles.glassOuter,
-          {
-            borderColor: colors.glassBorder,
-            backgroundColor: colors.glassLightweight,
-            borderWidth: StyleSheet.hairlineWidth,
-          },
-          style,
-        ]}
-      >
-        <LinearGradient
-          colors={isDark ? ['rgba(255,255,255,0.08)', 'rgba(255,255,255,0)'] : ['rgba(255,255,255,0.7)', 'rgba(255,255,255,0)']}
-          style={[StyleSheet.absoluteFill, { pointerEvents: 'none' }]}
-        />
-        <View style={[styles.glassContent, noPad ? { padding: 0 } : null]}>{children}</View>
-      </View>
-    );
-  }
+  const { colors, clayShadows } = useTheme();
   return (
     <View
       style={[
-        styles.glassOuter,
         {
-          borderColor: colors.clayBorderColor,
-          backgroundColor: isDark ? 'rgba(33,31,45,0.7)' : 'rgba(251,250,248,0.75)',
+          borderWidth: 1,
+          borderRadius: 16,
+          borderColor: colors.borderSubtle || colors.border,
+          backgroundColor:
+            variant === 'lightweight' ? colors.glassLightweight : colors.card,
         },
-        clayStyle(clayShadows.clayElevated),
+        clayStyle(clayShadows.subtle),
         style,
       ]}
     >
-      <BlurView
-        intensity={isDark ? 30 : 65}
-        tint={isDark ? 'dark' : 'light'}
-        style={[styles.glassInner, noPad ? { padding: 0 } : null]}
-      >
-        <LinearGradient
-          colors={
-            isDark
-              ? ['rgba(255,255,255,0.06)', 'rgba(255,255,255,0.01)']
-              : ['rgba(255,255,255,0.85)', 'rgba(255,255,255,0.35)']
-          }
-          style={[StyleSheet.absoluteFill, { pointerEvents: 'none' }]}
-        />
-        <View style={styles.glassContent}>{children}</View>
-      </BlurView>
+      <View style={noPad ? undefined : { padding: 20 }}>{children}</View>
     </View>
   );
 });
@@ -206,7 +202,19 @@ function SparklineMini({
   return (
     <View style={{ width, height, position: 'relative' }}>
       {/* Area fill */}
-      <View style={[{ width, height, position: 'absolute', bottom: 0, opacity: 0.15, borderRadius: 4, overflow: 'hidden' }]}>
+      <View
+        style={[
+          {
+            width,
+            height,
+            position: 'absolute',
+            bottom: 0,
+            opacity: 0.15,
+            borderRadius: 4,
+            overflow: 'hidden',
+          },
+        ]}
+      >
         <LinearGradient
           colors={[color, 'transparent']}
           start={{ x: 0, y: 0 }}
@@ -224,18 +232,20 @@ function SparklineMini({
         return (
           <View
             key={i}
-            style={{
-              position: 'absolute',
-              left: p.x,
-              top: p.y,
-              width: len,
-              height: 2,
-              backgroundColor: color,
-              borderRadius: 1,
-              transform: [{ rotate: `${angle}deg` }],
-              transformOrigin: '0 0',
-              opacity: 0.8,
-            } as any}
+            style={
+              {
+                position: 'absolute',
+                left: p.x,
+                top: p.y,
+                width: len,
+                height: 2,
+                backgroundColor: color,
+                borderRadius: 1,
+                transform: [{ rotate: `${angle}deg` }],
+                transformOrigin: '0 0',
+                opacity: 0.8,
+              } as any
+            }
           />
         );
       })}
@@ -284,45 +294,80 @@ export const KpiTile = React.memo(function KpiTile({
   const isDesktop = screenWidth >= 1024;
   const isTablet = screenWidth >= 768 && screenWidth < 1024;
 
-  const tileWidth = width ?? (isDesktop
-    ? (screenWidth - 240 - 80 - 36) / 4
-    : isTablet
-      ? (screenWidth - 40 - 12) / 2
-      : (W - 40 - 12) / 2);
+  const tileWidth = width ?? (isDesktop ? '23%' : '48%');
 
-  const changeDir = changePercent !== undefined
-    ? changePercent > 0 ? 'up' : changePercent < 0 ? 'down' : 'flat'
-    : null;
+  const changeDir =
+    changePercent !== undefined
+      ? changePercent > 0
+        ? 'up'
+        : changePercent < 0
+          ? 'down'
+          : 'flat'
+      : null;
 
   return (
-    <Animated.View entering={FadeInDown.delay(delay).duration(420).springify()} style={{ width: tileWidth, marginBottom: 12 }}>
-      <PressScale accessibilityRole={onPress ? 'button' : undefined} accessibilityLabel={accessibilityLabel || label} onPress={onPress} style={{ width: '100%', height: 130 }}>
-        <ClayView 
-          isDark={isDark} 
-          color={isDark ? 'rgba(255,255,255,0.03)' : colors.card} 
-          radius={24} 
+    <Animated.View
+      style={{
+        width: tileWidth,
+        flexGrow: width ? 0 : 1,
+        minWidth: 0,
+        marginBottom: 12,
+      }}
+    >
+      <PressScale
+        accessibilityRole={onPress ? 'button' : undefined}
+        accessibilityLabel={accessibilityLabel || label}
+        onPress={onPress}
+        style={{ width: '100%', minHeight: 152, flex: 1 }}
+      >
+        <ClayView
+          isDark={isDark}
+          color={colors.card}
+          radius={16}
           style={{ padding: 18, flex: 1, overflow: 'hidden' }}
         >
           {/* Top colored edge accent */}
           <LinearGradient
             colors={[gradient[0], gradient[1]]}
-            start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-            style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, opacity: isDark ? 0.8 : 0.6 }}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 4,
+              opacity: isDark ? 0.8 : 0.6,
+            }}
           />
 
           {/* Top row: icon + sparkline */}
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+            }}
+          >
             {React.isValidElement(icon) && (
               <View
                 style={[
                   {
-                    width: 36, height: 36, borderRadius: 12,
-                    alignItems: 'center', justifyContent: 'center',
-                    backgroundColor: isDark ? gradient[0] + '33' : gradient[0] + '22',
+                    width: 36,
+                    height: 36,
+                    borderRadius: 12,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: isDark
+                      ? gradient[0] + '33'
+                      : gradient[0] + '22',
                   },
                 ]}
               >
-                {React.cloneElement(icon as React.ReactElement<{ color?: string }>, { color: isDark ? '#FFF' : gradient[0] })}
+                {React.cloneElement(
+                  icon as React.ReactElement<{ color?: string }>,
+                  { color: colors.primary },
+                )}
               </View>
             )}
             {sparklineData && sparklineData.length >= 2 && (
@@ -335,42 +380,112 @@ export const KpiTile = React.memo(function KpiTile({
           <View style={{ flex: 1 }} />
 
           {/* Value + Change row */}
-          <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8 }}>
-            <Text style={{ fontSize: 24, fontWeight: '900', color: colors.textPrimary, letterSpacing: -0.5 }} numberOfLines={1}>
+          <View
+            style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8 }}
+          >
+            <Text
+              style={{
+                fontSize: 28,
+                fontWeight: '700',
+                color: colors.textPrimary,
+                letterSpacing: -0.5,
+              }}
+              numberOfLines={1}
+            >
               {value}
             </Text>
             {changeDir && (
-              <View style={{
-                flexDirection: 'row', alignItems: 'center', gap: 2, paddingHorizontal: 6, paddingVertical: 2,
-                borderRadius: 8,
-                backgroundColor: changeDir === 'up'
-                  ? (isDark ? 'rgba(0,212,173,0.15)' : 'rgba(0,212,173,0.1)')
-                  : changeDir === 'down'
-                    ? (isDark ? 'rgba(255,107,122,0.15)' : 'rgba(255,107,122,0.1)')
-                    : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)'),
-              }}>
-                {changeDir === 'up' && <TrendingUp size={10} color="#00D4AD" strokeWidth={2.5} />}
-                {changeDir === 'down' && <TrendingDown size={10} color="#FF6B7A" strokeWidth={2.5} />}
-                {changeDir === 'flat' && <Minus size={10} color={colors.textSecondary} strokeWidth={2.5} />}
-                <Text style={{
-                    fontSize: 11, fontWeight: '700',
-                    color: changeDir === 'up' ? '#00D4AD'
-                      : changeDir === 'down' ? '#FF6B7A'
-                        : colors.textSecondary,
-                  }}>
-                  {changePercent !== undefined ? `${Math.abs(changePercent).toFixed(1)}%` : ''}
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 2,
+                  paddingHorizontal: 6,
+                  paddingVertical: 2,
+                  borderRadius: 8,
+                  backgroundColor:
+                    changeDir === 'up'
+                      ? isDark
+                        ? 'rgba(0,212,173,0.15)'
+                        : 'rgba(0,212,173,0.1)'
+                      : changeDir === 'down'
+                        ? isDark
+                          ? 'rgba(255,107,122,0.15)'
+                          : 'rgba(255,107,122,0.1)'
+                        : isDark
+                          ? 'rgba(255,255,255,0.08)'
+                          : 'rgba(0,0,0,0.05)',
+                }}
+              >
+                {changeDir === 'up' && (
+                  <TrendingUp
+                    size={10}
+                    color={colors.success}
+                    strokeWidth={2.5}
+                  />
+                )}
+                {changeDir === 'down' && (
+                  <TrendingDown
+                    size={10}
+                    color={colors.error}
+                    strokeWidth={2.5}
+                  />
+                )}
+                {changeDir === 'flat' && (
+                  <Minus
+                    size={10}
+                    color={colors.textSecondary}
+                    strokeWidth={2.5}
+                  />
+                )}
+                <Text
+                  style={{
+                    fontSize: 11,
+                    fontWeight: '700',
+                    color:
+                      changeDir === 'up'
+                        ? colors.success
+                        : changeDir === 'down'
+                          ? '#FF6B7A'
+                          : colors.textSecondary,
+                  }}
+                >
+                  {changePercent !== undefined
+                    ? `${Math.abs(changePercent).toFixed(1)}%`
+                    : ''}
                 </Text>
               </View>
             )}
           </View>
-          <Text style={{ fontSize: 12, fontWeight: '700', color: colors.textSecondary, letterSpacing: 0.5, marginTop: 4, textTransform: 'uppercase' }} numberOfLines={1}>
+          <Text
+            style={{
+              fontSize: 13,
+              fontWeight: '500',
+              color: colors.textSecondary,
+              lineHeight: 19,
+              marginTop: 6,
+            }}
+            numberOfLines={1}
+          >
             {label}
           </Text>
 
           {/* Large subtle background icon */}
           {React.isValidElement(icon) ? (
-            <View style={{ position: 'absolute', right: -10, bottom: -15, opacity: isDark ? 0.05 : 0.03, transform: [{ scale: 3.5 }] }} pointerEvents="none">
-              {React.cloneElement(icon as React.ReactElement<{ color?: string }>, { color: colors.textPrimary })}
+            <View
+              style={{
+                position: 'absolute',
+                right: -10,
+                bottom: -15,
+                opacity: isDark ? 0.05 : 0.03,
+                transform: [{ scale: 3.5 }],
+              }}
+              pointerEvents="none"
+            >
+              {React.cloneElement(
+                icon as React.ReactElement<{ color?: string }>,
+                { color: colors.textPrimary },
+              )}
             </View>
           ) : null}
         </ClayView>
@@ -380,88 +495,164 @@ export const KpiTile = React.memo(function KpiTile({
 });
 
 /* ── Financial Summary Banner ──────────────────────────────────────────────── */
-export const FinancialSummaryBanner = React.memo(function FinancialSummaryBanner({
-  netProfit,
-  netProfitFormatted,
-  incomeFormatted,
-  expenseFormatted,
-  delay = 0,
-}: {
-  netProfit: number;
-  netProfitFormatted: string;
-  incomeFormatted: string;
-  expenseFormatted: string;
-  delay?: number;
-}) {
-  const { colors, isDark, clayShadows } = useTheme();
-  const isHealthy = netProfit >= 0;
-  const grad: [string, string] = isHealthy ? ['#00D4AD', '#059669'] : ['#FF6B7A', '#DC2626'];
+export const FinancialSummaryBanner = React.memo(
+  function FinancialSummaryBanner({
+    netProfit,
+    netProfitFormatted,
+    incomeFormatted,
+    expenseFormatted,
+    delay = 0,
+  }: {
+    netProfit: number;
+    netProfitFormatted: string;
+    incomeFormatted: string;
+    expenseFormatted: string;
+    delay?: number;
+  }) {
+    const { colors, isDark, clayShadows } = useTheme();
+    const isHealthy = netProfit >= 0;
+    const grad: [string, string] = isHealthy
+      ? ['#00D4AD', '#059669']
+      : ['#FF6B7A', '#DC2626'];
 
-  return (
-    <Animated.View entering={FadeInUp.delay(delay).duration(500).springify()} style={styles.financialBanner}>
-      <View style={[
-        styles.financialBannerInner,
-        {
-          backgroundColor: colors.card,
-          borderColor: grad[0] + '44',
-        },
-        clayStyle(clayShadows.clayElevated),
-      ]}>
-        <LinearGradient
-          colors={[grad[0] + '18', 'transparent']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={StyleSheet.absoluteFill}
-        />
+    return (
+      <Animated.View
+        entering={FadeInUp.delay(delay).duration(500).springify()}
+        style={styles.financialBanner}
+      >
+        <View
+          style={[
+            styles.financialBannerInner,
+            {
+              backgroundColor: colors.card,
+              borderColor: grad[0] + '44',
+            },
+            clayStyle(clayShadows.clayElevated),
+          ]}
+        >
+          <LinearGradient
+            colors={[grad[0] + '18', 'transparent']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={StyleSheet.absoluteFill}
+          />
 
-        {/* Left: Net Profit */}
-        <View style={styles.financialLeft}>
-          <View style={styles.financialStatusRow}>
-            <View style={[
-              styles.financialStatusDot,
-              { backgroundColor: isHealthy ? '#00D4AD' : '#FF6B7A' },
-            ]} />
-            <Text style={[styles.financialStatusText, { color: isHealthy ? '#00D4AD' : '#FF6B7A' }]}>
-              {isHealthy ? 'Healthy' : 'Deficit'}
+          {/* Left: Net Profit */}
+          <View style={styles.financialLeft}>
+            <View style={styles.financialStatusRow}>
+              <View
+                style={[
+                  styles.financialStatusDot,
+                  {
+                    backgroundColor: isHealthy ? colors.success : colors.error,
+                  },
+                ]}
+              />
+              <Text
+                style={[
+                  styles.financialStatusText,
+                  { color: isHealthy ? colors.success : colors.error },
+                ]}
+              >
+                {isHealthy ? 'Healthy' : 'Deficit'}
+              </Text>
+            </View>
+            <Text
+              style={[styles.financialBigValue, { color: colors.textPrimary }]}
+            >
+              {netProfitFormatted}
+            </Text>
+            <Text
+              style={[
+                styles.financialSubLabel,
+                { color: colors.textSecondary },
+              ]}
+            >
+              Net profit this month
             </Text>
           </View>
-          <Text style={[styles.financialBigValue, { color: colors.textPrimary }]}>
-            {netProfitFormatted}
-          </Text>
-          <Text style={[styles.financialSubLabel, { color: colors.textSecondary }]}>
-            Net profit this month
-          </Text>
-        </View>
 
-        {/* Right: Income / Expense mini stats */}
-        <View style={styles.financialRight}>
-          <View style={styles.financialMiniStat}>
-            <View style={[styles.financialMiniDot, { backgroundColor: '#00D4AD' }]} />
-            <View>
-              <Text style={[styles.financialMiniLabel, { color: colors.textSecondary }]}>Income</Text>
-              <Text style={[styles.financialMiniVal, { color: colors.textPrimary }]}>{incomeFormatted}</Text>
+          {/* Right: Income / Expense mini stats */}
+          <View style={styles.financialRight}>
+            <View style={styles.financialMiniStat}>
+              <View
+                style={[
+                  styles.financialMiniDot,
+                  { backgroundColor: '#00D4AD' },
+                ]}
+              />
+              <View>
+                <Text
+                  style={[
+                    styles.financialMiniLabel,
+                    { color: colors.textSecondary },
+                  ]}
+                >
+                  Income
+                </Text>
+                <Text
+                  style={[
+                    styles.financialMiniVal,
+                    { color: colors.textPrimary },
+                  ]}
+                >
+                  {incomeFormatted}
+                </Text>
+              </View>
             </View>
-          </View>
-          <View style={[styles.financialDivider, { backgroundColor: colors.border }]} />
-          <View style={styles.financialMiniStat}>
-            <View style={[styles.financialMiniDot, { backgroundColor: '#FF6B7A' }]} />
-            <View>
-              <Text style={[styles.financialMiniLabel, { color: colors.textSecondary }]}>Expense</Text>
-              <Text style={[styles.financialMiniVal, { color: colors.textPrimary }]}>{expenseFormatted}</Text>
+            <View
+              style={[
+                styles.financialDivider,
+                { backgroundColor: colors.border },
+              ]}
+            />
+            <View style={styles.financialMiniStat}>
+              <View
+                style={[
+                  styles.financialMiniDot,
+                  { backgroundColor: colors.error },
+                ]}
+              />
+              <View>
+                <Text
+                  style={[
+                    styles.financialMiniLabel,
+                    { color: colors.textSecondary },
+                  ]}
+                >
+                  Expense
+                </Text>
+                <Text
+                  style={[
+                    styles.financialMiniVal,
+                    { color: colors.textPrimary },
+                  ]}
+                >
+                  {expenseFormatted}
+                </Text>
+              </View>
             </View>
           </View>
         </View>
-      </View>
-    </Animated.View>
-  );
-});
+      </Animated.View>
+    );
+  },
+);
 
 /* ── Section Title ─────────────────────────────────────────────────────────── */
-export const SectionTitle = React.memo(function SectionTitle({ title, right }: { title: string; right?: React.ReactNode }) {
+export const SectionTitle = React.memo(function SectionTitle({
+  title,
+  right,
+}: {
+  title: string;
+  right?: React.ReactNode;
+}) {
   const { colors } = useTheme();
   return (
     <View style={styles.sectionRow}>
-      <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>{title}</Text>
+      <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+        {title}
+      </Text>
       {right}
     </View>
   );
@@ -479,15 +670,23 @@ function FilterChipsInner<T extends string>({
 }) {
   const { colors, isDark } = useTheme();
   return (
-    <ScrollView style={{ flexGrow: 0, flexShrink: 0 }} horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipsRow}>
+    <ScrollView
+      style={{ flexGrow: 0, flexShrink: 0 }}
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.chipsRow}
+    >
       {options.map((o) => {
         const active = o.key === value;
         return (
           <Pressable
             key={o.key}
+            accessibilityRole="button"
+            accessibilityState={{ selected: active }} aria-selected={active}
             onPress={() => onChange(o.key)}
             style={({ pressed, hovered }: any) => [
               styles.chip,
+              { minHeight: 44, justifyContent: 'center' },
               {
                 backgroundColor: active
                   ? colors.primaryDim
@@ -497,17 +696,12 @@ function FilterChipsInner<T extends string>({
                 borderColor: active ? colors.primary : colors.clayBorderColor,
                 transform: [{ scale: pressed ? 0.96 : 1 }],
               },
-              Platform.OS === 'web' ? {
-                boxShadow: active
-                  ? isDark
-                    ? 'inset 2px 2px 5px rgba(0,0,0,0.25), inset -2px -2px 5px rgba(255,255,255,0.03)'
-                    : 'inset 2px 2px 5px rgba(0,0,0,0.04), inset -2px -2px 5px rgba(255,255,255,0.5)'
-                  : isDark
-                    ? '2px 2px 6px rgba(0,0,0,0.15), -2px -2px 6px rgba(255,255,255,0.02)'
-                    : '2px 2px 6px rgba(0,0,0,0.03), -2px -2px 6px rgba(255,255,255,0.5)',
-                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                cursor: 'pointer',
-              } as any : {},
+              Platform.OS === 'web'
+                ? ({
+                    transition: 'background-color 120ms ease',
+                    cursor: 'pointer',
+                  } as any)
+                : {},
               ...pressableWebStyles(pressed, { pressedOpacity: 0.85 }),
             ]}
           >
@@ -527,7 +721,9 @@ function FilterChipsInner<T extends string>({
   );
 }
 
-export const FilterChips = React.memo(FilterChipsInner) as typeof FilterChipsInner;
+export const FilterChips = React.memo(
+  FilterChipsInner,
+) as typeof FilterChipsInner;
 
 /* ── Primary Gradient Button ───────────────────────────────────────────────── */
 export const PrimaryGradientButton = React.memo(function PrimaryGradientButton({
@@ -541,15 +737,20 @@ export const PrimaryGradientButton = React.memo(function PrimaryGradientButton({
   disabled?: boolean;
   variant?: 'primary' | 'success' | 'danger';
 }) {
-  const { clayShadows } = useTheme();
+  const { clayShadows, colors } = useTheme();
   const g =
     variant === 'success'
       ? founderGradients.success
       : variant === 'danger'
         ? founderGradients.danger
-        : founderGradients.primary;
+        : ([
+            colors.primaryFill || colors.primary,
+            colors.primaryFill || colors.primary,
+          ] as const);
   return (
     <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ disabled: Boolean(disabled) }}
       onPress={safePressHandler(onPress)}
       disabled={disabled}
       style={({ pressed, hovered }: any) => [
@@ -558,14 +759,21 @@ export const PrimaryGradientButton = React.memo(function PrimaryGradientButton({
           transform: [{ scale: pressed ? 0.96 : 1 }],
         },
         clayStyle(clayShadows.clay),
-        Platform.OS === 'web' ? {
-          transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-          cursor: disabled ? 'not-allowed' : 'pointer',
-        } as any : {},
+        Platform.OS === 'web'
+          ? ({
+              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+              cursor: disabled ? 'not-allowed' : 'pointer',
+            } as any)
+          : {},
         ...pressableWebStyles(pressed, { disabled, pressedOpacity: 0.9 }),
       ]}
     >
-      <LinearGradient colors={g as [string, string]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.ctaBtn}>
+      <LinearGradient
+        colors={g as [string, string]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.ctaBtn}
+      >
         <Text style={styles.ctaBtnText}>{label}</Text>
       </LinearGradient>
     </Pressable>
@@ -777,4 +985,3 @@ const styles = StyleSheet.create({
 });
 
 export const bottomTabPad = Platform.OS === 'ios' ? 108 : 96;
-

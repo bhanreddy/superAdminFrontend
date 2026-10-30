@@ -3,15 +3,15 @@ import {
   View,
   Pressable,
   StyleSheet,
-  Animated,
+
   Dimensions,
   Platform,
   Easing,
 } from 'react-native';
+import { Animated } from '../../utils/accessibleAnimation';
 import { pressableWebStyles } from '../../utils/webPressable';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
 import {
   Home,
   School,
@@ -122,7 +122,7 @@ const TabItem = React.memo(function TabItem({
   }, [focused]);
 
   return (
-    <Pressable
+    <Pressable accessibilityRole="button"
       onPress={onPress}
       style={({ pressed }) => [styles.tab, ...pressableWebStyles(pressed, { pressedOpacity: 1 })]}
     >
@@ -162,7 +162,7 @@ export const CustomTabBar = React.memo(function CustomTabBar({ state, descriptor
 
   useEffect(() => {
     const targetX = activeIdx * tabWidth;
-    
+
     Animated.spring(segmentX, {
       toValue: isNaN(targetX) ? 0 : targetX,
       tension: 140,
@@ -225,10 +225,8 @@ export const CustomTabBar = React.memo(function CustomTabBar({ state, descriptor
         ]}
       />
 
-      <BlurView
-        intensity={80}
-        tint={isDark ? 'dark' : 'light'}
-        style={styles.bar}
+      <View
+        style={[styles.bar, { backgroundColor: colors.tabBarBackground }]}
       >
 
         <Animated.View
@@ -266,7 +264,7 @@ export const CustomTabBar = React.memo(function CustomTabBar({ state, descriptor
             );
           })}
         </View>
-      </BlurView>
+      </View>
     </View>
   );
 });

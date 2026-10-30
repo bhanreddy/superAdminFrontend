@@ -1,0 +1,4 @@
+2026-10-30 local environment check
+adb devices -l: no devices attached
+xcrun simctl list devices available: unable to find utility simctl
+No native simulator/device screenshots, signed native builds, TalkBack or VoiceOver passes are claimed.

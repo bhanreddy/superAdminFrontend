@@ -1,6 +1,26 @@
-import React, { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
-import { Platform } from 'react-native';
-import { darkTheme, lightTheme, ThemeColors, ClayShadow, ClayShadowSet } from '../constants/theme';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useMemo,
+  useEffect,
+} from 'react';
+import { Appearance, Platform } from 'react-native';
+import { useAccessibilityPreferences } from '../hooks/useAccessibilityPreferences';
+import {
+  darkTheme,
+  lightTheme,
+  ThemeColors,
+  ClayShadow,
+  ClayShadowSet,
+} from '../constants/theme';
+
+import {
+  getWorkspaceModule,
+  workspaceModules,
+  WorkspaceModule,
+} from '../constants/workspaceDesign';
 
 const THEME_KEY = 'superadmin-theme';
 
@@ -12,26 +32,36 @@ function getInitialIsDark(): boolean {
       const saved = window.localStorage.getItem(THEME_KEY);
       if (saved === 'light') return false;
       if (saved === 'dark') return true;
-      if (window.matchMedia?.('(prefers-color-scheme: light)').matches) return false;
+      if (window.matchMedia?.('(prefers-color-scheme: light)').matches)
+        return false;
     } catch {}
   }
-  return true;
+  return Appearance?.getColorScheme?.() !== 'light';
 }
 
-// Injects, once, the CSS that animates every surface during a theme switch.
-// The rule only bites while <html> carries `theme-transition`, so hover/press
-// interactions stay instant the rest of the time.
+// Shared keyboard focus and reduced-motion defaults. No page-wide theme animation.
 function ensureTransitionStyles() {
   if (Platform.OS !== 'web') return;
   try {
-    if (document.getElementById('theme-transition-style')) return;
+    if (document.getElementById('workspace-accessibility-style')) return;
     const el = document.createElement('style');
-    el.id = 'theme-transition-style';
-    el.textContent =
-      'html.theme-transition, html.theme-transition * , html.theme-transition *::before, html.theme-transition *::after' +
-      '{transition: background-color .45s cubic-bezier(.4,0,.2,1), background-image .45s cubic-bezier(.4,0,.2,1),' +
-      ' border-color .45s cubic-bezier(.4,0,.2,1), color .35s cubic-bezier(.4,0,.2,1),' +
-      ' box-shadow .45s cubic-bezier(.4,0,.2,1), fill .35s ease, stroke .35s ease !important;}';
+    el.id = 'workspace-accessibility-style';
+    el.textContent = `
+      @media (pointer: coarse) {
+        [role="button"], button { min-height: 44px; min-width: 44px; }
+      }
+      [tabindex]:focus-visible, a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+        outline: 3px solid var(--nex-focus, #3155C6) !important; outline-offset: 3px;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: 0s !important; scroll-behavior: auto !important;
+        }
+      }
+      @media (prefers-reduced-transparency: reduce) {
+        *, *::before, *::after { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+      }
+    `;
     document.head.appendChild(el);
   } catch {}
 }
@@ -52,6 +82,9 @@ export function clayStyle(shadow: ClayShadow): any {
 }
 
 interface ThemeContextValue {
+  reducedMotion: boolean;
+  reducedTransparency: boolean;
+  workspaceModule: WorkspaceModule;
   isDark: boolean;
   toggleTheme: () => void;
   colors: ThemeColors;
@@ -66,6 +99,9 @@ interface ThemeContextValue {
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
+  reducedMotion: false,
+  reducedTransparency: false,
+  workspaceModule: 'overview',
   isDark: true,
   toggleTheme: () => {},
   colors: darkTheme.colors,
@@ -81,27 +117,27 @@ const ThemeContext = createContext<ThemeContextValue>({
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [isDark, setIsDark] = useState(getInitialIsDark);
+  const preferences = useAccessibilityPreferences();
 
-  useEffect(() => { ensureTransitionStyles(); }, []);
+  useEffect(() => {
+    ensureTransitionStyles();
+  }, []);
 
   // Keep the browser's own UI (form controls, scrollbars) in sync with the theme.
   useEffect(() => {
     if (Platform.OS !== 'web') return;
-    try { document.documentElement.style.colorScheme = isDark ? 'dark' : 'light'; } catch {}
+    try {
+      document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+    } catch {}
   }, [isDark]);
 
   const toggleTheme = useCallback(() => {
-    if (Platform.OS === 'web') {
-      try {
-        const root = document.documentElement;
-        root.classList.add('theme-transition');
-        window.setTimeout(() => root.classList.remove('theme-transition'), 520);
-      } catch {}
-    }
     setIsDark((prev) => {
       const next = !prev;
       if (Platform.OS === 'web') {
-        try { window.localStorage.setItem(THEME_KEY, next ? 'dark' : 'light'); } catch {}
+        try {
+          window.localStorage.setItem(THEME_KEY, next ? 'dark' : 'light');
+        } catch {}
       }
       return next;
     });
@@ -110,6 +146,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo(() => {
     const currentTheme = isDark ? darkTheme : lightTheme;
     return {
+      ...preferences,
+      workspaceModule: 'overview' as WorkspaceModule,
       isDark,
       toggleTheme,
       colors: currentTheme.colors,
@@ -122,15 +160,58 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       layout: currentTheme.layout,
       zIndex: currentTheme.zIndex,
     };
-  }, [isDark, toggleTheme]);
+  }, [isDark, toggleTheme, preferences]);
 
   return (
-    <ThemeContext.Provider value={value}>
-      {children}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
   );
 }
 
 export function useTheme() {
   return useContext(ThemeContext);
+}
+
+/** Screen accents are presentation only; permissions and status colours are unchanged. */
+export function WorkspaceThemeProvider({
+  path,
+  children,
+}: {
+  path: string;
+  children: React.ReactNode;
+}) {
+  const base = useTheme();
+  const workspaceModule = getWorkspaceModule(path);
+  const value = useMemo(() => {
+    const palette = workspaceModules[workspaceModule];
+    const primary = base.isDark ? palette.dark : palette.light;
+    const tint = base.isDark ? palette.night : palette.tint;
+    return {
+      ...base,
+      workspaceModule,
+      colors: {
+        ...base.colors,
+        primary,
+        primaryFill: palette.fill,
+        primaryHover: palette.fill,
+        primaryDim: tint,
+        primaryMuted: tint,
+        focusRing: primary,
+        headerGradientStart: tint,
+        headerGradientEnd: base.colors.card,
+        tabBarActive: primary,
+      },
+    };
+  }, [base, workspaceModule]);
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    try {
+      document.documentElement.style.setProperty(
+        '--nex-focus',
+        value.colors.primary,
+      );
+    } catch {}
+  }, [value.colors.primary]);
+  return (
+    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+  );
 }

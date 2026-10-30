@@ -288,7 +288,7 @@ export default function ComplaintsScreen() {
         <ScrollView contentContainerStyle={[styles.content, { paddingBottom: bottomTabPad }]}>
           {/* Header */}
           <View style={styles.topHeader}>
-            <View>
+            <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 300, minWidth: 0 }}>
               <View style={styles.badgeRow}>
                 <View style={[styles.badge, { backgroundColor: 'rgba(168, 85, 247, 0.12)', borderColor: 'rgba(168, 85, 247, 0.3)' }]}>
                   <LifeBuoy size={14} color="#A855F7" />
@@ -302,7 +302,7 @@ export default function ComplaintsScreen() {
             </View>
 
             {can(PERMISSIONS.COMPLAINTS_CREATE) && (
-              <Pressable
+              <Pressable accessibilityRole="button"
                 style={[styles.createBtn, { backgroundColor: '#9333EA' }]}
                 onPress={() => setShowCreateModal(true)}
               >
@@ -329,7 +329,7 @@ export default function ComplaintsScreen() {
               {['ALL', 'OPEN', 'IN_PROGRESS', 'WAITING_ON_CLIENT', 'ESCALATED', 'REOPENED', 'RESOLVED', 'CLOSED'].map((st) => {
                 const isSelected = statusFilter === st;
                 return (
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     key={st}
                     style={[
                       styles.filterPill,
@@ -368,7 +368,7 @@ export default function ComplaintsScreen() {
                 const sBadge = STATUS_BADGE[t.status] || STATUS_BADGE.OPEN;
 
                 return (
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     key={t.id}
                     style={[
                       styles.ticketCard,
@@ -421,7 +421,7 @@ export default function ComplaintsScreen() {
               <View style={[styles.modalCard, { backgroundColor: isDark ? '#161b22' : '#FFFFFF', borderColor: colors.border }]}>
                 <View style={styles.modalHeader}>
                   <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>Open Support Ticket</Text>
-                  <Pressable onPress={() => setShowCreateModal(false)}>
+                  <Pressable accessibilityLabel="Close dialog" accessibilityRole="button" onPress={() => setShowCreateModal(false)}>
                     <X size={20} color={colors.textSecondary} />
                   </Pressable>
                 </View>
@@ -430,7 +430,7 @@ export default function ComplaintsScreen() {
                   <Text style={[styles.formLabel, { color: colors.textSecondary }]}>Partner Institution *</Text>
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, marginBottom: 8 }}>
                     {schools.map((s) => (
-                      <Pressable
+                      <Pressable accessibilityRole="button"
                         key={s.id}
                         style={[
                           styles.schoolPill,
@@ -458,7 +458,7 @@ export default function ComplaintsScreen() {
                   <Text style={[styles.formLabel, { color: colors.textSecondary }]}>Category</Text>
                   <View style={styles.optionsWrap}>
                     {['SOFTWARE_BUG', 'HARDWARE_GPS', 'BIOMETRIC_SYNC', 'PAYMENT_RECEIPT', 'DATA_DISCREPANCY', 'PARENT_APP'].map((c) => (
-                      <Pressable
+                      <Pressable accessibilityRole="button"
                         key={c}
                         style={[
                           styles.optionPill,
@@ -475,7 +475,7 @@ export default function ComplaintsScreen() {
                   <Text style={[styles.formLabel, { color: colors.textSecondary }]}>Severity / Priority</Text>
                   <View style={styles.optionsWrap}>
                     {(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as const).map((p) => (
-                      <Pressable
+                      <Pressable accessibilityRole="button"
                         key={p}
                         style={[
                           styles.optionPill,
@@ -502,13 +502,13 @@ export default function ComplaintsScreen() {
                 </ScrollView>
 
                 <View style={styles.modalFooter}>
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     style={[styles.cancelBtn, { borderColor: colors.border }]}
                     onPress={() => setShowCreateModal(false)}
                   >
                     <Text style={[styles.cancelBtnText, { color: colors.textSecondary }]}>Cancel</Text>
                   </Pressable>
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     style={[styles.submitBtn, { backgroundColor: '#9333EA' }]}
                     onPress={handleCreateTicket}
                     disabled={creating}
@@ -540,7 +540,7 @@ export default function ComplaintsScreen() {
                       {activeTicket?.school_name} • Reported by {activeTicket?.created_by_name || 'Staff'}
                     </Text>
                   </View>
-                  <Pressable onPress={() => setShowDetailModal(false)}>
+                  <Pressable accessibilityLabel="Close dialog" accessibilityRole="button" onPress={() => setShowDetailModal(false)}>
                     <X size={20} color={colors.textSecondary} />
                   </Pressable>
                 </View>
@@ -581,8 +581,8 @@ export default function ComplaintsScreen() {
                         value={newNote}
                         onChangeText={setNewNote}
                       />
-                      <Pressable
-                        style={[styles.sendNoteBtn, { backgroundColor: colors.primary }]}
+                      <Pressable accessibilityLabel="Send message" accessibilityRole="button"
+                        style={[styles.sendNoteBtn, { backgroundColor: colors.primaryFill }]}
                         onPress={handleAddNote}
                         disabled={submittingAction || !newNote.trim()}
                       >
@@ -597,11 +597,11 @@ export default function ComplaintsScreen() {
                       <Text style={[styles.formLabel, { color: colors.textSecondary }]}>Update Incident Status</Text>
                       <View style={styles.optionsWrap}>
                         {['OPEN', 'IN_PROGRESS', 'WAITING_ON_CLIENT', 'ESCALATED', 'REOPENED', 'RESOLVED', 'CLOSED'].map((st) => (
-                          <Pressable
+                          <Pressable accessibilityRole="button"
                             key={st}
                             style={[
                               styles.optionPill,
-                              targetStatus === st && { backgroundColor: colors.primary, borderColor: colors.primary },
+                              targetStatus === st && { backgroundColor: colors.primaryFill, borderColor: colors.primary },
                               targetStatus !== st && { borderColor: colors.border },
                             ]}
                             onPress={() => setTargetStatus(st)}
@@ -618,11 +618,11 @@ export default function ComplaintsScreen() {
                           <Text style={[styles.formLabel, { color: colors.textSecondary, marginTop: 14 }]}>Priority</Text>
                           <View style={styles.optionsWrap}>
                             {['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'].map((priority) => (
-                              <Pressable
+                              <Pressable accessibilityRole="button"
                                 key={priority}
                                 style={[
                                   styles.optionPill,
-                                  targetPriority === priority && { backgroundColor: colors.primary, borderColor: colors.primary },
+                                  targetPriority === priority && { backgroundColor: colors.primaryFill, borderColor: colors.primary },
                                   targetPriority !== priority && { borderColor: colors.border },
                                 ]}
                                 onPress={() => setTargetPriority(priority)}
@@ -636,10 +636,10 @@ export default function ComplaintsScreen() {
 
                           <Text style={[styles.formLabel, { color: colors.textSecondary, marginTop: 14 }]}>Assign Support Owner</Text>
                           <View style={styles.optionsWrap}>
-                            <Pressable
+                            <Pressable accessibilityRole="button"
                               style={[
                                 styles.optionPill,
-                                !targetAssignee && { backgroundColor: colors.primary, borderColor: colors.primary },
+                                !targetAssignee && { backgroundColor: colors.primaryFill, borderColor: colors.primary },
                                 Boolean(targetAssignee) && { borderColor: colors.border },
                               ]}
                               onPress={() => setTargetAssignee('')}
@@ -649,11 +649,11 @@ export default function ComplaintsScreen() {
                             {assignees.filter((assignee) =>
                               assignee.assigned_school_ids?.map(Number).includes(Number(activeTicket?.school_id))
                             ).map((assignee) => (
-                              <Pressable
+                              <Pressable accessibilityRole="button"
                                 key={assignee.id}
                                 style={[
                                   styles.optionPill,
-                                  targetAssignee === assignee.id && { backgroundColor: colors.primary, borderColor: colors.primary },
+                                  targetAssignee === assignee.id && { backgroundColor: colors.primaryFill, borderColor: colors.primary },
                                   targetAssignee !== assignee.id && { borderColor: colors.border },
                                 ]}
                                 onPress={() => setTargetAssignee(assignee.id)}
@@ -686,15 +686,15 @@ export default function ComplaintsScreen() {
                 </ScrollView>
 
                 <View style={styles.modalFooter}>
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     style={[styles.cancelBtn, { borderColor: colors.border }]}
                     onPress={() => setShowDetailModal(false)}
                   >
                     <Text style={[styles.cancelBtnText, { color: colors.textSecondary }]}>Close</Text>
                   </Pressable>
                   {(can(PERMISSIONS.COMPLAINTS_MANAGE) || can(PERMISSIONS.COMPLAINTS_UPDATE_ASSIGNED)) && (
-                    <Pressable
-                      style={[styles.submitBtn, { backgroundColor: colors.primary }]}
+                    <Pressable accessibilityRole="button"
+                      style={[styles.submitBtn, { backgroundColor: colors.primaryFill }]}
                       onPress={handleUpdateStatus}
                       disabled={submittingAction}
                     >
@@ -719,6 +719,7 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   content: { padding: 20 },
   topHeader: {
+    flexWrap: 'wrap',
     flexDirection: Platform.OS === 'web' ? 'row' : 'column',
     justifyContent: 'space-between',
     alignItems: Platform.OS === 'web' ? 'center' : 'flex-start',

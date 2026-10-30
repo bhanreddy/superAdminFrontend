@@ -18,7 +18,7 @@ export default function ClustersScreen() {
   const { colors, isDark } = useTheme();
   const router = useRouter();
   const { selectedCluster, refreshClusters: refreshGlobalClusters } = useCluster();
-  
+
   const [clusters, setClusters] = useState<ClusterWithHealth[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -28,7 +28,7 @@ export default function ClustersScreen() {
       const data = await getAllClusters();
       const withHealth = data.map(c => ({ ...c, health: { school_reachable: false, latency_ms: 0, status: 'loading' as const } }));
       setClusters(withHealth);
-      
+
       // Fetch health asynchronously
       withHealth.forEach(async (cluster) => {
         try {
@@ -36,22 +36,22 @@ export default function ClustersScreen() {
           const target = `${cluster.school_db.backend_url}/health`;
           const controller = new AbortController();
           const id = setTimeout(() => controller.abort(), 5000);
-          
+
           const res = await fetch(target, { signal: controller.signal }).catch(() => null);
           clearTimeout(id);
-          
+
           const latency_ms = Date.now() - start;
           const school_reachable = !!(res && res.ok);
 
-          setClusters(prev => prev.map(p => 
-            p.cluster_id === cluster.cluster_id 
-              ? { ...p, health: { school_reachable, latency_ms, status: school_reachable ? 'success' : 'error' } } 
+          setClusters(prev => prev.map(p =>
+            p.cluster_id === cluster.cluster_id
+              ? { ...p, health: { school_reachable, latency_ms, status: school_reachable ? 'success' : 'error' } }
               : p
           ));
         } catch {
-          setClusters(prev => prev.map(p => 
-            p.cluster_id === cluster.cluster_id 
-              ? { ...p, health: { school_reachable: false, latency_ms: 0, status: 'error' } } 
+          setClusters(prev => prev.map(p =>
+            p.cluster_id === cluster.cluster_id
+              ? { ...p, health: { school_reachable: false, latency_ms: 0, status: 'error' } }
               : p
           ));
         }
@@ -81,14 +81,14 @@ export default function ClustersScreen() {
     }
 
     const newStatus = cluster.status === 'active' ? 'inactive' : 'active';
-    
+
     Alert.alert(
       `${newStatus === 'active' ? 'Activate' : 'Deactivate'} Cluster?`,
       `Are you sure you want to ${newStatus} ${cluster.label}?`,
       [
         { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Confirm', 
+        {
+          text: 'Confirm',
           style: newStatus === 'active' ? 'default' : 'destructive',
           onPress: async () => {
             try {
@@ -118,8 +118,8 @@ export default function ClustersScreen() {
       <View style={[styles.root, { backgroundColor: 'transparent' }]}>
         <View style={[styles.header, { borderBottomColor: colors.border, backgroundColor: colors.surface }]}>
           <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>Cluster Management</Text>
-        <Pressable
-          style={({ pressed }) => [styles.addBtn, { backgroundColor: colors.primary }, ...pressableWebStyles(pressed)]}
+        <Pressable accessibilityRole="button"
+          style={({ pressed }) => [styles.addBtn, { backgroundColor: colors.primaryFill }, ...pressableWebStyles(pressed)]}
           onPress={() => router.push('/(app)/clusters/add' as any)}
         >
           <Text style={styles.addBtnText}>+ Add Cluster</Text>
@@ -152,13 +152,13 @@ export default function ClustersScreen() {
                 </View>
 
                 <View style={styles.actions}>
-                  <Pressable
+                  <Pressable accessibilityLabel="Edit cluster" accessibilityRole="button"
                     style={({ pressed }) => [styles.iconBtn, { backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : colors.background }, ...pressableWebStyles(pressed)]}
                     onPress={() => router.push(`/(app)/clusters/${cluster.cluster_id}/edit` as any)}
                   >
                     <Edit2 size={16} color={colors.textPrimary} />
                   </Pressable>
-                  <Pressable
+                  <Pressable accessibilityLabel="Toggle cluster status" accessibilityRole="button"
                     style={({ pressed }) => [styles.iconBtn, { backgroundColor: isActive ? `${colors.error}20` : `${colors.success}20` }, ...pressableWebStyles(pressed)]}
                     onPress={() => handleToggleStatus(cluster)}
                   >

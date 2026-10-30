@@ -11,10 +11,20 @@ import { AuthProvider } from '../src/contexts/AuthContext';
 import { ClusterProvider } from '../src/contexts/ClusterContext';
 import { ToastProvider } from '../src/components/ui/Toast';
 import AppSplash from '../src/components/ui/AppSplash';
+import { FingerprintProvider, useFingerprint } from '../src/contexts/FingerprintContext';
+import { FingerprintLockGate } from '../src/components/auth/FingerprintSecurity';
+import type { ErrorBoundaryProps } from 'expo-router';
+import { RouteError } from '../src/components/ui/RouteError';
+
+export function ErrorBoundary({ retry }: ErrorBoundaryProps) {
+  return <RouteError retry={retry} />;
+}
 
 function RootLayoutInner() {
   const { colors, isDark } = useTheme();
   const { session, loading, isSuperAdmin, founder, role, status, mustChangePassword } = useAuth();
+  const fingerprint = useFingerprint();
+  const privacyLocked = fingerprint.locked || fingerprint.covered;
 
   // Expo Router wraps screens in a React Navigation navigator that paints its own
   // background from the *navigation* theme (default: light rgb(242,242,242)). Left
@@ -68,11 +78,16 @@ function RootLayoutInner() {
   return (
     <NavThemeProvider value={navTheme}>
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-        <Slot />
+        <View style={{ flex: 1, opacity: privacyLocked ? 0 : 1 }}
+          pointerEvents={privacyLocked ? 'none' : 'auto'} accessibilityElementsHidden={privacyLocked}
+          importantForAccessibility={privacyLocked ? 'no-hide-descendants' : 'auto'}>
+          <Slot />
+        </View>
         {/* Show animated splash on initial load */}
         {(loading || !splashDone || !isClusterReady) && (
           <AppSplash onFinish={() => setSplashDone(true)} />
         )}
+        <FingerprintLockGate />
       </SafeAreaView>
     </NavThemeProvider>
   );
@@ -85,7 +100,9 @@ export default function RootLayout() {
         <AuthProvider>
           <ThemeProvider>
             <ToastProvider>
-              <RootLayoutInner />
+              <FingerprintProvider>
+                <RootLayoutInner />
+              </FingerprintProvider>
             </ToastProvider>
           </ThemeProvider>
         </AuthProvider>

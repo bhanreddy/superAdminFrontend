@@ -105,12 +105,12 @@ function Segmented({
       {options.map((o) => {
         const active = o.key === value;
         return (
-          <Pressable
+          <Pressable accessibilityRole="button"
             key={o.key}
             onPress={() => onChange(o.key)}
             style={[
               st.segBtn,
-              active && { backgroundColor: colors.primary },
+              active && { backgroundColor: colors.primaryFill },
               Platform.OS === 'web' ? ({ cursor: 'pointer' } as any) : null,
             ]}
           >
@@ -278,7 +278,7 @@ export default function BillingScreen() {
           showBack
           rightAction={
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-              <Pressable
+              <Pressable accessibilityLabel="Billing settings" accessibilityRole="button"
                 onPress={() => setShowConfig(true)}
                 hitSlop={6}
                 style={[
@@ -309,7 +309,7 @@ export default function BillingScreen() {
                 <Text style={[st.heroTitle, { color: colors.textPrimary }]}>Subscriptions, billing and collections—together.</Text>
                 <Text style={[st.heroSubtitle, { color: colors.textSecondary }]}>Manage every school’s monthly plan and send payment links without leaving Founder Console.</Text>
               </View>
-              <Pressable onPress={() => setShowCreate(true)} style={({ pressed }) => [st.heroAction, { opacity: pressed ? 0.86 : 1 }]}>
+              <Pressable accessibilityRole="button" onPress={() => setShowCreate(true)} style={({ pressed }) => [st.heroAction, { opacity: pressed ? 0.86 : 1 }]}>
                 <Plus size={18} color="#FFFFFF" /><Text style={st.heroActionText}>New document</Text>
               </Pressable>
             </View>
@@ -328,7 +328,7 @@ export default function BillingScreen() {
             <Text style={{ color: colors.textSecondary, fontSize: 13, marginBottom: 12 }}>
               Set NexSyrus's GSTIN and state code in billing config before issuing documents.
             </Text>
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={() => setShowConfig(true)}
               style={[st.outlineBtn, { borderColor: '#FB923C' }, Platform.OS === 'web' ? ({ cursor: 'pointer' } as any) : null]}
             >
@@ -340,7 +340,7 @@ export default function BillingScreen() {
 
         <View style={[st.sectionSwitch, { backgroundColor: isDark ? 'rgba(255,255,255,0.045)' : 'rgba(102,84,200,0.07)', borderColor: colors.clayBorderColor }]}>
           {(['subscriptions', 'documents', 'collections'] as const).map((key) => (
-            <Pressable key={key} onPress={() => setSection(key)} style={[st.sectionSwitchBtn, section === key && { backgroundColor: isDark ? 'rgba(124,111,255,0.22)' : '#FFFFFF' }]}>
+            <Pressable accessibilityRole="button" key={key} onPress={() => setSection(key)} style={[st.sectionSwitchBtn, section === key && { backgroundColor: isDark ? 'rgba(124,111,255,0.22)' : '#FFFFFF' }]}>
               {key === 'subscriptions' ? <Building2 size={16} color={section === key ? colors.primary : colors.textSecondary} /> : key === 'documents' ? <ReceiptText size={16} color={section === key ? colors.primary : colors.textSecondary} /> : <WalletCards size={16} color={section === key ? colors.primary : colors.textSecondary} />}
               <Text style={{ color: section === key ? colors.textPrimary : colors.textSecondary, fontWeight: '800', fontSize: 13 }}>{key === 'subscriptions' ? 'Subscriptions' : key === 'documents' ? 'Documents' : 'Collections'}</Text>
             </Pressable>
@@ -355,7 +355,7 @@ export default function BillingScreen() {
         <View style={[st.searchShell, { borderColor: colors.clayBorderColor, backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : '#FFFFFF' }]}>
           <Search size={17} color={colors.textSecondary} />
           <TextInput value={clientSearch} onChangeText={setClientSearch} placeholder="Search school, medical shop or cluster" placeholderTextColor={colors.textTertiary ?? colors.textSecondary} style={[st.searchInput, { color: colors.textPrimary }]} />
-          {clientSearch.length > 0 && <Pressable onPress={() => setClientSearch('')}><X size={16} color={colors.textSecondary} /></Pressable>}
+          {clientSearch.length > 0 && <Pressable accessibilityLabel="Clear search" accessibilityRole="button" onPress={() => setClientSearch('')}><X size={16} color={colors.textSecondary} /></Pressable>}
         </View>
         {clientsWarning && <Text style={{ color: '#FB923C', fontSize: 12, marginBottom: 10 }}>{clientsWarning}</Text>}
         {clientsLoading ? (
@@ -418,7 +418,7 @@ export default function BillingScreen() {
         ) : (
           <View style={{ gap: 10 }}>
             {docs.map((d) => (
-              <Pressable
+              <Pressable accessibilityRole="button"
                 key={d.id}
                 onPress={() => setDetail(d)}
                 style={({ pressed }) => [
@@ -554,7 +554,7 @@ function SubscriptionClientCard({ client, onChanged, compact }: { client: Billin
 
   return (
     <View style={[st.clientCard, { borderColor: colors.clayBorderColor, backgroundColor: isDark ? 'rgba(34,32,48,0.88)' : '#F8F6FC' }, Platform.OS === 'web' ? { boxShadow: clayShadows.clayElevated.web } as any : null]}>
-      <Pressable onPress={() => setExpanded((value) => !value)} style={({ pressed }) => [st.clientSummary, { opacity: pressed ? 0.82 : 1 }]}>
+      <Pressable accessibilityRole="button" onPress={() => setExpanded((value) => !value)} style={({ pressed }) => [st.clientSummary, { opacity: pressed ? 0.82 : 1 }]}>
         <View style={[st.schoolAvatar, { backgroundColor: client.kind === 'medical' ? 'rgba(16,185,129,0.14)' : client.is_active ? 'rgba(124,111,255,0.16)' : 'rgba(148,163,184,0.14)' }]}>
           {client.kind === 'medical' ? <Stethoscope size={20} color="#10B981" /> : <Text style={{ color: client.is_active ? '#7C6FFF' : colors.textSecondary, fontSize: 17, fontWeight: '900' }}>{client.name.slice(0, 2).toUpperCase()}</Text>}
         </View>
@@ -575,9 +575,9 @@ function SubscriptionClientCard({ client, onChanged, compact }: { client: Billin
           <Input containerStyle={compact ? { width: '100%' } : { flex: 0.8, minWidth: 160 }} label="Next due date" value={dueDate} onChangeText={setDueDate} placeholder="YYYY-MM-DD" />
         </View>
         <Text style={[st.miniLabel, { color: colors.textSecondary }]}>BILLING CYCLE</Text>
-        <View style={st.choiceRow}>{(['monthly', 'quarterly', 'annual', 'custom'] as const).map((value) => <Pressable key={value} onPress={() => setCycle(value)} style={[st.choiceChip, { borderColor: cycle === value ? colors.primary : colors.border, backgroundColor: cycle === value ? 'rgba(124,111,255,0.15)' : 'transparent' }]}><Text style={{ color: cycle === value ? colors.primary : colors.textSecondary, fontSize: 11, fontWeight: '800', textTransform: 'capitalize' }}>{value}</Text></Pressable>)}</View>
+        <View style={st.choiceRow}>{(['monthly', 'quarterly', 'annual', 'custom'] as const).map((value) => <Pressable accessibilityRole="button" key={value} onPress={() => setCycle(value)} style={[st.choiceChip, { borderColor: cycle === value ? colors.primary : colors.border, backgroundColor: cycle === value ? 'rgba(124,111,255,0.15)' : 'transparent' }]}><Text style={{ color: cycle === value ? colors.primary : colors.textSecondary, fontSize: 11, fontWeight: '800', textTransform: 'capitalize' }}>{value}</Text></Pressable>)}</View>
         <Text style={[st.miniLabel, { color: colors.textSecondary }]}>SUBSCRIPTION STATUS</Text>
-        <View style={st.choiceRow}>{(['trial', 'active', 'past_due', 'paused', 'cancelled'] as const).map((value) => <Pressable key={value} onPress={() => setStatus(value)} style={[st.choiceChip, { borderColor: status === value ? colors.primary : colors.border, backgroundColor: status === value ? 'rgba(124,111,255,0.15)' : 'transparent' }]}><Text style={{ color: status === value ? colors.primary : colors.textSecondary, fontSize: 11, fontWeight: '800', textTransform: 'capitalize' }}>{value.replace('_', ' ')}</Text></Pressable>)}</View>
+        <View style={st.choiceRow}>{(['trial', 'active', 'past_due', 'paused', 'cancelled'] as const).map((value) => <Pressable accessibilityRole="button" key={value} onPress={() => setStatus(value)} style={[st.choiceChip, { borderColor: status === value ? colors.primary : colors.border, backgroundColor: status === value ? 'rgba(124,111,255,0.15)' : 'transparent' }]}><Text style={{ color: status === value ? colors.primary : colors.textSecondary, fontSize: 11, fontWeight: '800', textTransform: 'capitalize' }}>{value.replace('_', ' ')}</Text></Pressable>)}</View>
         <View style={[st.clientFields, compact && { flexDirection: 'column' }]}>
           <Input containerStyle={compact ? { width: '100%' } : { flex: 0.7, minWidth: 150 }} label="Monthly fee (₹)" keyboardType="decimal-pad" value={fee} onChangeText={setFee} placeholder="Set fee" />
           <Input containerStyle={compact ? { width: '100%' } : { flex: 1.3, minWidth: 240 }} label="Secure payment link" autoCapitalize="none" value={link} onChangeText={setLink} placeholder="https://..." />
@@ -587,10 +587,10 @@ function SubscriptionClientCard({ client, onChanged, compact }: { client: Billin
           {reminderEnabled && <Input label="Respectful reminder message" value={reminderMessage} onChangeText={setReminderMessage} placeholder="When convenient, please review the subscription amount due. Thank you." multiline />}
         </View>}
         <View style={[st.cardActions, compact && { flexDirection: 'column-reverse' }]}>
-          <Pressable disabled={busy !== null} onPress={save} style={[st.outlineBtn, compact && { width: '100%' }, { borderColor: colors.border, opacity: busy ? 0.6 : 1 }]}>
+          <Pressable accessibilityRole="button" disabled={busy !== null} onPress={save} style={[st.outlineBtn, compact && { width: '100%' }, { borderColor: colors.border, opacity: busy ? 0.6 : 1 }]}>
             <Save size={15} color={colors.textSecondary} /><Text style={{ color: colors.textSecondary, fontWeight: '700' }}>{busy === 'save' ? 'Saving…' : 'Save changes'}</Text>
           </Pressable>
-          {client.kind === 'school' && <Pressable disabled={busy !== null} onPress={send} style={[st.sendBtn, compact && { width: '100%' }, { opacity: busy ? 0.6 : 1 }]}>
+          {client.kind === 'school' && <Pressable accessibilityRole="button" disabled={busy !== null} onPress={send} style={[st.sendBtn, compact && { width: '100%' }, { opacity: busy ? 0.6 : 1 }]}>
             <LinearGradient colors={['#8B7CFF', '#6554E8']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
             <Send size={15} color="#FFF" /><Text style={{ color: '#FFF', fontWeight: '800' }}>{busy === 'send' ? 'Sending…' : 'Send payment link'}</Text>
           </Pressable>}
@@ -661,14 +661,14 @@ function ConfigModal({
   return (
     <Modal visible animationType="slide" transparent onRequestClose={onClose}>
       <View style={st.modalRoot}>
-        <Pressable style={st.modalBackdrop} onPress={onClose} />
+        <Pressable accessibilityRole="button" style={st.modalBackdrop} onPress={onClose} />
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={[st.modalSheet, { backgroundColor: colors.background, borderColor: colors.border }]}
         >
           <View style={[st.modalHead, { borderBottomColor: colors.border }]}>
             <Text style={[st.modalTitle, { color: colors.textPrimary }]}>Supplier / Billing Config</Text>
-            <Pressable onPress={onClose} hitSlop={8}>
+            <Pressable accessibilityLabel="Close dialog" accessibilityRole="button" onPress={onClose} hitSlop={8}>
               <X size={22} color={colors.textSecondary} />
             </Pressable>
           </View>
@@ -888,14 +888,14 @@ function CreateDocumentModal({
   return (
     <Modal visible animationType="slide" transparent onRequestClose={onClose}>
       <View style={st.modalRoot}>
-        <Pressable style={st.modalBackdrop} onPress={onClose} />
+        <Pressable accessibilityRole="button" style={st.modalBackdrop} onPress={onClose} />
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={[st.modalSheet, { backgroundColor: colors.background, borderColor: colors.border }]}
         >
           <View style={[st.modalHead, { borderBottomColor: colors.border }]}>
             <Text style={[st.modalTitle, { color: colors.textPrimary }]}>New Billing Document</Text>
-            <Pressable onPress={onClose} hitSlop={8}>
+            <Pressable accessibilityLabel="Close dialog" accessibilityRole="button" onPress={onClose} hitSlop={8}>
               <X size={22} color={colors.textSecondary} />
             </Pressable>
           </View>
@@ -1076,7 +1076,7 @@ function CreateDocumentModal({
             <View style={{ height: 8 }} />
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
               <Text style={[st.fieldLabel, { color: colors.textSecondary, marginBottom: 0 }]}>Line Items</Text>
-              <Pressable onPress={addItem} style={[st.addBtn, { borderColor: colors.primary }]} hitSlop={6}>
+              <Pressable accessibilityRole="button" onPress={addItem} style={[st.addBtn, { borderColor: colors.primary }]} hitSlop={6}>
                 <Plus size={14} color={colors.primary} />
                 <Text style={{ color: colors.primary, fontWeight: '700', fontSize: 12 }}>Add</Text>
               </Pressable>
@@ -1087,7 +1087,7 @@ function CreateDocumentModal({
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                   <Text style={{ color: colors.textSecondary, fontSize: 11, fontWeight: '700' }}>Item {idx + 1}</Text>
                   {items.length > 1 && (
-                    <Pressable onPress={() => removeItem(idx)} hitSlop={8}>
+                    <Pressable accessibilityLabel="Move down" accessibilityRole="button" onPress={() => removeItem(idx)} hitSlop={8}>
                       <Trash2 size={15} color="#F43F5E" />
                     </Pressable>
                   )}
@@ -1240,7 +1240,7 @@ function DocumentDetailModal({
   return (
     <Modal visible animationType="slide" transparent onRequestClose={onClose}>
       <View style={st.modalRoot}>
-        <Pressable style={st.modalBackdrop} onPress={onClose} />
+        <Pressable accessibilityRole="button" style={st.modalBackdrop} onPress={onClose} />
         <View style={[st.modalSheet, { backgroundColor: colors.background, borderColor: colors.border }]}>
           <View style={[st.modalHead, { borderBottomColor: colors.border }]}>
             <View style={{ flex: 1, minWidth: 0 }}>
@@ -1250,7 +1250,7 @@ function DocumentDetailModal({
                 <Badge {...STATUS_META[doc.status]} />
               </View>
             </View>
-            <Pressable onPress={onClose} hitSlop={8}>
+            <Pressable accessibilityLabel="Close dialog" accessibilityRole="button" onPress={onClose} hitSlop={8}>
               <X size={22} color={colors.textSecondary} />
             </Pressable>
           </View>
@@ -1334,7 +1334,7 @@ function DocumentDetailModal({
             {actionErr && <Text style={{ color: '#F43F5E', fontSize: 12, marginTop: 12 }}>{actionErr}</Text>}
 
             <View style={{ height: 18 }} />
-            <Pressable onPress={openDocument} style={[st.outlineBtn, { borderColor: colors.primary }]}>
+            <Pressable accessibilityRole="button" onPress={openDocument} style={[st.outlineBtn, { borderColor: colors.primary }]}>
               <ExternalLink size={16} color={colors.primary} />
               <Text style={{ color: colors.primary, fontWeight: '700' }}>
                 {Platform.OS === 'web' ? 'Open / Print Document' : 'Share Document'}
@@ -1342,7 +1342,7 @@ function DocumentDetailModal({
             </Pressable>
 
             {doc.status === 'issued' && (
-              <Pressable
+              <Pressable accessibilityRole="button"
                 onPress={confirmCancel}
                 disabled={cancelling}
                 style={[st.outlineBtn, { borderColor: '#F43F5E', marginTop: 10, opacity: cancelling ? 0.5 : 1 }]}

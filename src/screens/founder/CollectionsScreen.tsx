@@ -1,3 +1,4 @@
+import type { Animated as NativeAnimated } from 'react-native';
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import {
   View,
@@ -9,11 +10,12 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
-  Animated,
+
   StatusBar,
   useWindowDimensions,
   Easing,
 } from 'react-native';
+import { Animated } from '../../utils/accessibleAnimation';
 import { pressableWebStyles } from '../../utils/webPressable';
 import { safePressHandler } from '../../utils/safePressHandler';
 import { useRouter } from 'expo-router';
@@ -44,7 +46,7 @@ import {
   Filter as FilterIcon,
 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
+
 import { ClayView, PressScale, clayTokens } from '../../components/ui/ClayPrimitives';
 
 // ─── Breakpoints ──────────────────────────────────────────────────────────────
@@ -310,7 +312,7 @@ function CollectionCard({ r, index, canApprove, onApprove, onReject, colors, isD
             <View style={styles.cardActions}>
               <View style={[styles.divider, { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : colors.border }]} />
               <View style={styles.actionRow}>
-                <Pressable
+                <Pressable accessibilityRole="button"
                   style={({ pressed }) => [
                     styles.actionBtn,
                     {
@@ -324,7 +326,7 @@ function CollectionCard({ r, index, canApprove, onApprove, onReject, colors, isD
                   <Check color={a('teal', isDark)} size={15} />
                   <Text style={[styles.actionBtnTxt, { color: a('teal', isDark) }]}>Approve</Text>
                 </Pressable>
-                <Pressable
+                <Pressable accessibilityRole="button"
                   style={({ pressed }) => [
                     styles.actionBtn,
                     {
@@ -381,7 +383,7 @@ function PeriodChip({
 
   return (
     <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-      <Pressable
+      <Pressable accessibilityRole="button"
         onPress={onPress}
         style={({ pressed }) => [
           !wrapLayout && { marginRight: 8 },
@@ -448,7 +450,7 @@ function StatusTab({
   const inactiveBg = isDark ? 'rgba(255,255,255,0.04)' : colors.glassBackground;
 
   return (
-    <Pressable
+    <Pressable accessibilityRole="button"
       onPress={onPress}
       style={({ pressed }) => [
         styles.statusTab,
@@ -495,7 +497,7 @@ function UnitTab({
   const inactiveBg = isDark ? 'rgba(255,255,255,0.04)' : colors.glassBackground;
 
   return (
-    <Pressable
+    <Pressable accessibilityRole="button"
       onPress={onPress}
       style={({ pressed }) => [
         {
@@ -535,7 +537,7 @@ function PayModeSelector({
       {PAYMENT.map((p) => {
         const sel = value === p.mode;
         return (
-          <Pressable
+          <Pressable accessibilityRole="button"
             key={p.mode}
             onPress={() => onChange(p.mode)}
             style={({ pressed }) => [
@@ -679,7 +681,7 @@ function NewCollectionHero({
   compact?: boolean;
 }) {
   return (
-    <Pressable onPress={onPress} style={({ pressed }) => [...pressableWebStyles(pressed, { pressedOpacity: 0.92 })]}>
+    <Pressable accessibilityRole="button" onPress={onPress} style={({ pressed }) => [...pressableWebStyles(pressed, { pressedOpacity: 0.92 })]}>
       <View
         style={[
           styles.heroOuter,
@@ -774,7 +776,7 @@ function Pagination({
   const prevScale = useRef(new Animated.Value(1)).current;
   const nextScale = useRef(new Animated.Value(1)).current;
 
-  const press = (anim: Animated.Value, fn: () => void) => {
+  const press = (anim: NativeAnimated.Value, fn: () => void) => {
     Animated.sequence([
       Animated.timing(anim, { toValue: 0.92, duration: 80, useNativeDriver: true }),
       Animated.spring(anim, { toValue: 1, useNativeDriver: true, tension: 180, friction: 8 }),
@@ -791,7 +793,7 @@ function Pagination({
       ]}
     >
       <Animated.View style={{ transform: [{ scale: prevScale }] }}>
-        <Pressable
+        <Pressable accessibilityLabel="Previous period" accessibilityRole="button"
           disabled={prevDisabled}
           onPress={() => press(prevScale, onPrev)}
           style={({ pressed }) => [
@@ -814,7 +816,7 @@ function Pagination({
       </View>
 
       <Animated.View style={{ transform: [{ scale: nextScale }] }}>
-        <Pressable
+        <Pressable accessibilityLabel="Next period" accessibilityRole="button"
           disabled={nextDisabled}
           onPress={() => press(nextScale, onNext)}
           style={({ pressed }) => [
@@ -855,7 +857,7 @@ function FilterSummaryPill({
   const statusLabel = STATUS_OPTS.find((s) => s.key === status)?.label ?? status;
 
   return (
-    <Pressable
+    <Pressable accessibilityRole="button"
       onPress={onPress}
       style={({ pressed }) => [
         styles.filterPill,
@@ -1103,7 +1105,7 @@ export default function CollectionsScreen({ approvalsOnly = false, embedded = fa
 
                 {/* Collapse button on mobile */}
                 {filtersCollapsible && (
-                  <Pressable
+                  <Pressable accessibilityLabel="Close dialog" accessibilityRole="button"
                     onPress={() => setFiltersExpanded(false)}
                     style={({ pressed }) => [
                       styles.filterCollapseBtn,
@@ -1300,7 +1302,7 @@ export default function CollectionsScreen({ approvalsOnly = false, embedded = fa
       {/* ─── FAB (hidden on isLG and approvalsOnly) ─── */}
       {showFAB && (
         <Animated.View style={[styles.fab, { transform: [{ scale: fabScale }] }]}>
-          <Pressable onPress={pressFab} style={({ pressed }) => [...pressableWebStyles(pressed, { pressedOpacity: 1 })]}>
+          <Pressable accessibilityLabel="Add collection" accessibilityRole="button" onPress={pressFab} style={({ pressed }) => [...pressableWebStyles(pressed, { pressedOpacity: 1 })]}>
             <LinearGradient colors={['#14B8A6', '#0EA5E9']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.fabInner}>
               <Plus color="#fff" size={24} strokeWidth={2.5} />
             </LinearGradient>
@@ -1315,7 +1317,7 @@ export default function CollectionsScreen({ approvalsOnly = false, embedded = fa
           style={[styles.modalBackdrop, modalCentered && { justifyContent: 'center' }]}
         >
           {isDark && Platform.OS !== 'web' && (
-            <BlurView intensity={30} tint="dark" style={StyleSheet.absoluteFill} pointerEvents="none" />
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.elevated }]} pointerEvents="none" />
           )}
           <View
             style={[
@@ -1355,7 +1357,7 @@ export default function CollectionsScreen({ approvalsOnly = false, embedded = fa
                   Record a payment received from a business unit
                 </Text>
               </View>
-              <Pressable
+              <Pressable accessibilityLabel="Close dialog" accessibilityRole="button"
                 onPress={() => setModalOpen(false)}
                 style={({ pressed }) => [
                   styles.sheetClose,
@@ -1380,7 +1382,7 @@ export default function CollectionsScreen({ approvalsOnly = false, embedded = fa
                     const active = unitId === u.id;
                     const cyanAccent = a('cyan', isDark);
                     return (
-                      <Pressable
+                      <Pressable accessibilityRole="button"
                         key={u.id}
                         onPress={() => setUnitId(u.id)}
                         style={({ pressed }) => [
@@ -1456,7 +1458,7 @@ export default function CollectionsScreen({ approvalsOnly = false, embedded = fa
 
               {/* Actions */}
               <View style={styles.modalActions}>
-                <Pressable
+                <Pressable accessibilityRole="button"
                   onPress={() => setModalOpen(false)}
                   style={({ pressed }) => [
                     styles.cancelBtn,
@@ -1469,7 +1471,7 @@ export default function CollectionsScreen({ approvalsOnly = false, embedded = fa
                 >
                   <Text style={[styles.cancelTxt, { color: colors.textSecondary }]}>Cancel</Text>
                 </Pressable>
-                <Pressable
+                <Pressable accessibilityRole="button"
                   onPress={safePressHandler(submit)}
                   disabled={saving}
                   style={({ pressed }) => [
@@ -1516,7 +1518,7 @@ export default function CollectionsScreen({ approvalsOnly = false, embedded = fa
               multiline
             />
             <View style={styles.modalActions}>
-              <Pressable
+              <Pressable accessibilityRole="button"
                 onPress={() => {
                   setRejectId(null);
                   setRejectReason('');
@@ -1532,7 +1534,7 @@ export default function CollectionsScreen({ approvalsOnly = false, embedded = fa
               >
                 <Text style={[styles.cancelTxt, { color: colors.textSecondary }]}>Cancel</Text>
               </Pressable>
-              <Pressable
+              <Pressable accessibilityRole="button"
                 onPress={safePressHandler(confirmReject)}
                 disabled={!rejectReason.trim()}
                 style={({ pressed }) => [

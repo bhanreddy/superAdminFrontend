@@ -79,7 +79,7 @@ export default function CrmScreen() {
           colors={isDark ? [`${colors.primary}30`, `${colors.accent}14`, 'rgba(255,255,255,0.02)'] : [`${colors.primary}18`, `${colors.accent}0D`, 'rgba(255,255,255,0.82)']}
           style={[st.hero, { borderColor: colors.clayBorderColor }, clayStyle(clayShadows.clayElevated)]}
         >
-          <View style={{ flex: 1 }}>
+          <View style={{ flexGrow: 1, flexBasis: desktop ? 360 : '100%', minWidth: 0 }}>
             <Text style={[st.eyebrow, { color: colors.primary }]}>NEXSYRUS REVENUE OS</Text>
             <Text style={[st.heroTitle, { color: colors.textPrimary }]}>One place to move every relationship forward.</Text>
             <Text style={[st.heroSub, { color: colors.textSecondary }]}>From first enquiry to onboarding, billing and retention.</Text>
@@ -196,7 +196,7 @@ export default function CrmScreen() {
                 <SectionTitle title="Work queue" />
                 <GlassCard noPad>
                   {tasks.slice(0, 10).map((task, index) => (
-                    <Pressable key={task.id} onPress={async () => { await crmService.updateTask(task.id, { status: 'COMPLETED' }); load(); }} style={[st.taskRow, index > 0 && { borderTopWidth: 1, borderTopColor: colors.divider }]}>
+                    <Pressable accessibilityRole="button" key={task.id} onPress={async () => { await crmService.updateTask(task.id, { status: 'COMPLETED' }); load(); }} style={[st.taskRow, index > 0 && { borderTopWidth: 1, borderTopColor: colors.divider }]}>
                       <View style={[st.check, { borderColor: task.priority === 'URGENT' ? colors.error : colors.border }]}><CheckCircle2 size={15} color={colors.textTertiary} /></View>
                       <View style={{ flex: 1 }}><Text style={[st.taskTitle, { color: colors.textPrimary }]}>{task.title}</Text><Text style={[st.rowMeta, { color: colors.textTertiary }]}>{task.account_name || task.enquiry_name || 'CRM'} · {task.priority}</Text></View>
                     </Pressable>
@@ -214,7 +214,7 @@ export default function CrmScreen() {
 
 function SectionTitle({ title, action, onPress }: { title: string; action?: string; onPress?: () => void }) {
   const { colors } = useTheme();
-  return <View style={st.sectionTitle}><Text style={[st.sectionText, { color: colors.textPrimary }]}>{title}</Text>{action ? <Pressable onPress={onPress} style={st.action}><Text style={{ color: colors.primary, fontWeight: '700' }}>{action}</Text><ChevronRight size={15} color={colors.primary} /></Pressable> : null}</View>;
+  return <View style={st.sectionTitle}><Text style={[st.sectionText, { color: colors.textPrimary }]}>{title}</Text>{action ? <Pressable accessibilityRole="button" onPress={onPress} style={st.action}><Text style={{ color: colors.primary, fontWeight: '700' }}>{action}</Text><ChevronRight size={15} color={colors.primary} /></Pressable> : null}</View>;
 }
 
 const st = StyleSheet.create({

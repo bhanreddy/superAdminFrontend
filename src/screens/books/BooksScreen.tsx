@@ -51,6 +51,7 @@ import DocumentDetail from './DocumentDetail';
 import EntityEditor, { EntityType, JournalEditor } from './EntityEditor';
 import FinanceConnections from './FinanceConnections';
 import ReportsView, { Kpis, CashChart } from './ReportsView';
+import LedgerView from './LedgerView';
 import { toCsv } from './csv';
 const groups = [
   { label: 'OVERVIEW', items: [['home', 'Dashboard', BookOpen]] },
@@ -184,10 +185,7 @@ export default function BooksScreen() {
     ),
     [journal, setJournal] = useState(false),
     [detail, setDetail] = useState<api.BookDocument | null>(null),
-    [ledger, setLedger] = useState<{
-      account: api.Account;
-      rows: any[];
-    } | null>(null),
+    [ledger, setLedger] = useState<Pick<api.Account, 'code' | 'name'> | null>(null),
     [busy, setBusy] = useState(false);
   const [confirm, setConfirm] = useState<{
     label: string;
@@ -237,7 +235,7 @@ export default function BooksScreen() {
         );
       else if (module === 'items') list = its;
       else if (module === 'payments') list = pays;
-      else if (module === 'accounts') list = acs;
+      else if (module === 'accounts') list = await api.get<api.Account[]>('/accounts', dates);
       else if (module === 'projects') list = projs;
       else if (urls[module]) list = await api.get<any[]>(urls[module]);
       if (seq !== sequence.current) return;
@@ -251,7 +249,7 @@ export default function BooksScreen() {
       setTotal(count);
       if (newReport) setReport(newReport);
     } catch (e) {
-      if (seq === sequence.current) setError(api.message(e));
+      if (seq === sequence.current) { setError(api.message(e)); if (['home', 'reports'].includes(module)) setReport(null); }
     } finally {
       if (seq === sequence.current) setLoading(false);
     }
@@ -341,15 +339,11 @@ export default function BooksScreen() {
             total_inr: api.decimal(d.total),
             balance_inr: api.decimal(d.balance),
           }))
-        : module === 'reports' && report && 'trial' in report
-          ? report.trial.map((a) => ({
-              code: a.code,
-              name: a.name,
-              type: a.type,
-              debit_inr: api.decimal(a.debit),
-              credit_inr: api.decimal(a.credit),
-            }))
-          : filtered;
+        : module === 'accounts' ? filtered.map(a => ({
+            organization: bootstrap?.settings.organization_name, currency: 'INR', code: a.code, name: a.name, type: a.type, from: dates.from, to: dates.to,
+            opening_inr: api.decimal(a.opening_balance), period_debit_inr: api.decimal(a.period_debit),
+            period_credit_inr: api.decimal(a.period_credit), closing_inr: api.decimal(a.balance),
+          })) : filtered;
       if (!data.length) throw new Error('There are no rows to export.');
       const csv = toCsv(data);
       if (Platform.OS === 'web') {
@@ -628,22 +622,17 @@ export default function BooksScreen() {
       { key: 'code', label: 'Code', width: 100 },
       { key: 'name', label: 'Account', width: 280 },
       { key: 'type', label: 'Type' },
+      { key: 'opening_balance', label: 'Opening balance', width: 170, render: (r: any) => value(r.opening_balance) },
+      { key: 'period_debit', label: 'Period debit', width: 170, render: (r: any) => value(r.period_debit) },
+      { key: 'period_credit', label: 'Period credit', width: 170, render: (r: any) => value(r.period_credit) },
       {
         key: 'balance',
-        label: 'Debit − credit',
+        label: 'Closing debit − credit',
         width: 190,
         render: (r: any) => value(r.balance),
       },
     ];
-    onRow = (r) =>
-      void mutate(
-        async () =>
-          setLedger({
-            account: r,
-            rows: await api.get(`/accounts/${r.code}/ledger`, dates),
-          }),
-        'Ledger opened',
-      );
+    onRow = r => setLedger(r);
   } else if (module === 'journals') {
     columns = [
       {
@@ -801,7 +790,7 @@ export default function BooksScreen() {
         <View style={{ maxWidth: '100%' }}>
           <View style={[ui.row, { flexWrap: 'wrap' }]}>
             {(isFounder || role === 'CA_LEAD') && <Action label={role === 'CA_LEAD' ? 'CA team' : 'CA access'} secondary onPress={() => router.push('/(app)/books/access' as any)} />}
-            {allowed('data', 'export') && !['home', 'settings', 'documents', 'connections'].includes(module) && (
+            {allowed('data', 'export') && !['home', 'settings', 'documents', 'connections', 'reports'].includes(module) && (
               <Action
                 label="Export CSV"
                 secondary
@@ -867,7 +856,7 @@ export default function BooksScreen() {
       )}
       {bootstrap && !loading && (
         <>
-          {['home', 'reports'].includes(module) && <BooksDateFilter value={dates} fiscalStart={financialStart(bootstrap.settings.fiscal_year_month)} today={api.today()} onChange={setDates} />}
+          {['home', 'reports', 'accounts'].includes(module) && <BooksDateFilter value={dates} fiscalStart={financialStart(bootstrap.settings.fiscal_year_month)} today={api.today()} onChange={setDates} />}
           {module === 'home' && report && (
             <>
               <Kpis report={report} />
@@ -939,7 +928,7 @@ export default function BooksScreen() {
                     target: 'invoice',
                   },
                 ].filter(k => allowed(k.target)).map((k) => (
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     key={k.label}
                     onPress={() => navigate(k.target)}
                     style={{ flex: 1, minWidth: 180 }}
@@ -960,11 +949,13 @@ export default function BooksScreen() {
                   </Pressable>
                 ))}
               </View>
-              <Notice text="This native accounting workspace keeps its own records. Existing subscription billing, collections, and expense modules are separate; their historical records are not automatically posted here." />
+              <Notice text="Books reports show posted ledger entries. Review Finance connections to check how billing, collections and expenses are reflected here." />
             </>
           )}
           {module === 'reports' && report && 'trial' in report && (
             <ReportsView
+              canExport={allowed('data', 'export')}
+              onAccount={allowed('accounts') ? a => setLedger(a) : undefined}
               report={report}
               onDocument={(id, kind) => { if (kind === 'connections') { if (allowed('connections')) navigate('connections'); } else if (allowed(kind)) void openDocument(id); }}
             />
@@ -1201,7 +1192,7 @@ export default function BooksScreen() {
                 <Pressable
                   key={key}
                   accessibilityRole="tab"
-                  accessibilityState={{ selected: key === module }}
+                  accessibilityState={{ selected: key === module }} aria-selected={key === module}
                   onPress={() => navigate(key)}
                   style={[
                     ui.row,
@@ -1343,37 +1334,8 @@ export default function BooksScreen() {
           />
         </Dialog>
       )}
-      {ledger && (
-        <Dialog
-          title={`${ledger.account.code} · ${ledger.account.name}`}
-          onClose={() => setLedger(null)}
-        >
-          <Notice
-            text={`Ledger entries for ${dates.from} to ${dates.to}. Up to 2,000 entries are shown.`}
-          />
-          <Table
-            rows={ledger.rows}
-            columns={[
-              {
-                key: 'date',
-                label: 'Date',
-                render: (r: any) => dateValue(r.date),
-              },
-              { key: 'reference', label: 'Reference', width: 280 },
-              {
-                key: 'debit',
-                label: 'Debit',
-                render: (r: any) => value(r.debit),
-              },
-              {
-                key: 'credit',
-                label: 'Credit',
-                render: (r: any) => value(r.credit),
-              },
-            ]}
-          />
-        </Dialog>
-      )}
+      {ledger && <LedgerView key={`${ledger.code}-${dates.from}-${dates.to}`} account={ledger} dates={dates}
+        canExport={allowed('data', 'export')} canManage={allowed('accounts', 'manage')} onChanged={() => { cache.current = null; void load(); }} onClose={() => setLedger(null)} />}
       {confirm && (
         <Dialog
           title={confirm.label}

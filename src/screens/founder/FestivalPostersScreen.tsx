@@ -256,14 +256,14 @@ export default function FestivalPostersScreen() {
                   </Text>
                 </View>
                 <View style={st.actions}>
-                  <Pressable
+                  <Pressable accessibilityLabel="Toggle active status" accessibilityRole="button"
                     onPress={safePressHandler(() => toggleActive(p))}
                     hitSlop={8}
                     style={({ pressed }) => pressableWebStyles(pressed, {})}
                   >
                     <Power size={18} color={p.is_active ? '#00D4AD' : '#8A8A98'} strokeWidth={2.2} />
                   </Pressable>
-                  <Pressable
+                  <Pressable accessibilityLabel="Delete record" accessibilityRole="button"
                     onPress={safePressHandler(() => remove(p))}
                     hitSlop={8}
                     style={({ pressed }) => pressableWebStyles(pressed, {})}
@@ -283,7 +283,7 @@ export default function FestivalPostersScreen() {
             <ScrollView showsVerticalScrollIndicator={false}>
               <Text style={[st.modalTitle, { color: colors.textPrimary }]}>New Festival Poster</Text>
 
-              <Pressable
+              <Pressable accessibilityRole="button"
                 onPress={safePressHandler(pickImage)}
                 style={({ pressed }) => [
                   st.pickArea,
@@ -342,7 +342,7 @@ export default function FestivalPostersScreen() {
                 {POSTER_APPS.map((app) => {
                   const on = targetApps.includes(app);
                   return (
-                    <Pressable
+                    <Pressable accessibilityRole="button"
                       key={app}
                       onPress={safePressHandler(() => toggleApp(app))}
                       style={({ pressed }) => [
@@ -368,7 +368,7 @@ export default function FestivalPostersScreen() {
                 onPress={submit}
                 disabled={saving}
               />
-              <Pressable
+              <Pressable accessibilityRole="button"
                 onPress={safePressHandler(() => { if (!saving) { setFormOpen(false); } })}
                 style={({ pressed }) => [st.cancelBtn, ...pressableWebStyles(pressed, {})]}
               >

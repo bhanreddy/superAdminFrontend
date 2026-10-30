@@ -4,6 +4,7 @@ import { SuperAdmin } from '../types/superAdmin';
 import { FounderRow } from '../types/founder';
 import { InternalUser, Session, User } from '../types/auth';
 import { Role } from '../constants/rbac';
+import { recordPasswordAuthentication } from './fingerprintService';
 
 export interface LoginResult {
   user: User | null;
@@ -65,6 +66,9 @@ export const authService = {
       }
 
       const userData = data.user || null;
+      if (userData?.id && data.session?.access_token) {
+        recordPasswordAuthentication(userData.id, data.session.access_token);
+      }
       const role = (data.role || userData?.role || null) as Role | null;
       const employeeId = userData?.employee_id || userData?.employeeId || null;
       const permissions = Array.isArray(data.permissions) ? data.permissions : [];

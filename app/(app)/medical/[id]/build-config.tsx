@@ -8,6 +8,7 @@ import { getMedicalBuildConfig, updateMedicalOnboardingStatus, type MedicalBuild
 import { superAdminClient } from '../../../../src/api/superAdminClient';
 import { ScreenHeader } from '../../../../src/components/ui/ScreenHeader';
 import { Button } from '../../../../src/components/ui/Button';
+import { EmptyState } from '../../../../src/components/ui/EmptyState';
 
 export default function MedicalBuildConfigScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -17,7 +18,9 @@ export default function MedicalBuildConfigScreen() {
   const [loading, setLoading] = useState(true);
   const [config, setConfig] = useState<MedicalBuildConfig | null>(null);
   const [shop, setShop] = useState<any>(null);
-  
+  const [error, setError] = useState('');
+  const [attempt, setAttempt] = useState(0);
+
   // Local checklists
   const [envChecked, setEnvChecked] = useState(false);
   const [tauriConfigChecked, setTauriConfigChecked] = useState(false);
@@ -25,6 +28,7 @@ export default function MedicalBuildConfigScreen() {
 
   useEffect(() => {
     async function loadData() {
+      setLoading(true); setError('');
       try {
         const [configData, shopResponse] = await Promise.all([
           getMedicalBuildConfig(id),
@@ -41,14 +45,13 @@ export default function MedicalBuildConfigScreen() {
         }
       } catch (error) {
         console.error('Failed to load build config', error);
-        Alert.alert('Error', 'Failed to load build config');
-        if (router.canGoBack()) router.back();
+        setError('Could not load this shop’s build configuration. Check your connection and retry.');
       } finally {
         setLoading(false);
       }
     }
     loadData();
-  }, [id]);
+  }, [id, attempt]);
 
   const copyToClipboard = async (text: string, description: string) => {
     await Clipboard.setStringAsync(text);
@@ -72,14 +75,14 @@ export default function MedicalBuildConfigScreen() {
     );
   }
 
-  if (!config || !shop) return null;
+  if (error || !config || !shop) return <EmptyState title="Build configuration unavailable" description={error || 'No configuration was returned for this shop.'} actionLabel="Try again" onAction={() => setAttempt(value => value + 1)} />;
 
   const currentStatus = shop.onboarding_status || 'pending_build';
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]} contentContainerStyle={styles.content}>
-      <ScreenHeader 
-        title="Medical Build Config" 
+      <ScreenHeader
+        title="Medical Build Config"
         subtitle={`Generate configuration for Tauri Desktop App`}
       />
 
@@ -89,16 +92,16 @@ export default function MedicalBuildConfigScreen() {
         <View style={styles.stepper}>
           <StatusStep label="DB Seeded" completed={true} />
           <StatusStep label="Build Config Ready" completed={true} />
-          <StatusStep 
-            label="App Delivered" 
-            completed={currentStatus === 'app_delivered' || currentStatus === 'live'} 
-            onPress={() => handleStatusUpdate('app_delivered')} 
+          <StatusStep
+            label="App Delivered"
+            completed={currentStatus === 'app_delivered' || currentStatus === 'live'}
+            onPress={() => handleStatusUpdate('app_delivered')}
             colors={colors}
           />
-          <StatusStep 
-            label="Live" 
-            completed={currentStatus === 'live'} 
-            onPress={() => handleStatusUpdate('live')} 
+          <StatusStep
+            label="Live"
+            completed={currentStatus === 'live'}
+            onPress={() => handleStatusUpdate('live')}
             colors={colors}
           />
         </View>
@@ -108,7 +111,7 @@ export default function MedicalBuildConfigScreen() {
       <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <View style={styles.cardHeader}>
           <Text style={[styles.cardTitle, { color: colors.textPrimary, marginBottom: 0 }]}>2. Subscription Info</Text>
-          <Button title="Edit Shop" size="sm" variant="secondary" onPress={() => router.push('/(app)/medical' as any)} />
+          <Button title="Manage shops" size="sm" variant="secondary" onPress={() => router.push('/(app)/medical/list' as any)} />
         </View>
         <View style={styles.infoRow}>
           <CreditCard size={18} color={colors.textSecondary} />
@@ -121,7 +124,7 @@ export default function MedicalBuildConfigScreen() {
             Trial Ends: {config.subscription_info.trial_ends_at ? new Date(config.subscription_info.trial_ends_at).toLocaleDateString() : 'N/A'}
           </Text>
         </View>
-        <Pressable onPress={() => copyToClipboard(config.subscription_info.razorpay_plan_id || '', 'Plan ID')}>
+        <Pressable accessibilityRole="button" onPress={() => copyToClipboard(config.subscription_info.razorpay_plan_id || '', 'Plan ID')}>
           <View style={styles.infoRow}>
             <Text style={[styles.infoText, { color: colors.textPrimary }]}>
               Plan ID: {config.subscription_info.razorpay_plan_id || 'Not set'}
@@ -175,7 +178,7 @@ export default function MedicalBuildConfigScreen() {
           <View key={idx} style={[styles.commandRow, { backgroundColor: isDark ? '#1E1E1E' : '#F1F5F9', borderColor: colors.border }]}>
             <Terminal size={14} color={colors.textSecondary} style={{ marginRight: 8 }} />
             <Text style={[styles.commandText, { color: colors.textPrimary }]} numberOfLines={1}>{cmd}</Text>
-            <Pressable onPress={() => copyToClipboard(cmd, 'Command')} style={styles.copyBtn}>
+            <Pressable accessibilityLabel="Copy details" accessibilityRole="button" onPress={() => copyToClipboard(cmd, 'Command')} style={styles.copyBtn}>
               <Copy size={14} color={colors.textSecondary} />
             </Pressable>
           </View>
@@ -185,7 +188,7 @@ export default function MedicalBuildConfigScreen() {
       {/* Section 7: Build Readiness Summary */}
       <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>7. Build Readiness Checklist</Text>
-        
+
         <CheckItem label=".env file updated locally" checked={envChecked} onToggle={() => setEnvChecked(!envChecked)} colors={colors} />
         <CheckItem label="tauri.conf.json updated" checked={tauriConfigChecked} onToggle={() => setTauriConfigChecked(!tauriConfigChecked)} colors={colors} />
         <CheckItem label="Razorpay plan configured (if applicable)" checked={razorpayChecked} onToggle={() => setRazorpayChecked(!razorpayChecked)} colors={colors} />
@@ -199,7 +202,7 @@ export default function MedicalBuildConfigScreen() {
           </View>
         )}
       </View>
-      
+
       <View style={{ height: 40 }} />
     </ScrollView>
   );
@@ -208,7 +211,7 @@ export default function MedicalBuildConfigScreen() {
 // Helper Components
 function StatusStep({ label, completed, onPress, colors }: any) {
   return (
-    <Pressable style={styles.stepRow} onPress={onPress} disabled={!onPress}>
+    <Pressable accessibilityRole="button" style={styles.stepRow} onPress={onPress} disabled={!onPress}>
       {completed ? <CheckCircle size={20} color="#10B981" /> : <Circle size={20} color={colors?.textSecondary || '#888'} />}
       <Text style={[styles.stepText, { color: completed ? '#10B981' : (colors?.textPrimary || '#333') }]}>{label}</Text>
     </Pressable>
@@ -217,7 +220,7 @@ function StatusStep({ label, completed, onPress, colors }: any) {
 
 function CheckItem({ label, checked, onToggle, readonly, colors }: any) {
   return (
-    <Pressable style={styles.checkboxRow} onPress={readonly ? undefined : onToggle} disabled={readonly}>
+    <Pressable accessibilityRole="button" style={styles.checkboxRow} onPress={readonly ? undefined : onToggle} disabled={readonly}>
       {checked ? <CheckCircle size={22} color={readonly ? "#10B981" : colors.primary} /> : <Circle size={22} color={colors.textSecondary} />}
       <Text style={[styles.checkboxText, { color: readonly ? colors.textSecondary : colors.textPrimary }]}>{label}</Text>
     </Pressable>

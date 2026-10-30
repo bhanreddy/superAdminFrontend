@@ -164,7 +164,7 @@ export default function FieldPlannerScreen() {
             const value = localDate(offset);
             const selected = value === date;
             return (
-              <Pressable key={value} onPress={() => setDate(value)}
+              <Pressable accessibilityRole="button" key={value} onPress={() => setDate(value)}
                 style={[styles.chip, { borderColor: selected ? colors.primary : 'rgba(150,150,160,0.35)', backgroundColor: selected ? `${colors.primary}18` : 'transparent' }]}>
                 <Text style={{ color: selected ? colors.primary : colors.textSecondary, fontWeight: '700', fontSize: 12.5 }}>{labelFor(value)}</Text>
               </Pressable>
@@ -178,14 +178,14 @@ export default function FieldPlannerScreen() {
             <TextInput value={query} onChangeText={(value) => { setQuery(value); setSelectedId(null); }} onSubmitEditing={search}
               placeholder="Name, area, or district" placeholderTextColor="rgba(150,150,160,0.7)"
               style={[styles.input, { color: colors.textPrimary, borderColor: colors.glassBorder }]} />
-            <Pressable onPress={search} style={styles.searchBtn}>
+            <Pressable accessibilityLabel="Search" accessibilityRole="button" onPress={search} style={styles.searchBtn}>
               <Search size={16} color="#fff" />
             </Pressable>
           </View>
           <Text style={[styles.label, { color: colors.textSecondary }]}>Appointment</Text>
           <View style={styles.chips}>
             {TIMES.map((slot) => (
-              <Pressable key={slot} onPress={() => setTime(slot)}
+              <Pressable accessibilityRole="button" key={slot} onPress={() => setTime(slot)}
                 style={[styles.chip, { borderColor: time === slot ? '#0A84FF' : 'rgba(150,150,160,0.35)' }]}>
                 <Text style={{ color: time === slot ? '#0A84FF' : colors.textSecondary, fontWeight: '700', fontSize: 12 }}>{slot}</Text>
               </Pressable>
@@ -194,7 +194,7 @@ export default function FieldPlannerScreen() {
           <Text style={[styles.label, { color: colors.textSecondary }]}>Priority</Text>
           <View style={styles.chips}>
             {['HIGH', 'MEDIUM', 'LOW'].map((level) => (
-              <Pressable key={level} onPress={() => setPriority(level)}
+              <Pressable accessibilityRole="button" key={level} onPress={() => setPriority(level)}
                 style={[styles.chip, { borderColor: priority === level ? '#FF9F0A' : 'rgba(150,150,160,0.35)' }]}>
                 <Text style={{ color: priority === level ? '#FF9F0A' : colors.textSecondary, fontWeight: '700', fontSize: 12 }}>{level}</Text>
               </Pressable>
@@ -203,7 +203,7 @@ export default function FieldPlannerScreen() {
           <TextInput value={note} onChangeText={setNote} placeholder="Why this school — renewal, size, who to meet"
             placeholderTextColor="rgba(150,150,160,0.7)"
             style={[styles.input, { color: colors.textPrimary, borderColor: colors.glassBorder, marginTop: 8 }]} />
-          <Pressable onPress={save} disabled={saving}
+          <Pressable accessibilityRole="button" onPress={save} disabled={saving}
             style={({ pressed }) => [styles.saveBtn, (pressed || saving) && { opacity: 0.72 }]}>
             <Text style={styles.primaryText}>{saving ? 'Saving…' : 'Save to plan'}</Text>
           </Pressable>
@@ -213,7 +213,7 @@ export default function FieldPlannerScreen() {
             <Text style={[styles.meta, { color: colors.textSecondary, marginTop: 12 }]}>No school matches that search. Try a shorter name or a district.</Text>
           ) : null}
           {!searching && results.map((school) => (
-            <Pressable key={school.id} onPress={() => setSelectedId(school.id)}
+            <Pressable accessibilityRole="button" key={school.id} onPress={() => setSelectedId(school.id)}
               style={[styles.result, { borderColor: selectedId === school.id ? colors.primary : colors.glassBorder, borderWidth: selectedId === school.id ? 1.5 : 0, borderTopWidth: 1 }]}>
               <View style={{ flex: 1 }}>
                 <Text style={[styles.name, { color: colors.textPrimary }]}>{school.name}</Text>
@@ -246,14 +246,14 @@ export default function FieldPlannerScreen() {
                 </Text>
                 {stop.research_note ? <Text style={[styles.meta, { color: colors.textPrimary }]}>{stop.research_note}</Text> : null}
               </View>
-              <Pressable onPress={() => remove(stop.id)} style={styles.removeBtn}>
+              <Pressable accessibilityLabel="Remove planned stop" accessibilityRole="button" onPress={() => remove(stop.id)} style={styles.removeBtn}>
                 <X size={16} color="#FF453A" />
               </Pressable>
             </View>
           </GlassCard>
         ))}
 
-        <Pressable onPress={() => router.push('/(app)/field/today' as any)} style={styles.primary}>
+        <Pressable accessibilityRole="button" onPress={() => router.push('/(app)/field/today' as any)} style={styles.primary}>
           <Text style={styles.primaryText}>See today's mission</Text>
         </Pressable>
       </ScrollView>

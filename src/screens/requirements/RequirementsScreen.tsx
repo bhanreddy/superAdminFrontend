@@ -211,7 +211,7 @@ export default function RequirementsScreen() {
         <ScrollView contentContainerStyle={[styles.content, { paddingBottom: bottomTabPad }]}>
           {/* Header */}
           <View style={styles.topHeader}>
-            <View>
+            <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 300, minWidth: 0 }}>
               <View style={styles.badgeRow}>
                 <View style={[styles.badge, { backgroundColor: 'rgba(56, 189, 248, 0.12)', borderColor: 'rgba(56, 189, 248, 0.3)' }]}>
                   <FileText size={14} color="#38BDF8" />
@@ -225,7 +225,7 @@ export default function RequirementsScreen() {
             </View>
 
             {can(PERMISSIONS.REQUIREMENTS_CREATE) && (
-              <Pressable
+              <Pressable accessibilityRole="button"
                 style={[styles.createBtn, { backgroundColor: '#0284C7' }]}
                 onPress={() => setShowCreateModal(true)}
               >
@@ -252,11 +252,11 @@ export default function RequirementsScreen() {
               {['ALL', 'OPEN', 'UNDER_REVIEW', 'IN_DEVELOPMENT', 'DEPLOYED', 'REJECTED'].map((st) => {
                 const isSelected = statusFilter === st;
                 return (
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     key={st}
                     style={[
                       styles.filterPill,
-                      isSelected && { backgroundColor: colors.primary, borderColor: colors.primary },
+                      isSelected && { backgroundColor: colors.primaryFill, borderColor: colors.primary },
                       !isSelected && { borderColor: colors.border, backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)' },
                     ]}
                     onPress={() => setStatusFilter(st)}
@@ -334,7 +334,7 @@ export default function RequirementsScreen() {
                       </View>
 
                       {can(PERMISSIONS.REQUIREMENTS_MANAGE) && (
-                        <Pressable
+                        <Pressable accessibilityRole="button"
                           style={[styles.updateBtn, { borderColor: colors.border }]}
                           onPress={() => openUpdateModal(r)}
                         >
@@ -355,7 +355,7 @@ export default function RequirementsScreen() {
               <View style={[styles.modalCard, { backgroundColor: isDark ? '#161b22' : '#FFFFFF', borderColor: colors.border }]}>
                 <View style={styles.modalHeader}>
                   <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>Log School Requirement</Text>
-                  <Pressable onPress={() => setShowCreateModal(false)}>
+                  <Pressable accessibilityLabel="Close dialog" accessibilityRole="button" onPress={() => setShowCreateModal(false)}>
                     <X size={20} color={colors.textSecondary} />
                   </Pressable>
                 </View>
@@ -364,11 +364,11 @@ export default function RequirementsScreen() {
                   <Text style={[styles.formLabel, { color: colors.textSecondary }]}>Partner Institution *</Text>
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, marginBottom: 8 }}>
                     {schools.map((s) => (
-                      <Pressable
+                      <Pressable accessibilityRole="button"
                         key={s.id}
                         style={[
                           styles.schoolPill,
-                          targetSchoolId === s.id && { backgroundColor: colors.primary, borderColor: colors.primary },
+                          targetSchoolId === s.id && { backgroundColor: colors.primaryFill, borderColor: colors.primary },
                           targetSchoolId !== s.id && { borderColor: colors.border },
                         ]}
                         onPress={() => setTargetSchoolId(s.id)}
@@ -392,11 +392,11 @@ export default function RequirementsScreen() {
                   <Text style={[styles.formLabel, { color: colors.textSecondary }]}>Category</Text>
                   <View style={styles.optionsWrap}>
                     {['PAYMENT', 'CUSTOM_APP', 'TRANSPORT', 'ATTENDANCE', 'ACADEMIC', 'REPORTS'].map((c) => (
-                      <Pressable
+                      <Pressable accessibilityRole="button"
                         key={c}
                         style={[
                           styles.optionPill,
-                          reqCategory === c && { backgroundColor: colors.primary, borderColor: colors.primary },
+                          reqCategory === c && { backgroundColor: colors.primaryFill, borderColor: colors.primary },
                           reqCategory !== c && { borderColor: colors.border },
                         ]}
                         onPress={() => setReqCategory(c)}
@@ -409,11 +409,11 @@ export default function RequirementsScreen() {
                   <Text style={[styles.formLabel, { color: colors.textSecondary }]}>Priority Level</Text>
                   <View style={styles.optionsWrap}>
                     {(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as const).map((p) => (
-                      <Pressable
+                      <Pressable accessibilityRole="button"
                         key={p}
                         style={[
                           styles.optionPill,
-                          reqPriority === p && { backgroundColor: colors.primary, borderColor: colors.primary },
+                          reqPriority === p && { backgroundColor: colors.primaryFill, borderColor: colors.primary },
                           reqPriority !== p && { borderColor: colors.border },
                         ]}
                         onPress={() => setReqPriority(p)}
@@ -436,13 +436,13 @@ export default function RequirementsScreen() {
                 </ScrollView>
 
                 <View style={styles.modalFooter}>
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     style={[styles.cancelBtn, { borderColor: colors.border }]}
                     onPress={() => setShowCreateModal(false)}
                   >
                     <Text style={[styles.cancelBtnText, { color: colors.textSecondary }]}>Cancel</Text>
                   </Pressable>
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     style={[styles.submitBtn, { backgroundColor: '#0284C7' }]}
                     onPress={handleCreateRequirement}
                     disabled={submitting}
@@ -469,7 +469,7 @@ export default function RequirementsScreen() {
                       {selectedReq?.title}
                     </Text>
                   </View>
-                  <Pressable onPress={() => setShowUpdateModal(false)}>
+                  <Pressable accessibilityLabel="Close dialog" accessibilityRole="button" onPress={() => setShowUpdateModal(false)}>
                     <X size={20} color={colors.textSecondary} />
                   </Pressable>
                 </View>
@@ -478,11 +478,11 @@ export default function RequirementsScreen() {
                   <Text style={[styles.formLabel, { color: colors.textSecondary }]}>Lifecycle Status</Text>
                   <View style={styles.optionsWrap}>
                     {['OPEN', 'UNDER_REVIEW', 'IN_DEVELOPMENT', 'DEPLOYED', 'REJECTED'].map((st) => (
-                      <Pressable
+                      <Pressable accessibilityRole="button"
                         key={st}
                         style={[
                           styles.optionPill,
-                          updateStatus === st && { backgroundColor: colors.primary, borderColor: colors.primary },
+                          updateStatus === st && { backgroundColor: colors.primaryFill, borderColor: colors.primary },
                           updateStatus !== st && { borderColor: colors.border },
                         ]}
                         onPress={() => setUpdateStatus(st)}
@@ -497,7 +497,7 @@ export default function RequirementsScreen() {
                   <Text style={[styles.formLabel, { color: colors.textSecondary }]}>Feasibility Evaluation</Text>
                   <View style={styles.optionsWrap}>
                     {['FEASIBLE', 'NEEDS_MORE_INFO', 'NOT_FEASIBLE'].map((f) => (
-                      <Pressable
+                      <Pressable accessibilityRole="button"
                         key={f}
                         style={[
                           styles.optionPill,
@@ -524,14 +524,14 @@ export default function RequirementsScreen() {
                 </ScrollView>
 
                 <View style={styles.modalFooter}>
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     style={[styles.cancelBtn, { borderColor: colors.border }]}
                     onPress={() => setShowUpdateModal(false)}
                   >
                     <Text style={[styles.cancelBtnText, { color: colors.textSecondary }]}>Cancel</Text>
                   </Pressable>
-                  <Pressable
-                    style={[styles.submitBtn, { backgroundColor: colors.primary }]}
+                  <Pressable accessibilityRole="button"
+                    style={[styles.submitBtn, { backgroundColor: colors.primaryFill }]}
                     onPress={handleSaveUpdate}
                     disabled={updating}
                   >
@@ -555,6 +555,7 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   content: { padding: 20 },
   topHeader: {
+    flexWrap: 'wrap',
     flexDirection: Platform.OS === 'web' ? 'row' : 'column',
     justifyContent: 'space-between',
     alignItems: Platform.OS === 'web' ? 'center' : 'flex-start',

@@ -28,7 +28,7 @@ import {
   bottomTabPad,
 } from './founderUi';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
+
 import { X, Building, Phone } from 'lucide-react-native';
 import { pressableWebStyles } from '../../utils/webPressable';
 import { safePressHandler } from '../../utils/safePressHandler';
@@ -272,7 +272,7 @@ export default function BusinessUnitsScreen() {
                 </View>
                 <View style={styles.btns}>
                   {u.phone?.trim() ? (
-                    <Pressable
+                    <Pressable accessibilityRole="button"
                       onPress={() => dialPhone(u.phone!)}
                       style={({ pressed }) => [styles.textBtn, ...pressableWebStyles(pressed, { pressedOpacity: 0.85 })]}
                     >
@@ -282,13 +282,13 @@ export default function BusinessUnitsScreen() {
                       </View>
                     </Pressable>
                   ) : null}
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     onPress={() => openEdit(u)}
                     style={({ pressed }) => [styles.textBtn, ...pressableWebStyles(pressed, { pressedOpacity: 0.85 })]}
                   >
                     <Text style={{ color: '#38C8F4', fontWeight: '800' }}>Edit</Text>
                   </Pressable>
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     onPress={() => toggleActive(u)}
                     style={({ pressed }) => [styles.textBtn, ...pressableWebStyles(pressed, { pressedOpacity: 0.85 })]}
                   >
@@ -314,7 +314,7 @@ export default function BusinessUnitsScreen() {
           style={styles.modalBackdrop}
         >
           {isDark && (
-             <BlurView intensity={30} tint="dark" style={StyleSheet.absoluteFill} pointerEvents="none" />
+             <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.elevated }]} pointerEvents="none" />
           )}
           <View style={[styles.modalSheet, { backgroundColor: isDark ? '#12151F' : colors.surface, borderTopColor: isDark ? 'rgba(14,165,233,0.14)' : colors.border }]}>
             <View style={[styles.sheetHandle, { backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : colors.border }]} />
@@ -332,7 +332,7 @@ export default function BusinessUnitsScreen() {
                    this unit if subscription payment is overdue.
                  </Text>
                </View>
-               <Pressable onPress={() => setModalOpen(false)} style={({ pressed }) => [styles.sheetClose, !isDark && { backgroundColor: colors.surface }, ...pressableWebStyles(pressed, { pressedOpacity: 0.85 })]}>
+               <Pressable accessibilityLabel="Close dialog" accessibilityRole="button" onPress={() => setModalOpen(false)} style={({ pressed }) => [styles.sheetClose, !isDark && { backgroundColor: colors.surface }, ...pressableWebStyles(pressed, { pressedOpacity: 0.85 })]}>
                  <X color={colors.textSecondary} size={18} />
                </Pressable>
             </View>
@@ -366,7 +366,7 @@ export default function BusinessUnitsScreen() {
                 {SUBSCRIPTION_PLANS.map((p) => {
                   const active = subscriptionPlan === p.value;
                   return (
-                    <Pressable
+                    <Pressable accessibilityRole="button"
                       key={p.value}
                       onPress={() => setSubscriptionPlan(p.value)}
                       style={({ pressed }) => [
@@ -405,7 +405,7 @@ export default function BusinessUnitsScreen() {
             </ScrollView>
 
             <View style={styles.modalActions}>
-              <Pressable
+              <Pressable accessibilityRole="button"
                 onPress={() => setModalOpen(false)}
                 style={({ pressed }) => [
                   styles.cancelBtn,
@@ -418,7 +418,7 @@ export default function BusinessUnitsScreen() {
               >
                 <Text style={[styles.cancelTxt, { color: colors.textSecondary }]}>Cancel</Text>
               </Pressable>
-              <Pressable
+              <Pressable accessibilityRole="button"
                 onPress={safePressHandler(save)}
                 disabled={saving}
                 style={({ pressed }) => [
@@ -528,7 +528,7 @@ const styles = StyleSheet.create({
   sheetClose: { width: 34, height: 34, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.06)', alignItems: 'center', justifyContent: 'center' },
   modalTitle: { fontSize: 21, fontWeight: '800', letterSpacing: -0.3 },
   modalSub: { fontSize: 12, marginTop: 2 },
-  
+
   modalActions: {
     flexDirection: 'row',
     alignItems: 'center',

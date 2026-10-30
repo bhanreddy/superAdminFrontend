@@ -7,6 +7,7 @@ import { useTheme } from '../../../../src/contexts/ThemeContext';
 import { useAuth } from '../../../../src/hooks/useAuth';
 import { useToast } from '../../../../src/components/ui/Toast';
 import { ScreenHeader } from '../../../../src/components/ui/ScreenHeader';
+import { EmptyState } from '../../../../src/components/ui/EmptyState';
 import { Button } from '../../../../src/components/ui/Button';
 import { Input } from '../../../../src/components/ui/Input';
 import { PERMISSIONS } from '../../../../src/constants/rbac';
@@ -50,6 +51,8 @@ export default function BuildConfigScreen() {
   const canEdit = can(PERMISSIONS.CONFIGS_MODIFY);
   const canGenerate = can(PERMISSIONS.BUILDS_TRIGGER);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const [loadAttempt, setLoadAttempt] = useState(0);
   const [school, setSchool] = useState<any>(null);
   const [draft, setDraft] = useState<SchoolConfiguration | null>(null);
   const [legacy, setLegacy] = useState<BuildConfig | null>(null);
@@ -114,11 +117,11 @@ export default function BuildConfigScreen() {
   }, [clusterId, id]);
 
   useEffect(() => {
+    setLoading(true); setLoadError('');
     load().catch(() => {
-      Alert.alert('Error', 'Failed to load school setup');
-      if (router.canGoBack()) router.back();
+      setLoadError('School setup could not be loaded. Check your connection and try again.');
     }).finally(() => setLoading(false));
-  }, [load, router]);
+  }, [load, loadAttempt]);
 
   useEffect(() => {
     if (!job || !clusterId || (job.status !== 'QUEUED' && job.status !== 'RUNNING')) return undefined;
@@ -284,9 +287,12 @@ export default function BuildConfigScreen() {
       <View style={[styles.center, { backgroundColor: colors.background }]}>
         <Text style={{ color: colors.textPrimary, fontSize: 16, fontWeight: '700' }}>Choose the school cluster</Text>
         <Text style={{ color: colors.textSecondary, textAlign: 'center', marginTop: 8 }}>Open this school from its cluster so setup cannot mix two schools that share a numeric id.</Text>
+        <Button title="Open schools" variant="outline" onPress={() => router.replace('/(app)/schools')} style={{ marginTop: 20 }} />
       </View>
     );
   }
+
+  if (!loading && !draft) return <EmptyState title="School setup unavailable" description={loadError || 'No configuration was returned for this school and cluster.'} actionLabel="Try again" onAction={() => setLoadAttempt(value => value + 1)} />;
 
   if (loading || !draft) {
     return (
@@ -305,7 +311,7 @@ export default function BuildConfigScreen() {
         <Text style={{ color: colors.textSecondary, fontSize: 13 }}>Live status is separate from configuration completeness and from package generation.</Text>
         <View style={styles.row}>
           {STATUS.map((status) => (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={status}
               onPress={async () => {
                 await updateOnboardingStatus(id, status, clusterId);
@@ -329,7 +335,7 @@ export default function BuildConfigScreen() {
 
       <View style={styles.row}>
         {STEPS.map((name) => (
-          <Pressable key={name} onPress={() => setStep(name)} style={[styles.chip, { borderColor: colors.border, backgroundColor: step === name ? colors.primary : colors.card }]}>
+          <Pressable accessibilityRole="button" key={name} onPress={() => setStep(name)} style={[styles.chip, { borderColor: colors.border, backgroundColor: step === name ? colors.primary : colors.card }]}>
             <Text style={{ color: step === name ? colors.textInverse : colors.textPrimary, fontSize: 12, fontWeight: '700' }}>{name}</Text>
           </Pressable>
         ))}
@@ -378,7 +384,7 @@ export default function BuildConfigScreen() {
               {['android', 'ios', 'web'].map((platform) => {
                 const selected = platforms.includes(platform);
                 return (
-                  <Pressable key={platform} onPress={() => canEdit && setPlatforms(selected ? platforms.filter((item) => item !== platform) : [...platforms, platform])} style={[styles.chip, { borderColor: colors.border, backgroundColor: selected ? colors.primary : 'transparent' }]}>
+                  <Pressable accessibilityRole="button" key={platform} onPress={() => canEdit && setPlatforms(selected ? platforms.filter((item) => item !== platform) : [...platforms, platform])} style={[styles.chip, { borderColor: colors.border, backgroundColor: selected ? colors.primary : 'transparent' }]}>
                     <Text style={{ color: selected ? colors.textInverse : colors.textPrimary, fontWeight: '700' }}>{platform}</Text>
                   </Pressable>
                 );

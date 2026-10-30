@@ -24,6 +24,7 @@ import {
   bottomTabPad,
 } from './founderUi';
 import { pressableWebStyles } from '../../utils/webPressable';
+import { FingerprintSettings } from '../../components/auth/FingerprintSecurity';
 
 const BUDGET_LOCK_KEY = 'budget_lock';
 
@@ -50,6 +51,7 @@ export default function FounderSettingsScreen() {
 
   const [founders, setFounders] = useState<FounderRow[]>([]);
   const [foundersLoading, setFoundersLoading] = useState(false);
+  const [loadError, setLoadError] = useState('');
 
   const loadBudget = useCallback(async () => {
     if (!canManageOrgSettings) return;
@@ -57,6 +59,8 @@ export default function FounderSettingsScreen() {
     try {
       const v = await founderDb.getSetting(BUDGET_LOCK_KEY);
       setBudgetLocked(readBudgetLocked(v));
+    } catch {
+      setLoadError('Could not load organization settings. Reopen this screen to retry.');
     } finally {
       setBudgetLoading(false);
     }
@@ -68,6 +72,8 @@ export default function FounderSettingsScreen() {
     try {
       const list = await founderDb.listFoundersForSettings();
       setFounders(list);
+    } catch {
+      setLoadError('Could not load founder access. Reopen this screen to retry.');
     } finally {
       setFoundersLoading(false);
     }
@@ -140,11 +146,13 @@ export default function FounderSettingsScreen() {
   return (
     <ConsoleAmbientBackground>
       <ScreenHeader title="Founder settings" subtitle="Security & access" />
+      {!!loadError && <Text accessibilityRole="alert" style={{ color: colors.error, padding: 16 }}>{loadError}</Text>}
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={[styles.pad, { paddingBottom: bottomTabPad }]}
         showsVerticalScrollIndicator={false}
       >
+        <FingerprintSettings />
         <Text style={[styles.section, { color: colors.textSecondary }]}>Password</Text>
         <GlassCard>
           <Input
@@ -207,7 +215,7 @@ export default function FounderSettingsScreen() {
                         {f.role} · {f.is_active ? 'Active' : 'Inactive'}
                       </Text>
                     </View>
-                    <Pressable
+                    <Pressable accessibilityRole="button"
                       onPress={() => toggleFounder(f)}
                       style={({ pressed }) => [...pressableWebStyles(pressed, { pressedOpacity: 0.85 })]}
                     >

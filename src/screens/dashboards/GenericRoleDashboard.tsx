@@ -45,7 +45,8 @@ export default function GenericRoleDashboard() {
   const [schoolCount, setSchoolCount] = useState<number | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
-  const canReadSchools = can(PERMISSIONS.SCHOOLS_READ_ALL) || can(PERMISSIONS.SCHOOLS_READ_ASSIGNED);
+  const canReadSchools =
+    can(PERMISSIONS.SCHOOLS_READ_ALL) || can(PERMISSIONS.SCHOOLS_READ_ASSIGNED);
 
   const loadSchools = useCallback(async () => {
     if (!canReadSchools) {
@@ -130,7 +131,10 @@ export default function GenericRoleDashboard() {
     return available;
   }, [can, canReadSchools]);
 
-  const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Team member';
+  const displayName =
+    user?.user_metadata?.full_name ||
+    user?.email?.split('@')[0] ||
+    'Team member';
 
   return (
     <ScrollView
@@ -151,66 +155,148 @@ export default function GenericRoleDashboard() {
         style={[
           styles.hero,
           clayStyle(clayShadows.clayElevated),
-          { backgroundColor: colors.surface, borderColor: colors.clayBorderColor },
+          {
+            backgroundColor: colors.surface,
+            borderColor: colors.clayBorderColor,
+          },
         ]}
       >
-        <View style={[styles.heroIcon, { backgroundColor: `${colors.primary}18` }]}>
+        <View
+          style={[styles.heroIcon, { backgroundColor: `${colors.primary}18` }]}
+        >
           <ShieldCheck size={26} color={colors.primary} />
         </View>
         <View style={styles.heroCopy}>
-          <Text style={[styles.eyebrow, { color: colors.primary }]}>{roleLabel}</Text>
-          <Text style={[styles.title, { color: colors.textPrimary }]}>Welcome, {displayName}</Text>
-          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Your workspace reflects your current role, individual overrides, and assigned school portfolio.</Text>
+          <Text style={[styles.eyebrow, { color: colors.primary }]}>
+            {roleLabel}
+          </Text>
+          <Text style={[styles.title, { color: colors.textPrimary }]}>
+            Welcome, {displayName}
+          </Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+            Your workspace reflects your current role, individual overrides, and
+            assigned school portfolio.
+          </Text>
         </View>
         {employeeId ? (
-          <View style={[styles.employeeBadge, { backgroundColor: `${colors.primary}12` }]}>
-            <Text style={[styles.employeeText, { color: colors.primary }]}>{employeeId}</Text>
+          <View
+            style={[
+              styles.employeeBadge,
+              { backgroundColor: `${colors.primary}12` },
+            ]}
+          >
+            <Text style={[styles.employeeText, { color: colors.primary }]}>
+              {employeeId}
+            </Text>
           </View>
         ) : null}
       </View>
 
       <View style={styles.metricsRow}>
-        <View style={[styles.metricCard, { backgroundColor: colors.surface, borderColor: colors.clayBorderColor }]}>
-          <Text style={[styles.metricLabel, { color: colors.textSecondary }]}>Visible schools</Text>
+        <View
+          style={[
+            styles.metricCard,
+            {
+              backgroundColor: colors.surface,
+              borderColor: colors.clayBorderColor,
+            },
+          ]}
+        >
+          <Text style={[styles.metricLabel, { color: colors.textSecondary }]}>
+            Visible schools
+          </Text>
           {schoolCount === null ? (
-            <ActivityIndicator color={colors.primary} style={styles.metricLoader} />
+            <ActivityIndicator
+              color={colors.primary}
+              style={styles.metricLoader}
+            />
           ) : (
-            <Text style={[styles.metricValue, { color: colors.textPrimary }]}>{schoolCount}</Text>
+            <Text style={[styles.metricValue, { color: colors.textPrimary }]}>
+              {schoolCount}
+            </Text>
           )}
         </View>
-        <View style={[styles.metricCard, { backgroundColor: colors.surface, borderColor: colors.clayBorderColor }]}>
-          <Text style={[styles.metricLabel, { color: colors.textSecondary }]}>Direct assignments</Text>
-          <Text style={[styles.metricValue, { color: colors.textPrimary }]}>{assignedSchools.length}</Text>
+        <View
+          style={[
+            styles.metricCard,
+            {
+              backgroundColor: colors.surface,
+              borderColor: colors.clayBorderColor,
+            },
+          ]}
+        >
+          <Text style={[styles.metricLabel, { color: colors.textSecondary }]}>
+            Direct assignments
+          </Text>
+          <Text style={[styles.metricValue, { color: colors.textPrimary }]}>
+            {assignedSchools.length}
+          </Text>
         </View>
       </View>
 
-      <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Available tools</Text>
+      <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+        Available tools
+      </Text>
       {actions.length ? (
         <View style={styles.actionGrid}>
           {actions.map((action) => (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={action.key}
               onPress={() => router.push(action.route as any)}
               style={({ pressed }) => [
                 styles.actionCard,
-                { backgroundColor: colors.surface, borderColor: colors.clayBorderColor },
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.clayBorderColor,
+                },
                 pressed && styles.pressed,
               ]}
             >
-              <View style={[styles.actionIcon, { backgroundColor: `${action.color}18` }]}>{action.icon}</View>
+              <View
+                style={[
+                  styles.actionIcon,
+                  { backgroundColor: `${action.color}18` },
+                ]}
+              >
+                {action.icon}
+              </View>
               <View style={styles.actionCopy}>
-                <Text style={[styles.actionTitle, { color: colors.textPrimary }]}>{action.label}</Text>
-                <Text style={[styles.actionDescription, { color: colors.textSecondary }]}>{action.description}</Text>
+                <Text
+                  style={[styles.actionTitle, { color: colors.textPrimary }]}
+                >
+                  {action.label}
+                </Text>
+                <Text
+                  style={[
+                    styles.actionDescription,
+                    { color: colors.textSecondary },
+                  ]}
+                >
+                  {action.description}
+                </Text>
               </View>
               <ChevronRight size={18} color={colors.textTertiary} />
             </Pressable>
           ))}
         </View>
       ) : (
-        <View style={[styles.emptyCard, { backgroundColor: colors.surface, borderColor: colors.clayBorderColor }]}>
+        <View
+          style={[
+            styles.emptyCard,
+            {
+              backgroundColor: colors.surface,
+              borderColor: colors.clayBorderColor,
+            },
+          ]}
+        >
           <ShieldCheck size={28} color={colors.textTertiary} />
-          <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>No modules assigned</Text>
-          <Text style={[styles.emptyText, { color: colors.textSecondary }]}>Ask your manager or a Founder to review your role and permission overrides.</Text>
+          <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>
+            No modules assigned
+          </Text>
+          <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+            Ask your manager or a Founder to review your role and permission
+            overrides.
+          </Text>
         </View>
       )}
     </ScrollView>
@@ -219,29 +305,82 @@ export default function GenericRoleDashboard() {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: 'transparent' },
-  content: { padding: 24, gap: 18 },
-  hero: { borderWidth: 1, borderRadius: 24, padding: 22, flexDirection: 'row', alignItems: 'center', gap: 16 },
-  heroIcon: { width: 52, height: 52, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
+  content: { padding: 0, gap: 20 },
+  hero: {
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  heroIcon: {
+    width: 52,
+    height: 52,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   heroCopy: { flex: 1, gap: 4 },
-  eyebrow: { fontSize: 12, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.8 },
+  eyebrow: {
+    fontSize: 12,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+  },
   title: { fontSize: 25, fontWeight: '800' },
   subtitle: { fontSize: 14, lineHeight: 20, maxWidth: 720 },
-  employeeBadge: { paddingHorizontal: 11, paddingVertical: 7, borderRadius: 10 },
+  employeeBadge: {
+    paddingHorizontal: 11,
+    paddingVertical: 7,
+    borderRadius: 10,
+  },
   employeeText: { fontSize: 12, fontWeight: '800' },
   metricsRow: { flexDirection: 'row', gap: 14, flexWrap: 'wrap' },
-  metricCard: { minWidth: 180, flexGrow: 1, borderWidth: 1, borderRadius: 18, padding: 18, gap: 7 },
+  metricCard: {
+    minWidth: 180,
+    flexGrow: 1,
+    borderWidth: 1,
+    borderRadius: 18,
+    padding: 18,
+    gap: 7,
+  },
   metricLabel: { fontSize: 13, fontWeight: '600' },
   metricValue: { fontSize: 30, fontWeight: '800' },
   metricLoader: { alignSelf: 'flex-start', marginVertical: 8 },
   sectionTitle: { fontSize: 19, fontWeight: '800', marginTop: 4 },
   actionGrid: { gap: 12 },
-  actionCard: { borderWidth: 1, borderRadius: 18, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 14 },
-  actionIcon: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  actionCard: {
+    borderWidth: 1,
+    borderRadius: 18,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+  },
+  actionIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   actionCopy: { flex: 1, gap: 3 },
   actionTitle: { fontSize: 15, fontWeight: '800' },
   actionDescription: { fontSize: 13, lineHeight: 18 },
   pressed: { opacity: 0.78, transform: [{ scale: 0.995 }] },
-  emptyCard: { borderWidth: 1, borderRadius: 18, padding: 28, alignItems: 'center', gap: 8 },
+  emptyCard: {
+    borderWidth: 1,
+    borderRadius: 18,
+    padding: 28,
+    alignItems: 'center',
+    gap: 8,
+  },
   emptyTitle: { fontSize: 16, fontWeight: '800' },
-  emptyText: { fontSize: 13, textAlign: 'center', maxWidth: 520, lineHeight: 19 },
+  emptyText: {
+    fontSize: 13,
+    textAlign: 'center',
+    maxWidth: 520,
+    lineHeight: 19,
+  },
 });

@@ -3,11 +3,13 @@ import {
   View,
   Text,
   StyleSheet,
-  Animated,
+
   Pressable,
   Platform,
   Dimensions,
+  useWindowDimensions,
 } from 'react-native';
+import { Animated } from '../../utils/accessibleAnimation';
 import { X, CheckCircle2, AlertTriangle, AlertCircle, Info } from 'lucide-react-native';
 import { useTheme, clayStyle } from '../../contexts/ThemeContext';
 
@@ -88,6 +90,8 @@ const ToastItem = React.memo(function ToastItem({
 
   return (
     <Animated.View
+      accessibilityRole={toast.variant === 'error' ? 'alert' : undefined}
+      accessibilityLiveRegion={toast.variant === 'error' ? 'assertive' : 'polite'}
       style={[
         styles.toast,
         {
@@ -108,6 +112,8 @@ const ToastItem = React.memo(function ToastItem({
           {toast.message}
         </Text>
         <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Dismiss notification"
           onPress={dismiss}
           style={({ pressed }: any) => [
             styles.toastClose,
@@ -133,6 +139,7 @@ const ToastItem = React.memo(function ToastItem({
 
 // ─── Toast Provider ─────────────────────────────────────────────────────────
 export function ToastProvider({ children }: { children: React.ReactNode }) {
+  const { width } = useWindowDimensions();
   const [toasts, setToasts] = useState<ToastData[]>([]);
 
   const showToast = useCallback(
@@ -150,7 +157,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      <View style={styles.container} pointerEvents="box-none">
+      <View style={[styles.container, { width: Math.max(0, Math.min(380, width - 32)) }]} pointerEvents="box-none">
         {toasts.map((toast) => (
           <ToastItem key={toast.id} toast={toast} onDismiss={dismissToast} />
         ))}
@@ -166,7 +173,6 @@ const styles = StyleSheet.create({
     right: 16,
     zIndex: 60,
     maxWidth: 400,
-    width: Platform.OS === 'web' ? 380 : Dimensions.get('window').width - 32,
     gap: 10,
   },
   toast: {
@@ -206,6 +212,10 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   toastClose: {
+    minWidth: 44,
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
     padding: 6,
     borderRadius: 8,
     flexShrink: 0,

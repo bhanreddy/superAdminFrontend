@@ -49,7 +49,7 @@ function AccessManager() {
   }
   return <ScrollView contentContainerStyle={{ padding: 28, gap: 20 }}>
     <View style={[ui.row, { flexWrap: 'wrap', justifyContent: 'space-between' }]}>
-      <View style={{ gap: 8 }}><Text style={[ui.title, { color: colors.textPrimary }]}>{role === 'CA_LEAD' ? 'CA team' : 'CA access'}</Text><Text style={{ color: colors.textSecondary }}>Choose which Books records and actions each accountant can access.</Text></View>
+      <View style={{ gap: 8, flexGrow: 1, flexShrink: 1, flexBasis: 280, minWidth: 0 }}><Text style={[ui.title, { color: colors.textPrimary }]}>{role === 'CA_LEAD' ? 'CA team' : 'CA access'}</Text><Text style={{ color: colors.textSecondary }}>Choose which Books records and actions each accountant can access.</Text></View>
       <Action label="Create CA account" onPress={() => { setError(''); setForm({ full_name: '', email: '', role: 'CA', manager_id: isFounder ? options.leads[0]?.id || null : null, status: 'ACTIVE', permissions: [], company_access: [] }); }} />
     </View>
     {!!error && <Notice error text={error} />}{!!notice && <Notice text={notice} />}

@@ -1,0 +1,29 @@
+env: load .env
+env: export EXPO_PUBLIC_SUPERADMIN_API_URL EXPO_PUBLIC_SUPERADMIN_API_URL_WEB
+Starting Metro Bundler
+transform[stderr]: (node:48731) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+transform[stderr]: (Use `node --trace-warnings ...` to show where the warning was created)
+transform[stderr]: (node:48732) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+transform[stderr]: (Use `node --trace-warnings ...` to show where the warning was created)
+transform[stderr]: (node:48733) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+transform[stderr]: (Use `node --trace-warnings ...` to show where the warning was created)
+transform[stderr]: (node:48734) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+transform[stderr]: (Use `node --trace-warnings ...` to show where the warning was created)
+iOS Bundled 3085ms (node_modules/expo-router/entry.js)
+
+Exporting 11 assets:
+assets/logo.png (354 kB)
+node_modules/@react-navigation/elements/src/assets/back-icon-mask.png (913 B)
+node_modules/@react-navigation/elements/src/assets/back-icon.png (5 variations | 528 B)
+node_modules/expo-router/assets/error.png (516 B)
+node_modules/expo-router/assets/file.png (158 B)
+node_modules/expo-router/assets/forward.png (250 B)
+node_modules/expo-router/assets/pkg.png (429 B)
+
+Exporting 1 bundle for ios:
+_expo/static/js/ios/entry-4745c9d20143fd538a9648c37dc7eb05.hbc (7.78 MB)
+
+Exporting 1 file:
+metadata.json (834 B)
+
+App exported to: /tmp/nexsyrus-phase8-ios-export

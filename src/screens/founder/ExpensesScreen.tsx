@@ -467,7 +467,7 @@ export default function ExpensesScreen({
               <Pressable
                 key={key}
                 accessibilityRole="tab"
-                accessibilityState={{ selected: status === key }}
+                accessibilityState={{ selected: status === key }} aria-selected={status === key}
                 onPress={() => setStatus(key)}
                 style={[
                   s.tab,

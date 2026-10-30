@@ -115,7 +115,7 @@ test('statement CSV handles quoted commas, rejects malformed rows, and neutraliz
       ),
     /Unclosed/,
   );
-  assert.match(toCsv([{ name: '=HYPERLINK("bad")' }]), /\'=HYPERLINK/);
+  assert.match(toCsv([{ name: '=HYPERLINK("bad")' }]), /'=HYPERLINK/);
 });
 test('invoice editor selects a contact and preserves decimals in saved draft input', async () => {
   const env = environment();
@@ -420,7 +420,7 @@ test('reports-only CA loads scoped lookups and reports; hidden directories and c
     calls.push(url);
     if(url === '/bootstrap') return { settings: { organization_name:'Test',fiscal_year_month:4 }, stats:{} };
     if(url === '/lookups') return { contacts:[],items:[],accounts:[],payments:[],projects:[] };
-    if(url === '/reports') return { income:0,expenses:0,profit:0,cash:0,receivables:0,payables:0,trial:[],aging:[],taxes:[],cashflow:[],aging_as_of:'2026-10-26' };
+    if(url === '/reports') return statementFixture();
     throw new Error(`Unexpected request ${url}`);
   }, mocks: workspaceMocks({ role:'CA',isFounder:false,permissions,can:p=>permissions.includes(p) }) });
   const Screen = env.load(p('src/screens/books/BooksScreen.tsx')).default;
@@ -588,4 +588,100 @@ test('Books navigation can collapse without changing the selected module or expo
     assert.equal(tree.root.findAllByType('ScrollView').filter(n => n.props.accessibilityLabel === 'Books navigation').length, 1);
     assert.equal(tree.root.findByProps({ accessibilityLabel: 'Books content' }).props.nestedScrollEnabled, true);
   } finally { await act(async () => tree?.unmount()); }
+});
+
+function statementFixture() {
+  return { organization_name:'Test Books',currency:'INR',from:'2026-04-01',to:'2026-04-30',income:10001,expenses:2502,profit:7499,cash:100000,assets:130001,liabilities:2502,equity:100000,retained:27499,
+    receivables:30001,payables:2502,aging_as_of:'2026-10-30',aging:[],taxes:[],cashflow:[],
+    trial:[{code:'1010',name:'Bank',type:'asset',is_cash:true,opening_balance:90000,balance:100000,period_debit:'10000',period_credit:'0',debit:'100000',credit:'0'}],
+    profit_loss:{income:[{code:'4000',name:'Sales',type:'income',amount:10001}],expenses:[{code:'5000',name:'Operating expenses',type:'expense',amount:2502}]},
+    balance_sheet:{as_of:'2026-04-30',assets:[{code:'1010',name:'Bank',type:'asset',amount:100000}],liabilities:[],equity:[],total_assets:130001,total_liabilities:2502,owner_equity:100000,prior_earnings:20000,period_earnings:7499,accumulated_earnings:27499,total_equity:127499,liabilities_and_equity:130001,difference:0},
+    cash_flow:{method:'direct',opening_cash:90000,closing_cash:100000,net_change:10000,difference:0,classification_complete:false,
+      activities:[{activity:'operating',inflow:10000,outflow:0,net:10000,journal_count:1},{activity:'unclassified',inflow:0,outflow:0,net:0,journal_count:1}]} };
+}
+test('financial statements render subtotals, reconciliation, cash review and account drilldowns; export follows selected tab', async () => {
+  const exports=[], opened=[];
+  const base=environment(), exportHelpers=base.load(p('src/screens/books/export.ts'));
+  const env=environment({mocks:{[p('src/screens/books/export.ts')]:{...exportHelpers,saveCsv:async(rows,filename)=>exports.push({rows,filename})}}});
+  const Reports=env.load(p('src/screens/books/ReportsView.tsx')).default;
+  let tree;try {
+    await act(async()=>{tree=create(React.createElement(Reports,{report:statementFixture(),onDocument(){},onAccount:a=>opened.push(a.code),canExport:true}));});
+    assert.match(textOf(tree.root),/Total income: INR 100.01/); assert.match(textOf(tree.root),/Net profit: INR 74.99/);
+    const sales=tree.root.findAllByType('Pressable').find(b=>b.props.accessibilityRole==='button' && textOf(b).includes('Sales'));
+    await act(async()=>sales.props.onPress()); assert.deepEqual(opened,['4000']);
+    await press(tree,'Export statement'); assert.equal(exports[0].rows.at(-1).amount_inr,'74.99');
+    await press(tree,'Balance sheet'); assert.match(textOf(tree.root),/Earnings before period: INR 200.00/);
+    assert.match(textOf(tree.root),/Balanced: assets equal/); await press(tree,'Export statement');
+    assert.equal(exports[1].rows.find(r=>r.name==='Total equity').amount_inr,'1274.99');
+    await press(tree,'Cash flow'); assert.match(textOf(tree.root),/classification needs review/);
+    assert.match(textOf(tree.root),/Opening cash and bank: INR 900.00/); assert.match(textOf(tree.root),/Cash reconciles/);
+    await press(tree,'Export statement'); assert.equal(exports[2].rows[0].basis,'Cash · direct method');
+    assert.equal(exports[2].rows.find(r=>r.name==='Closing cash').amount_inr,'1000.00');
+    await press(tree,'Ledger accounts'); assert.match(textOf(tree.root),/Opening balance/); assert.match(textOf(tree.root),/Closing balance/);
+    await press(tree,'Export statement'); assert.equal(exports[3].rows[0].opening_inr,'900.00');
+  } finally {await act(async()=>tree?.unmount());}
+});
+test('report exports escape formulas and include report dates, totals and negative balances', () => {
+  const env=environment(), {reportRows}=env.load(p('src/screens/books/export.ts')), {toCsv}=env.load(p('src/screens/books/csv.ts'));
+  const r=statementFixture();r.profit=-1;r.profit_loss.income[0].name='=HYPERLINK("malicious")';
+  const rows=reportRows(r,'Profit & loss');assert.equal(rows.at(-1).amount_inr,'-0.01');assert.equal(rows[0].from,r.from);
+  assert.match(toCsv(rows),/'=HYPERLINK/);
+  assert.match(toCsv(rows),/"-0.01"/);assert.doesNotMatch(toCsv(rows),/"'-0.01"/);
+  assert.match(toCsv([{name:'-SUM(1,2)'}]),/"'-SUM/);
+});
+test('ledger paginates, recovers from failed pages and exports every row with opening and closing totals', async () => {
+  const calls=[],exports=[]; let fail=true;
+  const env=environment({get:async(url,params)=>{
+    calls.push({url,...params});
+    if(params.page===2 && params.page_size!==500 && fail){fail=false;throw new Error('Ledger temporarily unavailable');}
+    const total=params.page_size===500?501:201, count=params.page_size===500?(params.page===1?500:1):1;
+    return {account:{code:'1010',name:'Bank',type:'asset',is_cash:true},...params,page_size:params.page_size||100,total,opening_balance:1000,period_debit:501,period_credit:0,closing_balance:1501,
+      data:Array.from({length:count},(_,i)=>({id:`${params.page}-${i}`,date:'2026-04-01',reference:`Entry ${params.page}-${i}`,source:'manual',notes:'',debit:'1',credit:'0',running_balance:1001+i}))};
+  },mocks:{[p('src/screens/books/export.ts')]:{saveCsv:async(rows,filename)=>exports.push({rows,filename})}}});
+  const Ledger=env.load(p('src/screens/books/LedgerView.tsx')).default;
+  let tree;try{
+    await act(async()=>{tree=create(React.createElement(Ledger,{account:{code:'1010',name:'Bank'},dates:{from:'2026-04-01',to:'2026-04-30'},canExport:true,onClose(){}}));});
+    assert.match(textOf(tree.toJSON()),/Opening balance: INR 10.00/);assert.match(textOf(tree.toJSON()),/Running balance/);
+    await press(tree,'Next ledger page');assert.match(textOf(tree.toJSON()),/temporarily unavailable/);
+    await press(tree,'Retry ledger');assert.match(textOf(tree.toJSON()),/Page 2 of 3/);
+    await press(tree,'Previous ledger page');assert.match(textOf(tree.toJSON()),/Page 1 of 3/);
+    await press(tree,'Export full ledger');assert.equal(exports[0].rows.length,503);
+    assert.equal(exports[0].rows[0].balance_inr,'10.00');assert.equal(exports[0].rows.at(-1).balance_inr,'15.01');
+    assert.equal(calls.filter(c=>c.page_size===500).length,2);
+  }finally{await act(async()=>tree?.unmount());}
+});
+test('ledger hides export and classification actions without grants, rejects changing data during export', async () => {
+  let requests=0;const env=environment({get:async(url,params)=>{requests++;return{account:{code:'1010',is_cash:true},...params,page_size:params.page_size||100,total:requests===3?502:501,opening_balance:0,period_debit:501,period_credit:0,closing_balance:501,data:[]};},mocks:{[p('src/screens/books/export.ts')]:{saveCsv:async()=>assert.fail('Changed ledger must not export')}}});
+  const Ledger=env.load(p('src/screens/books/LedgerView.tsx')).default;
+  let tree;try{
+    const props={account:{code:'1010',name:'Bank'},dates:{from:'2026-04-01',to:'2026-04-30'},canExport:false,onClose(){}};
+    await act(async()=>{tree=create(React.createElement(Ledger,props));});
+    assert.equal(tree.root.findAllByType('Pressable').some(b=>b.props.accessibilityLabel==='Export full ledger'),false);
+    assert.equal(tree.root.findAllByType('Pressable').some(b=>b.props.accessibilityLabel==='Save cash flow classification'),false);
+    await act(async()=>tree.update(React.createElement(Ledger,{...props,canExport:true})));
+    await press(tree,'Export full ledger');assert.match(textOf(tree.toJSON()),/Ledger changed during export/);
+  }finally{await act(async()=>tree?.unmount());}
+});
+test('account managers can retry classification changes without losing their selected activity', async () => {
+  let classification=null, attempts=0, changed=0; const writes=[];
+  const env=environment({get:async()=>({account:{code:'1500',name:'Equipment',type:'asset',is_cash:false,cash_flow_activity:classification},page:1,page_size:100,total:0,opening_balance:0,period_debit:0,period_credit:0,closing_balance:0,data:[]}),put:async(url,body)=>{attempts++;writes.push({url,body});if(attempts===1)throw new Error('Classification save failed');classification=body.cash_flow_activity;}});
+  const Ledger=env.load(p('src/screens/books/LedgerView.tsx')).default;
+  let tree;try{
+    await act(async()=>{tree=create(React.createElement(Ledger,{account:{code:'1500',name:'Equipment'},dates:{from:'2026-04-01',to:'2026-04-30'},canManage:true,canExport:false,onClose(){},onChanged:()=>changed++}));});
+    await press(tree,'Account cash flow activity');
+    const option=tree.root.findAllByType('Pressable').find(b=>b.props.role==='radio'&&textOf(b)==='investing');
+    await act(async()=>option.props.onPress());await press(tree,'Save cash flow classification');
+    assert.match(textOf(tree.root),/Classification save failed/);
+    await press(tree,'Save cash flow classification');assert.equal(attempts,2);assert.equal(changed,1);
+    assert.equal(writes[1].url,'/accounts/1500/reporting');assert.equal(writes[1].body.cash_flow_activity,'investing');
+  }finally{await act(async()=>tree?.unmount());}
+});
+test('INR formatting preserves every paisa for large totals and negative balances', () => {
+  const {money,decimal}=environment().load(p('src/utils/booksMoney.ts'));
+  assert.equal(decimal(9007199254740990),'90071992547409.90');
+  assert.equal(decimal('9007199254740991'),'90071992547409.91');
+  assert.equal(money('9007199254740991'),'₹9,00,71,99,25,47,409.91');
+  assert.equal(money(-123456789),'₹-12,34,567.89');assert.equal(money(-1),'₹-0.01');
+  assert.equal(money('00001'),'₹0.01');assert.equal(money(0),'₹0.00');assert.equal(decimal(null),'0.00');
+  assert.equal(money('invalid'),'—');assert.throws(()=>decimal('1.5'),/integer paise/);
 });

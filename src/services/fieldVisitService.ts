@@ -94,12 +94,10 @@ export const fieldVisitApi = {
     catch (e) { await enqueueOp('DAY_START', payload); throw e; }
   },
   async endDay(payload?: any) {
-    try { return (await crmClient.post('/api/super-admin/field/day/end', payload || {})).data; }
-    catch (e) { throw e; }
+    return (await crmClient.post('/api/super-admin/field/day/end', payload || {})).data;
   },
   async reopenDay() {
-    try { return (await crmClient.post('/api/super-admin/field/day/reopen', {})).data; }
-    catch (e) { throw e; }
+    return (await crmClient.post('/api/super-admin/field/day/reopen', {})).data;
   },
   async today() { return (await crmClient.get('/api/super-admin/field/today')).data; },
   async getVisit(visit_id: string) {

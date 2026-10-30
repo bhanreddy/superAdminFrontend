@@ -6,7 +6,7 @@ import { useTheme } from '../../../src/contexts/ThemeContext';
 
 export default function ConsoleStackLayout() {
   const { founder, isSuperAdmin, loading } = useAuth();
-  const { colors } = useTheme();
+  const { colors, reducedMotion } = useTheme();
   const router = useRouter();
   const canUseConsole = Boolean(founder || isSuperAdmin);
 
@@ -30,7 +30,7 @@ export default function ConsoleStackLayout() {
       screenOptions={{
         headerShown: false,
         contentStyle: { backgroundColor: colors.background },
-        animation: 'slide_from_right',
+        animation: reducedMotion ? 'none' : 'slide_from_right',
         animationDuration: 280,
         gestureEnabled: true,
         ...(Platform.OS === 'ios' ? { fullScreenGestureEnabled: true } : {}),

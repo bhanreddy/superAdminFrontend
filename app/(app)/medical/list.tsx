@@ -426,7 +426,7 @@ export default function MedicalShopsListScreen() {
       render: (item) => (
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 4 }}>
           {!isPhone && (
-            <Pressable onPress={() => router.push(`/(app)/medical/${item.id}/build-config`)} style={st.iconButton}>
+            <Pressable accessibilityLabel="Open build configuration" accessibilityRole="button" onPress={() => router.push(`/(app)/medical/${item.id}/build-config`)} style={st.iconButton}>
               <Terminal size={16} color={colors.textSecondary} />
             </Pressable>
           )}
@@ -475,10 +475,10 @@ export default function MedicalShopsListScreen() {
           const active = statusFilter === filter;
           let label = filter.charAt(0).toUpperCase() + filter.slice(1);
           return (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={filter}
               onPress={() => setStatusFilter(filter)}
-              style={[st.filterPill, active && { backgroundColor: colors.primary }]}
+              style={[st.filterPill, active && { backgroundColor: colors.primaryFill }]}
             >
               <Text style={[st.filterText, active ? { color: '#FFF' } : { color: colors.textSecondary }]}>
                 {label}
@@ -565,7 +565,7 @@ export default function MedicalShopsListScreen() {
               borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)',
             }]}>
               {getActions().map((action, i) => (
-                <Pressable
+                <Pressable accessibilityRole="button"
                   key={i}
                   onPress={action.onPress}
                   disabled={actionLoading}
@@ -609,7 +609,7 @@ export default function MedicalShopsListScreen() {
         {selectedShop && editMode && (
           <View style={st.drawerContent}>
             {/* Back to options */}
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={() => setEditMode(false)}
               style={({ hovered }: any) => [
                 st.backBtn,

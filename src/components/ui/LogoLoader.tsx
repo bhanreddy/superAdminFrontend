@@ -9,8 +9,10 @@
  */
 
 import React, { useEffect, useRef } from 'react';
-import { Animated, Easing, StyleSheet, View, ViewStyle } from 'react-native';
+import {  Easing, StyleSheet, View, ViewStyle } from 'react-native';
+import { Animated } from '../../utils/accessibleAnimation';
 import Svg, { G, Path } from 'react-native-svg';
+import { useAccessibilityPreferences } from '../../hooks/useAccessibilityPreferences';
 
 export interface LogoLoaderProps {
   size?: number | string;
@@ -218,6 +220,7 @@ const P2 = `M3545 7811 c-226 -4 -326 -10 -341 -18 -28 -16 -86 -122 -104 -188
 const PATHS = [P0, P1, P2];
 
 export default function LogoLoader({ size = 30, color = '#111111', style, isReady, onLogoRevealed }: LogoLoaderProps) {
+  const { reducedMotion } = useAccessibilityPreferences();
   const drawAnims = useRef(PATHS.map(() => new Animated.Value(1))).current;
   const masterOpacity = useRef(new Animated.Value(1)).current;
   const fillAnim = useRef(new Animated.Value(0)).current;
@@ -229,6 +232,13 @@ export default function LogoLoader({ size = 30, color = '#111111', style, isRead
   onLogoRevealedRef.current = onLogoRevealed;
 
   useEffect(() => {
+    if (reducedMotion) {
+      drawAnims.forEach(anim => anim.setValue(0));
+      fillAnim.setValue(1);
+      masterOpacity.setValue(1);
+      if (isReady !== false) onLogoRevealedRef.current?.();
+      return;
+    }
     let cancelled = false;
     let poller: ReturnType<typeof setInterval>;
 
@@ -303,7 +313,7 @@ export default function LogoLoader({ size = 30, color = '#111111', style, isRead
       cancelled = true;
       clearInterval(poller);
     };
-  }, []);
+  }, [reducedMotion, reducedMotion ? isReady : undefined]);
 
   const dimension = typeof size === 'string' && !isNaN(Number(size)) ? Number(size) : size;
   const dimensionValue = dimension as any;

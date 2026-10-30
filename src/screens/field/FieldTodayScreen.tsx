@@ -367,7 +367,7 @@ export default function FieldTodayScreen() {
             </Text>
           </View>
 
-          <Pressable
+          <Pressable accessibilityLabel="Refresh" accessibilityRole="button"
             onPress={() => {
               setRefreshing(true);
               load();
@@ -382,7 +382,7 @@ export default function FieldTodayScreen() {
         {(offline || pending > 0) && (
           <GlassCard style={[styles.banner, { borderColor: '#FF9F0A55', backgroundColor: '#FF9F0A11' }]}>
             <WifiOff size={16} color="#FF9F0A" />
-            <Text style={[styles.bannerText, { color: colors.textPrimary }]}>
+            <Text style={[styles.bannerText, { color: colors.textPrimary, flexShrink: 1 }]}>
               {offline
                 ? 'Offline Mode — Changes saved on device and will sync automatically.'
                 : `${pending} operations queued — Syncing with server...`}
@@ -408,7 +408,7 @@ export default function FieldTodayScreen() {
                   : 'No visits planned for today yet. Start your day to log unplanned visits or research schools in the planner.'}
               </Text>
 
-              <Pressable
+              <Pressable accessibilityRole="button"
                 onPress={handleStartDay}
                 disabled={startingDay}
                 style={[
@@ -459,7 +459,7 @@ export default function FieldTodayScreen() {
               {/* Action Buttons */}
               <View style={styles.heroActionGrid}>
                 {nextStop && nextStop.status === 'PLANNED' && (
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     onPress={() => handleCheckIn(nextStop)}
                     disabled={Boolean(checkingInId)}
                     style={[
@@ -480,7 +480,7 @@ export default function FieldTodayScreen() {
                 )}
 
                 <View style={styles.heroSecondaryActions}>
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     onPress={() => router.push('/(app)/field/route' as any)}
                     style={[styles.ctaButton, styles.ctaOutline, { borderColor: colors.glassBorder }]}
                   >
@@ -488,7 +488,7 @@ export default function FieldTodayScreen() {
                     <Text style={[styles.ctaOutlineText, { color: colors.primary }]}>View Route Map</Text>
                   </Pressable>
 
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     onPress={() => router.push('/(app)/field/visit/new' as any)}
                     style={[styles.ctaButton, styles.ctaOutline, { borderColor: colors.glassBorder }]}
                   >
@@ -496,7 +496,7 @@ export default function FieldTodayScreen() {
                     <Text style={[styles.ctaOutlineText, { color: '#30D158' }]}>Add Unplanned</Text>
                   </Pressable>
 
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     onPress={() => setEndDayModalOpen(true)}
                     style={[styles.ctaButton, styles.ctaDangerOutline, { borderColor: 'rgba(255, 69, 58, 0.4)' }]}
                   >
@@ -528,7 +528,7 @@ export default function FieldTodayScreen() {
               </Text>
 
               <View style={{ flexDirection: 'row', gap: 10, marginTop: 12 }}>
-                <Pressable
+                <Pressable accessibilityRole="button"
                   onPress={handleReopenDay}
                   disabled={reopeningDay}
                   style={[styles.ctaButton, styles.ctaOutline, { borderColor: colors.glassBorder, flex: 1 }]}
@@ -538,7 +538,7 @@ export default function FieldTodayScreen() {
                     {reopeningDay ? 'Reopening…' : 'Resume Day'}
                   </Text>
                 </Pressable>
-                <Pressable
+                <Pressable accessibilityRole="button"
                   onPress={() => router.push('/(app)/field/planner' as any)}
                   style={[styles.ctaButton, styles.ctaPrimary, { flex: 1 }]}
                 >
@@ -640,7 +640,7 @@ export default function FieldTodayScreen() {
 
             {/* Quick Actions Row */}
             <View style={styles.spotlightActions}>
-              <Pressable
+              <Pressable accessibilityRole="button"
                 onPress={() => handleCheckIn(nextStop)}
                 disabled={Boolean(checkingInId)}
                 style={[styles.spotlightCheckInBtn, Platform.OS === 'web' && ({ cursor: 'pointer' } as any)]}
@@ -655,7 +655,7 @@ export default function FieldTodayScreen() {
                 </Text>
               </Pressable>
 
-              <Pressable
+              <Pressable accessibilityRole="button"
                 onPress={() =>
                   Linking.openURL(
                     `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
@@ -670,7 +670,7 @@ export default function FieldTodayScreen() {
               </Pressable>
 
               {(nextStop.school_phone || nextStop.contact_phone) && (
-                <Pressable
+                <Pressable accessibilityLabel="Call school" accessibilityRole="button"
                   onPress={() => Linking.openURL(`tel:${nextStop.contact_phone || nextStop.school_phone}`).catch(() => {})}
                   style={[styles.spotlightActionBtn, { borderColor: colors.glassBorder }]}
                 >
@@ -686,7 +686,7 @@ export default function FieldTodayScreen() {
           <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
             Today's Journey ({visits.length})
           </Text>
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => router.push('/(app)/field/planner' as any)}
             style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
           >
@@ -831,7 +831,7 @@ export default function FieldTodayScreen() {
               <View style={[styles.cardActionStrip, { borderTopColor: colors.glassBorder }]}>
                 {isPlanned && (
                   <>
-                    <Pressable
+                    <Pressable accessibilityRole="button"
                       onPress={() => handleCheckIn(v)}
                       disabled={Boolean(checkingInId)}
                       style={[
@@ -849,7 +849,7 @@ export default function FieldTodayScreen() {
                       </Text>
                     </Pressable>
 
-                    <Pressable
+                    <Pressable accessibilityRole="button"
                       onPress={() =>
                         Linking.openURL(
                           `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
@@ -864,7 +864,7 @@ export default function FieldTodayScreen() {
                     </Pressable>
 
                     {(v.contact_phone || v.school_phone) && (
-                      <Pressable
+                      <Pressable accessibilityLabel="Call school" accessibilityRole="button"
                         onPress={() => Linking.openURL(`tel:${v.contact_phone || v.school_phone}`).catch(() => {})}
                         style={[styles.inlineIconBtn, { borderColor: colors.glassBorder }]}
                       >
@@ -872,7 +872,7 @@ export default function FieldTodayScreen() {
                       </Pressable>
                     )}
 
-                    <Pressable
+                    <Pressable accessibilityRole="button"
                       onPress={() => {
                         setSkipTarget(v);
                         setSkipReason('');
@@ -886,7 +886,7 @@ export default function FieldTodayScreen() {
                 )}
 
                 {isInProgress && (
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     onPress={() => router.push(`/(app)/field/visit/${v.id}` as any)}
                     style={[styles.inlineResumeBtn, Platform.OS === 'web' && ({ cursor: 'pointer' } as any)]}
                   >
@@ -896,7 +896,7 @@ export default function FieldTodayScreen() {
                 )}
 
                 {isDone && (
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     onPress={() => router.push(`/(app)/field/visit/${v.id}` as any)}
                     style={[styles.inlineGhostBtn, { borderColor: colors.glassBorder, flex: 1 }]}
                   >
@@ -924,14 +924,14 @@ export default function FieldTodayScreen() {
               Plan your route from the planner, or add an unplanned school visit right away.
             </Text>
             <View style={{ flexDirection: 'row', gap: 10, marginTop: 8 }}>
-              <Pressable
+              <Pressable accessibilityRole="button"
                 onPress={() => router.push('/(app)/field/planner' as any)}
                 style={[styles.ctaButton, styles.ctaPrimary]}
               >
                 <Calendar size={16} color="#fff" />
                 <Text style={styles.ctaPrimaryText}>Open Planner</Text>
               </Pressable>
-              <Pressable
+              <Pressable accessibilityRole="button"
                 onPress={() => router.push('/(app)/field/visit/new' as any)}
                 style={[styles.ctaButton, styles.ctaOutline, { borderColor: colors.glassBorder }]}
               >
@@ -974,14 +974,14 @@ export default function FieldTodayScreen() {
             </View>
 
             <View style={styles.modalActions}>
-              <Pressable
+              <Pressable accessibilityRole="button"
                 onPress={() => setEndDayModalOpen(false)}
                 style={[styles.modalBtn, styles.modalGhostBtn, { borderColor: colors.glassBorder }]}
               >
                 <Text style={[styles.modalBtnText, { color: colors.textSecondary }]}>Cancel</Text>
               </Pressable>
 
-              <Pressable
+              <Pressable accessibilityRole="button"
                 onPress={handleEndDay}
                 disabled={endingDay}
                 style={[styles.modalBtn, styles.modalDangerBtn]}
@@ -1014,7 +1014,7 @@ export default function FieldTodayScreen() {
             <View style={styles.chipRow}>
               {['Principal Unavailable', 'School Closed / Holiday', 'Rescheduled with Trustee', 'Traffic / Time Limit'].map(
                 (reason) => (
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     key={reason}
                     onPress={() => setSkipReason(reason)}
                     style={[
@@ -1051,19 +1051,19 @@ export default function FieldTodayScreen() {
             />
 
             <View style={styles.modalActions}>
-              <Pressable
+              <Pressable accessibilityRole="button"
                 onPress={() => setSkipModalOpen(false)}
                 style={[styles.modalBtn, styles.modalGhostBtn, { borderColor: colors.glassBorder }]}
               >
                 <Text style={[styles.modalBtnText, { color: colors.textSecondary }]}>Cancel</Text>
               </Pressable>
 
-              <Pressable
+              <Pressable accessibilityRole="button"
                 onPress={handleConfirmSkip}
                 disabled={skipping || !skipReason.trim()}
                 style={[
                   styles.modalBtn,
-                  { backgroundColor: colors.primary, opacity: skipReason.trim() ? 1 : 0.5 },
+                  { backgroundColor: colors.primaryFill, opacity: skipReason.trim() ? 1 : 0.5 },
                 ]}
               >
                 {skipping ? (
@@ -1094,7 +1094,7 @@ export default function FieldTodayScreen() {
             <View style={styles.chipRow}>
               {['Met Management Off-Campus', 'Indoor GPS Signal Drift', 'Head Office / Trust Office', 'Virtual Meeting'].map(
                 (r) => (
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     key={r}
                     onPress={() => setRemoteReason(r)}
                     style={[
@@ -1131,14 +1131,14 @@ export default function FieldTodayScreen() {
             />
 
             <View style={styles.modalActions}>
-              <Pressable
+              <Pressable accessibilityRole="button"
                 onPress={() => setRemoteModalOpen(false)}
                 style={[styles.modalBtn, styles.modalGhostBtn, { borderColor: colors.glassBorder }]}
               >
                 <Text style={[styles.modalBtnText, { color: colors.textSecondary }]}>Cancel</Text>
               </Pressable>
 
-              <Pressable
+              <Pressable accessibilityRole="button"
                 onPress={handleConfirmRemoteCheckIn}
                 disabled={!remoteReason.trim()}
                 style={[

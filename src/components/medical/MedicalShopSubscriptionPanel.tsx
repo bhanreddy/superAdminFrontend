@@ -199,7 +199,7 @@ export function MedicalShopSubscriptionPanel({ shopId }: Props) {
           <CreditCard size={18} color={colors.primary} />
           <Text style={[st.cardTitle, { color: colors.textPrimary }]}>POS subscription</Text>
         </View>
-        <Pressable
+        <Pressable accessibilityLabel="Refresh" accessibilityRole="button"
           onPress={load}
           style={({ pressed }) => [st.iconBtn, { opacity: pressed ? 0.7 : 1 }]}
           hitSlop={8}
@@ -239,7 +239,7 @@ export function MedicalShopSubscriptionPanel({ shopId }: Props) {
           {plans.map((p) => {
             const active = planName === p.name;
             return (
-              <Pressable
+              <Pressable accessibilityRole="button"
                 key={p.id}
                 onPress={() => setPlanName(p.name)}
                 style={[
@@ -273,7 +273,7 @@ export function MedicalShopSubscriptionPanel({ shopId }: Props) {
         {STATUSES.map((s) => {
           const active = status === s;
           return (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={s}
               onPress={() => setStatus(s)}
               style={[
@@ -295,7 +295,7 @@ export function MedicalShopSubscriptionPanel({ shopId }: Props) {
         {BILLING.map((b) => {
           const active = billingCycle === b;
           return (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={b}
               onPress={() => setBillingCycle(b)}
               style={[

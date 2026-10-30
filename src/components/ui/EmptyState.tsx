@@ -22,33 +22,30 @@ export const EmptyState = React.memo(function EmptyState({
 
   return (
     <View style={styles.container}>
-      <View style={[
-        styles.iconWrap,
-        { backgroundColor: colors.primaryMuted },
-        Platform.OS === 'web' ? {
-          boxShadow: isDark
-            ? 'inset 3px 3.5px 7px rgba(0,0,0,0.35), inset -3px -3.5px 7px rgba(255,255,255,0.03)'
-            : 'inset 3px 3.5px 7px rgba(0,0,0,0.05), inset -3px -3.5px 7px rgba(255,255,255,0.9)',
-        } as any : {},
-      ]}>
-        {icon || <FolderOpen size={32} color={colors.textTertiary} />}
+      <View style={[styles.iconWrap, { backgroundColor: colors.primaryMuted }]}>
+        {icon || <FolderOpen size={32} color={colors.primary} />}
       </View>
-      <Text style={[styles.title, { color: colors.textPrimary }]}>{title}</Text>
+      <Text accessibilityRole="header" style={[styles.title, { color: colors.textPrimary }]}>{title}</Text>
       {description && (
-        <Text style={[styles.description, { color: colors.textSecondary }]}>{description}</Text>
+        <Text style={[styles.description, { color: colors.textSecondary }]}>
+          {description}
+        </Text>
       )}
       {actionLabel && onAction && (
         <Pressable
+          accessibilityRole="button"
           onPress={onAction}
           style={({ pressed, hovered }: any) => [
             styles.actionBtn,
             {
-              backgroundColor: colors.primary,
+              backgroundColor: colors.primaryFill || colors.primary,
               opacity: pressed ? 0.9 : 1,
             },
             clayStyle(clayShadows.subtle),
             pressed && { transform: [{ scale: 0.97 }] },
-            Platform.OS === 'web' ? { cursor: 'pointer', transition: 'all 0.2s ease' } as any : {},
+            Platform.OS === 'web'
+              ? ({ cursor: 'pointer', transition: 'all 0.2s ease' } as any)
+              : {},
           ]}
         >
           <Text style={styles.actionText}>{actionLabel}</Text>
@@ -86,6 +83,8 @@ const styles = StyleSheet.create({
     maxWidth: 320,
   },
   actionBtn: {
+    minHeight: 44,
+    justifyContent: 'center',
     marginTop: 24,
     paddingHorizontal: 24,
     paddingVertical: 12,

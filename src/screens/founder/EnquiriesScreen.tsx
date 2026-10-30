@@ -28,7 +28,7 @@ import { resolveVertical, buildPrefillParams, VERTICAL_ROUTE, VERTICAL_LABELS, t
 import type { EnquiryRow, EnquiryStatus, FounderRow } from '../../types/founder';
 import { ConsoleAmbientBackground, GlassCard, FilterChips, SkeletonPulse, bottomTabPad } from './founderUi';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
+
 import {
   MessageCircle, X, UserRound, Activity, Rocket, Building2, Store, Contact,
   Search, SlidersHorizontal, Inbox, ChevronDown, Clock3, UserRoundCheck,
@@ -86,7 +86,7 @@ function formatRelative(iso?: string): string {
 }
 
 function LegacyEnquiryBrowser() {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const router = useRouter();
   const { width } = useWindowDimensions();
   const desktop = width >= 1024;
@@ -260,8 +260,6 @@ function LegacyEnquiryBrowser() {
     }
   };
 
-  const isDark = colors.background === '#000000' || colors.background === '#1A1D2E';
-
   return (
     <ConsoleAmbientBackground>
       <ScreenHeader title="Enquiries" subtitle="Leads & pipeline" />
@@ -283,7 +281,7 @@ function LegacyEnquiryBrowser() {
               key={label}
               style={[
                 styles.statCard,
-                { width: desktop ? undefined : '48%', flex: desktop ? 1 : undefined, borderColor: colors.clayBorderColor, backgroundColor: isDark ? 'rgba(33,31,45,0.6)' : 'rgba(255,255,255,0.7)' },
+                { width: desktop ? undefined : '48%', flex: desktop ? 1 : undefined, borderColor: colors.clayBorderColor, backgroundColor: colors.card },
               ]}
             >
               <View style={[styles.statIcon, { backgroundColor: `${color}1F` }]}><Icon size={15} color={color} /></View>
@@ -297,7 +295,7 @@ function LegacyEnquiryBrowser() {
 
         {/* ── Search + More filters ──────────────────────────────────── */}
         <View style={styles.toolbar}>
-          <View style={[styles.searchBox, { borderColor: colors.clayBorderColor, backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.75)' }]}>
+          <View style={[styles.searchBox, { borderColor: colors.clayBorderColor, backgroundColor: colors.card }]}>
             <Search size={16} color={colors.textTertiary} />
             <TextInput
               value={query}
@@ -307,10 +305,10 @@ function LegacyEnquiryBrowser() {
               style={[styles.searchInput, { color: colors.textPrimary, outlineWidth: 0 } as any]}
             />
             {query.length > 0 ? (
-              <Pressable onPress={() => setQuery('')} hitSlop={8}><X size={15} color={colors.textTertiary} /></Pressable>
+              <Pressable accessibilityLabel="Clear search" accessibilityRole="button" onPress={() => setQuery('')} hitSlop={8}><X size={15} color={colors.textTertiary} /></Pressable>
             ) : null}
           </View>
-          <Pressable
+          <Pressable accessibilityRole="button" accessibilityLabel="Filters" accessibilityState={{ expanded: showFilters }} aria-expanded={showFilters}
             onPress={() => setShowFilters((v) => !v)}
             style={({ pressed }) => [
               styles.filterBtn,
@@ -321,7 +319,7 @@ function LegacyEnquiryBrowser() {
             <SlidersHorizontal size={15} color={secondaryActive || showFilters ? colors.primary : colors.textSecondary} />
             {!desktop ? null : <Text style={[styles.filterBtnTxt, { color: secondaryActive || showFilters ? colors.primary : colors.textSecondary }]}>Filters</Text>}
             {secondaryActive ? (
-              <View style={[styles.filterCount, { backgroundColor: colors.primary }]}><Text style={styles.filterCountTxt}>{secondaryActive}</Text></View>
+              <View style={[styles.filterCount, { backgroundColor: colors.primaryFill }]}><Text style={styles.filterCountTxt}>{secondaryActive}</Text></View>
             ) : (
               <ChevronDown size={13} color={secondaryActive || showFilters ? colors.primary : colors.textTertiary} style={{ transform: [{ rotate: showFilters ? '180deg' : '0deg' }] }} />
             )}
@@ -378,7 +376,7 @@ function LegacyEnquiryBrowser() {
                   entering={index < 12 ? FadeInDown.delay(index * 30).duration(300) : undefined}
                   style={{ width: desktop ? '48.5%' : '100%' }}
                 >
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     onPress={() => router.push(`/(app)/console/lead/${e.id}` as any)}
                     style={({ pressed }) => [
                       styles.card,
@@ -441,7 +439,7 @@ function LegacyEnquiryBrowser() {
           style={styles.modalBackdrop}
         >
           {isDark && (
-             <BlurView intensity={30} tint="dark" style={StyleSheet.absoluteFill} pointerEvents="none" />
+             <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.elevated }]} pointerEvents="none" />
           )}
           <View style={[styles.modalSheet, { backgroundColor: isDark ? '#12151F' : colors.surface, borderTopColor: isDark ? 'rgba(14,165,233,0.14)' : colors.border }]}>
             <View style={[styles.sheetHandle, { backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : colors.border }]} />
@@ -456,18 +454,18 @@ function LegacyEnquiryBrowser() {
                    {detail?.email || '—'} · {detail?.phone || '—'}
                  </Text>
                </View>
-               <Pressable onPress={() => setDetail(null)} style={({ pressed }) => [styles.sheetClose, !isDark && { backgroundColor: colors.surface }, ...pressableWebStyles(pressed, { pressedOpacity: 0.85 })]}>
+               <Pressable accessibilityLabel="Close dialog" accessibilityRole="button" onPress={() => setDetail(null)} style={({ pressed }) => [styles.sheetClose, !isDark && { backgroundColor: colors.surface }, ...pressableWebStyles(pressed, { pressedOpacity: 0.85 })]}>
                  <X color={colors.textSecondary} size={18} />
                </Pressable>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-              
+
               {/* ASSIGNMENT */}
               <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>Assign to founder</Text>
               <View style={styles.pillGridWrap}>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.pillGridInner}>
-                   <Pressable
+                   <Pressable accessibilityRole="button"
                      onPress={() => setAssignId('')}
                      style={({ pressed }) => [
                        styles.unitCard,
@@ -486,7 +484,7 @@ function LegacyEnquiryBrowser() {
                    {founders.map((f) => {
                      const active = assignId === f.id;
                      return (
-                       <Pressable
+                       <Pressable accessibilityRole="button"
                          key={f.id}
                          onPress={() => setAssignId(f.id)}
                          style={({ pressed }) => [
@@ -515,7 +513,7 @@ function LegacyEnquiryBrowser() {
                    const active = statusPick === s;
                    const sColor = s === 'QUALIFIED' ? '#00D4AD' : s === 'CLOSED' ? '#38BDF8' : s === 'REJECTED' ? '#FF6B7A' : '#A78BFA';
                    return (
-                     <Pressable
+                     <Pressable accessibilityRole="button"
                        key={s}
                        onPress={() => setStatusPick(s)}
                        style={({ pressed }) => [
@@ -555,7 +553,7 @@ function LegacyEnquiryBrowser() {
                   {VERTICAL_OPTS.map(({ key, label, Icon }) => {
                     const active = vertical === key;
                     return (
-                      <Pressable
+                      <Pressable accessibilityRole="button"
                         key={key}
                         onPress={() => setVertical(key)}
                         style={({ pressed }) => [
@@ -572,7 +570,7 @@ function LegacyEnquiryBrowser() {
                     );
                   })}
                 </View>
-                <Pressable
+                <Pressable accessibilityRole="button"
                   onPress={acceptAndOnboard}
                   disabled={accepting}
                   style={({ pressed }) => [{ marginTop: 12 }, ...pressableWebStyles(pressed, { disabled: accepting, pressedOpacity: 0.85 })]}
@@ -584,7 +582,7 @@ function LegacyEnquiryBrowser() {
                     </Text>
                   </LinearGradient>
                 </Pressable>
-                <Pressable
+                <Pressable accessibilityRole="button"
                   onPress={rejectLead}
                   disabled={saving}
                   style={({ pressed }) => [
@@ -598,7 +596,7 @@ function LegacyEnquiryBrowser() {
               </View>
 
               <View style={styles.modalActions}>
-                <Pressable
+                <Pressable accessibilityRole="button"
                   onPress={() => setDetail(null)}
                   style={({ pressed }) => [
                     styles.cancelBtn,
@@ -611,7 +609,7 @@ function LegacyEnquiryBrowser() {
                 >
                   <Text style={[styles.cancelTxt, { color: colors.textSecondary }]}>Cancel</Text>
                 </Pressable>
-                <Pressable
+                <Pressable accessibilityRole="button"
                   onPress={saveDetail}
                   disabled={saving}
                   style={({ pressed }) => [
@@ -723,7 +721,7 @@ const styles = StyleSheet.create({
   sheetClose: { width: 34, height: 34, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.06)', alignItems: 'center', justifyContent: 'center' },
   modalTitle: { fontSize: 21, fontWeight: '800', letterSpacing: -0.3 },
   sub: { fontSize: 12, marginTop: 2, marginBottom: 0 },
-  
+
   fieldLabel: {
     fontSize: 11,
     fontWeight: '800',
@@ -732,7 +730,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     marginTop: 10,
   },
-  
+
   pillGridWrap: { marginBottom: 18, marginHorizontal: -24 },
   pillGridInner: { paddingHorizontal: 24, paddingBottom: 4, gap: 10 },
   unitCard: {
@@ -763,7 +761,7 @@ const styles = StyleSheet.create({
   },
   unitLabel: { fontSize: 13, fontWeight: '700', letterSpacing: 0.2, maxWidth: 160 },
   unitActiveDot: { position: 'absolute', top: 8, right: 8, width: 6, height: 6, borderRadius: 3, backgroundColor: '#0EA5E9' },
-  
+
   statusGrid: {
     flexDirection: 'row',
     gap: 8,
@@ -781,7 +779,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.2,
   },
-  
+
   onboardBlock: {
     marginTop: 18,
     borderRadius: 18,

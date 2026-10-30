@@ -1,6 +1,25 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, Pressable, TextInput, Platform, ScrollView, useWindowDimensions } from 'react-native';
-import { Search, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X, ArrowUpDown } from 'lucide-react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  TextInput,
+  Platform,
+  ScrollView,
+  useWindowDimensions,
+} from 'react-native';
+import {
+  Search,
+  ChevronUp,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  X,
+  ArrowUpDown,
+} from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme, clayStyle } from '../../contexts/ThemeContext';
 import { EmptyState } from './EmptyState';
@@ -71,7 +90,7 @@ export function DataTable<T extends Record<string, any>>({
   onEmptyAction,
   headerRight,
   onRowPress,
-  narrowLayout = 'table',
+  narrowLayout = 'cards',
   serverPagination,
   cursorPagination,
 }: DataTableProps<T>) {
@@ -101,7 +120,11 @@ export function DataTable<T extends Record<string, any>>({
     return data.filter((item) =>
       keys.some((k) => {
         const val = item[k];
-        return val !== undefined && val !== null && String(val).toLowerCase().includes(q);
+        return (
+          val !== undefined &&
+          val !== null &&
+          String(val).toLowerCase().includes(q)
+        );
       }),
     );
   }, [data, search, searchKeys, columns, serverPagination]);
@@ -122,9 +145,13 @@ export function DataTable<T extends Record<string, any>>({
     });
   }, [filtered, sortKey, sortDir, serverPagination]);
 
-  const currentPage = serverPagination ? serverPagination.page : page;
-  const totalPages = serverPagination ? Math.max(1, serverPagination.pageCount) : Math.max(1, Math.ceil(sorted.length / pageSize));
-  const pageData = serverPagination ? data : sorted.slice(page * pageSize, (page + 1) * pageSize);
+  const totalPages = serverPagination
+    ? Math.max(1, serverPagination.pageCount)
+    : Math.max(1, Math.ceil(sorted.length / pageSize));
+  const currentPage = Math.max(0, Math.min(serverPagination ? serverPagination.page : page, totalPages - 1));
+  const pageData = serverPagination
+    ? data
+    : sorted.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
   const goToPage = (next: number) => {
     if (serverPagination) serverPagination.onPageChange(next);
     else setPage(next);
@@ -133,8 +160,10 @@ export function DataTable<T extends Record<string, any>>({
   const handleSort = (key: string) => {
     if (sortKey === key) {
       if (sortDir === 'asc') setSortDir('desc');
-      else if (sortDir === 'desc') { setSortKey(null); setSortDir(null); }
-      else setSortDir('asc');
+      else if (sortDir === 'desc') {
+        setSortKey(null);
+        setSortDir(null);
+      } else setSortDir('asc');
     } else {
       setSortKey(key);
       setSortDir('asc');
@@ -144,10 +173,18 @@ export function DataTable<T extends Record<string, any>>({
 
   if (loading) {
     return (
-      <View style={[s.wrap, {
-        backgroundColor: colors.card,
-        borderColor: colors.clayBorderColor,
-      }, clayStyle(clayShadows.clayElevated)]}>
+      <View
+        accessibilityLabel="Loading records"
+        accessibilityState={{ busy: true }} aria-busy={true}
+        style={[
+          s.wrap,
+          {
+            backgroundColor: colors.card,
+            borderColor: colors.clayBorderColor,
+          },
+          clayStyle(clayShadows.clayElevated),
+        ]}
+      >
         <SkeletonTable rows={6} columns={columns.length} />
       </View>
     );
@@ -156,55 +193,82 @@ export function DataTable<T extends Record<string, any>>({
   const isFiltering = search.length > 0 && filtered.length !== data.length;
 
   return (
-    <View style={[s.wrap, {
-      backgroundColor: colors.card,
-      borderColor: colors.clayBorderColor,
-    }, clayStyle(clayShadows.clayElevated)]}>
-
+    <View
+      style={[
+        s.wrap,
+        {
+          backgroundColor: colors.card,
+          borderColor: colors.clayBorderColor,
+        },
+        clayStyle(clayShadows.clayElevated),
+      ]}
+    >
       {/* - Toolbar - */}
       {(searchable || headerRight) && (
         <View style={[s.toolbar, isPhone && s.toolbarPhone]}>
           {searchable && (
             <View
-              style={[
-                s.searchBox,
-                isPhone && s.searchBoxPhone,
-                {
-                  backgroundColor: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)',
-                },
-                Platform.OS === 'web' ? {
-                  boxShadow: searchFocused
-                    ? isDark
-                      ? `inset 1.5px 1.5px 4px rgba(0,0,0,0.4), inset -1.5px -1.5px 4px rgba(255,255,255,0.03), 0 0 0 4px ${colors.primary}30`
-                      : `inset 1.5px 1.5px 4px rgba(0,0,0,0.08), inset -1.5px -1.5px 4px rgba(255,255,255,0.7), 0 0 0 4px ${colors.primary}25`
-                    : isDark
-                      ? 'inset 1.5px 1.5px 4px rgba(0,0,0,0.3), inset -1.5px -1.5px 4px rgba(255,255,255,0.02)'
-                      : 'inset 1.5px 1.5px 4px rgba(0,0,0,0.05), inset -1.5px -1.5px 4px rgba(255,255,255,0.6)',
-                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                } as any : {},
-              ] as any}
+              style={
+                [
+                  s.searchBox,
+                  isPhone && s.searchBoxPhone,
+                  {
+                    backgroundColor: colors.inputBg || colors.surface,
+                    borderColor: searchFocused ? colors.primary : colors.border,
+                    borderWidth: 1,
+                  },
+                  Platform.OS === 'web'
+                    ? ({
+                        boxShadow: searchFocused
+                          ? `0 0 0 3px ${colors.primary}18`
+                          : 'none',
+                        transition: 'border-color 120ms ease',
+                      } as any)
+                    : {},
+                ] as any
+              }
             >
-              <Search size={15} color={searchFocused ? colors.primary : colors.textTertiary} strokeWidth={2} />
+              <Search
+                size={15}
+                color={searchFocused ? colors.primary : colors.textTertiary}
+                strokeWidth={2}
+              />
               <TextInput
                 style={[
                   s.searchInput,
                   isPhone && s.searchInputPhone,
                   { color: colors.textPrimary },
-                  Platform.OS === 'web' ? { outlineWidth: 0 } as any : {},
+                  Platform.OS === 'web' ? ({ outlineWidth: 0 } as any) : {},
                 ]}
+                accessibilityLabel={searchPlaceholder}
+                underlineColorAndroid="transparent"
                 placeholder={searchPlaceholder}
                 placeholderTextColor={colors.textTertiary}
                 value={search}
-                onChangeText={(v) => { setSearch(v); setPage(0); }}
+                onChangeText={(v) => {
+                  setSearch(v);
+                  setPage(0);
+                }}
                 onFocus={() => setSearchFocused(true)}
                 onBlur={() => setSearchFocused(false)}
               />
               {search.length > 0 && (
                 <Pressable
-                  onPress={() => { setSearch(''); setPage(0); }}
+                  accessibilityRole="button"
+                  accessibilityLabel="Clear table search"
+                  onPress={() => {
+                    setSearch('');
+                    setPage(0);
+                  }}
                   style={({ hovered }: any) => [
                     s.clearBtn,
-                    { backgroundColor: hovered ? `${colors.primary}20` : isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)' },
+                    {
+                      backgroundColor: hovered
+                        ? `${colors.primary}20`
+                        : isDark
+                          ? 'rgba(255,255,255,0.06)'
+                          : 'rgba(0,0,0,0.05)',
+                    },
                   ]}
                   hitSlop={6}
                 >
@@ -219,21 +283,38 @@ export function DataTable<T extends Record<string, any>>({
 
       {/* - Filter badge - */}
       {isFiltering && (
-        <View style={[s.filterBar, {
-          backgroundColor: `${colors.primary}08`,
-        }]}>
+        <View
+          style={[
+            s.filterBar,
+            {
+              backgroundColor: `${colors.primary}08`,
+            },
+          ]}
+        >
           <View style={[s.filterDot, { backgroundColor: colors.primary }]} />
           <Text style={[s.filterText, { color: colors.primary }]}>
-            {filtered.length} {filtered.length === 1 ? 'result' : 'results'} found
+            {filtered.length} {filtered.length === 1 ? 'result' : 'results'}{' '}
+            found
           </Text>
           <Pressable
-            onPress={() => { setSearch(''); setPage(0); }}
+            accessibilityRole="button"
+            accessibilityLabel="Clear table filter"
+            onPress={() => {
+              setSearch('');
+              setPage(0);
+            }}
             style={({ hovered }: any) => [
               s.filterClearBtn,
-              { backgroundColor: hovered ? `${colors.primary}14` : 'transparent' },
+              {
+                backgroundColor: hovered
+                  ? `${colors.primary}14`
+                  : 'transparent',
+              },
             ]}
           >
-            <Text style={[s.filterClear, { color: colors.textTertiary }]}>Clear</Text>
+            <Text style={[s.filterClear, { color: colors.textTertiary }]}>
+              Clear
+            </Text>
           </Pressable>
         </View>
       )}
@@ -243,34 +324,45 @@ export function DataTable<T extends Record<string, any>>({
         <View style={s.cardsOuter}>
           {pageData.length === 0 ? (
             <EmptyState
-              title={emptyTitle}
-              description={emptyDescription || (search ? 'Try a different search term' : undefined)}
+              title={search ? 'No matching records' : emptyTitle}
+              description={
+                search ? 'Try a different search term or clear the filter.' : emptyDescription
+              }
               icon={emptyIcon}
-              actionLabel={emptyActionLabel}
-              onAction={onEmptyAction}
+              actionLabel={search ? 'Clear search' : emptyActionLabel}
+              onAction={search ? () => { setSearch(''); setPage(0); } : onEmptyAction}
             />
           ) : (
             pageData.map((item, ri) => {
-              const rowIndex = page * pageSize + ri;
+              const rowIndex = currentPage * pageSize + ri;
               return (
                 <Pressable
                   key={keyExtractor(item)}
+                  accessibilityRole={onRowPress ? 'button' : undefined}
                   onPress={onRowPress ? () => onRowPress(item) : undefined}
                   style={({ pressed, hovered }: any) => [
                     s.dataCard,
                     {
-                      backgroundColor: isDark ? colors.elevated : colors.surface,
+                      backgroundColor: isDark
+                        ? colors.elevated
+                        : colors.surface,
                       borderColor: colors.clayBorderColor,
                       ...(pressed ? { opacity: 0.92 } : {}),
                       ...(hovered && onRowPress
-                        ? { backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(99,102,241,0.03)' }
+                        ? {
+                            backgroundColor: isDark
+                              ? 'rgba(255,255,255,0.04)'
+                              : 'rgba(99,102,241,0.03)',
+                          }
                         : {}),
                     },
                     clayStyle(clayShadows.subtle),
-                    Platform.OS === 'web' ? {
-                      cursor: onRowPress ? 'pointer' : 'default',
-                      transition: 'all 0.2s ease',
-                    } as any : {},
+                    Platform.OS === 'web'
+                      ? ({
+                          cursor: onRowPress ? 'pointer' : 'default',
+                          transition: 'background-color 120ms ease',
+                        } as any)
+                      : {},
                   ]}
                 >
                   {columns.map((col, ci) => {
@@ -288,16 +380,29 @@ export function DataTable<T extends Record<string, any>>({
                         ]}
                       >
                         <Pressable
-                          onPress={col.sortable ? () => handleSort(col.key) : undefined}
-                          disabled={!col.sortable}
+                          accessibilityRole={col.sortable && !serverPagination ? 'button' : undefined}
+                          accessibilityLabel={col.sortable && !serverPagination ? `Sort by ${col.title}${isActive ? `, ${sortDir === 'desc' ? 'descending' : 'ascending'}` : ''}` : undefined}
+                          onPress={
+                            col.sortable && !serverPagination ? () => handleSort(col.key) : undefined
+                          }
+                          disabled={!col.sortable || Boolean(serverPagination)}
                           style={({ hovered }: any) => [
                             s.cardLabelCol,
                             col.sortable && hovered && { opacity: 0.8 },
-                            Platform.OS === 'web' && col.sortable ? { cursor: 'pointer' } as any : {},
+                            Platform.OS === 'web' && col.sortable
+                              ? ({ cursor: 'pointer' } as any)
+                              : {},
                           ]}
                         >
                           <Text
-                            style={[s.cardFieldLabel, { color: isActive ? colors.primary : colors.textTertiary }]}
+                            style={[
+                              s.cardFieldLabel,
+                              {
+                                color: isActive
+                                  ? colors.primary
+                                  : colors.textTertiary,
+                              },
+                            ]}
                             numberOfLines={2}
                           >
                             {col.title}
@@ -305,15 +410,33 @@ export function DataTable<T extends Record<string, any>>({
                           {col.sortable && (
                             <View style={s.cardSortIcons}>
                               {isActive ? (
-                                <View style={[s.sortBadge, { backgroundColor: `${colors.primary}14` }]}>
+                                <View
+                                  style={[
+                                    s.sortBadge,
+                                    { backgroundColor: `${colors.primary}14` },
+                                  ]}
+                                >
                                   {sortDir === 'desc' ? (
-                                    <ChevronDown size={10} color={colors.primary} strokeWidth={2.5} />
+                                    <ChevronDown
+                                      size={10}
+                                      color={colors.primary}
+                                      strokeWidth={2.5}
+                                    />
                                   ) : (
-                                    <ChevronUp size={10} color={colors.primary} strokeWidth={2.5} />
+                                    <ChevronUp
+                                      size={10}
+                                      color={colors.primary}
+                                      strokeWidth={2.5}
+                                    />
                                   )}
                                 </View>
                               ) : (
-                                <ArrowUpDown size={10} color={colors.textTertiary} strokeWidth={2} style={{ opacity: 0.45 }} />
+                                <ArrowUpDown
+                                  size={10}
+                                  color={colors.textTertiary}
+                                  strokeWidth={2}
+                                  style={{ opacity: 0.45 }}
+                                />
                               )}
                             </View>
                           )}
@@ -322,8 +445,16 @@ export function DataTable<T extends Record<string, any>>({
                           {col.render ? (
                             col.render(item, rowIndex)
                           ) : (
-                            <Text style={[s.cellText, { color: colors.textPrimary }]}>
-                              {item[col.key] !== undefined && item[col.key] !== null ? String(item[col.key]) : '-'}
+                            <Text
+                              style={[
+                                s.cellText,
+                                { color: colors.textPrimary },
+                              ]}
+                            >
+                              {item[col.key] !== undefined &&
+                              item[col.key] !== null
+                                ? String(item[col.key])
+                                : '-'}
                             </Text>
                           )}
                         </View>
@@ -344,38 +475,90 @@ export function DataTable<T extends Record<string, any>>({
           >
             <View style={{ minWidth: tableMinWidth, width: '100%' } as any}>
               {/* Header */}
-              <View style={[s.headerRow, isPhone && s.headerRowPhone, {
-                backgroundColor: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.015)',
-              }]}>
+              <View
+                style={[
+                  s.headerRow,
+                  isPhone && s.headerRowPhone,
+                  {
+                    backgroundColor: colors.primaryMuted,
+                  },
+                ]}
+              >
                 {columns.map((col) => {
                   const isActive = sortKey === col.key;
                   return (
                     <Pressable
                       key={col.key}
+                      accessibilityRole={col.sortable && !serverPagination ? 'button' : undefined}
+                      accessibilityLabel={col.sortable && !serverPagination ? `Sort by ${col.title}${isActive ? `, ${sortDir === 'desc' ? 'descending' : 'ascending'}` : ''}` : undefined}
                       style={({ hovered }: any) => [
                         s.cell,
                         isPhone && s.cellPhone,
-                        col.flex ? { flex: col.flex, minWidth: 0 } : col.width ? { width: col.width as any, minWidth: col.width as any, flexShrink: 0 } : { flex: 1, minWidth: 0 },
+                        col.flex
+                          ? { flex: col.flex, minWidth: 0 }
+                          : col.width
+                            ? {
+                                width: col.width as any,
+                                minWidth: col.width as any,
+                                flexShrink: 0,
+                              }
+                            : { flex: 1, minWidth: 0 },
                         col.sortable && hovered && { opacity: 0.75 },
-                        Platform.OS === 'web' && col.sortable ? { cursor: 'pointer', transition: 'opacity 0.15s' } as any : {},
+                        Platform.OS === 'web' && col.sortable
+                          ? ({
+                              cursor: 'pointer',
+                              transition: 'opacity 0.15s',
+                            } as any)
+                          : {},
                       ]}
-                      onPress={col.sortable ? () => handleSort(col.key) : undefined}
-                      disabled={!col.sortable}
+                      onPress={
+                        col.sortable && !serverPagination ? () => handleSort(col.key) : undefined
+                      }
+                      disabled={!col.sortable || Boolean(serverPagination)}
                     >
-                      <Text style={[s.headerLabel, isPhone && s.headerLabelPhone, { color: isActive ? colors.primary : colors.textTertiary }]} numberOfLines={1}>
+                      <Text
+                        style={[
+                          s.headerLabel,
+                          isPhone && s.headerLabelPhone,
+                          {
+                            color: isActive
+                              ? colors.primary
+                              : colors.textTertiary,
+                          },
+                        ]}
+                        numberOfLines={1}
+                      >
                         {col.title}
                       </Text>
                       {col.sortable && isActive && (
-                        <View style={[s.sortBadge, { backgroundColor: `${colors.primary}14` }]}>
+                        <View
+                          style={[
+                            s.sortBadge,
+                            { backgroundColor: `${colors.primary}14` },
+                          ]}
+                        >
                           {sortDir === 'desc' ? (
-                            <ChevronDown size={10} color={colors.primary} strokeWidth={2.5} />
+                            <ChevronDown
+                              size={10}
+                              color={colors.primary}
+                              strokeWidth={2.5}
+                            />
                           ) : (
-                            <ChevronUp size={10} color={colors.primary} strokeWidth={2.5} />
+                            <ChevronUp
+                              size={10}
+                              color={colors.primary}
+                              strokeWidth={2.5}
+                            />
                           )}
                         </View>
                       )}
                       {col.sortable && !isActive && (
-                        <ArrowUpDown size={10} color={colors.textTertiary} strokeWidth={2} style={{ opacity: 0.4 }} />
+                        <ArrowUpDown
+                          size={10}
+                          color={colors.textTertiary}
+                          strokeWidth={2}
+                          style={{ opacity: 0.4 }}
+                        />
                       )}
                     </Pressable>
                   );
@@ -385,16 +568,19 @@ export function DataTable<T extends Record<string, any>>({
               {/* Rows */}
               {pageData.length === 0 ? (
                 <EmptyState
-                  title={emptyTitle}
-                  description={emptyDescription || (search ? 'Try a different search term' : undefined)}
+                  title={search ? 'No matching records' : emptyTitle}
+                  description={
+                    search ? 'Try a different search term or clear the filter.' : emptyDescription
+                  }
                   icon={emptyIcon}
-                  actionLabel={emptyActionLabel}
-                  onAction={onEmptyAction}
+                  actionLabel={search ? 'Clear search' : emptyActionLabel}
+                  onAction={search ? () => { setSearch(''); setPage(0); } : onEmptyAction}
                 />
               ) : (
                 pageData.map((item, ri) => (
                   <Pressable
                     key={keyExtractor(item)}
+                    accessibilityRole={onRowPress ? 'button' : undefined}
                     onPress={onRowPress ? () => onRowPress(item) : undefined}
                     style={({ pressed, hovered }: any) => [
                       s.dataRow,
@@ -402,23 +588,48 @@ export function DataTable<T extends Record<string, any>>({
                       {
                         borderBottomColor: colors.divider,
                         backgroundColor: hovered
-                          ? isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'
+                          ? isDark
+                            ? 'rgba(255,255,255,0.03)'
+                            : 'rgba(0,0,0,0.02)'
                           : 'transparent',
                       },
                       pressed && { opacity: 0.75 },
-                      Platform.OS === 'web' ? {
-                        cursor: onRowPress ? 'pointer' : 'default',
-                        transition: 'all 0.2s ease',
-                      } as any : {},
+                      Platform.OS === 'web'
+                        ? ({
+                            cursor: onRowPress ? 'pointer' : 'default',
+                            transition: 'background-color 120ms ease',
+                          } as any)
+                        : {},
                     ]}
                   >
                     {columns.map((col) => (
-                      <View key={col.key} style={[s.cell, isPhone && s.cellPhone, col.flex ? { flex: col.flex, minWidth: 0 } : col.width ? { width: col.width as any, minWidth: col.width as any, flexShrink: 0 } : { flex: 1, minWidth: 0 }]}>
+                      <View
+                        key={col.key}
+                        style={[
+                          s.cell,
+                          isPhone && s.cellPhone,
+                          col.flex
+                            ? { flex: col.flex, minWidth: 0 }
+                            : col.width
+                              ? {
+                                  width: col.width as any,
+                                  minWidth: col.width as any,
+                                  flexShrink: 0,
+                                }
+                              : { flex: 1, minWidth: 0 },
+                        ]}
+                      >
                         {col.render ? (
                           col.render(item, currentPage * pageSize + ri)
                         ) : (
-                          <Text style={[s.cellText, { color: colors.textPrimary }]} numberOfLines={1}>
-                            {item[col.key] !== undefined && item[col.key] !== null ? String(item[col.key]) : '-'}
+                          <Text
+                            style={[s.cellText, { color: colors.textPrimary }]}
+                            numberOfLines={1}
+                          >
+                            {item[col.key] !== undefined &&
+                            item[col.key] !== null
+                              ? String(item[col.key])
+                              : '-'}
                           </Text>
                         )}
                       </View>
@@ -434,109 +645,151 @@ export function DataTable<T extends Record<string, any>>({
       {cursorPagination ? (
         <View style={[s.pagination, isPhone && s.paginationPhone]}>
           <Text style={[s.pageInfo, { color: colors.textTertiary }]}>
-            {data.length} shown{cursorPagination.total != null ? ` of ${cursorPagination.total}` : ''}
+            {data.length} shown
+            {cursorPagination.total != null
+              ? ` of ${cursorPagination.total}`
+              : ''}
           </Text>
           {cursorPagination.hasMore ? (
-            <Pressable accessibilityRole="button" accessibilityLabel="Load more" onPress={cursorPagination.onNext} disabled={cursorPagination.loading} style={s.pageBtn}>
-              <Text style={{ color: colors.textPrimary, fontWeight: '700' }}>{cursorPagination.loading ? 'Loading' : 'Load more'}</Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Load more"
+              onPress={cursorPagination.onNext}
+              disabled={cursorPagination.loading}
+              style={s.pageBtn}
+            >
+              <Text style={{ color: colors.textPrimary, fontWeight: '700' }}>
+                {cursorPagination.loading ? 'Loading' : 'Load more'}
+              </Text>
             </Pressable>
           ) : null}
         </View>
       ) : null}
-      {!cursorPagination && (serverPagination ? serverPagination.pageCount > 1 : sorted.length > pageSize) && (
-        <View style={[s.pagination, isPhone && s.paginationPhone]}>
-          <Text style={[s.pageInfo, { color: colors.textTertiary }]}>
-            Showing{' '}
-            <Text style={{ color: colors.textPrimary, fontWeight: '600' }}>
-              {currentPage * pageSize + 1}–{Math.min((currentPage + 1) * pageSize, serverPagination ? data.length : sorted.length)}
-            </Text>{' '}
-            of {serverPagination ? 'this page' : sorted.length}
-          </Text>
-          <View style={s.pageActions}>
-            {[
-              { icon: ChevronsLeft, onPress: () => goToPage(0), disabled: currentPage === 0 },
-              { icon: ChevronLeft, onPress: () => goToPage(Math.max(0, currentPage - 1)), disabled: currentPage === 0 },
-            ].map(({ icon: Icon, onPress, disabled }, i) => (
-              <Pressable
-                key={`l${i}`}
-                onPress={onPress}
-                disabled={disabled}
-                style={({ hovered }: any) => [
-                  s.pageBtn,
+      {!cursorPagination &&
+        (serverPagination
+          ? serverPagination.pageCount > 1
+          : sorted.length > pageSize) && (
+          <View style={[s.pagination, isPhone && s.paginationPhone]}>
+            <Text style={[s.pageInfo, { color: colors.textTertiary }]}>
+              Showing{' '}
+              <Text style={{ color: colors.textPrimary, fontWeight: '600' }}>
+                {currentPage * pageSize + 1}–
+                {Math.min(
+                  (currentPage + 1) * pageSize,
+                  serverPagination ? data.length : sorted.length,
+                )}
+              </Text>{' '}
+              of {serverPagination ? 'this page' : sorted.length}
+            </Text>
+            <View style={s.pageActions}>
+              {[
+                {
+                  label: 'First page',
+                  icon: ChevronsLeft,
+                  onPress: () => goToPage(0),
+                  disabled: currentPage === 0,
+                },
+                {
+                  label: 'Previous page',
+                  icon: ChevronLeft,
+                  onPress: () => goToPage(Math.max(0, currentPage - 1)),
+                  disabled: currentPage === 0,
+                },
+              ].map(({ label, icon: Icon, onPress, disabled }, i) => (
+                <Pressable
+                  key={`l${i}`}
+                  accessibilityRole="button"
+                  accessibilityLabel={label}
+                  onPress={onPress}
+                  disabled={disabled}
+                  style={({ hovered }: any) => [
+                    s.pageBtn,
+                    {
+                      opacity: disabled ? 0.3 : 1,
+                      backgroundColor:
+                        hovered && !disabled
+                          ? isDark
+                            ? 'rgba(255,255,255,0.06)'
+                            : 'rgba(0,0,0,0.04)'
+                          : colors.clayInnerLight,
+                    },
+                    Platform.OS === 'web'
+                      ? ({
+                          cursor: disabled ? 'not-allowed' : 'pointer',
+                          transition: 'background-color 120ms ease',
+                        } as any)
+                      : {},
+                  ]}
+                >
+                  <Icon size={14} color={colors.textSecondary} />
+                </Pressable>
+              ))}
+              <View
+                style={[
+                  s.pageIndicator,
                   {
-                    opacity: disabled ? 0.3 : 1,
-                    backgroundColor: hovered && !disabled
-                      ? isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'
-                      : colors.clayInnerLight,
+                    backgroundColor: `${colors.primary}10`,
+                    borderColor: `${colors.primary}20`,
                   },
-                  Platform.OS === 'web' ? {
-                    boxShadow: disabled
-                      ? 'none'
-                      : isDark
-                        ? hovered
-                          ? 'inset 2px 2px 4px rgba(255,255,255,0.06), inset -2px -2px 4px rgba(0,0,0,0.3), 4px 8px 12px rgba(0,0,0,0.25)'
-                          : 'inset 2px 2px 4px rgba(255,255,255,0.06), inset -2px -2px 4px rgba(0,0,0,0.3), 2px 4px 8px rgba(0,0,0,0.18)'
-                        : hovered
-                          ? 'inset 2px 2px 4px rgba(255,255,255,0.95), inset -2px -2px 4px rgba(0,0,0,0.04), 4px 8px 12px rgba(0,0,0,0.05), -2px -2px 6px rgba(255,255,255,0.8)'
-                          : 'inset 2px 2px 4px rgba(255,255,255,0.95), inset -2px -2px 4px rgba(0,0,0,0.04), 2px 4px 8px rgba(0,0,0,0.03), -2px -2px 6px rgba(255,255,255,0.8)',
-                    cursor: disabled ? 'not-allowed' : 'pointer',
-                    transition: 'all 0.2s ease',
-                  } as any : {},
                 ]}
               >
-                <Icon size={14} color={colors.textSecondary} />
-              </Pressable>
-            ))}
-            <View style={[s.pageIndicator, {
-              backgroundColor: `${colors.primary}10`,
-              borderColor: `${colors.primary}20`,
-            }]}>
-              <Text style={[s.pageNum, { color: colors.primary }]}>{currentPage + 1} / {totalPages}</Text>
+                <Text style={[s.pageNum, { color: colors.primary }]}>
+                  {currentPage + 1} / {totalPages}
+                </Text>
+              </View>
+              {[
+                {
+                  label: 'Next page',
+                  icon: ChevronRight,
+                  onPress: () =>
+                    goToPage(Math.min(totalPages - 1, currentPage + 1)),
+                  disabled: currentPage >= totalPages - 1,
+                },
+                {
+                  label: 'Last page',
+                  icon: ChevronsRight,
+                  onPress: () => goToPage(totalPages - 1),
+                  disabled: currentPage >= totalPages - 1,
+                },
+              ].map(({ label, icon: Icon, onPress, disabled }, i) => (
+                <Pressable
+                  key={`r${i}`}
+                  accessibilityRole="button"
+                  accessibilityLabel={label}
+                  onPress={onPress}
+                  disabled={disabled}
+                  style={({ hovered }: any) => [
+                    s.pageBtn,
+                    {
+                      opacity: disabled ? 0.3 : 1,
+                      backgroundColor:
+                        hovered && !disabled
+                          ? isDark
+                            ? 'rgba(255,255,255,0.06)'
+                            : 'rgba(0,0,0,0.04)'
+                          : colors.clayInnerLight,
+                    },
+                    Platform.OS === 'web'
+                      ? ({
+                          cursor: disabled ? 'not-allowed' : 'pointer',
+                          transition: 'background-color 120ms ease',
+                        } as any)
+                      : {},
+                  ]}
+                >
+                  <Icon size={14} color={colors.textSecondary} />
+                </Pressable>
+              ))}
             </View>
-            {[
-              { icon: ChevronRight, onPress: () => goToPage(Math.min(totalPages - 1, currentPage + 1)), disabled: currentPage >= totalPages - 1 },
-              { icon: ChevronsRight, onPress: () => goToPage(totalPages - 1), disabled: currentPage >= totalPages - 1 },
-            ].map(({ icon: Icon, onPress, disabled }, i) => (
-              <Pressable
-                key={`r${i}`}
-                onPress={onPress}
-                disabled={disabled}
-                style={({ hovered }: any) => [
-                  s.pageBtn,
-                  {
-                    opacity: disabled ? 0.3 : 1,
-                    backgroundColor: hovered && !disabled
-                      ? isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'
-                      : colors.clayInnerLight,
-                  },
-                  Platform.OS === 'web' ? {
-                    boxShadow: disabled
-                      ? 'none'
-                      : isDark
-                        ? hovered
-                          ? 'inset 2px 2px 4px rgba(255,255,255,0.06), inset -2px -2px 4px rgba(0,0,0,0.3), 4px 8px 12px rgba(0,0,0,0.25)'
-                          : 'inset 2px 2px 4px rgba(255,255,255,0.06), inset -2px -2px 4px rgba(0,0,0,0.3), 2px 4px 8px rgba(0,0,0,0.18)'
-                        : hovered
-                          ? 'inset 2px 2px 4px rgba(255,255,255,0.95), inset -2px -2px 4px rgba(0,0,0,0.04), 4px 8px 12px rgba(0,0,0,0.05), -2px -2px 6px rgba(255,255,255,0.8)'
-                          : 'inset 2px 2px 4px rgba(255,255,255,0.95), inset -2px -2px 4px rgba(0,0,0,0.04), 2px 4px 8px rgba(0,0,0,0.03), -2px -2px 6px rgba(255,255,255,0.8)',
-                    cursor: disabled ? 'not-allowed' : 'pointer',
-                    transition: 'all 0.2s ease',
-                  } as any : {},
-                ]}
-              >
-                <Icon size={14} color={colors.textSecondary} />
-              </Pressable>
-            ))}
           </View>
-        </View>
-      )}
+        )}
     </View>
   );
 }
 
 const s = StyleSheet.create({
   wrap: {
-    borderRadius: 22,
+    borderRadius: 16,
     borderWidth: 1,
     overflow: 'hidden',
   },
@@ -549,6 +802,7 @@ const s = StyleSheet.create({
     gap: 14,
   },
   toolbarPhone: {
+    flexWrap: 'wrap',
     paddingHorizontal: 16,
     paddingVertical: 14,
     gap: 10,
@@ -560,9 +814,12 @@ const s = StyleSheet.create({
     paddingHorizontal: 16,
     flex: 1,
     maxWidth: 400,
+    minWidth: 0,
+    minHeight: 46,
     gap: 10,
   },
   searchBoxPhone: {
+    flexBasis: '100%',
     maxWidth: '100%',
     borderRadius: 16,
     paddingHorizontal: 14,
@@ -570,23 +827,25 @@ const s = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    fontSize: 14,
+    fontSize: 16,
+    minWidth: 0,
     paddingVertical: 11,
     fontWeight: '400',
     letterSpacing: 0.1,
   },
   searchInputPhone: {
-    fontSize: 13,
+    fontSize: 16,
     paddingVertical: 10,
   },
   clearBtn: {
-    width: 24,
-    height: 24,
+    width: 44,
+    height: 44,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
   toolbarRight: {
+    flexWrap: 'wrap',
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
@@ -609,6 +868,8 @@ const s = StyleSheet.create({
     flex: 1,
   },
   filterClearBtn: {
+    minHeight: 44,
+    justifyContent: 'center',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 8,
@@ -639,6 +900,7 @@ const s = StyleSheet.create({
     gap: 12,
   },
   cardLabelCol: {
+    minHeight: 44,
     width: 96,
     flexShrink: 0,
     flexDirection: 'row',
@@ -699,7 +961,7 @@ const s = StyleSheet.create({
     letterSpacing: 0.8,
   },
   headerLabelPhone: {
-    fontSize: 10,
+    fontSize: 11,
     letterSpacing: 0.6,
   },
   sortBadge: {
@@ -737,8 +999,8 @@ const s = StyleSheet.create({
     gap: 5,
   },
   pageBtn: {
-    width: 34,
-    height: 34,
+    width: 44,
+    height: 44,
     borderRadius: 11,
     alignItems: 'center',
     justifyContent: 'center',

@@ -1,3 +1,4 @@
+import { navigateBack } from '../../../src/utils/navigation';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -43,7 +44,7 @@ export default function SupportThreadScreen() {
   return (
     <View style={[st.root, { borderColor: colors.clayBorderColor }, clayStyle(clayShadows.clayElevated)]}>
       <View style={[st.header, { backgroundColor: colors.surface, borderBottomColor: colors.divider }]}>
-        <Pressable onPress={() => router.back()} style={[st.back, { backgroundColor: colors.hover }]}><ArrowLeft size={20} color={colors.textPrimary} /></Pressable>
+        <Pressable accessibilityLabel="Go back" accessibilityRole="button" onPress={() => navigateBack(router, '/(app)/messenger')} style={[st.back, { backgroundColor: colors.hover }]}><ArrowLeft size={20} color={colors.textPrimary} /></Pressable>
         <View style={[st.avatar, { backgroundColor: `${colors.primary}18` }]}><Text style={[st.avatarText, { color: colors.primary }]}>{userName.split(' ').map((x) => x[0]).slice(0, 2).join('').toUpperCase()}</Text></View>
         <View style={{ flex: 1, minWidth: 0 }}><Text numberOfLines={1} style={[st.schoolName, { color: colors.textPrimary }]}>{schoolName}</Text><View style={st.userLine}><School size={11} color={colors.primary} /><Text numberOfLines={1} style={[st.userName, { color: colors.textSecondary }]}>{userName} · {(thread?.conversation.portal_role || 'unknown').toUpperCase()} portal</Text></View></View>
         <View style={[st.official, { backgroundColor: `${colors.primary}14` }]}><ShieldCheck size={13} color={colors.primary} /><Text style={[st.officialText, { color: colors.primary }]}>Official support</Text></View>
@@ -62,7 +63,7 @@ export default function SupportThreadScreen() {
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <View style={[st.composer, { backgroundColor: colors.surface, borderTopColor: colors.divider }]}>
           <TextInput value={text} onChangeText={setText} placeholder="Reply as Nexsyrus Support…" placeholderTextColor={colors.textTertiary} multiline maxLength={4000} style={[st.input, { color: colors.textPrimary, backgroundColor: colors.background, borderColor: colors.border }]} onSubmitEditing={send} />
-          <Pressable onPress={send} disabled={!text.trim() || sending} style={[st.send, { backgroundColor: colors.primary, opacity: !text.trim() || sending ? 0.45 : 1 }]}><Send size={18} color="#fff" /></Pressable>
+          <Pressable accessibilityLabel="Send message" accessibilityRole="button" onPress={send} disabled={!text.trim() || sending} style={[st.send, { backgroundColor: colors.primaryFill, opacity: !text.trim() || sending ? 0.45 : 1 }]}><Send size={18} color="#fff" /></Pressable>
         </View>
       </KeyboardAvoidingView>
     </View>
@@ -76,7 +77,7 @@ function Bubble({ message, showDay }: { message: SupportMessage; showDay: boolea
   return <>
     {showDay ? <View style={st.day}><Text style={[st.dayText, { color: colors.textSecondary, backgroundColor: isDark ? 'rgba(30,41,59,0.82)' : 'rgba(226,232,240,0.88)' }]}>{when.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}</Text></View> : null}
     <View style={[st.bubbleRow, { justifyContent: mine ? 'flex-end' : 'flex-start' }]}>
-      <View style={[st.bubble, mine ? { backgroundColor: colors.primary, borderBottomRightRadius: 4 } : { backgroundColor: isDark ? '#252838' : '#FFFFFF', borderBottomLeftRadius: 4, borderColor: colors.border, borderWidth: 1 }]}>
+      <View style={[st.bubble, mine ? { backgroundColor: colors.primaryFill, borderBottomRightRadius: 4 } : { backgroundColor: isDark ? '#252838' : '#FFFFFF', borderBottomLeftRadius: 4, borderColor: colors.border, borderWidth: 1 }]}>
         {!mine ? <Text style={[st.sender, { color: colors.primary }]}>{message.sender_name}</Text> : null}
         <Text style={[st.body, { color: mine ? '#FFFFFF' : colors.textPrimary }]}>{message.body}</Text>
         <Text style={[st.time, { color: mine ? 'rgba(255,255,255,0.72)' : colors.textTertiary }]}>{when.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}</Text>

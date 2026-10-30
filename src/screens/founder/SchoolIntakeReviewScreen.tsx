@@ -6,6 +6,7 @@ import { CheckCircle2, CircleAlert, ShieldCheck } from 'lucide-react-native';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
+import { EmptyState } from '../../components/ui/EmptyState';
 import { useToast } from '../../components/ui/Toast';
 import { useTheme } from '../../contexts/ThemeContext';
 import { ConsoleAmbientBackground, GlassCard, SkeletonActionList, bottomTabPad } from './founderUi';
@@ -35,6 +36,7 @@ export default function SchoolIntakeReviewScreen() {
   const { showToast } = useToast();
   const [item, setItem] = useState<SchoolIntake | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState<'approve' | 'changes' | 'reject' | null>(null);
   const [confirming, setConfirming] = useState(false);
@@ -42,11 +44,12 @@ export default function SchoolIntakeReviewScreen() {
   const [adminEmail, setAdminEmail] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    if (!intakeId) return;
+    if (!intakeId) { setLoading(false); setLoadError('This dossier link has no ID.'); return; }
+    setLoading(true); setLoadError('');
     try {
       setItem(await schoolIntakeApi.get(intakeId));
     } catch (err) {
-      showToast(intakeErrorMessage(err, 'Could not open this dossier.'), 'error');
+      setLoadError(intakeErrorMessage(err, 'Could not open this dossier.'));
     } finally {
       setLoading(false);
     }
@@ -91,6 +94,8 @@ export default function SchoolIntakeReviewScreen() {
       setBusy(null);
     }
   };
+
+  if (!loading && !item) return <ConsoleAmbientBackground><ScreenHeader title="Review dossier" showBack /><EmptyState title="Dossier unavailable" description={loadError || 'No dossier was returned.'} actionLabel="Try again" onAction={() => void load()} /></ConsoleAmbientBackground>;
 
   if (loading || !item) {
     return (

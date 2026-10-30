@@ -229,11 +229,11 @@ export default function ChecklistScreen() {
               {schools.map((s) => {
                 const isSelected = selectedSchoolId === s.id;
                 return (
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     key={s.id}
                     style={[
                       styles.schoolPill,
-                      isSelected && { backgroundColor: colors.primary, borderColor: colors.primary },
+                      isSelected && { backgroundColor: colors.primaryFill, borderColor: colors.primary },
                       !isSelected && { borderColor: colors.border, backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)' },
                     ]}
                     disabled={savingItem || itemsLoading}
@@ -306,8 +306,8 @@ export default function ChecklistScreen() {
                 This school has not been seeded with the standard onboarding checkpoints yet.
               </Text>
               {can(PERMISSIONS.CHECKLIST_UPDATE) && (
-                <Pressable
-                  style={[styles.initBtn, { backgroundColor: colors.primary }]}
+                <Pressable accessibilityRole="button"
+                  style={[styles.initBtn, { backgroundColor: colors.primaryFill }]}
                   onPress={handleInitChecklist}
                 >
                   <Sparkles size={16} color="#FFFFFF" />
@@ -362,7 +362,7 @@ export default function ChecklistScreen() {
                             </View>
 
                             {can(PERMISSIONS.CHECKLIST_UPDATE) && (
-                              <Pressable
+                              <Pressable accessibilityRole="button"
                                 style={[styles.editBtn, { borderColor: colors.border }]}
                                 disabled={savingItem}
                                 onPress={() => openEditModal(item)}
@@ -391,7 +391,7 @@ export default function ChecklistScreen() {
                       {activeItem?.title}
                     </Text>
                   </View>
-                  <Pressable disabled={savingItem} onPress={() => setShowEditModal(false)}>
+                  <Pressable accessibilityLabel="Close dialog" accessibilityRole="button" disabled={savingItem} onPress={() => setShowEditModal(false)}>
                     <X size={20} color={colors.textSecondary} />
                   </Pressable>
                 </View>
@@ -400,7 +400,7 @@ export default function ChecklistScreen() {
                   <Text style={[styles.formLabel, { color: colors.textSecondary }]}>Task Status</Text>
                   <View style={styles.statusOptionsWrap}>
                     {(['NOT_STARTED', 'IN_PROGRESS', 'COMPLETED', 'BLOCKED', 'NOT_APPLICABLE'] as const).map((st) => (
-                      <Pressable
+                      <Pressable accessibilityRole="button"
                         key={st}
                         style={[
                           styles.statusOptionPill,
@@ -445,14 +445,14 @@ export default function ChecklistScreen() {
                 </ScrollView>
 
                 <View style={styles.modalFooter}>
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     style={[styles.cancelBtn, { borderColor: colors.border }]}
                     disabled={savingItem} onPress={() => setShowEditModal(false)}
                   >
                     <Text style={[styles.cancelBtnText, { color: colors.textSecondary }]}>Cancel</Text>
                   </Pressable>
                   <Pressable
-                    style={[styles.submitBtn, { backgroundColor: colors.primary }]}
+                    style={[styles.submitBtn, { backgroundColor: colors.primaryFill }]}
                     accessibilityRole="button"
                     accessibilityLabel="Save task status"
                     onPress={handleSaveItem}

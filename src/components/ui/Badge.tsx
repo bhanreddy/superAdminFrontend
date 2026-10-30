@@ -9,57 +9,72 @@ interface BadgeProps {
   dot?: boolean;
 }
 
-export const Badge: React.FC<BadgeProps> = React.memo(({ label, variant = 'primary', size = 'sm', dot = false }) => {
-  const { colors, isDark } = useTheme();
+export const Badge: React.FC<BadgeProps> = React.memo(
+  ({ label, variant = 'primary', size = 'sm', dot = false }) => {
+    const { colors, isDark } = useTheme();
 
-  const getColors = () => {
-    switch (variant) {
-      case 'success':
-        return { bg: colors.successDim, text: colors.success, dot: colors.success };
-      case 'warning':
-        return { bg: colors.warningDim, text: colors.warning, dot: colors.warning };
-      case 'error':
-        return { bg: colors.errorDim, text: colors.error, dot: colors.error };
-      case 'info':
-        return { bg: colors.infoDim, text: colors.info, dot: colors.info };
-      case 'primary':
-      default:
-        return { bg: colors.primaryDim, text: colors.primary, dot: colors.primary };
-    }
-  };
+    const getColors = () => {
+      switch (variant) {
+        case 'success':
+          return {
+            bg: colors.successDim,
+            text: colors.success,
+            dot: colors.success,
+          };
+        case 'warning':
+          return {
+            bg: colors.warningDim,
+            text: colors.warning,
+            dot: colors.warning,
+          };
+        case 'error':
+          return { bg: colors.errorDim, text: colors.error, dot: colors.error };
+        case 'info':
+          return { bg: colors.infoDim, text: colors.info, dot: colors.info };
+        case 'primary':
+        default:
+          return {
+            bg: colors.primaryDim,
+            text: colors.primary,
+            dot: colors.primary,
+          };
+      }
+    };
 
-  const c = getColors();
-  const isSmall = size === 'sm';
+    const c = getColors();
+    const isSmall = size === 'sm';
 
-  return (
-    <View style={[
-      styles.badge,
-      {
-        backgroundColor: c.bg,
-        borderWidth: 1,
-        borderColor: `${c.text}22`,
-      },
-      isSmall ? styles.badgeSm : styles.badgeMd,
-      Platform.OS === 'web' ? {
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
-        boxShadow: isDark
-          ? 'inset 1px 1px 2px rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.2)'
-          : 'inset 1px 1px 2px rgba(255,255,255,0.5), 0 2px 4px rgba(0,0,0,0.02)',
-      } as any : {},
-    ]}>
-      {dot && (
-        <View style={styles.dotWrap}>
-          <View style={[styles.dotGlow, { backgroundColor: c.dot }]} />
-          <View style={[styles.dot, { backgroundColor: c.dot }]} />
-        </View>
-      )}
-      <Text style={[styles.text, { color: c.text }, isSmall ? styles.textSm : styles.textMd]}>
-        {label}
-      </Text>
-    </View>
-  );
-});
+    return (
+      <View
+        style={[
+          styles.badge,
+          {
+            backgroundColor: c.bg,
+            borderWidth: 1,
+            borderColor: `${c.text}22`,
+          },
+          isSmall ? styles.badgeSm : styles.badgeMd,
+        ]}
+      >
+        {dot && (
+          <View style={styles.dotWrap}>
+            <View style={[styles.dotGlow, { backgroundColor: c.dot }]} />
+            <View style={[styles.dot, { backgroundColor: c.dot }]} />
+          </View>
+        )}
+        <Text
+          style={[
+            styles.text,
+            { color: c.text },
+            isSmall ? styles.textSm : styles.textMd,
+          ]}
+        >
+          {label}
+        </Text>
+      </View>
+    );
+  },
+);
 
 const styles = StyleSheet.create({
   badge: {
@@ -100,7 +115,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
   },
   textSm: {
-    fontSize: 11,
+    fontSize: 12,
   },
   textMd: {
     fontSize: 12,

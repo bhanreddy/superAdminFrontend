@@ -14,8 +14,13 @@ const FONT_MAP = { sm: 11, md: 14, lg: 17 };
 // Generate consistent color from name
 function hashColor(name: string): string {
   const palette = [
-    '#818CF8', '#A78BFA', '#F472B6', '#FB7185', '#FB923C',
-    '#FBBF24', '#34D399', '#2DD4BF', '#22D3EE', '#60A5FA',
+    '#3155C6',
+    '#7040BB',
+    '#AC365E',
+    '#945016',
+    '#15704D',
+    '#087579',
+    '#24679E',
   ];
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
@@ -45,11 +50,18 @@ export const Avatar = React.memo(function Avatar({
 
   return (
     <View style={[styles.wrap, { width: dim, height: dim }]}>
-      <View style={[
-        styles.circle,
-        { width: dim, height: dim, borderRadius: dim / 2, backgroundColor: bg },
-        clayStyle(clayShadows.subtle),
-      ]}>
+      <View
+        style={[
+          styles.circle,
+          {
+            width: dim,
+            height: dim,
+            borderRadius: dim / 2,
+            backgroundColor: bg,
+          },
+          clayStyle(clayShadows.subtle),
+        ]}
+      >
         <Text style={[styles.initials, { fontSize }]}>{initials}</Text>
       </View>
       {online !== undefined && (

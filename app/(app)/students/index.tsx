@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState, useMemo, useRef } from 'react';
-import { View, Text, StyleSheet, Pressable, Platform, Animated, Easing, ScrollView, useWindowDimensions } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Platform,  Easing, ScrollView, useWindowDimensions } from 'react-native';
+import { Animated } from '../../../src/utils/accessibleAnimation';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import {
@@ -153,14 +154,14 @@ export default function StudentsListScreen() {
       render: (item) => {
         const name = (item as any).full_name || `${item.first_name || ''} ${item.last_name || ''}`.trim() || 'Unknown';
         const initials = name.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase();
-        
+
         // Avatar color from name hash
         const AVATAR_COLORS = [colors.primary, colors.success, colors.warning, '#C084FC', '#FB923C', '#22D3EE'];
         const colorIdx = name.charCodeAt(0) % AVATAR_COLORS.length;
         const avatarColor = AVATAR_COLORS[colorIdx];
 
         return (
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => goToStudent(item)}
             style={({ hovered }: any) => [
               st.nameCell,
@@ -289,10 +290,10 @@ export default function StudentsListScreen() {
               const active = statusFilter === filter;
               let label = filter.charAt(0).toUpperCase() + filter.slice(1);
               return (
-                <Pressable
+                <Pressable accessibilityRole="button"
                   key={filter}
                   onPress={() => setStatusFilter(filter)}
-                  style={[st.filterPill, active && { backgroundColor: colors.primary }]}
+                  style={[st.filterPill, active && { backgroundColor: colors.primaryFill }]}
                 >
                   <Text style={[st.filterText, active ? { color: '#FFF' } : { color: colors.textSecondary }]}>
                     {label}
@@ -428,7 +429,7 @@ const st = StyleSheet.create({
   nameInfo: { flex: 1, gap: 3 },
   nameLabel: { fontSize: 14, fontWeight: '600', letterSpacing: -0.15 },
   nameCode: { fontSize: 11, fontWeight: '500', textTransform: 'uppercase', letterSpacing: 0.8 },
-  
+
   /* Filter */
   filterBar: {
     flexDirection: 'row',

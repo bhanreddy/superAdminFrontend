@@ -2,8 +2,9 @@ import type { DashboardReport as apiDashboardReport } from '../../api/books';
 import React, { useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
-import { Report, money } from '../../api/books';
-import { Panel, Table, Notice, ui } from './BooksUi';
+import { Report, Account, money, message } from '../../api/books';
+import { Panel, Table, Notice, Action, ui } from './BooksUi';
+import { reportRows, saveCsv } from './export';
 export function Kpis({ report: r }: { report: apiDashboardReport }) {
   const { colors } = useTheme();
   return (
@@ -129,6 +130,7 @@ export function CashChart({ report: r }: { report: apiDashboardReport }) {
 const names = [
   'Profit & loss',
   'Balance sheet',
+  'Ledger accounts',
   'Trial balance',
   'Receivables',
   'Payables',
@@ -138,27 +140,48 @@ const names = [
 export default function ReportsView({
   report: r,
   onDocument,
+  onAccount,
+  canExport = false,
 }: {
   report: Report;
   onDocument: (id: string, kind: string) => void;
+  onAccount?: (account: Pick<Account, 'code' | 'name'>) => void;
+  canExport?: boolean;
 }) {
   const { colors } = useTheme();
   const [tab, setTab] = useState(names[0]);
   const currency = (v: unknown) => (
     <Text style={{ color: colors.textPrimary, fontSize: 13 }}>{money(v)}</Text>
   );
-  const balance = r.trial.filter((a) =>
-    ['asset', 'liability', 'equity'].includes(a.type),
-  );
+  const [exportError, setExportError] = useState('');
+  const [exporting, setExporting] = useState(false);
+  async function exportStatement() {
+    setExporting(true); setExportError('');
+    try { await saveCsv(reportRows(r, tab), `books-${tab.toLowerCase().replaceAll(' ', '-')}-${r.from}-${r.to}.csv`); }
+    catch (e) { setExportError(message(e)); }
+    finally { setExporting(false); }
+  }
+  const summary = (label: string, value: number) => <Text key={label} style={{ color: colors.textPrimary, fontSize: 15, lineHeight: 28 }}>{label}: {money(value)}</Text>;
+  const accounts = (label: string, rows: typeof r.profit_loss.income, total: number) => <Panel>
+    <Text style={[ui.title, { color: colors.textPrimary }]}>{label}</Text>
+    <Table rows={rows} onRow={onAccount ? a => onAccount(a) : undefined} columns={[
+      { key: 'code', label: 'Code', width: 90 }, { key: 'name', label: 'Account', width: 310 },
+      { key: 'amount', label: 'Amount', width: 200, render: a => currency(a.amount) },
+    ]} />{summary(`Total ${label.toLowerCase()}`, total)}
+  </Panel>;
   return (
     <>
       <Kpis report={r} />
+      <Notice text={`${r.organization_name} · ${r.from} to ${r.to} · INR · Accrual basis. Balance sheet is as of ${r.to}. Only posted journals and their dated reversals affect these statements.`} />
+      {exportError ? <Notice error text={exportError} /> : null}
+      {canExport && <Action label="Export statement" secondary disabled={exporting} onPress={() => void exportStatement()} />}
       <View style={[ui.row, { flexWrap: 'wrap' }]}>
         {names.map((n) => (
           <Pressable
             key={n}
+            accessibilityLabel={n}
             accessibilityRole="tab"
-            accessibilityState={{ selected: n === tab }}
+            accessibilityState={{ selected: n === tab }} aria-selected={n === tab}
             onPress={() => setTab(n)}
             style={{
               paddingHorizontal: 13,
@@ -180,91 +203,34 @@ export default function ReportsView({
           </Pressable>
         ))}
       </View>
-      {tab === 'Profit & loss' && (
-        <>
-          <Table
-            rows={r.trial.filter((a) => ['income', 'expense'].includes(a.type))}
-            columns={[
-              { key: 'name', label: 'Account', width: 310 },
-              { key: 'type', label: 'Type' },
-              {
-                key: 'amount',
-                label: 'Period balance',
-                width: 200,
-                render: (a) =>
-                  currency(
-                    a.type === 'income'
-                      ? Number(a.period_credit) - Number(a.period_debit)
-                      : Number(a.period_debit) - Number(a.period_credit),
-                  ),
-              },
-            ]}
-          />
-          <Panel>
-            <Text style={[ui.title, { color: colors.textPrimary }]}>
-              Net profit: {money(r.profit)}
-            </Text>
-            <Text style={{ color: colors.textSecondary }}>
-              Income {money(r.income)} · Expenses {money(r.expenses)}
-            </Text>
-          </Panel>
-        </>
-      )}
-      {tab === 'Balance sheet' && (
-        <>
-          <Table
-            rows={balance}
-            columns={[
-              { key: 'name', label: 'Account', width: 310 },
-              { key: 'type', label: 'Type' },
-              {
-                key: 'amount',
-                label: 'Closing balance',
-                width: 200,
-                render: (a) =>
-                  currency(
-                    a.type === 'asset'
-                      ? Number(a.debit) - Number(a.credit)
-                      : Number(a.credit) - Number(a.debit),
-                  ),
-              },
-            ]}
-          />
-          <Panel>
-            <Text style={{ color: colors.textPrimary, lineHeight: 25 }}>
-              Assets: {money(r.assets)}
-              {'\n'}Liabilities: {money(r.liabilities)}
-              {'\n'}Owner equity: {money(r.equity)}
-              {'\n'}Accumulated earnings: {money(r.retained)}
-            </Text>
-            <Text style={[ui.title, { color: colors.primary }]}>
-              Balance check:{' '}
-              {money(r.assets - r.liabilities - r.equity - r.retained)}
-            </Text>
-          </Panel>
-        </>
-      )}
-      {tab === 'Trial balance' && (
-        <Table
-          rows={r.trial}
-          columns={[
-            { key: 'code', label: 'Code', width: 80 },
-            { key: 'name', label: 'Account', width: 280 },
-            {
-              key: 'debit',
-              label: 'Cumulative debit',
-              width: 180,
-              render: (a) => currency(a.debit),
-            },
-            {
-              key: 'credit',
-              label: 'Cumulative credit',
-              width: 180,
-              render: (a) => currency(a.credit),
-            },
-          ]}
-        />
-      )}
+      {tab === 'Profit & loss' && <>
+        {accounts('Income', r.profit_loss.income, r.income)}
+        {accounts('Expenses', r.profit_loss.expenses, r.expenses)}
+        <Panel>{summary(r.profit < 0 ? 'Net loss' : 'Net profit', r.profit)}</Panel>
+      </>}
+      {tab === 'Balance sheet' && <>
+        {accounts('Assets', r.balance_sheet.assets, r.assets)}
+        {accounts('Liabilities', r.balance_sheet.liabilities, r.liabilities)}
+        {accounts('Owner equity', r.balance_sheet.equity, r.equity)}
+        <Panel>
+          {summary('Earnings before period', r.balance_sheet.prior_earnings)}
+          {summary('Period earnings', r.balance_sheet.period_earnings)}
+          {summary('Total equity including earnings', r.balance_sheet.total_equity)}
+          {summary('Total liabilities and equity', r.balance_sheet.liabilities_and_equity)}
+          {summary('Balance difference', r.balance_sheet.difference)}
+        </Panel>
+        <Notice error={r.balance_sheet.difference !== 0} text={r.balance_sheet.difference === 0 ? 'Balanced: assets equal liabilities plus equity.' : 'The balance sheet does not reconcile. Review the ledger before using this statement.'} />
+      </>}
+      {['Ledger accounts', 'Trial balance'].includes(tab) && <>
+        <Notice text={onAccount ? 'Select an account for its opening balance, transactions, and running balance. Balances use debit minus credit.' : 'Balances use debit minus credit. Account viewing permission is required to open ledger transactions.'} />
+        <Table rows={r.trial} onRow={onAccount} columns={[
+          { key: 'code', label: 'Code', width: 80 }, { key: 'name', label: 'Account', width: 260 },
+          { key: 'opening_balance', label: 'Opening balance', width: 170, render: a => currency(a.opening_balance) },
+          { key: 'period_debit', label: 'Period debit', width: 170, render: a => currency(a.period_debit) },
+          { key: 'period_credit', label: 'Period credit', width: 170, render: a => currency(a.period_credit) },
+          { key: 'balance', label: 'Closing balance', width: 170, render: a => currency(a.balance) },
+        ]} />
+      </>}
       {['Receivables', 'Payables'].includes(tab) && (
         <>
           <Notice
@@ -318,35 +284,21 @@ export default function ReportsView({
           />
         </>
       )}
-      {tab === 'Cash flow' && (
-        <>
-          <CashChart report={r} />
-          <Table
-            rows={r.cashflow}
-            columns={[
-              { key: 'month', label: 'Month' },
-              {
-                key: 'inflow',
-                label: 'Receipts',
-                width: 200,
-                render: (a) => currency(a.inflow),
-              },
-              {
-                key: 'outflow',
-                label: 'Payments',
-                width: 200,
-                render: (a) => currency(a.outflow),
-              },
-              {
-                key: 'net',
-                label: 'Net movement',
-                width: 200,
-                render: (a) => currency(Number(a.inflow) - Number(a.outflow)),
-              },
-            ]}
-          />
-        </>
-      )}
+      {tab === 'Cash flow' && <>
+        <Notice text="Direct method. Transfers between cash and bank accounts are excluded. Mixed activities and accounts without a classification appear under unclassified; set a cash flow activity when posting manual journals." />
+        {!r.cash_flow.classification_complete && <Notice error text="Cash flow classification needs review: unclassified journals are included in reconciliation but require accounting review." />}
+        <Panel>{summary('Opening cash and bank', r.cash_flow.opening_cash)}</Panel>
+        <Table rows={r.cash_flow.activities} columns={[
+          { key: 'activity', label: 'Activity', width: 200 },
+          { key: 'journal_count', label: 'Journals', width: 100 },
+          { key: 'inflow', label: 'Receipts', width: 180, render: a => currency(a.inflow) },
+          { key: 'outflow', label: 'Payments', width: 180, render: a => currency(a.outflow) },
+          { key: 'net', label: 'Net cash flow', width: 180, render: a => currency(a.net) },
+        ]} />
+        <Panel>{summary('Net change in cash', r.cash_flow.net_change)}{summary('Closing cash and bank', r.cash_flow.closing_cash)}{summary('Cash reconciliation difference', r.cash_flow.difference)}</Panel>
+        <Notice error={r.cash_flow.difference !== 0} text={r.cash_flow.difference === 0 ? 'Cash reconciles to the balance sheet.' : 'Cash does not reconcile. Review ledger classifications before using this statement.'} />
+        <CashChart report={r} />
+      </>}
     </>
   );
 }

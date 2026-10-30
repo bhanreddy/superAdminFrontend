@@ -49,13 +49,13 @@ export const RouteGuard: React.FC<RouteGuardProps> = ({
         style={[
           styles.deniedCard,
           {
-            backgroundColor: isDark ? 'rgba(28, 28, 40, 0.75)' : 'rgba(255, 255, 255, 0.85)',
-            borderColor: isDark ? 'rgba(255, 69, 58, 0.3)' : 'rgba(255, 69, 58, 0.2)',
+            backgroundColor: colors.card,
+            borderColor: colors.border,
           },
         ]}
       >
         <View style={styles.iconCircle}>
-          <ShieldAlert size={36} color="#FF453A" />
+          <ShieldAlert size={36} color={colors.error} />
         </View>
 
         <Text style={[styles.deniedTitle, { color: colors.textPrimary }]}>Access Restricted</Text>
@@ -66,19 +66,22 @@ export const RouteGuard: React.FC<RouteGuardProps> = ({
 
         {requiredPermission && (
           <View style={styles.permPill}>
-            <Text style={styles.permText}>Required permission: {requiredPermission}</Text>
+            <Text style={[styles.permText, { color: colors.textSecondary }]}>Required permission: {requiredPermission}</Text>
           </View>
         )}
         {!requiredPermission && anyPermissions && (
           <View style={styles.permPill}>
-            <Text style={styles.permText}>One of these permissions is required</Text>
+            <Text style={[styles.permText, { color: colors.textSecondary }]}>One of these permissions is required</Text>
           </View>
         )}
 
         <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Return to Dashboard"
           onPress={() => router.replace('/(app)/' as any)}
           style={({ pressed }) => [
             styles.backButton,
+            { backgroundColor: colors.primaryFill },
             pressed && { opacity: 0.8, transform: [{ scale: 0.98 }] },
           ]}
         >

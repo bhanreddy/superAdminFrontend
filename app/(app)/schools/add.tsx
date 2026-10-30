@@ -1,3 +1,4 @@
+import { navigateBack } from '../../../src/utils/navigation';
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, Switch, StatusBar, ActivityIndicator } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -206,7 +207,7 @@ function DirectSchoolCreateScreen() {
             <Server size={18} color={colors.primary} />
             <Text style={[styles.clusterTitle, { color: colors.textPrimary }]}>Assigned Cluster</Text>
           </View>
-          
+
           {loadingCluster ? (
             <ActivityIndicator size="small" color={colors.primary} style={{ marginTop: 8 }} />
           ) : clusterError ? (
@@ -273,7 +274,7 @@ function DirectSchoolCreateScreen() {
 
           {seedAdmin && (
             <View style={styles.adminSection}>
-              <View style={[styles.adminDivider, { backgroundColor: colors.primary }]} />
+              <View style={[styles.adminDivider, { backgroundColor: colors.primaryFill }]} />
               <Text style={[styles.adminSectionTitle, { color: colors.primary }]}>Admin Account Details</Text>
               <Input
                 label="First name"
@@ -355,7 +356,7 @@ function DirectSchoolCreateScreen() {
               variant="secondary"
               onPress={() => {
                 if (router.canGoBack()) {
-                  router.back();
+                  navigateBack(router, '/(app)/schools');
                 } else {
                   router.replace('/');
                 }

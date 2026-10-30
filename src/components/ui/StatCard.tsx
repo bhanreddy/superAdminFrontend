@@ -1,8 +1,8 @@
-import React, { useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, Animated, Pressable, Platform } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, Pressable, Platform } from 'react-native';
 import { TrendingUp, TrendingDown } from 'lucide-react-native';
-import { useTheme, clayStyle } from '../../contexts/ThemeContext';
-
+import { MetricValue } from './MetricValue';
+import { useTheme } from '../../contexts/ThemeContext';
 interface StatCardProps {
   title: string;
   value: number | string;
@@ -11,7 +11,6 @@ interface StatCardProps {
   accentColor?: string;
   onPress?: () => void;
 }
-
 export const StatCard = React.memo(function StatCard({
   title,
   value,
@@ -20,166 +19,118 @@ export const StatCard = React.memo(function StatCard({
   accentColor,
   onPress,
 }: StatCardProps) {
-  const { colors, isDark, clayShadows } = useTheme();
+  const { colors } = useTheme();
   const accent = accentColor || colors.primary;
-  const scaleAnim = useRef(new Animated.Value(1)).current;
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.timing(fadeAnim, { toValue: 1, duration: 400, useNativeDriver: true }).start();
-  }, []);
-
-  const onPressIn = () => {
-    if (onPress) {
-      Animated.spring(scaleAnim, { toValue: 0.97, tension: 300, friction: 12, useNativeDriver: true }).start();
-    }
-  };
-  const onPressOut = () => {
-    Animated.spring(scaleAnim, { toValue: 1, tension: 200, friction: 10, useNativeDriver: true }).start();
-  };
-
-  const renderCard = (hovered = false) => (
-    <Animated.View
-      style={[
-        styles.card,
-        {
-          backgroundColor: colors.card,
-          borderColor: colors.clayBorderColor,
-          opacity: fadeAnim,
-          transform: [{ scale: scaleAnim }],
-        },
-        clayStyle(hovered ? clayShadows.clayElevated : clayShadows.clay),
-        Platform.OS === 'web' ? {
-          transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-          cursor: onPress ? 'pointer' : 'default',
-          ...(hovered ? { transform: 'scale(1.02)' } : {}),
-        } as any : {},
-      ]}
-    >
-      {/* Accent top glow — soft gradient instead of hard line */}
-      <View style={[styles.accentGlow, { backgroundColor: `${accent}18` }]}>
-        <View style={[styles.accentLine, { backgroundColor: accent, opacity: 0.6 }]} />
-      </View>
-
+  const content = (
+    <>
       <View style={styles.header}>
-        <View style={[
-          styles.iconWrap,
-          {
-            backgroundColor: isDark ? `${accent}18` : `${accent}0A`,
-            borderWidth: 1,
-            borderColor: `${accent}15`,
-          },
-          Platform.OS === 'web' ? {
-            boxShadow: isDark
-              ? `inset 1.5px 1.5px 3px rgba(0,0,0,0.4), inset -1.5px -1.5px 3px rgba(255,255,255,0.05)`
-              : `inset 1.5px 1.5px 3px rgba(255,255,255,0.95), inset -2px -2px 4px ${accent}25, inset -1.5px -1.5px 3px rgba(0,0,0,0.04)`,
-          } as any : {},
-        ]}>
+        <View style={[styles.icon, { backgroundColor: `${accent}16` }]}>
           {icon}
         </View>
         {trend && (
           <View
             style={[
-              styles.trendBadge,
+              styles.trend,
               {
                 backgroundColor:
-                  trend.direction === 'up' ? colors.successDim : colors.errorDim,
+                  trend.direction === 'up'
+                    ? colors.successDim
+                    : colors.errorDim,
               },
             ]}
           >
             {trend.direction === 'up' ? (
-              <TrendingUp size={11} color={colors.success} strokeWidth={2.5} />
+              <TrendingUp size={13} color={colors.success} />
             ) : (
-              <TrendingDown size={11} color={colors.error} strokeWidth={2.5} />
+              <TrendingDown size={13} color={colors.error} />
             )}
             <Text
-              style={[
-                styles.trendText,
-                { color: trend.direction === 'up' ? colors.success : colors.error },
-              ]}
+              style={{
+                color: trend.direction === 'up' ? colors.success : colors.error,
+                fontSize: 12,
+                fontWeight: '600',
+              }}
             >
               {trend.value}
             </Text>
           </View>
         )}
       </View>
-
-      <Text style={[styles.value, { color: colors.textPrimary }]}>
-        {typeof value === 'number' ? value.toLocaleString('en-IN') : value}
+      <MetricValue
+        style={[styles.value, { color: colors.textPrimary }]}
+        value={
+          typeof value === 'number' ? value.toLocaleString('en-IN') : value
+        }
+      />
+      <Text style={[styles.title, { color: colors.textSecondary }]}>
+        {title}
       </Text>
-      <Text style={[styles.title, { color: colors.textSecondary }]}>{title}</Text>
-    </Animated.View>
+    </>
   );
-
-  if (onPress) {
-    return (
-      <Pressable onPress={onPress} onPressIn={onPressIn} onPressOut={onPressOut} style={styles.pressWrap}>
-        {({ hovered }: any) => renderCard(hovered)}
-      </Pressable>
-    );
-  }
-
-  return renderCard(false);
+  const cardStyle = [
+    styles.card,
+    {
+      backgroundColor: colors.card,
+      borderColor: colors.borderSubtle || colors.border,
+      borderTopColor: accent,
+    },
+  ];
+  return onPress ? (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`${title}: ${value}`}
+      onPress={onPress}
+      style={({ hovered, pressed }: any) => [
+        ...cardStyle,
+        hovered && { backgroundColor: colors.primaryMuted },
+        pressed && { opacity: 0.86 },
+        Platform.OS === 'web' && ({ cursor: 'pointer' } as any),
+      ]}
+    >
+      {content}
+    </Pressable>
+  ) : (
+    <View style={cardStyle}>{content}</View>
+  );
 });
-
 const styles = StyleSheet.create({
-  pressWrap: { flex: 1 },
   card: {
     flex: 1,
-    borderRadius: 22,
+    minWidth: 0,
+    borderRadius: 16,
     borderWidth: 1,
+    borderTopWidth: 3,
     padding: 20,
-    overflow: 'hidden',
-    minHeight: 148,
-  },
-  accentGlow: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 4,
-    borderTopLeftRadius: 22,
-    borderTopRightRadius: 22,
-  },
-  accentLine: {
-    height: 2,
-    borderTopLeftRadius: 22,
-    borderTopRightRadius: 22,
+    minHeight: 154,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 18,
+    gap: 8,
+    marginBottom: 16,
+    flexWrap: 'wrap',
   },
-  iconWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
+  icon: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  trendBadge: {
+  trend: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
-    paddingHorizontal: 10,
+    gap: 4,
+    paddingHorizontal: 8,
     paddingVertical: 5,
-    borderRadius: 20,
-  },
-  trendText: {
-    fontSize: 11,
-    fontWeight: '700',
+    borderRadius: 8,
   },
   value: {
     fontSize: 30,
     fontWeight: '700',
-    letterSpacing: -0.5,
-    marginBottom: 4,
+    letterSpacing: -0.8,
+    marginBottom: 6,
   },
-  title: {
-    fontSize: 14,
-    fontWeight: '500',
-    letterSpacing: 0.1,
-  },
+  title: { fontSize: 14, lineHeight: 20, fontWeight: '500' },
 });

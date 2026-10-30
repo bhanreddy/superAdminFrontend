@@ -1,0 +1,27 @@
+{
+  "captures": 438,
+  "routes": 73,
+  "viewportCounts": {
+    "desktop": 146,
+    "tablet": 146,
+    "phone": 146
+  },
+  "renderFailures": [],
+  "pageOverflow": [],
+  "unnamedVisibleButtons": [],
+  "fixtureContractGaps": [
+    "/console/backups",
+    "/console/billing",
+    "/console/crm",
+    "/console/expense-approvals",
+    "/console/expenses",
+    "/console/festival-posters",
+    "/console/payroll",
+    "/console/school-intake/101",
+    "/console/school-intake",
+    "/console/tenant-assignments",
+    "/media-qr",
+    "/microservices/dcgd",
+    "/schools/add"
+  ]
+}

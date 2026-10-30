@@ -18,7 +18,7 @@ export function AdminCard({ admin, currentAdminId, onPress, onLongPress }: Admin
   const isSelf = admin.id === currentAdminId;
 
   return (
-    <Pressable
+    <Pressable accessibilityRole="button"
       onPress={onPress}
       onLongPress={onLongPress}
       style={({ pressed }) => [...pressableWebStyles(pressed, { pressedOpacity: 0.7 })]}

@@ -651,6 +651,7 @@ test('Connect fills the app area and returning to the console restores its navig
       TopBar: () => React.createElement('TopBar'),
     },
     [path.join(frontend, 'src/contexts/ThemeContext.tsx')]: {
+      WorkspaceThemeProvider: ({ children }) => children,
       useTheme: () => ({
         colors: {},
         layout: { mobileBreakpoint: 900, topbarHeight: 60 },
@@ -776,6 +777,7 @@ test('each role can reach Connect from its navigation menu without gaining found
         Pressable: 'Pressable',
         ScrollView: 'ScrollView',
         Image: 'Image',
+        TextInput: 'TextInput',
         Platform: {
           OS: 'android',
           select: (options) => options.android ?? options.default,
@@ -792,7 +794,7 @@ test('each role can reach Connect from its navigation menu without gaining found
         },
       },
       'expo-router': {
-        useSegments: () => ['(app)'],
+        usePathname: () => '/',
         useRouter: () => ({ push: (route) => (destination = route) }),
       },
       [path.join(frontend, 'assets/logo.png')]: {},

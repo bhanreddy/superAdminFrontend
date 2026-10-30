@@ -519,7 +519,7 @@ export default function FieldFeedbackScreen() {
               <Text style={{ color: colors.textPrimary, fontWeight: '700' }}>{counts.total_reports} reports · {counts.distinct_accounts} accounts</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
                 {views.map(([key, label]) => (
-                  <Pressable key={key} accessibilityRole="button" accessibilityState={{ selected: view === key }} onPress={() => setView(key)} style={[styles.chip, { borderColor: view === key ? colors.primary : colors.glassBorder, minHeight: 44 }]}>
+                  <Pressable key={key} accessibilityRole="button" accessibilityState={{ selected: view === key }} aria-selected={view === key} onPress={() => setView(key)} style={[styles.chip, { borderColor: view === key ? colors.primary : colors.glassBorder, minHeight: 44 }]}>
                     <Text style={{ color: colors.textPrimary }}>{label}</Text>
                   </Pressable>
                 ))}
@@ -561,7 +561,7 @@ function ChipRow({
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
       {options.map(([key, label]) => (
-        <Pressable key={key || 'any'} accessibilityRole="button" accessibilityState={{ selected: value === key }} onPress={() => onChange(key)} style={[styles.chip, { borderColor: value === key ? colors.primary : colors.glassBorder }]}>
+        <Pressable key={key || 'any'} accessibilityRole="button" accessibilityState={{ selected: value === key }} aria-selected={value === key} onPress={() => onChange(key)} style={[styles.chip, { borderColor: value === key ? colors.primary : colors.glassBorder }]}>
           <Text style={{ color: colors.textPrimary }}>{label}</Text>
         </Pressable>
       ))}

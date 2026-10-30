@@ -1,3 +1,4 @@
+import type { Animated as NativeAnimated } from 'react-native';
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
@@ -7,11 +8,12 @@ import {
   Alert,
   Platform,
   Pressable,
-  Animated,
+
   ActivityIndicator,
   Modal,
   FlatList,
 } from 'react-native';
+import { Animated } from '../../../src/utils/accessibleAnimation';
 import { useLocalSearchParams } from 'expo-router';
 import * as DocumentPicker from 'expo-document-picker';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -139,7 +141,7 @@ function SchoolPicker({ schools, selectedId, onSelect, isDark }: SchoolPickerPro
   return (
     <>
       {/* Trigger */}
-      <Pressable
+      <Pressable accessibilityRole="button"
         onPress={toggle}
         style={({ pressed }) => [
           styles.pickerTrigger,
@@ -175,7 +177,7 @@ function SchoolPicker({ schools, selectedId, onSelect, isDark }: SchoolPickerPro
         animationType="fade"
         onRequestClose={() => setOpen(false)}
       >
-        <Pressable style={styles.backdrop} onPress={() => setOpen(false)}>
+        <Pressable accessibilityRole="button" style={styles.backdrop} onPress={() => setOpen(false)}>
           <View style={[styles.sheet, {
             backgroundColor: sheetBg,
             borderColor: sheetBorder,
@@ -194,7 +196,7 @@ function SchoolPicker({ schools, selectedId, onSelect, isDark }: SchoolPickerPro
               renderItem={({ item }) => {
                 const active = item.id === selectedId;
                 return (
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     onPress={() => { onSelect(item.id); setOpen(false); }}
                     style={({ pressed }) => [
                       styles.sheetItem,
@@ -309,7 +311,7 @@ export default function ImportStudentsScreen() {
   }, [importResult]);
 
   useEffect(() => {
-    let loop: Animated.CompositeAnimation | null = null;
+    let loop: NativeAnimated.CompositeAnimation | null = null;
     if (file && selectedSchoolId && !loading) {
       loop = Animated.loop(Animated.sequence([
         Animated.timing(pulseAnim, { toValue: 1.024, duration: 960, useNativeDriver: true }),
@@ -409,7 +411,7 @@ export default function ImportStudentsScreen() {
     ? { shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.45, shadowRadius: 24, elevation: 14 }
     : { shadowColor: '#5060BB', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 20, elevation: 8 };
 
-  const entry = (a: Animated.Value) => ({
+  const entry = (a: NativeAnimated.Value) => ({
     opacity: a,
     transform: [{ translateY: a.interpolate({ inputRange: [0, 1], outputRange: [26, 0] }) }],
   });
@@ -518,7 +520,7 @@ export default function ImportStudentsScreen() {
             </View>
 
             {/* Download template */}
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={handleDownloadTemplate}
               style={({ pressed }) => [
                 styles.templateBtn,
@@ -547,7 +549,7 @@ export default function ImportStudentsScreen() {
             ))}
 
             {/* Drop zone */}
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={handlePickDocument}
               style={({ pressed }) => [
                 styles.dropZone,
@@ -646,7 +648,7 @@ export default function ImportStudentsScreen() {
               backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)',
             }]} />
 
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={handleUpload}
               disabled={loading || !isReady}
               style={({ pressed }) => ({

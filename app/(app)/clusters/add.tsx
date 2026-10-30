@@ -1,3 +1,4 @@
+import { navigateBack } from '../../../src/utils/navigation';
 import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, TextInput, ScrollView, Pressable, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -85,7 +86,7 @@ export default function AddClusterScreen() {
       await invalidateClusterCache();
       await refreshClusters();
       Alert.alert('Success', 'Cluster created successfully');
-      router.back();
+      navigateBack(router, '/(app)/clusters');
     } catch (err: any) {
       Alert.alert('Error', err.message || 'Failed to create cluster.');
     } finally {
@@ -105,7 +106,7 @@ export default function AddClusterScreen() {
   return (
     <View style={themedStyles.root}>
       <View style={themedStyles.header}>
-        <Pressable style={styles.backBtn} onPress={() => router.back()}>
+        <Pressable accessibilityRole="button" style={styles.backBtn} onPress={() => navigateBack(router, '/(app)/clusters')}>
           <Text style={themedStyles.backBtnText}>←</Text>
         </Pressable>
         <Text style={themedStyles.headerTitle}>Add New Cluster</Text>
@@ -163,7 +164,7 @@ export default function AddClusterScreen() {
         <View style={[styles.testSection, { borderColor: colors.border, backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : colors.surface }]}>
           <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Connection Validation</Text>
           <Text style={[styles.sectionDesc, { color: colors.textSecondary }]}>You must successfully ping both backend URLs before saving.</Text>
-          
+
           {testResult && (
             <View style={styles.testResults}>
               <Text style={{ color: testResult.school_reachable ? colors.success : colors.error }}>
@@ -176,7 +177,7 @@ export default function AddClusterScreen() {
             </View>
           )}
 
-          <Pressable
+          <Pressable accessibilityRole="button"
             style={({ pressed }) => [styles.testBtn, { backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : '#E2E8F0' }, ...pressableWebStyles(pressed, { disabled: testing })]}
             onPress={safePressHandler(handleTestConnection)}
             disabled={testing}
@@ -259,10 +260,10 @@ export default function AddClusterScreen() {
           keyboardType="numeric"
         />
 
-        <Pressable
+        <Pressable accessibilityRole="button"
           style={({ pressed }) => [
             styles.saveBtn,
-            { backgroundColor: colors.primary },
+            { backgroundColor: colors.primaryFill },
             (!testResult?.school_reachable || !testResult?.medical_reachable || saving) && { opacity: 0.5 },
             ...pressableWebStyles(pressed)
           ]}

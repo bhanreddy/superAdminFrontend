@@ -41,7 +41,7 @@ export default function SupportInboxScreen() {
       <View style={[st.search, { backgroundColor: colors.surface, borderColor: colors.border }]}><Search size={17} color={colors.textTertiary} /><TextInput value={query} onChangeText={setQuery} placeholder="Search sender or school" placeholderTextColor={colors.textTertiary} style={[st.searchInput, { color: colors.textPrimary }]} /></View>
       {loading ? <ActivityIndicator color={colors.primary} style={{ marginTop: 40 }} /> : null}
       {!loading && filtered.map((item) => (
-        <Pressable
+        <Pressable accessibilityRole="button"
           key={item.id}
           onPress={() => router.push({ pathname: '/(app)/messenger/[id]', params: { id: item.id, school: item.school_name, user: item.user_name, channel: item.channel || 'school' } } as any)}
           style={[st.row, { backgroundColor: colors.surface, borderColor: colors.clayBorderColor }, clayStyle(clayShadows.clay)]}
@@ -53,7 +53,7 @@ export default function SupportInboxScreen() {
             <View style={[st.portalChip, { backgroundColor: `${colors.primary}12` }]}><Text style={[st.portalText, { color: colors.primary }]}>{item.portal_role.toUpperCase()} PORTAL</Text></View>
             <Text numberOfLines={1} style={[st.preview, { color: colors.textSecondary }]}>{item.last_message_preview || 'No messages yet'}</Text>
           </View>
-          {item.unread_count > 0 && <View style={[st.badge, { backgroundColor: colors.primary }]}><Text style={st.badgeText}>{item.unread_count > 99 ? '99+' : item.unread_count}</Text></View>}
+          {item.unread_count > 0 && <View style={[st.badge, { backgroundColor: colors.primaryFill }]}><Text style={st.badgeText}>{item.unread_count > 99 ? '99+' : item.unread_count}</Text></View>}
         </Pressable>
       ))}
       {!loading && !filtered.length ? <View style={st.empty}><MessageCircle size={30} color={colors.textTertiary} /><Text style={[st.emptyTitle, { color: colors.textPrimary }]}>No support conversations</Text><Text style={[st.emptySub, { color: colors.textTertiary }]}>Threads appear after a school user sends the first message.</Text></View> : null}

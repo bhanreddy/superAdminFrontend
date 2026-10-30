@@ -255,7 +255,7 @@ export default function SchoolIntakeComposerScreen() {
             {(['new', 'sent'] as const).map((item) => {
               const active = mode === item;
               return (
-                <Pressable
+                <Pressable accessibilityRole="button"
                   key={item}
                   onPress={() => setMode(item)}
                   style={({ pressed }) => [
@@ -314,7 +314,7 @@ export default function SchoolIntakeComposerScreen() {
                       {SCHOOL_BOARDS.map((board) => {
                         const active = form.board === board;
                         return (
-                          <Pressable key={board} onPress={() => setField('board', board)} style={[styles.chip, { borderColor: active ? colors.primary : colors.border, backgroundColor: active ? `${colors.primary}22` : 'transparent' }]}>
+                          <Pressable accessibilityRole="button" key={board} onPress={() => setField('board', board)} style={[styles.chip, { borderColor: active ? colors.primary : colors.border, backgroundColor: active ? `${colors.primary}22` : 'transparent' }]}>
                             <Text style={{ color: active ? colors.primary : colors.textSecondary, fontWeight: '700', fontSize: 12 }}>{board}</Text>
                           </Pressable>
                         );
@@ -354,7 +354,7 @@ export default function SchoolIntakeComposerScreen() {
                     <Text style={[styles.fieldLabel, { color: colors.textSecondary }]}>Brand color</Text>
                     <View style={styles.chips}>
                       {COLORS.map((color) => (
-                        <Pressable key={color} onPress={() => setField('primary_color', color)} style={[styles.swatch, { backgroundColor: color, borderColor: form.primary_color === color ? colors.textPrimary : 'transparent' }]} />
+                        <Pressable accessibilityRole="button" key={color} onPress={() => setField('primary_color', color)} style={[styles.swatch, { backgroundColor: color, borderColor: form.primary_color === color ? colors.textPrimary : 'transparent' }]} />
                       ))}
                     </View>
                     <Input label="Logo link" autoCapitalize="none" value={form.logo_url} onChangeText={(text) => setField('logo_url', text)} containerStyle={styles.gap} />

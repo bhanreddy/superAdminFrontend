@@ -4,19 +4,27 @@
  * then fades out and calls onFinish.
  */
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, StyleSheet, View } from 'react-native';
+import {  StyleSheet, View } from 'react-native';
+import { Animated } from '../../utils/accessibleAnimation';
 import { LinearGradient } from 'expo-linear-gradient';
 import LogoLoader from './LogoLoader';
+import { useAccessibilityPreferences } from '../../hooks/useAccessibilityPreferences';
 
 interface AppSplashProps {
   onFinish: () => void;
 }
 
 export default function AppSplash({ onFinish }: AppSplashProps) {
+  const { reducedMotion } = useAccessibilityPreferences();
   const opacity = useRef(new Animated.Value(1)).current;
   const [finished, setFinished] = useState(false);
 
   useEffect(() => {
+    if (reducedMotion) {
+      setFinished(true);
+      onFinish();
+      return;
+    }
     const timer = setTimeout(() => {
       Animated.timing(opacity, {
         toValue: 0,
@@ -38,7 +46,7 @@ export default function AppSplash({ onFinish }: AppSplashProps) {
       clearTimeout(timer);
       clearTimeout(safetyTimer);
     };
-  }, []);
+  }, [reducedMotion]);
 
   if (finished) return null;
 

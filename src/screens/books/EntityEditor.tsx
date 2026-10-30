@@ -70,6 +70,7 @@ export default function EntityEditor(p: Props) {
       code: '',
       type: 'asset',
       is_cash: false,
+      cash_flow_activity: '',
       contact_id: '',
       budget: '0',
       hourly_rate: '0',
@@ -315,6 +316,10 @@ export default function EntityEditor(p: Props) {
               ),
             )}
           </FormRow>
+          {select('cash_flow_activity', 'Cash flow activity', [
+            { value: '', label: 'Unclassified / review required' },
+            ...['operating', 'investing', 'financing'].map(value => ({ value, label: value })),
+          ])}
           <Toggle
             label="Cash / bank account"
             value={form.is_cash}
@@ -561,6 +566,7 @@ export function JournalEditor({
     date: api.today(),
     reference: '',
     notes: '',
+    cash_flow_activity: '',
     lines: [
       { account_code: '1000', debit: '', credit: '' },
       { account_code: '3000', debit: '', credit: '' },
@@ -606,6 +612,9 @@ export function JournalEditor({
           onChange={(v) => setForm((f) => ({ ...f, reference: v }))}
         />
       </FormRow>
+      <Select label="Cash flow activity" value={form.cash_flow_activity}
+        onChange={v => setForm(f => ({ ...f, cash_flow_activity: v }))}
+        options={[{ value: '', label: 'Infer from accounts' }, ...['operating', 'investing', 'financing'].map(value => ({ value, label: value }))]} />
       {form.lines.map((l, i) => (
         <FormRow key={i} style={ui.wrap}>
           <Select

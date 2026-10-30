@@ -91,7 +91,7 @@ export default function SalesPlaybookScreen() {
     try { await Linking.openURL(url); } catch { setNotice('Could not open the source. Try again when your browser is available.'); }
   };
   const pill = (label: string, active: boolean, onPress: () => void, a11y = label) => (
-    <Pressable key={label} accessibilityRole="button" accessibilityLabel={a11y} accessibilityState={{ selected: active }} onPress={onPress}
+    <Pressable key={label} accessibilityRole="button" accessibilityLabel={a11y} accessibilityState={{ selected: active }} aria-selected={active} onPress={onPress}
       style={({ pressed }) => [ui.filter, { borderColor: active ? (isDark ? '#66559C' : '#6655C9') : border, backgroundColor: active ? (isDark ? '#4B3E7D' : '#6655C9') : card.backgroundColor, opacity: pressed ? 0.7 : 1 }]}>
       <Text style={[ui.pillText, { color: active ? '#FFFFFF' : muted.color }]}>{label}</Text>
     </Pressable>
@@ -128,7 +128,7 @@ export default function SalesPlaybookScreen() {
       <View accessibilityRole="progressbar" accessibilityLabel="Visit preparation" accessibilityValue={{ min: 0, max: visitChecklist.length, now: checked.length }} style={[ui.progressTrack, { backgroundColor: tint }]}><View style={[ui.progressFill, { width: `${checked.length / visitChecklist.length * 100}%`, backgroundColor: accent }]} /></View>
       {visitChecklist.map((item, index) => {
         const done = checked.includes(index);
-        return <Pressable key={item} accessibilityRole="checkbox" accessibilityLabel={item} accessibilityState={{ checked: done }}
+        return <Pressable key={item} accessibilityRole="checkbox" accessibilityLabel={item} accessibilityState={{ checked: done }} aria-checked={done}
           onPress={() => setChecked((items) => done ? items.filter((i) => i !== index) : [...items, index])} style={ui.checkRow}>
           <View style={[ui.checkbox, { borderColor: done ? accent : border, backgroundColor: done ? tint : 'transparent' }]}>{done && <Check size={13} color={accent} />}</View>
           <Text style={[ui.small, { flex: 1, color: done ? accent : muted.color }]}>{item}</Text>
@@ -189,11 +189,11 @@ export default function SalesPlaybookScreen() {
 
         <View style={[ui.contextBar, card]}>
           <View style={ui.contextLabel}><View style={[ui.contextIcon, { backgroundColor: tint }]}><MapPin size={18} color={accent} /></View><View><Text style={[ui.eyebrow, { color: muted.color, marginBottom: 0 }]}>MAKE IT LOCAL</Text><Text style={[ui.smallBold, ink]}>Your school context</Text></View></View>
-          <View style={[ui.regionSegment, { backgroundColor: pageBackground }]}>{(['Telangana', 'Karnataka'] as const).map((item) => <Pressable key={item} accessibilityRole="button" accessibilityLabel={item} accessibilityState={{ selected: region === item }} onPress={() => setRegion(item)} style={[ui.regionOption, region === item && { backgroundColor: card.backgroundColor, borderColor: border }]}>{region === item && <View style={[ui.regionDot, { backgroundColor: accent }]} />}<Text style={[ui.smallBold, { color: region === item ? accent : muted.color }]}>{item}</Text></Pressable>)}</View>
+          <View style={[ui.regionSegment, { backgroundColor: pageBackground }]}>{(['Telangana', 'Karnataka'] as const).map((item) => <Pressable key={item} accessibilityRole="button" accessibilityLabel={item} accessibilityState={{ selected: region === item }} aria-selected={region === item} onPress={() => setRegion(item)} style={[ui.regionOption, region === item && { backgroundColor: card.backgroundColor, borderColor: border }]}>{region === item && <View style={[ui.regionDot, { backgroundColor: accent }]} />}<Text style={[ui.smallBold, { color: region === item ? accent : muted.color }]}>{item}</Text></Pressable>)}</View>
           {!compact && <View style={ui.contextLanguage}><Text style={[ui.small, muted]}>{local.language} + the school’s preferred languages</Text><Text style={[ui.caption, { color: accent }]}>Built around the school. Never a stereotype.</Text></View>}
         </View>
         <ScrollView onLayout={(event) => { navigationTop.current = event.nativeEvent.layout.y; }} horizontal showsHorizontalScrollIndicator={false} style={[ui.tabShell, card]} contentContainerStyle={ui.tabBar}>
-          {tabs.map(({ label, icon: Icon, detail }) => <Pressable key={label} accessibilityRole="tab" accessibilityLabel={label} accessibilityState={{ selected: tab === label }} onPress={() => switchTab(label)}
+          {tabs.map(({ label, icon: Icon, detail }) => <Pressable key={label} accessibilityRole="tab" accessibilityLabel={label} accessibilityState={{ selected: tab === label }} aria-selected={tab === label} onPress={() => switchTab(label)}
             style={({ pressed }) => [ui.tab, { backgroundColor: tab === label ? tint : 'transparent', borderColor: tab === label ? (isDark ? '#4A3F6C' : '#E2DCF6') : 'transparent', opacity: pressed ? 0.75 : 1 }]}>
             <View style={[ui.tabIcon, { backgroundColor: tab === label ? (isDark ? '#4B3E7D' : '#6655C9') : pageBackground }]}><Icon size={18} color={tab === label ? '#FFFFFF' : muted.color} /></View>
             <View style={{ gap: 2 }}><View style={ui.brandRow}><Text style={[ui.tabText, { color: tab === label ? accent : ink.color }]}>{label}</Text>{label === 'Objection lab' && <Text style={[ui.tabCount, { backgroundColor: isDark ? '#393146' : '#EAE6F5', color: accent }]}>{fieldObjections.length}</Text>}</View>{!compact && <Text style={[ui.caption, muted]}>{detail}</Text>}</View>
@@ -261,7 +261,7 @@ export default function SalesPlaybookScreen() {
                   setJumpTarget({ y: chapterTop.current + event.nativeEvent.layout.y + 24 });
                 }
               }} style={[ui.chapter, card, open && { borderColor: accent }]}>
-                <Pressable accessibilityRole="button" accessibilityLabel={item.title} accessibilityState={{ expanded: open }} onPress={() => setSelected(open ? null : item.id)} style={ui.chapterHeader}>
+                <Pressable accessibilityRole="button" accessibilityLabel={item.title} accessibilityState={{ expanded: open }} aria-expanded={open} onPress={() => setSelected(open ? null : item.id)} style={ui.chapterHeader}>
                   <View style={[ui.number, { backgroundColor: tint }]}><Text style={[ui.smallBold, { color: accent }]}>{String(index + 1).padStart(2, '0')}</Text></View>
                   <View style={{ flex: 1, gap: 4 }}><Text style={[ui.sectionTitle, ink, { fontSize: 16 }]}>{item.title}</Text><Text style={[ui.small, muted]}>{item.summary}</Text><View style={[ui.filters, { alignItems: 'center' }]}><Text style={[ui.chapterTag, { color: accent, backgroundColor: tint }]}>{item.audience}</Text><Text style={[ui.caption, muted]}>{Math.max(1, Math.ceil(item.sections.reduce((words, section) => words + `${section.body} ${(section.prompts || []).join(' ')}`.split(/\s+/).length, 0) / 180))} min read</Text></View></View>
                   <View style={[ui.expandIcon, { backgroundColor: open ? tint : pageBackground }]}>{open ? <ChevronDown size={17} color={accent} /> : <ChevronRight size={17} color={muted.color} />}</View>
@@ -279,7 +279,7 @@ export default function SalesPlaybookScreen() {
         {tab === 'Buyer psychology' && <>
           <View style={ui.sectionHeading}><View style={{ flex: 1 }}><Text style={[ui.sectionTitle, ink]}>Understand the decision behind the decision.</Text><Text style={[ui.body, muted]}>Four research-informed lenses. Practical language for your next school meeting.</Text></View><Brain size={25} color={accent} /></View>
           <View style={[ui.columns, !wide && { flexDirection: 'column' }]}>
-            {choiceRail(psychologyPrinciples.map((item, index) => <Pressable key={item.id} accessibilityRole="button" accessibilityLabel={item.title} accessibilityState={{ selected: principleId === item.id }} onPress={() => setPrincipleId(item.id)} style={[ui.principleCard, card, !wide && { width: 250 }, principleId === item.id && { borderColor: accent, backgroundColor: tint }]}><Text style={[ui.caption, { color: accent }]}>0{index + 1} / {item.stage.toUpperCase()}</Text><Text style={[ui.smallBold, ink]}>{item.title}</Text><Text style={[ui.small, muted]}>{item.concept}</Text></Pressable>))}
+            {choiceRail(psychologyPrinciples.map((item, index) => <Pressable key={item.id} accessibilityRole="button" accessibilityLabel={item.title} accessibilityState={{ selected: principleId === item.id }} aria-selected={principleId === item.id} onPress={() => setPrincipleId(item.id)} style={[ui.principleCard, card, !wide && { width: 250 }, principleId === item.id && { borderColor: accent, backgroundColor: tint }]}><Text style={[ui.caption, { color: accent }]}>0{index + 1} / {item.stage.toUpperCase()}</Text><Text style={[ui.smallBold, ink]}>{item.title}</Text><Text style={[ui.small, muted]}>{item.concept}</Text></Pressable>))}
             <View style={[ui.panel, card, { flex: 1 }]}>
               <Text style={[ui.eyebrow, { color: accent }]}>{principle.stage.toUpperCase()}</Text><Text style={[ui.title, ink, { fontSize: 28 }]}>{principle.title}</Text><Text style={[ui.smallBold, { color: accent }]}>{principle.concept}</Text><Text style={[ui.body, muted]}>{principle.explanation}</Text>
               <Text style={[ui.smallBold, ink]}>Listen for this</Text><Text style={[ui.body, muted]}>{principle.signal}</Text>
@@ -295,7 +295,7 @@ export default function SalesPlaybookScreen() {
         {tab === 'Objection lab' && <>
           <View style={ui.sectionHeading}><View style={{ flex: 1 }}><Text style={[ui.sectionTitle, ink]}>A concern is a question worth understanding.</Text><Text style={[ui.body, muted]}>Acknowledge → Ask → Prove → Advance. Rehearse the response; keep the conversation natural.</Text></View><MessageSquare size={24} color={accent} /></View>
           <View style={[ui.columns, !wide && { flexDirection: 'column' }]}>
-            {choiceRail(fieldObjections.map((item) => <Pressable key={item.id} accessibilityRole="button" accessibilityLabel={item.title} accessibilityState={{ selected: objection.id === item.id }} onPress={() => setObjectionId(item.id)} style={[ui.principleCard, card, !wide && { width: 250 }, objection.id === item.id && { borderColor: accent, backgroundColor: tint }]}><Text style={[ui.smallBold, ink]}>{item.title}</Text><Text style={[ui.caption, muted]}>{item.tag}</Text></Pressable>))}
+            {choiceRail(fieldObjections.map((item) => <Pressable key={item.id} accessibilityRole="button" accessibilityLabel={item.title} accessibilityState={{ selected: objection.id === item.id }} aria-selected={objection.id === item.id} onPress={() => setObjectionId(item.id)} style={[ui.principleCard, card, !wide && { width: 250 }, objection.id === item.id && { borderColor: accent, backgroundColor: tint }]}><Text style={[ui.smallBold, ink]}>{item.title}</Text><Text style={[ui.caption, muted]}>{item.tag}</Text></Pressable>))}
             <View style={[ui.panel, card, { flex: 1 }]}>
               <Text style={[ui.eyebrow, { color: accent }]}>{objection.tag.toUpperCase()}</Text><Text style={[ui.title, ink, { fontSize: 27 }]}>{objection.title}</Text>
               {([['01', 'Acknowledge', objection.acknowledge], ['02', 'Ask', objection.ask], ['03', 'Prove', objection.prove], ['04', 'Advance', objection.advance]]).map(([number, label, value]) => <View key={label} style={ui.objectionStep}><View style={[ui.number, { backgroundColor: tint }]}><Text style={[ui.smallBold, { color: accent }]}>{number}</Text></View><View style={{ flex: 1, gap: 7 }}><Text style={[ui.smallBold, ink]}>{label}</Text><Text selectable style={[ui.body, muted]}>{value}</Text></View></View>)}

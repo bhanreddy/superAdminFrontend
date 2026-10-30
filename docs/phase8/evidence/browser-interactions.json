@@ -1,0 +1,371 @@
+[
+  {
+    "check": "Books tab",
+    "name": "Dashboard",
+    "headings": [
+      "Dashboard"
+    ],
+    "renderFailure": false,
+    "fixtureError": false
+  },
+  {
+    "check": "Books tab",
+    "name": "Customers",
+    "headings": [
+      "Customers"
+    ],
+    "renderFailure": false,
+    "fixtureError": false
+  },
+  {
+    "check": "Books tab",
+    "name": "Vendors",
+    "headings": [
+      "Vendors"
+    ],
+    "renderFailure": false,
+    "fixtureError": false
+  },
+  {
+    "check": "Books tab",
+    "name": "Items & inventory",
+    "headings": [
+      "Items & inventory"
+    ],
+    "renderFailure": false,
+    "fixtureError": false
+  },
+  {
+    "check": "Books tab",
+    "name": "Quotes",
+    "headings": [
+      "Quotes"
+    ],
+    "renderFailure": false,
+    "fixtureError": false
+  },
+  {
+    "check": "Books tab",
+    "name": "Sales orders",
+    "headings": [
+      "Sales orders"
+    ],
+    "renderFailure": false,
+    "fixtureError": false
+  },
+  {
+    "check": "Books tab",
+    "name": "Invoices",
+    "headings": [
+      "Invoices"
+    ],
+    "renderFailure": false,
+    "fixtureError": false
+  },
+  {
+    "check": "Books tab",
+    "name": "Delivery challans",
+    "headings": [
+      "Delivery challans"
+    ],
+    "renderFailure": false,
+    "fixtureError": false
+  },
+  {
+    "check": "Books tab",
+    "name": "Credit notes",
+    "headings": [
+      "Credit notes"
+    ],
+    "renderFailure": false,
+    "fixtureError": false
+  },
+  {
+    "check": "Books tab",
+    "name": "Purchase orders",
+    "headings": [
+      "Purchase orders"
+    ],
+    "renderFailure": false,
+    "fixtureError": false
+  },
+  {
+    "check": "Books tab",
+    "name": "Bills",
+    "headings": [
+      "Bills"
+    ],
+    "renderFailure": false,
+    "fixtureError": false
+  },
+  {
+    "check": "Books tab",
+    "name": "Expenses",
+    "headings": [
+      "Expenses"
+    ],
+    "renderFailure": false,
+    "fixtureError": false
+  },
+  {
+    "check": "Books tab",
+    "name": "Vendor credits",
+    "headings": [
+      "Vendor credits"
+    ],
+    "renderFailure": false,
+    "fixtureError": false
+  },
+  {
+    "check": "Books tab",
+    "name": "Payments",
+    "headings": [
+      "Payments"
+    ],
+    "renderFailure": false,
+    "fixtureError": false
+  },
+  {
+    "check": "Books tab",
+    "name": "Banking",
+    "headings": [
+      "Banking"
+    ],
+    "renderFailure": false,
+    "fixtureError": false
+  },
+  {
+    "check": "Books tab",
+    "name": "Chart of accounts",
+    "headings": [
+      "Chart of accounts"
+    ],
+    "renderFailure": false,
+    "fixtureError": false
+  },
+  {
+    "check": "Books tab",
+    "name": "Journals",
+    "headings": [
+      "Journals"
+    ],
+    "renderFailure": false,
+    "fixtureError": false
+  },
+  {
+    "check": "Books tab",
+    "name": "Finance connections",
+    "headings": [
+      "Finance connections"
+    ],
+    "renderFailure": false,
+    "fixtureError": false
+  },
+  {
+    "check": "Books tab",
+    "name": "Reports",
+    "headings": [
+      "Reports"
+    ],
+    "renderFailure": false,
+    "fixtureError": false
+  },
+  {
+    "check": "Books tab",
+    "name": "Projects",
+    "headings": [
+      "Projects"
+    ],
+    "renderFailure": false,
+    "fixtureError": false
+  },
+  {
+    "check": "Books tab",
+    "name": "Time tracking",
+    "headings": [
+      "Time tracking"
+    ],
+    "renderFailure": false,
+    "fixtureError": false
+  },
+  {
+    "check": "Books tab",
+    "name": "Recurring",
+    "headings": [
+      "Recurring"
+    ],
+    "renderFailure": false,
+    "fixtureError": false
+  },
+  {
+    "check": "Books tab",
+    "name": "Documents",
+    "headings": [
+      "Documents"
+    ],
+    "renderFailure": false,
+    "fixtureError": false
+  },
+  {
+    "check": "Books tab",
+    "name": "Activity log",
+    "headings": [
+      "Activity log"
+    ],
+    "renderFailure": false,
+    "fixtureError": false
+  },
+  {
+    "check": "Books tab",
+    "name": "Settings",
+    "headings": [
+      "Settings"
+    ],
+    "renderFailure": false,
+    "fixtureError": false
+  },
+  {
+    "check": "Books report tab",
+    "name": "Profit & loss",
+    "renderFailure": false
+  },
+  {
+    "check": "Books report tab",
+    "name": "Balance sheet",
+    "renderFailure": false
+  },
+  {
+    "check": "Books report tab",
+    "name": "Ledger accounts",
+    "renderFailure": false
+  },
+  {
+    "check": "Books report tab",
+    "name": "Trial balance",
+    "renderFailure": false
+  },
+  {
+    "check": "Books report tab",
+    "name": "Receivables",
+    "renderFailure": false
+  },
+  {
+    "check": "Books report tab",
+    "name": "Payables",
+    "renderFailure": false
+  },
+  {
+    "check": "Books report tab",
+    "name": "Tax summary",
+    "renderFailure": false
+  },
+  {
+    "check": "Books report tab",
+    "name": "Cash flow",
+    "renderFailure": false
+  },
+  {
+    "check": "Sign-in empty validation",
+    "pass": true
+  },
+  {
+    "check": "Keyboard focus",
+    "pass": true,
+    "observed": "Tab moved to Password; :focus-visible true, 3px blue outline."
+  },
+  {
+    "check": "Mobile navigation Escape dismiss",
+    "pass": true
+  },
+  {
+    "check": "Mobile page finder navigation",
+    "url": "http://127.0.0.1:47938/sales/training",
+    "dialogClosed": true
+  },
+  {
+    "check": "Browser back",
+    "url": "http://127.0.0.1:47938/schools",
+    "heading": [
+      "Schools"
+    ]
+  },
+  {
+    "check": "Web tab selection semantics",
+    "pass": true
+  },
+  {
+    "check": "School search empty and recovery",
+    "pass": true
+  },
+  {
+    "check": "Theme survives in-app navigation",
+    "pass": true,
+    "url": "http://127.0.0.1:47938/schools/add"
+  },
+  {
+    "check": "School row opens dynamic detail",
+    "url": "http://127.0.0.1:47938/schools/101?",
+    "pass": true
+  },
+  {
+    "check": "Production web export protected deep link",
+    "requested": "/schools/101/app-config",
+    "url": "http://127.0.0.1:47939/login",
+    "pass": true,
+    "scope": "Unauthenticated; no live service requests permitted."
+  },
+  {
+    "check": "Production Expo Router CA login link",
+    "url": "http://127.0.0.1:47939/ca-login",
+    "pass": true
+  },
+  {
+    "check": "Dashboard error retry",
+    "pass": true,
+    "scope": "Simulated persistent network failure; no false success totals."
+  },
+  {
+    "check": "Connect send failure recovery",
+    "scope": "Read-only synthetic request; no message sent externally",
+    "dom": "- generic: LOCAL QA · synthetic data · web rendering · no production requests\n- alert\n- button \"Back to console\":\n- button \"Search Connect\":\n  - generic: Search QA company\n- button \"Notifications, 0 unread\":\n- button \"Back to channels\":\n- generic: \"# general\"\n- generic: Local QA only\n- button \"Members\":\n- button \"Mark read\":\n- generic: Live updates paused. Refresh to check for messages.\n- button \"Refresh messages\":\n- generic: \"# general\"\n- generic: \"This is the very beginning of the # general channel.\"\n- generic: Local QA only\n- button \"Write the first message\":\n  - generic: Send a message\n- generic: Synthetic local QA message\n- generic: QA fixture is read only; this action did not change production data.\n- button \"Retry failed message\":\n  - generic: Retry failed message\n- textbox \"Message composer\":\n  - /placeholder: \"Message # general…\"\n- button \"Formatting options\":\n- button \"Attach a file\":\n- button \"Insert emoji\":\n- button \"Mention a colleague\":\n- button \"Send message\" [disabled]:\n- generic: Enter to send · Shift + Enter for a new line"
+  },
+  {
+    "check": "Normal accessibility preferences",
+    "observed": {
+      "reducedMotion": false,
+      "reducedTransparency": false
+    }
+  },
+  {
+    "check": "School detail tab",
+    "name": "Overview",
+    "renderFailure": false
+  },
+  {
+    "check": "School detail tab",
+    "name": "Admin",
+    "renderFailure": false
+  },
+  {
+    "check": "School detail tab",
+    "name": "System",
+    "renderFailure": false
+  },
+  {
+    "check": "CA account role screen",
+    "pass": true
+  },
+  {
+    "check": "CA school route permission guard",
+    "superseded": true,
+    "note": "Harness omitted the production AppRouteGuard wrapper; corrected before the final role check."
+  },
+  {
+    "check": "CA school route permission guard with production layout guard",
+    "pass": true
+  },
+  {
+    "check": "School build setup scoped API failure",
+    "pass": true
+  }
+]

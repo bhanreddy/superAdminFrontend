@@ -1,3 +1,4 @@
+import { navigateBack } from '../../src/utils/navigation';
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
@@ -23,11 +24,11 @@ type ContentType = 'money_science' | 'life_values' | 'science_projects';
 export default function ManageContent() {
   const { colors, isDark } = useTheme();
   const router = useRouter();
-  
+
   const [activeTab, setActiveTab] = useState<ContentType>('money_science');
   const [schools, setSchools] = useState<School[]>([]);
   const [selectedSchool, setSelectedSchool] = useState<string>('');
-  
+
   // Form States
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -80,7 +81,7 @@ export default function ManageContent() {
       Alert.alert('Error', 'Please fill required fields (Title and Description).');
       return;
     }
-    
+
     setLoading(true);
     try {
       await founderApi.createContent({
@@ -95,7 +96,7 @@ export default function ManageContent() {
         total_points: parseInt(points) || 10,
         difficulty_level: difficulty,
       });
-      
+
       Alert.alert('Success', 'Content added successfully!');
       resetForm();
     } catch (err: any) {
@@ -123,15 +124,15 @@ export default function ManageContent() {
       borderColor: isDark ? colors.border : '#CBD5E1',
       color: colors.textPrimary,
     }],
-    submitBtn: [styles.submitBtn, { backgroundColor: colors.primary }],
+    submitBtn: [styles.submitBtn, { backgroundColor: colors.primaryFill }],
   }), [colors, isDark]);
 
   return (
     <View style={themedStyles.container}>
       <View style={themedStyles.header}>
-        <Pressable
+        <Pressable accessibilityRole="button"
           style={({ pressed }) => [styles.backBtn, ...pressableWebStyles(pressed, { pressedOpacity: 0.85 })]}
-          onPress={() => router.back()}
+          onPress={() => navigateBack(router, '/(app)/')}
         >
           <Text style={themedStyles.backBtnText}>←</Text>
         </Pressable>
@@ -140,7 +141,7 @@ export default function ManageContent() {
 
       <View style={themedStyles.tabBar}>
         {(['money_science', 'life_values', 'science_projects'] as ContentType[]).map(tab => (
-          <Pressable
+          <Pressable accessibilityRole="button"
             key={tab}
             style={({ pressed }) => [
               styles.tab,
@@ -179,53 +180,53 @@ export default function ManageContent() {
         </View>
 
         <Text style={themedStyles.label}>Title</Text>
-        <TextInput 
-          style={themedStyles.input} 
-          placeholder="Title" 
-          value={title} 
-          onChangeText={setTitle} 
-          placeholderTextColor={INPUT_PLACEHOLDER_COLOR} 
+        <TextInput
+          style={themedStyles.input}
+          placeholder="Title"
+          value={title}
+          onChangeText={setTitle}
+          placeholderTextColor={INPUT_PLACEHOLDER_COLOR}
         />
 
         <Text style={themedStyles.label}>Description</Text>
-        <TextInput 
-          style={[themedStyles.input, styles.textArea]} 
-          placeholder="Short Description" 
-          value={description} 
-          onChangeText={setDescription} 
-          multiline 
-          placeholderTextColor={INPUT_PLACEHOLDER_COLOR} 
+        <TextInput
+          style={[themedStyles.input, styles.textArea]}
+          placeholder="Short Description"
+          value={description}
+          onChangeText={setDescription}
+          multiline
+          placeholderTextColor={INPUT_PLACEHOLDER_COLOR}
         />
 
         {activeTab === 'money_science' && (
           <>
             <Text style={themedStyles.label}>Age Group</Text>
-            <TextInput 
-              style={themedStyles.input} 
-              placeholder="e.g. 6-8" 
-              value={ageGroup} 
-              onChangeText={setAgeGroup} 
-              placeholderTextColor={INPUT_PLACEHOLDER_COLOR} 
+            <TextInput
+              style={themedStyles.input}
+              placeholder="e.g. 6-8"
+              value={ageGroup}
+              onChangeText={setAgeGroup}
+              placeholderTextColor={INPUT_PLACEHOLDER_COLOR}
             />
-            
+
             <Text style={themedStyles.label}>Duration (mins)</Text>
-            <TextInput 
-              style={themedStyles.input} 
-              placeholder="e.g. 15" 
-              value={duration} 
-              onChangeText={setDuration} 
-              keyboardType='numeric' 
-              placeholderTextColor={INPUT_PLACEHOLDER_COLOR} 
+            <TextInput
+              style={themedStyles.input}
+              placeholder="e.g. 15"
+              value={duration}
+              onChangeText={setDuration}
+              keyboardType='numeric'
+              placeholderTextColor={INPUT_PLACEHOLDER_COLOR}
             />
-            
+
             <Text style={themedStyles.label}>Total Points</Text>
-            <TextInput 
-              style={themedStyles.input} 
-              placeholder="e.g. 10" 
-              value={points} 
-              onChangeText={setPoints} 
-              keyboardType='numeric' 
-              placeholderTextColor={INPUT_PLACEHOLDER_COLOR} 
+            <TextInput
+              style={themedStyles.input}
+              placeholder="e.g. 10"
+              value={points}
+              onChangeText={setPoints}
+              keyboardType='numeric'
+              placeholderTextColor={INPUT_PLACEHOLDER_COLOR}
             />
           </>
         )}
@@ -233,27 +234,27 @@ export default function ManageContent() {
         <Text style={themedStyles.label}>
           {activeTab === 'science_projects' ? 'Materials (Line separated)' : 'Content Body (Markdown)'}
         </Text>
-        <TextInput 
-          style={[themedStyles.input, styles.largeArea]} 
-          placeholder="Enter detailed content..." 
-          value={contentBody} 
-          onChangeText={setContentBody} 
-          multiline 
-          placeholderTextColor={INPUT_PLACEHOLDER_COLOR} 
+        <TextInput
+          style={[themedStyles.input, styles.largeArea]}
+          placeholder="Enter detailed content..."
+          value={contentBody}
+          onChangeText={setContentBody}
+          multiline
+          placeholderTextColor={INPUT_PLACEHOLDER_COLOR}
         />
 
         <Text style={themedStyles.label}>Video / YouTube Link (Optional)</Text>
-        <TextInput 
-          style={themedStyles.input} 
-          placeholder="https://youtube.com/..." 
-          value={videoUrl} 
-          onChangeText={setVideoUrl} 
-          placeholderTextColor={INPUT_PLACEHOLDER_COLOR} 
+        <TextInput
+          style={themedStyles.input}
+          placeholder="https://youtube.com/..."
+          value={videoUrl}
+          onChangeText={setVideoUrl}
+          placeholderTextColor={INPUT_PLACEHOLDER_COLOR}
           autoCapitalize="none"
           keyboardType="url"
         />
 
-        <Pressable
+        <Pressable accessibilityRole="button"
           style={({ pressed }) => [
             themedStyles.submitBtn,
             loading && styles.disabledBtn,

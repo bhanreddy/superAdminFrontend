@@ -1,8 +1,15 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable, Platform, useWindowDimensions } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  Platform,
+  useWindowDimensions,
+} from 'react-native';
 import { ChevronLeft } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
-import { useTheme, clayStyle } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface ScreenHeaderProps {
   title: string;
@@ -22,44 +29,78 @@ export const ScreenHeader = React.memo(function ScreenHeader({
   rightAction,
 }: ScreenHeaderProps) {
   const router = useRouter();
-  const { colors, isDark, clayShadows } = useTheme();
+  const { colors } = useTheme();
   const { width: winW } = useWindowDimensions();
   const compact = winW < 420;
   const stackActions = winW < 520;
 
   return (
-    <View style={[styles.container, compact && styles.containerCompact, stackActions && styles.containerStacked]}>
-      <View style={[styles.left, { minWidth: 0 }, stackActions && styles.leftStacked]}>
+    <View
+      style={[
+        styles.container,
+        compact && styles.containerCompact,
+        stackActions && styles.containerStacked,
+      ]}
+    >
+      <View
+        style={[
+          styles.left,
+          { minWidth: 0 },
+          stackActions && styles.leftStacked,
+        ]}
+      >
         {showBack && (
           <Pressable
-            onPress={() => router.back()}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+            onPress={() => router.canGoBack() ? router.back() : router.replace('/(app)/')}
             style={({ pressed, hovered }: any) => [
               styles.backBtn,
               {
-                backgroundColor: hovered
-                  ? colors.hover
-                  : colors.clayInnerLight,
+                backgroundColor: hovered ? colors.hover : colors.clayInnerLight,
               },
-              clayStyle(clayShadows.subtle),
-              pressed && { transform: [{ scale: 0.93 }] },
-              Platform.OS === 'web' ? { cursor: 'pointer', transition: 'all 0.2s ease' } as any : {},
+
+              pressed && { opacity: 0.75 },
+              Platform.OS === 'web'
+                ? ({
+                    cursor: 'pointer',
+                    transition: 'background-color 120ms ease',
+                  } as any)
+                : {},
             ]}
             hitSlop={8}
           >
-            <ChevronLeft size={18} color={colors.textSecondary} strokeWidth={2} />
+            <ChevronLeft
+              size={18}
+              color={colors.textSecondary}
+              strokeWidth={2}
+            />
           </Pressable>
         )}
-        <View style={[styles.titleBlock, { minWidth: 0 }]}>
+        <View
+          style={[
+            styles.titleBlock,
+            { minWidth: 0, borderLeftColor: colors.primary },
+          ]}
+        >
           <Text
-            style={[styles.title, { color: colors.textPrimary }, compact && { fontSize: 21, lineHeight: 26 }]}
+            accessibilityRole="header"
+            style={[
+              styles.title,
+              { color: colors.textPrimary },
+              compact && { fontSize: 21, lineHeight: 26 },
+            ]}
             numberOfLines={2}
           >
             {title}
           </Text>
           {subtitle && (
             <Text
-              style={[styles.subtitle, { color: subtitleColor ?? colors.textTertiary }, compact && { fontSize: 13, marginTop: 3 }]}
-              numberOfLines={1}
+              style={[
+                styles.subtitle,
+                { color: subtitleColor ?? colors.textSecondary },
+                compact && { fontSize: 13, marginTop: 3 },
+              ]}
             >
               {subtitle}
             </Text>
@@ -67,7 +108,13 @@ export const ScreenHeader = React.memo(function ScreenHeader({
         </View>
       </View>
       {rightAction && (
-        <View style={[styles.right, { flexShrink: 0 }, stackActions && styles.rightStacked]}>
+        <View
+          style={[
+            styles.right,
+            { flexShrink: 0 },
+            stackActions && styles.rightStacked,
+          ]}
+        >
           {rightAction}
         </View>
       )}
@@ -102,24 +149,27 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   backBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 14,
+    width: 44,
+    height: 44,
+    borderRadius: 11,
     alignItems: 'center',
     justifyContent: 'center',
   },
   titleBlock: {
     flex: 1,
+    borderLeftWidth: 3,
+    paddingLeft: 14,
   },
   title: {
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: '700',
     letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 15,
     fontWeight: '400',
-    marginTop: 5,
+    marginTop: 7,
+    lineHeight: 22,
   },
   right: {
     flexDirection: 'row',

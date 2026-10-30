@@ -86,7 +86,7 @@ async function getQuickLocation(
 }
 
 const CHIP = ({ selected, label, onPress, color }: any) => (
-  <Pressable
+  <Pressable accessibilityRole="button"
     onPress={onPress}
     style={{
       paddingHorizontal: 14,
@@ -302,7 +302,7 @@ export default function FieldVisitDetailScreen() {
     return (
       <ConsoleAmbientBackground>
         <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 100 }}>
-          <Pressable
+          <Pressable accessibilityRole="button"
             onPress={() => router.push('/(app)/field/today' as any)}
             style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 14 }}
           >
@@ -344,7 +344,7 @@ export default function FieldVisitDetailScreen() {
               style={[styles.input, { color: colors.textPrimary, borderColor: colors.glassBorder }]}
             />
 
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={() => createSchool(false)}
               disabled={creating}
               style={[styles.primary, creating && { opacity: 0.7 }]}
@@ -390,7 +390,7 @@ export default function FieldVisitDetailScreen() {
                 placeholderTextColor="rgba(150,150,160,0.6)"
                 style={[styles.input, { color: colors.textPrimary, borderColor: colors.glassBorder }]}
               />
-              <Pressable onPress={() => createSchool(true)} style={[styles.primary, { marginTop: 10 }]}>
+              <Pressable accessibilityRole="button" onPress={() => createSchool(true)} style={[styles.primary, { marginTop: 10 }]}>
                 <Text style={styles.primaryText}>Create New Record Anyway</Text>
               </Pressable>
             </GlassCard>
@@ -407,7 +407,7 @@ export default function FieldVisitDetailScreen() {
     <ConsoleAmbientBackground>
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 160 }}>
         {/* Navigation Top */}
-        <Pressable
+        <Pressable accessibilityRole="button"
           onPress={() => router.push('/(app)/field/today' as any)}
           style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 14 }}
         >
@@ -438,7 +438,7 @@ export default function FieldVisitDetailScreen() {
             {/* Quick Actions (Call / Nav) */}
             <View style={{ flexDirection: 'row', gap: 6 }}>
               {visit?.school_phone && (
-                <Pressable
+                <Pressable accessibilityLabel="Call school" accessibilityRole="button"
                   onPress={() => Linking.openURL(`tel:${visit.school_phone}`).catch(() => {})}
                   style={[styles.quickIconBtn, { borderColor: colors.glassBorder }]}
                 >
@@ -446,7 +446,7 @@ export default function FieldVisitDetailScreen() {
                 </Pressable>
               )}
               {visit?.school_name && (
-                <Pressable
+                <Pressable accessibilityLabel="Open directions" accessibilityRole="button"
                   onPress={() =>
                     Linking.openURL(
                       `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
@@ -480,7 +480,7 @@ export default function FieldVisitDetailScreen() {
                   Arrived at the school? Tap below to record arrival GPS and begin meeting.
                 </Text>
               </View>
-              <Pressable
+              <Pressable accessibilityRole="button"
                 onPress={handleCheckInNow}
                 disabled={checkingIn}
                 style={styles.checkInNowBtn}
@@ -514,7 +514,7 @@ export default function FieldVisitDetailScreen() {
         {/* Stage Selection Pills */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginVertical: 10 }}>
           {VISIT_STAGES.map((s, i) => (
-            <Pressable
+            <Pressable accessibilityRole="button"
               key={s}
               onPress={() => setStage(i)}
               style={[
@@ -679,7 +679,7 @@ export default function FieldVisitDetailScreen() {
               </Text>
             </View>
 
-            <Pressable
+            <Pressable accessibilityRole="button"
               onPress={complete}
               disabled={completing}
               style={[styles.primary, completing && { opacity: 0.6 }]}
@@ -711,12 +711,12 @@ export default function FieldVisitDetailScreen() {
         {/* Navigation Step Buttons */}
         <View style={styles.navRow}>
           {stage > 0 && (
-            <Pressable onPress={() => setStage(stage - 1)} style={styles.ghost}>
+            <Pressable accessibilityRole="button" onPress={() => setStage(stage - 1)} style={styles.ghost}>
               <Text style={{ color: colors.primary, fontWeight: '700' }}>Back</Text>
             </Pressable>
           )}
           {stage < 7 && (
-            <Pressable onPress={() => setStage(stage + 1)} style={styles.primary}>
+            <Pressable accessibilityRole="button" onPress={() => setStage(stage + 1)} style={styles.primary}>
               <Text style={styles.primaryText}>Continue to Next Stage</Text>
             </Pressable>
           )}

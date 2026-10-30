@@ -1,3 +1,4 @@
+import { navigateBack } from '../../../../src/utils/navigation';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -14,29 +15,31 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ArrowLeft, Bell, Megaphone, ShieldAlert } from 'lucide-react-native';
 import { superAdminApi } from '../../../../src/services/apiService';
 import { School } from '../../../../src/types/school';
+import { useTheme } from '../../../../src/contexts/ThemeContext';
+import type { ThemeColors } from '../../../../src/constants/theme';
+import { EmptyState } from '../../../../src/components/ui/EmptyState';
 
 const SEMVER_RE = /^\d+\.\d+\.\d+$/;
 const REASON_PRESETS = ['Payment overdue', 'Subscription expired', 'Please contact support'];
 
-const LIGHT = {
-  background: '#F8FAFC',
-  surface: '#FFFFFF',
-  border: '#E2E8F0',
-  text: '#0F172A',
-  muted: '#64748B',
-  primary: '#4F46E5',
-  primarySoft: '#EEF2FF',
-  success: '#16A34A',
-  warning: '#D97706',
-  warningSoft: '#FFFBEB',
-  danger: '#DC2626',
-  dangerSoft: '#FEF2F2',
-};
+const palette = (colors: ThemeColors) => ({
+  background: colors.background, surface: colors.card, border: colors.border,
+  text: colors.textPrimary, muted: colors.textSecondary, primary: colors.primary,
+  primaryFill: colors.primaryFill, primarySoft: colors.primaryMuted,
+  success: colors.success, successSoft: colors.successDim,
+  warning: colors.warning, warningSoft: colors.warningDim,
+  danger: colors.error, dangerSoft: colors.errorDim,
+});
 
 export default function SchoolAppConfigScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const schoolId = Number(id);
+  const { colors } = useTheme();
+  const LIGHT = useMemo(() => palette(colors), [colors]);
+  const styles = useMemo(() => createStyles(LIGHT), [LIGHT]);
+  const [loadError, setLoadError] = useState('');
+  const [attempt, setAttempt] = useState(0);
 
   const [school, setSchool] = useState<School | null>(null);
   const [loading, setLoading] = useState(true);
@@ -48,6 +51,7 @@ export default function SchoolAppConfigScreen() {
     let mounted = true;
 
     async function loadSchool() {
+      setLoading(true); setLoadError('');
       try {
         const data = await superAdminApi.getSchool(schoolId);
         if (!mounted) return;
@@ -55,8 +59,7 @@ export default function SchoolAppConfigScreen() {
         setMinimumVersion(data.minimum_app_version || '1.0.0');
         setReason(data.payment_banner_reason || '');
       } catch (error) {
-        Alert.alert('Error', 'Failed to load school app configuration');
-        if (router.canGoBack()) router.back();
+        if (mounted) setLoadError('Could not load this school’s app configuration. Check your connection and retry.');
       } finally {
         if (mounted) setLoading(false);
       }
@@ -64,12 +67,15 @@ export default function SchoolAppConfigScreen() {
 
     if (Number.isFinite(schoolId)) {
       loadSchool();
+    } else {
+      setLoadError('This link does not contain a valid school ID.');
+      setLoading(false);
     }
 
     return () => {
       mounted = false;
     };
-  }, [router, schoolId]);
+  }, [router, schoolId, attempt]);
 
   const previewReason = useMemo(
     () => (reason.trim() || 'Payment is due. Please contact the SuperAdmin team.'),
@@ -154,7 +160,7 @@ export default function SchoolAppConfigScreen() {
     );
   }
 
-  if (!school) return null;
+  if (!school) return <EmptyState title="App configuration unavailable" description={loadError || 'No school configuration was returned.'} actionLabel="Try again" onAction={() => setAttempt(value => value + 1)} />;
 
   const forceEnabled = Boolean(school.force_update_enabled);
   const paymentEnabled = Boolean(school.payment_banner_enabled);
@@ -162,7 +168,7 @@ export default function SchoolAppConfigScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backButton}>
+        <Pressable accessibilityLabel="Go back" accessibilityRole="button" onPress={() => navigateBack(router, '/(app)/schools')} style={styles.backButton}>
           <ArrowLeft size={18} color={LIGHT.text} />
         </Pressable>
         <View style={styles.headerText}>
@@ -176,7 +182,7 @@ export default function SchoolAppConfigScreen() {
           <View style={[styles.iconWrap, { backgroundColor: LIGHT.dangerSoft }]}>
             <ShieldAlert size={20} color={LIGHT.danger} />
           </View>
-          <View style={styles.headerText}>
+          <View style={[styles.headerText, { flexBasis: 180, minWidth: 160 }]}>
             <Text style={styles.sectionTitle}>Section A - Force Update</Text>
             <Text style={styles.sectionSubtitle}>Hard pre-login gate for outdated app builds.</Text>
           </View>
@@ -192,6 +198,7 @@ export default function SchoolAppConfigScreen() {
             <ActivityIndicator color={LIGHT.primary} />
           ) : (
             <Switch
+              accessibilityLabel="Enable minimum-version gate"
               value={forceEnabled}
               onValueChange={handleForceToggle}
               trackColor={{ false: '#CBD5E1', true: '#C7D2FE' }}
@@ -203,14 +210,15 @@ export default function SchoolAppConfigScreen() {
         <Text style={styles.label}>Minimum app version</Text>
         <View style={styles.inputRow}>
           <TextInput
+            accessibilityLabel="Minimum app version"
             value={minimumVersion}
             onChangeText={setMinimumVersion}
             placeholder="1.0.0"
-            placeholderTextColor="#94A3B8"
+            placeholderTextColor={LIGHT.muted}
             autoCapitalize="none"
             style={styles.input}
           />
-          <Pressable disabled={saving === 'force'} onPress={handleSaveVersion} style={styles.saveButton}>
+          <Pressable accessibilityRole="button" disabled={saving === 'force'} onPress={handleSaveVersion} style={styles.saveButton}>
             {saving === 'force' ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.saveButtonText}>Save</Text>}
           </Pressable>
         </View>
@@ -221,7 +229,7 @@ export default function SchoolAppConfigScreen() {
           <View style={[styles.iconWrap, { backgroundColor: LIGHT.warningSoft }]}>
             <Bell size={20} color={LIGHT.warning} />
           </View>
-          <View style={styles.headerText}>
+          <View style={[styles.headerText, { flexBasis: 180, minWidth: 160 }]}>
             <Text style={styles.sectionTitle}>Section B - Payment Banner</Text>
             <Text style={styles.sectionSubtitle}>Soft notice shown only on Admin and Accounts dashboards.</Text>
           </View>
@@ -237,6 +245,7 @@ export default function SchoolAppConfigScreen() {
             <ActivityIndicator color={LIGHT.primary} />
           ) : (
             <Switch
+              accessibilityLabel="Enable payment banner"
               value={paymentEnabled}
               onValueChange={handlePaymentToggle}
               trackColor={{ false: '#CBD5E1', true: '#FDE68A' }}
@@ -248,7 +257,7 @@ export default function SchoolAppConfigScreen() {
         <Text style={styles.label}>Reason presets</Text>
         <View style={styles.presetRow}>
           {REASON_PRESETS.map((preset) => (
-            <Pressable key={preset} onPress={() => setReason(preset)} style={styles.presetButton}>
+            <Pressable accessibilityRole="button" key={preset} onPress={() => setReason(preset)} style={styles.presetButton}>
               <Text style={styles.presetText}>{preset}</Text>
             </Pressable>
           ))}
@@ -256,12 +265,13 @@ export default function SchoolAppConfigScreen() {
 
         <Text style={styles.label}>Custom reason</Text>
         <TextInput
+          accessibilityLabel="Payment banner reason"
           value={reason}
           onChangeText={(text) => {
             if (text.length <= 280) setReason(text);
           }}
           placeholder="Type a reason for the school-facing banner"
-          placeholderTextColor="#94A3B8"
+          placeholderTextColor={LIGHT.muted}
           multiline
           maxLength={280}
           style={[styles.input, styles.reasonInput]}
@@ -273,7 +283,7 @@ export default function SchoolAppConfigScreen() {
           <Text style={styles.previewText}>{previewReason}</Text>
         </View>
 
-        <Pressable disabled={saving === 'payment'} onPress={handleSaveReason} style={[styles.saveButton, styles.fullWidthButton]}>
+        <Pressable accessibilityRole="button" disabled={saving === 'payment'} onPress={handleSaveReason} style={[styles.saveButton, styles.fullWidthButton]}>
           {saving === 'payment' ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.saveButtonText}>Save Payment Banner</Text>}
         </Pressable>
       </View>
@@ -290,12 +300,15 @@ function StatusBadge({
   activeLabel: string;
   inactiveLabel: string;
 }) {
+  const { colors } = useTheme();
+  const LIGHT = useMemo(() => palette(colors), [colors]);
+  const styles = useMemo(() => createStyles(LIGHT), [LIGHT]);
   return (
     <View style={[
       styles.badge,
       active
-        ? { backgroundColor: '#ECFDF5', borderColor: '#BBF7D0' }
-        : { backgroundColor: '#F8FAFC', borderColor: LIGHT.border },
+        ? { backgroundColor: LIGHT.successSoft, borderColor: LIGHT.border }
+        : { backgroundColor: LIGHT.surface, borderColor: LIGHT.border },
     ]}>
       <View style={[styles.badgeDot, { backgroundColor: active ? LIGHT.success : LIGHT.muted }]} />
       <Text style={[styles.badgeText, { color: active ? LIGHT.success : LIGHT.muted }]}>
@@ -305,7 +318,7 @@ function StatusBadge({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (LIGHT: ReturnType<typeof palette>) => StyleSheet.create({
   center: {
     flex: 1,
     alignItems: 'center',
@@ -366,6 +379,7 @@ const styles = StyleSheet.create({
   },
   cardHeader: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'flex-start',
     gap: 12,
   },
@@ -388,6 +402,7 @@ const styles = StyleSheet.create({
     color: LIGHT.muted,
   },
   badge: {
+    marginLeft: 54,
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
@@ -413,7 +428,7 @@ const styles = StyleSheet.create({
     gap: 12,
     padding: 14,
     borderRadius: 16,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: LIGHT.background,
     borderWidth: 1,
     borderColor: LIGHT.border,
   },
@@ -440,7 +455,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 11,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: LIGHT.surface,
     color: LIGHT.text,
     fontSize: 14,
   },
@@ -456,7 +471,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 16,
-    backgroundColor: LIGHT.primary,
+    backgroundColor: LIGHT.primaryFill,
   },
   saveButtonText: {
     color: '#FFFFFF',

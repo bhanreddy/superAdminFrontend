@@ -1,3 +1,4 @@
+import { navigateBack } from '../../../../src/utils/navigation';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
   View,
@@ -171,7 +172,7 @@ function NextActionBanner({
 }) {
   return (
     <Animated.View entering={FadeInDown.delay(200).springify()}>
-      <Pressable
+      <Pressable accessibilityRole="button"
         onPress={onPress}
         style={[
           styles.nextBanner,
@@ -218,7 +219,7 @@ function CopyRow({
 }) {
   const [pressed, setPressed] = useState(false);
   return (
-    <Pressable
+    <Pressable accessibilityRole="button"
       onPressIn={() => setPressed(true)}
       onPressOut={() => setPressed(false)}
       onPress={onCopy}
@@ -290,7 +291,7 @@ export default function SetupGuideScreen() {
       if (saved) setStepState({ ...defaultStepState, ...JSON.parse(saved) });
     } catch {
       Alert.alert('Error', 'Failed to fetch setup details.');
-      router.back();
+      navigateBack(router, '/(app)/schools');
     } finally {
       setLoading(false);
     }
@@ -463,7 +464,7 @@ export default function SetupGuideScreen() {
           headerRight: () => (
             <View style={styles.headerActions}>
               <View>
-                <Pressable
+                <Pressable accessibilityLabel="More actions" accessibilityRole="button"
                   onPress={() => setMenuVisible(!menuVisible)}
                   style={[styles.iconBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
                 >
@@ -474,12 +475,12 @@ export default function SetupGuideScreen() {
                     entering={FadeIn.duration(150)}
                     style={[styles.menuDropdown, { backgroundColor: colors.surface, borderColor: colors.border }]}
                   >
-                    <Pressable style={styles.menuItem} onPress={resetChecklist}>
+                    <Pressable accessibilityRole="button" style={styles.menuItem} onPress={resetChecklist}>
                       <AlertTriangle size={14} color={colors.error} />
                       <Text style={[styles.menuItemText, { color: colors.error }]}>Reset checklist</Text>
                     </Pressable>
                     <View style={[styles.menuDivider, { backgroundColor: colors.border }]} />
-                    <Pressable
+                    <Pressable accessibilityRole="button"
                       style={styles.menuItem}
                       onPress={() => { setMenuVisible(false); initialize(); }}
                     >
@@ -712,7 +713,7 @@ export default function SetupGuideScreen() {
                   <Text style={[styles.fileChangeText, { color: colors.textSecondary }]}>
                     Generate the school package from the setup wizard, then apply the ZIP. The preview below is the live configuration, not a second template.
                   </Text>
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     style={styles.inlineCheckRow}
                     onPress={() => handleSetSteps({
                       step_configure_env: !stepState.step_configure_env,
@@ -751,7 +752,7 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key`}
                   <Text style={[styles.fileChangeText, { color: colors.textSecondary }]}>
                     Edit app.json to set the school-specific app name, slug, and bundle identifier.
                   </Text>
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     style={styles.inlineCheckRow}
                     onPress={() => handleSetSteps({
                       step_configure_appjson: !stepState.step_configure_appjson,
@@ -791,7 +792,7 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key`}
                     />
                   </View>
                   <Text style={[styles.fileChangeText, { color: colors.textSecondary }]}>Add new profile block for this school</Text>
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     style={styles.inlineCheckRow}
                     onPress={() => handleSetSteps({ step_configure_easjson: !stepState.step_configure_easjson })}
                   >
@@ -836,7 +837,7 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key`}
                     text={`After replacing google-services.json, run the setup script.\nIt will automatically verify:\n- google-services.json exists and is not the template\n- Package name in google-services.json matches android.package in app.json\n- If they don't match → script exits with exact error message telling you what to fix`}
                     colors={colors}
                   />
-                  <Pressable
+                  <Pressable accessibilityRole="button"
                     style={styles.inlineCheckRow}
                     onPress={() => handleSetSteps({ step_configure_firebase: !stepState.step_configure_firebase })}
                   >
@@ -1077,7 +1078,7 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key`}
                 />
               )}
 
-              <Pressable
+              <Pressable accessibilityRole="button"
                 style={[styles.viewDetailsBtn, { borderColor: colors.primary + '40', backgroundColor: colors.primary + '08' }]}
                 onPress={() => router.replace(`/(app)/schools/${school.id}`)}
               >

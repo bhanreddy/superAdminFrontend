@@ -1,3 +1,4 @@
+import { navigateBack } from '../../../../src/utils/navigation';
 import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, TextInput, ScrollView, Pressable, ActivityIndicator, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -16,7 +17,7 @@ export default function EditClusterScreen() {
   const { refreshClusters } = useCluster();
 
   const [loading, setLoading] = useState(true);
-  
+
   const [clusterId, setClusterId] = useState('');
   const [label, setLabel] = useState('');
   const [schoolBackendUrl, setSchoolBackendUrl] = useState('');
@@ -43,7 +44,7 @@ export default function EditClusterScreen() {
         const cluster = clusters.find(c => c.cluster_id === id);
         if (!cluster) {
           Alert.alert('Error', 'Cluster not found');
-          router.back();
+          navigateBack(router, '/(app)/clusters');
           return;
         }
 
@@ -97,7 +98,7 @@ export default function EditClusterScreen() {
       Alert.alert('Error', 'Please fill all required fields.');
       return;
     }
-    
+
     if (!canSave) {
       Alert.alert('Error', 'Please test the new connection URLs before saving.');
       return;
@@ -121,7 +122,7 @@ export default function EditClusterScreen() {
       await invalidateClusterCache();
       await refreshClusters();
       Alert.alert('Success', 'Cluster updated successfully');
-      router.back();
+      navigateBack(router, '/(app)/clusters');
     } catch (err: any) {
       Alert.alert('Error', err.message || 'Failed to update cluster.');
     } finally {
@@ -150,7 +151,7 @@ export default function EditClusterScreen() {
   return (
     <View style={themedStyles.root}>
       <View style={themedStyles.header}>
-        <Pressable style={styles.backBtn} onPress={() => router.back()}>
+        <Pressable accessibilityRole="button" style={styles.backBtn} onPress={() => navigateBack(router, '/(app)/clusters')}>
           <Text style={themedStyles.backBtnText}>←</Text>
         </Pressable>
         <Text style={themedStyles.headerTitle}>Edit Cluster</Text>
@@ -207,7 +208,7 @@ export default function EditClusterScreen() {
           <View style={[styles.testSection, { borderColor: colors.border, backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : colors.surface }]}>
             <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Connection Validation</Text>
             <Text style={[styles.sectionDesc, { color: colors.textSecondary }]}>URLs have changed. You must successfully ping both backend URLs before saving.</Text>
-            
+
             {testResult && (
               <View style={styles.testResults}>
                 <Text style={{ color: testResult.school_reachable ? colors.success : colors.error }}>
@@ -220,7 +221,7 @@ export default function EditClusterScreen() {
               </View>
             )}
 
-            <Pressable
+            <Pressable accessibilityRole="button"
               style={({ pressed }) => [styles.testBtn, { backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : '#E2E8F0' }, ...pressableWebStyles(pressed, { disabled: testing })]}
               onPress={safePressHandler(handleTestConnection)}
               disabled={testing}
@@ -304,10 +305,10 @@ export default function EditClusterScreen() {
           keyboardType="numeric"
         />
 
-        <Pressable
+        <Pressable accessibilityRole="button"
           style={({ pressed }) => [
             styles.saveBtn,
-            { backgroundColor: colors.primary },
+            { backgroundColor: colors.primaryFill },
             (!canSave || saving) && { opacity: 0.5 },
             ...pressableWebStyles(pressed)
           ]}

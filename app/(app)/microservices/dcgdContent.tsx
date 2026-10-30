@@ -15,6 +15,7 @@ import {
 import { useLocalSearchParams } from 'expo-router';
 import { ScreenHeader } from '../../../src/components/ui/ScreenHeader';
 import { useTheme } from '../../../src/contexts/ThemeContext';
+import { EmptyState } from '../../../src/components/ui/EmptyState';
 import { superAdminApi } from '../../../src/services/apiService';
 import { pressableWebStyles } from '../../../src/utils/webPressable';
 import { useToast } from '../../../src/components/ui/Toast';
@@ -97,7 +98,7 @@ export default function DcgdContentManagerScreen() {
   };
 
   const loadAll = useCallback(async () => {
-    if (!Number.isFinite(programId) || programId <= 0) return;
+    if (!Number.isFinite(programId) || programId <= 0) { setLoading(false); return; }
     setLoading(true);
     try {
       const rows = await superAdminApi.getDcgdProgramContent(programId);
@@ -256,7 +257,7 @@ export default function DcgdContentManagerScreen() {
         showThemeToggle
       />
 
-      {loading ? (
+      {!Number.isFinite(programId) || programId <= 0 ? <EmptyState title="Choose a program" description="Open content from a program in the Microservices directory." /> : loading ? (
         <View style={styles.center}>
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
@@ -266,7 +267,7 @@ export default function DcgdContentManagerScreen() {
             <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
               {sorted.length} content item{sorted.length !== 1 ? 's' : ''}
             </Text>
-            <Pressable
+            <Pressable accessibilityRole="button"
               style={({ pressed }) => [
                 styles.addBtn,
                 { borderColor: colors.primary },
@@ -311,10 +312,10 @@ export default function DcgdContentManagerScreen() {
                 </Text>
               </View>
               <View style={styles.rowActions}>
-                <Pressable style={styles.iconBtn} onPress={() => moveItem(c.id, -1)} disabled={i === 0}>
+                <Pressable accessibilityLabel="Move up" accessibilityRole="button" style={styles.iconBtn} onPress={() => moveItem(c.id, -1)} disabled={i === 0}>
                   <ChevronUp size={22} color={i === 0 ? colors.border : colors.primary} />
                 </Pressable>
-                <Pressable
+                <Pressable accessibilityLabel="Move down" accessibilityRole="button"
                   style={styles.iconBtn}
                   onPress={() => moveItem(c.id, 1)}
                   disabled={i === sorted.length - 1}
@@ -324,13 +325,13 @@ export default function DcgdContentManagerScreen() {
                     color={i === sorted.length - 1 ? colors.border : colors.primary}
                   />
                 </Pressable>
-                <Pressable style={styles.iconBtn} onPress={() => openEdit(c)}>
+                <Pressable accessibilityLabel="Edit record" accessibilityRole="button" style={styles.iconBtn} onPress={() => openEdit(c)}>
                   <Pencil size={20} color={colors.primary} />
                 </Pressable>
-                <Pressable style={styles.iconBtn} onPress={() => toggleActive(c)}>
+                <Pressable accessibilityLabel="Toggle active status" accessibilityRole="button" style={styles.iconBtn} onPress={() => toggleActive(c)}>
                   <Power size={20} color={colors.warning} />
                 </Pressable>
-                <Pressable style={styles.iconBtn} onPress={() => deleteItem(c)}>
+                <Pressable accessibilityLabel="Delete record" accessibilityRole="button" style={styles.iconBtn} onPress={() => deleteItem(c)}>
                   <Trash2 size={20} color={colors.error} />
                 </Pressable>
               </View>
@@ -457,16 +458,16 @@ export default function DcgdContentManagerScreen() {
             </ScrollView>
 
             <View style={styles.modalActions}>
-              <Pressable
+              <Pressable accessibilityRole="button"
                 style={[styles.secondaryBtn, { borderColor: colors.border }]}
                 onPress={() => setModalOpen(false)}
               >
                 <Text style={{ color: colors.textSecondary, fontWeight: '700' }}>Cancel</Text>
               </Pressable>
-              <Pressable
+              <Pressable accessibilityRole="button"
                 style={[
                   styles.primaryBtn,
-                  { flex: 1, backgroundColor: colors.primary, opacity: saving ? 0.7 : 1 },
+                  { flex: 1, backgroundColor: colors.primaryFill, opacity: saving ? 0.7 : 1 },
                 ]}
                 onPress={saveItem}
                 disabled={saving}

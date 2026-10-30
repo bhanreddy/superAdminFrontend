@@ -219,7 +219,7 @@ export default function AdminsListScreen() {
               autoCapitalize="none"
             />
             {search.length > 0 && (
-              <Pressable
+              <Pressable accessibilityLabel="Clear search" accessibilityRole="button"
                 onPress={() => setSearch('')}
                 style={({ pressed }) => [st.compactClear, { opacity: pressed ? 0.7 : 1 }]}
                 hitSlop={8}
@@ -240,7 +240,7 @@ export default function AdminsListScreen() {
               <Text style={[st.filterText, { color: colors.primary }]}>
                 {filteredAdmins.length} {filteredAdmins.length === 1 ? 'match' : 'matches'}
               </Text>
-              <Pressable onPress={() => setSearch('')}>
+              <Pressable accessibilityRole="button" onPress={() => setSearch('')}>
                 <Text style={{ color: colors.textSecondary, fontSize: 13, fontWeight: '600' }}>Clear</Text>
               </Pressable>
             </View>

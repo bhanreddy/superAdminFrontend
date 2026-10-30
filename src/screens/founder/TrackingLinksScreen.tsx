@@ -155,7 +155,7 @@ export default function TrackingLinksScreen() {
                   </Pressable>
                 ))}
               </View>
-              <Pressable accessibilityRole="button" accessibilityLabel="Create tracking link" onPress={create} style={[styles.primary, { backgroundColor: colors.primary, opacity: reduceMotion ? 1 : undefined }]}>
+              <Pressable accessibilityRole="button" accessibilityLabel="Create tracking link" onPress={create} style={[styles.primary, { backgroundColor: colors.primaryFill, opacity: reduceMotion ? 1 : undefined }]}>
                 <Text style={styles.primaryText}>Create link</Text>
               </Pressable>
             </GlassCard>
