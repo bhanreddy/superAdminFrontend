@@ -2,67 +2,67 @@
 export const workspaceModules = {
   overview: {
     label: 'Overview',
-    light: '#3155C6',
-    dark: '#A8BAFF',
-    fill: '#3155C6',
-    tint: '#EEF2FF',
-    night: '#1B2848',
+    light: '#2455C6',
+    dark: '#A8C2FF',
+    fill: '#2455C6',
+    tint: '#EDF2FA',
+    night: '#21314B',
   },
   schools: {
     label: 'Schools & operations',
-    light: '#087579',
-    dark: '#75DAD6',
-    fill: '#086D71',
-    tint: '#E8F6F4',
-    night: '#133337',
+    light: '#2455C6',
+    dark: '#A8C2FF',
+    fill: '#2455C6',
+    tint: '#EDF2FC',
+    night: '#21314B',
   },
   finance: {
     label: 'Finance',
-    light: '#15704D',
-    dark: '#7DDCB1',
-    fill: '#126546',
-    tint: '#EAF6EF',
-    night: '#16372E',
+    light: '#187154',
+    dark: '#8AD9B5',
+    fill: '#187154',
+    tint: '#EAF5EE',
+    night: '#183B32',
   },
   connect: {
     label: 'Collaboration',
-    light: '#7040BB',
-    dark: '#CAB0FF',
-    fill: '#7040BB',
-    tint: '#F3EEFC',
-    night: '#302345',
+    light: '#5A4C97',
+    dark: '#C2B6EB',
+    fill: '#5A4C97',
+    tint: '#F1EEF8',
+    night: '#302A45',
   },
   sales: {
     label: 'Sales & growth',
-    light: '#9B5215',
-    dark: '#F4C184',
-    fill: '#945016',
-    tint: '#FCF2E6',
-    night: '#392C20',
+    light: '#8A5E16',
+    dark: '#EBCD89',
+    fill: '#8A5E16',
+    tint: '#FFF5DC',
+    night: '#3C3223',
   },
   team: {
     label: 'People & teams',
-    light: '#AC365E',
-    dark: '#F2ABC5',
-    fill: '#AC365E',
-    tint: '#FBEFF4',
-    night: '#3C2639',
+    light: '#5C568F',
+    dark: '#C5BDEB',
+    fill: '#5C568F',
+    tint: '#F1EFF8',
+    night: '#302B45',
   },
   content: {
     label: 'Content studio',
-    light: '#6544B7',
-    dark: '#C4B2F9',
-    fill: '#6544B7',
-    tint: '#F2EEFC',
-    night: '#2B2744',
+    light: '#5A4C97',
+    dark: '#C2B6EB',
+    fill: '#5A4C97',
+    tint: '#F1EEF8',
+    night: '#302A45',
   },
   support: {
     label: 'Service & support',
-    light: '#24679E',
-    dark: '#95CBF7',
-    fill: '#24679E',
-    tint: '#EDF5FC',
-    night: '#1B3045',
+    light: '#226D80',
+    dark: '#9FD5E1',
+    fill: '#226D80',
+    tint: '#EDF6F8',
+    night: '#213B43',
   },
   system: {
     label: 'Administration',
@@ -162,7 +162,7 @@ export function getWorkspaceModule(path: string): WorkspaceModule {
 /** Prefer the deepest visible navigation item; root must never match every page. */
 export function activeWorkspaceRoute(
   path: string,
-  routes: string[],
+  routes: string[]
 ): string | undefined {
   const current = normalizeWorkspacePath(path);
   return routes
@@ -175,6 +175,6 @@ export function activeWorkspaceRoute(
     })
     .sort(
       (a, b) =>
-        normalizeWorkspacePath(b).length - normalizeWorkspacePath(a).length,
+        normalizeWorkspacePath(b).length - normalizeWorkspacePath(a).length
     )[0];
 }

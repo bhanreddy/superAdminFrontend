@@ -12,10 +12,18 @@ import {
 } from 'lucide-react-native';
 import { COMMAND_CENTER } from '../../constants/commandCenterTheme';
 
-export type AlertType = 'error' | 'locked' | 'session_expired' | 'network' | 'warning' | 'success' | 'info';
+export type AlertType =
+  | 'error'
+  | 'locked'
+  | 'session_expired'
+  | 'network'
+  | 'warning'
+  | 'success'
+  | 'info';
 
 export interface CommandCenterAlertProps {
   type?: AlertType;
+  appearance?: 'dark' | 'light';
   title?: string;
   message: string;
   onDismiss?: () => void;
@@ -24,12 +32,19 @@ export interface CommandCenterAlertProps {
 
 export const CommandCenterAlert: React.FC<CommandCenterAlertProps> = ({
   type = 'error',
+  appearance = 'dark',
   title,
   message,
   onDismiss,
   onRetry,
 }) => {
-  const getAlertConfig = () => {
+  const getAlertConfig = (): {
+    icon: React.ReactElement;
+    bgColor: string;
+    borderColor: string;
+    textColor: string;
+    defaultTitle: string;
+  } => {
     switch (type) {
       case 'locked':
         return {
@@ -57,7 +72,9 @@ export const CommandCenterAlert: React.FC<CommandCenterAlertProps> = ({
         };
       case 'warning':
         return {
-          icon: <AlertTriangle size={18} color={COMMAND_CENTER.statusWarning} />,
+          icon: (
+            <AlertTriangle size={18} color={COMMAND_CENTER.statusWarning} />
+          ),
           bgColor: COMMAND_CENTER.statusWarningBg,
           borderColor: COMMAND_CENTER.statusWarningBorder,
           textColor: COMMAND_CENTER.statusWarning,
@@ -92,7 +109,16 @@ export const CommandCenterAlert: React.FC<CommandCenterAlertProps> = ({
   };
 
   const config = getAlertConfig();
-  const displayTitle = title || (type !== 'error' ? config.defaultTitle : undefined);
+  if (appearance === 'light') {
+    const warning = ['warning', 'network', 'session_expired'].includes(type);
+    const positive = ['success', 'info'].includes(type);
+    config.textColor = positive ? '#2B593D' : warning ? '#805316' : '#A33328';
+    config.bgColor = positive ? '#EDF4EA' : warning ? '#FCF3DF' : '#FCF0EC';
+    config.borderColor = positive ? '#C5D9BC' : warning ? '#E3CFA3' : '#E8C5BC';
+    config.icon = React.cloneElement(config.icon, { color: config.textColor });
+  }
+  const displayTitle =
+    title || (type !== 'error' ? config.defaultTitle : undefined);
 
   return (
     <View
@@ -110,16 +136,28 @@ export const CommandCenterAlert: React.FC<CommandCenterAlertProps> = ({
 
       <View style={styles.contentBox}>
         {displayTitle && (
-          <Text style={[styles.title, { color: config.textColor }]}>{displayTitle}</Text>
+          <Text style={[styles.title, { color: config.textColor }]}>
+            {displayTitle}
+          </Text>
         )}
-        <Text style={styles.message}>{message}</Text>
+        <Text
+          style={[
+            styles.message,
+            appearance === 'light' && { color: '#5B6556' },
+          ]}
+        >
+          {message}
+        </Text>
 
         {onRetry && (
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Retry connection"
             onPress={onRetry}
-            style={({ pressed }) => [styles.retryButton, pressed && { opacity: 0.7 }]}
+            style={({ pressed }) => [
+              styles.retryButton,
+              pressed && { opacity: 0.7 },
+            ]}
           >
             <RefreshCw size={12} color={COMMAND_CENTER.cobaltPrimary} />
             <Text style={styles.retryText}>Retry Connection</Text>
@@ -132,7 +170,10 @@ export const CommandCenterAlert: React.FC<CommandCenterAlertProps> = ({
           accessibilityRole="button"
           accessibilityLabel="Dismiss alert"
           onPress={onDismiss}
-          style={({ pressed }) => [styles.dismissButton, pressed && { opacity: 0.7 }]}
+          style={({ pressed }) => [
+            styles.dismissButton,
+            pressed && { opacity: 0.7 },
+          ]}
         >
           <X size={15} color={COMMAND_CENTER.textTertiary} />
         </Pressable>

@@ -55,11 +55,7 @@ import {
   isSupportRole,
 } from '../../constants/rbac';
 
-import {
-  activeWorkspaceRoute,
-  getWorkspaceModule,
-  workspaceModules,
-} from '../../constants/workspaceDesign';
+import { activeWorkspaceRoute } from '../../constants/workspaceDesign';
 
 // ─── Nav Item Types ─────────────────────────────────────────────────────────
 interface NavItem {
@@ -83,7 +79,7 @@ function getNavGroupsForRole(
   isSales: boolean,
   isImpl: boolean,
   isSupport: boolean,
-  can: (permission: string) => boolean,
+  can: (permission: string) => boolean
 ): NavGroup[] {
   if (role === 'CA' || role === 'CA_LEAD')
     return [
@@ -813,7 +809,7 @@ export const Sidebar = React.memo(function Sidebar({
       isSales,
       isImplementation,
       isSupport,
-      can,
+      can
     );
     if (role)
       groups.splice(1, 0, {
@@ -848,7 +844,7 @@ export const Sidebar = React.memo(function Sidebar({
     return groups.map((group) => ({
       ...group,
       items: group.items.filter(
-        (item) => !item.requiresSuperAdmin || isSuperAdmin,
+        (item) => !item.requiresSuperAdmin || isSuperAdmin
       ),
     }));
   }, [
@@ -862,7 +858,7 @@ export const Sidebar = React.memo(function Sidebar({
   ]);
   const activeRoute = activeWorkspaceRoute(
     pathname,
-    navGroups.flatMap((group) => group.items.map((item) => item.route)),
+    navGroups.flatMap((group) => group.items.map((item) => item.route))
   );
   const filteredGroups = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -873,7 +869,7 @@ export const Sidebar = React.memo(function Sidebar({
         items: group.items.filter((item) =>
           (item.label + ' ' + (group.title || ''))
             .toLowerCase()
-            .includes(needle),
+            .includes(needle)
         ),
       }))
       .filter((group) => group.items.length);
@@ -883,7 +879,7 @@ export const Sidebar = React.memo(function Sidebar({
       router.push(route as any);
       onNavigate?.();
     },
-    [router, onNavigate],
+    [router, onNavigate]
   );
   return (
     <View
@@ -916,7 +912,12 @@ export const Sidebar = React.memo(function Sidebar({
         )}
       </View>
       {!collapsed && (
-        <View style={[styles.search, { borderColor: colors.sidebarBorder }]}>
+        <View
+          style={[
+            styles.search,
+            { borderColor: colors.sidebarBorder, backgroundColor: '#FFFFFF05' },
+          ]}
+        >
           <Search size={16} color={colors.sidebarTextMuted} />
           <TextInput
             accessibilityLabel="Find a page"
@@ -929,7 +930,7 @@ export const Sidebar = React.memo(function Sidebar({
               { color: colors.sidebarText },
               Platform.OS === 'web' ? ({ outlineStyle: 'none' } as any) : null,
             ]}
-            selectionColor="#A8BAFF"
+            selectionColor={colors.sidebarTextMuted}
             underlineColorAndroid="transparent"
           />
           {!!query && (
@@ -969,23 +970,23 @@ export const Sidebar = React.memo(function Sidebar({
             )}
             {group.items.map((item) => {
               const active = activeRoute === item.route;
-              const palette = workspaceModules[getWorkspaceModule(item.route)];
               return (
                 <Pressable
                   key={item.key}
                   accessibilityRole="button"
                   accessibilityLabel={item.label}
-                  accessibilityState={{ selected: active }} aria-selected={active}
+                  accessibilityState={{ selected: active }}
+                  aria-selected={active}
                   onPress={() => navigate(item.route)}
                   style={({ pressed, hovered }: any) => [
                     styles.navItem,
                     collapsed && styles.collapsedItem,
                     {
                       backgroundColor: active
-                        ? palette.fill
+                        ? colors.sidebarItemActive
                         : hovered
-                          ? colors.sidebarItemHover
-                          : 'transparent',
+                        ? colors.sidebarItemHover
+                        : 'transparent',
                       opacity: pressed ? 0.82 : 1,
                     },
                     Platform.OS === 'web'
@@ -1000,20 +1001,21 @@ export const Sidebar = React.memo(function Sidebar({
                     style={[
                       styles.iconTile,
                       {
-                        backgroundColor: active
-                          ? '#FFFFFF18'
-                          : palette.dark + '14',
+                        backgroundColor: active ? '#E1EAF9' : '#FFFFFF08',
                       },
                     ]}
                   >
-                    {item.icon(active ? '#FFFFFF' : palette.dark, 18)}
+                    {item.icon(
+                      active ? '#2455C6' : colors.sidebarTextMuted,
+                      18
+                    )}
                   </View>
                   {!collapsed && (
                     <Text
                       style={[
                         styles.navLabel,
                         {
-                          color: active ? '#FFFFFF' : colors.sidebarText,
+                          color: active ? '#14243A' : colors.sidebarText,
                           fontWeight: active ? '600' : '500',
                         },
                       ]}
@@ -1062,8 +1064,8 @@ export const Sidebar = React.memo(function Sidebar({
             onNavigate
               ? 'Close navigation'
               : collapsed
-                ? 'Expand navigation'
-                : 'Collapse navigation'
+              ? 'Expand navigation'
+              : 'Collapse navigation'
           }
           onPress={onToggle}
           style={({ hovered, pressed }: any) => [
@@ -1125,7 +1127,7 @@ const styles = StyleSheet.create({
   searchInput: {
     minWidth: 0,
     flex: 1,
-    fontSize: 16,
+    fontSize: 13,
     paddingVertical: 10,
     paddingRight: 8,
   },

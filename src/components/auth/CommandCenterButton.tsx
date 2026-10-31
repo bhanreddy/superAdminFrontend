@@ -11,11 +11,13 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ArrowRight, CheckCircle2 } from 'lucide-react-native';
+import { brandColors } from '../../constants/experienceColors';
 import { COMMAND_CENTER } from '../../constants/commandCenterTheme';
 import { safePressHandler } from '../../utils/safePressHandler';
 
 export interface CommandCenterButtonProps {
   title: string;
+  appearance?: 'dark' | 'light';
   onPress: () => void | Promise<void>;
   loading?: boolean;
   success?: boolean;
@@ -28,6 +30,7 @@ export interface CommandCenterButtonProps {
 
 export const CommandCenterButton: React.FC<CommandCenterButtonProps> = ({
   title,
+  appearance = 'dark',
   onPress,
   loading = false,
   success = false,
@@ -37,6 +40,7 @@ export const CommandCenterButton: React.FC<CommandCenterButtonProps> = ({
   leftIcon,
   rightIcon,
 }) => {
+  const isLight = appearance === 'light';
   const isBlocked = disabled || loading || success;
 
   return (
@@ -54,16 +58,24 @@ export const CommandCenterButton: React.FC<CommandCenterButtonProps> = ({
         isBlocked && styles.disabledBase,
         pressed && !isBlocked && styles.pressedBase,
         hovered && !isBlocked && styles.hoveredBase,
+        isLight && styles.lightBase,
+        isLight && isBlocked && { opacity: 0.6 },
+        isLight &&
+          hovered &&
+          !isBlocked && { backgroundColor: brandColors.blueHover },
         Platform.OS === 'web'
           ? ({
               cursor: isBlocked ? 'not-allowed' : 'pointer',
-              transition: 'transform 120ms ease, box-shadow 150ms ease, opacity 120ms ease',
-              boxShadow: isBlocked
+              transition:
+                'transform 120ms ease, box-shadow 150ms ease, opacity 120ms ease',
+              boxShadow: isLight
+                ? 'none'
+                : isBlocked
                 ? 'none'
                 : variant === 'primary'
                 ? hovered
-                  ? '0 10px 30px -4px rgba(10, 132, 255, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3)'
-                  : '0 6px 20px -4px rgba(10, 132, 255, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
+                  ? '0 6px 20px -4px rgba(45, 110, 230, 0.35)'
+                  : '0 4px 12px -4px rgba(45, 110, 230, 0.25)'
                 : 'none',
               transform: pressed && !isBlocked ? 'scale(0.99)' : 'none',
             } as any)
@@ -72,9 +84,9 @@ export const CommandCenterButton: React.FC<CommandCenterButtonProps> = ({
       ]}
     >
       {/* Primary Radiant Gradient with Specular Sheen */}
-      {variant === 'primary' && !isBlocked && (
+      {variant === 'primary' && !isBlocked && !isLight && (
         <LinearGradient
-          colors={['#1E7BFF', '#0A84FF', '#0066D6']}
+          colors={['#2E70E6', '#2B6FE6', '#2465D6']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={StyleSheet.absoluteFill}
@@ -88,13 +100,21 @@ export const CommandCenterButton: React.FC<CommandCenterButtonProps> = ({
       <View style={styles.contentRow}>
         {loading ? (
           <>
-            <ActivityIndicator size="small" color="#FFFFFF" style={{ marginRight: 8 }} />
-            <Text style={styles.buttonText}>Authenticating Terminal...</Text>
+            <ActivityIndicator
+              size="small"
+              color="#FFFFFF"
+              style={{ marginRight: 8 }}
+            />
+            <Text style={styles.buttonText}>Signing in…</Text>
           </>
         ) : success ? (
           <>
-            <CheckCircle2 size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
-            <Text style={styles.buttonText}>Access Granted</Text>
+            <CheckCircle2
+              size={18}
+              color="#FFFFFF"
+              style={{ marginRight: 8 }}
+            />
+            <Text style={styles.buttonText}>Signed in</Text>
           </>
         ) : (
           <>
@@ -123,8 +143,14 @@ export const CommandCenterButton: React.FC<CommandCenterButtonProps> = ({
 };
 
 const styles = StyleSheet.create({
-  base: {
+  lightBase: {
+    backgroundColor: brandColors.blue,
+    borderColor: brandColors.blue,
+    borderRadius: 6,
     height: 50,
+  },
+  base: {
+    height: 48,
     width: '100%',
     borderRadius: COMMAND_CENTER.radii.md,
     alignItems: 'center',
@@ -168,7 +194,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   buttonText: {
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: '600',
     color: '#FFFFFF',
     letterSpacing: 0.3,

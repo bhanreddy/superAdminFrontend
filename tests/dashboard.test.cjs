@@ -338,6 +338,14 @@ test('workspace directory searches real destinations and respects denied capabil
   act(() => search.props.onChangeText('billing'));
   assert.match(textOf(screen.root), /Client billing/);
   assert.doesNotMatch(textOf(screen.root), /Medical shops/);
+  act(() => pressable(screen.root, 'Filter Operations').props.onPress());
+  assert.match(textOf(screen.root), /No matching workspace/);
+  act(() => pressable(screen.root, 'Reset workspace filters').props.onPress());
+  assert.doesNotMatch(textOf(screen.root), /Team management/);
+  act(() => pressable(screen.root, 'Filter Finance').props.onPress());
+  assert.equal(pressable(screen.root, 'Open Schools'), undefined);
+  assert.ok(pressable(screen.root, 'Open Client billing'));
+  act(() => search.props.onChangeText('billing'));
   act(() => pressable(screen.root, 'Open Client billing').props.onPress());
   assert.equal(f.calls[0], '/(app)/console/billing');
   act(() => screen.unmount());

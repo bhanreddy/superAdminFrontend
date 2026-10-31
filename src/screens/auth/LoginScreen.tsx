@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,13 +9,9 @@ import {
   useWindowDimensions,
   ScrollView,
   Pressable,
+  TextInput,
 } from 'react-native';
-import Animated, {
-  FadeInUp,
-  FadeInDown,
-  FadeIn,
-} from 'react-native-reanimated';
-import { LinearGradient } from 'expo-linear-gradient';
+import Animated, { FadeInUp, FadeInDown } from 'react-native-reanimated';
 import {
   Shield,
   Layers,
@@ -25,20 +21,24 @@ import {
   ArrowRight,
   ShieldCheck,
   Lock,
+  ChevronDown,
 } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRouter, useLocalSearchParams, Link } from 'expo-router';
+import { useLocalSearchParams, Link } from 'expo-router';
 
-import { COMMAND_CENTER } from '../../constants/commandCenterTheme';
+import { brandColors } from '../../constants/experienceColors';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCluster } from '../../contexts/ClusterContext';
 import { authService } from '../../services/authService';
 
-import { CommandCenterOrbital } from '../../components/auth/CommandCenterOrbital';
+import { InstitutionLandscape } from '../../components/auth/InstitutionLandscape';
 import { CommandCenterInput } from '../../components/auth/CommandCenterInput';
 import { CommandCenterButton } from '../../components/auth/CommandCenterButton';
-import { CommandCenterAlert, AlertType } from '../../components/auth/CommandCenterAlert';
+import {
+  CommandCenterAlert,
+  AlertType,
+} from '../../components/auth/CommandCenterAlert';
 import { CommandCenterRecoveryModal } from '../../components/auth/CommandCenterRecoveryModal';
 import { CommandCenterMfaModal } from '../../components/auth/CommandCenterMfaModal';
 
@@ -48,24 +48,24 @@ function asErrorText(value: unknown, fallback: string): string {
   if (typeof value === 'string' && value.trim()) return value.trim();
   if (value && typeof value === 'object') {
     const obj = value as Record<string, unknown>;
-    if (typeof obj.message === 'string' && obj.message.trim()) return obj.message.trim();
-    if (typeof obj.error === 'string' && obj.error.trim()) return obj.error.trim();
+    if (typeof obj.message === 'string' && obj.message.trim())
+      return obj.message.trim();
+    if (typeof obj.error === 'string' && obj.error.trim())
+      return obj.error.trim();
   }
   return fallback;
 }
 
 export default function LoginScreen({ caMode = false }: { caMode?: boolean }) {
-  const { colors, reducedMotion } = useTheme();
+  const { reducedMotion } = useTheme();
   const { refreshSessionProfile } = useAuth();
   const { selectedCluster } = useCluster();
-  const router = useRouter();
   const params = useLocalSearchParams<{ reason?: string }>();
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
 
   // Responsive Breakpoints
   const isDesktop = windowWidth >= 1024;
-  const isTablet = windowWidth >= 768 && windowWidth < 1024;
-  const isMobile = windowWidth < 768;
+  const isCompact = windowWidth < 480;
 
   // Form State
   const [identifier, setIdentifier] = useState('');
@@ -92,18 +92,22 @@ export default function LoginScreen({ caMode = false }: { caMode?: boolean }) {
   const [mfaModalVisible, setMfaModalVisible] = useState(false);
 
   const mounted = useRef(true);
+  const passwordInput = useRef<TextInput>(null);
+  const submitting = useRef(false);
 
   // Restore remembered terminal identifier on initial load
   useEffect(() => {
     mounted.current = true;
     let active = true;
 
-    AsyncStorage.getItem(REMEMBER_KEY).then((saved) => {
-      if (active && saved && saved.trim()) {
-        setIdentifier(saved.trim());
-        setRememberTerminal(true);
-      }
-    }).catch(() => {});
+    AsyncStorage.getItem(REMEMBER_KEY)
+      .then((saved) => {
+        if (active && saved && saved.trim()) {
+          setIdentifier(saved.trim());
+          setRememberTerminal(true);
+        }
+      })
+      .catch(() => {});
 
     // Check if redirected due to expired session
     if (params?.reason === 'session_expired') {
@@ -111,7 +115,7 @@ export default function LoginScreen({ caMode = false }: { caMode?: boolean }) {
         visible: true,
         type: 'session_expired',
         title: 'Session Expired',
-        message: 'Your cryptographic session has expired or was revoked. Please authenticate again.',
+        message: 'Your session has expired. Sign in again to continue.',
       });
     }
 
@@ -129,12 +133,16 @@ export default function LoginScreen({ caMode = false }: { caMode?: boolean }) {
 
     const trimmedId = identifier.trim();
     if (!trimmedId) {
-      setIdentifierError(caMode ? 'Enter CA email or employee ID.' : 'Enter email, phone, or employee ID.');
+      setIdentifierError(
+        caMode
+          ? 'Enter CA email or employee ID.'
+          : 'Enter email, phone, or employee ID.'
+      );
       isValid = false;
     }
 
     if (!password) {
-      setPasswordError('Enter your master password.');
+      setPasswordError('Enter your password.');
       isValid = false;
     }
 
@@ -143,6 +151,7 @@ export default function LoginScreen({ caMode = false }: { caMode?: boolean }) {
 
   // Login Execution
   const handleLogin = async (overrideId?: string, overridePwd?: string) => {
+    if (submitting.current || authSuccess) return;
     const idToUse = (overrideId ?? identifier).trim();
     const pwdToUse = overridePwd ?? password;
 
@@ -152,11 +161,12 @@ export default function LoginScreen({ caMode = false }: { caMode?: boolean }) {
         visible: true,
         type: 'warning',
         title: 'Missing Required Credentials',
-        message: 'Please provide both your authorized identifier and password to continue.',
+        message: 'Enter your account identifier and password to continue.',
       });
       return;
     }
 
+    submitting.current = true;
     setLoading(true);
     setAlertState({ visible: false, type: 'error', message: '' });
 
@@ -166,22 +176,33 @@ export default function LoginScreen({ caMode = false }: { caMode?: boolean }) {
       if (!mounted.current) return;
 
       if (res.error) {
-        const errorText = asErrorText(res.error.message ?? res.error, 'Authentication failed.');
+        const errorText = asErrorText(
+          res.error.message ?? res.error,
+          'Authentication failed.'
+        );
 
         // Differentiate 403 inactive / account locked vs invalid credentials vs network
-        if (errorText.toLowerCase().includes('inactive') || errorText.toLowerCase().includes('denied') || errorText.toLowerCase().includes('locked')) {
+        if (
+          errorText.toLowerCase().includes('inactive') ||
+          errorText.toLowerCase().includes('denied') ||
+          errorText.toLowerCase().includes('locked')
+        ) {
           setAlertState({
             visible: true,
             type: 'locked',
             title: 'Access Suspended',
             message: errorText,
           });
-        } else if (errorText.toLowerCase().includes('network') || errorText.toLowerCase().includes('unreachable')) {
+        } else if (
+          errorText.toLowerCase().includes('network') ||
+          errorText.toLowerCase().includes('unreachable')
+        ) {
           setAlertState({
             visible: true,
             type: 'network',
             title: 'Cluster Unreachable',
-            message: 'Unable to establish secure handshake with the cluster gateway. Check connectivity and retry.',
+            message:
+              'Unable to establish secure handshake with the cluster gateway. Check connectivity and retry.',
           });
         } else {
           setAlertState({
@@ -210,7 +231,7 @@ export default function LoginScreen({ caMode = false }: { caMode?: boolean }) {
             visible: true,
             type: 'success',
             title: 'Credentials Verified',
-            message: 'Cryptographic handshake confirmed. Establishing session...',
+            message: 'You’re signed in. Opening your workspace…',
           });
 
           await refreshSessionProfile();
@@ -218,7 +239,8 @@ export default function LoginScreen({ caMode = false }: { caMode?: boolean }) {
       }
     } catch (err: any) {
       if (!mounted.current) return;
-      const isNetwork = err?.code === 'ERR_NETWORK' || err?.message?.includes('Network');
+      const isNetwork =
+        err?.code === 'ERR_NETWORK' || err?.message?.includes('Network');
       setAlertState({
         visible: true,
         type: isNetwork ? 'network' : 'error',
@@ -228,25 +250,37 @@ export default function LoginScreen({ caMode = false }: { caMode?: boolean }) {
           : 'An unexpected terminal error occurred during authentication. Please retry.',
       });
     } finally {
+      submitting.current = false;
       if (mounted.current) {
         setLoading(false);
       }
     }
   };
 
-  const activeClusterName = selectedCluster?.label || 'Primary Production Cluster';
-  const activeClusterId = selectedCluster?.cluster_id || 'sys-default';
+  const activeClusterName =
+    selectedCluster?.label || 'Primary Production Cluster';
+
+  const brand = (
+    <View style={styles.brandHeader}>
+      <View style={styles.brandLogoBox}>
+        <Image
+          source={require('../../../assets/logo.png')}
+          style={styles.brandLogoImage}
+          resizeMode="contain"
+          accessibilityLabel="Nexsyrus logo"
+        />
+      </View>
+      <View style={styles.brandTitleBox}>
+        <Text style={styles.brandWordmark}>NEXSYRUS</Text>
+        <Text style={styles.brandSubtitle}>
+          {isDesktop ? 'A CONNECTED WAY FORWARD' : 'SUPERADMIN COMMAND CENTRE'}
+        </Text>
+      </View>
+    </View>
+  );
 
   return (
     <View style={styles.outerCanvas}>
-      {/* Deep Obsidian Radial Background */}
-      <LinearGradient
-        colors={['#060913', '#080D1A', '#04070E']}
-        start={{ x: 0.1, y: 0 }}
-        end={{ x: 0.9, y: 1 }}
-        style={StyleSheet.absoluteFill}
-      />
-
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -255,219 +289,240 @@ export default function LoginScreen({ caMode = false }: { caMode?: boolean }) {
           contentContainerStyle={[
             styles.scrollContent,
             { minHeight: windowHeight },
-            isDesktop && styles.desktopScrollContent,
           ]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
           bounces={false}
         >
-          <View style={[styles.mainLayout, isDesktop && styles.desktopLayout]}>
-            {/* ── LEFT PANEL: NEXSYRUS COMMAND CENTRE IDENTITY ── */}
+          <View style={[styles.pageShell, isDesktop && styles.desktopShell]}>
             {isDesktop ? (
-              <Animated.View
-                entering={reducedMotion ? undefined : FadeInDown.duration(400)}
-                style={styles.leftPanel}
+              <View
+                style={[
+                  styles.storyPanel,
+                  windowWidth < 1200 && styles.storyPanelNarrow,
+                ]}
               >
-                {/* Brand Header */}
-                <View style={styles.brandHeader}>
-                  <View style={styles.brandLogoBox}>
-                    <Image
-                      source={require('../../../assets/logo.png')}
-                      style={styles.brandLogoImage}
-                      resizeMode="contain"
-                    />
+                {brand}
+                <Animated.View
+                  entering={
+                    reducedMotion ? undefined : FadeInDown.duration(400)
+                  }
+                  style={styles.storyContent}
+                >
+                  <View style={styles.eyebrowRow}>
+                    <View style={styles.eyebrowDot} />
+                    <Text style={styles.eyebrow}>
+                      THE INSTITUTIONAL WORKSPACE
+                    </Text>
                   </View>
-                  <View style={styles.brandTitleBox}>
-                    <View style={styles.brandWordmarkRow}>
-                      <Text style={styles.brandWordmark}>NEXSYRUS</Text>
-                      <View style={styles.brandBadge}>
-                        <View style={styles.livePulseDot} />
-                        <Text style={styles.brandBadgeText}>COMMAND CENTRE</Text>
-                      </View>
-                    </View>
-                    <Text style={styles.brandSubtitle}>SUPERADMIN OS • CLUSTER MATRIX</Text>
-                  </View>
-                </View>
-
-                {/* Brand Statement */}
-                <View style={styles.statementBox}>
-                  <Text style={styles.headline}>
-                    Unified Mission Control for Institutional Operations.
+                  <Text
+                    accessibilityRole="header"
+                    style={[
+                      styles.headline,
+                      windowWidth < 1200 && styles.headlineNarrow,
+                    ]}
+                  >
+                    A clearer view.{'\n'}A stronger{'\n'}
+                    <Text style={styles.headlineAccent}>institution.</Text>
                   </Text>
                   <Text style={styles.leadParagraph}>
-                    High-assurance governance, real-time multi-cluster telemetry, and unified
-                    administrative orchestration across schools, finances, and field teams.
+                    Good things happen when everything comes together. Your
+                    schools, finances, and people — in one thoughtful workspace.
                   </Text>
-                </View>
-
-                {/* 3D / Orbital Visual Composition */}
-                <View style={styles.orbitalWrapper}>
-                  <CommandCenterOrbital
-                    size={Math.min(480, windowWidth * 0.42)}
-                    activeClusterLabel={activeClusterName}
-                    isCaMode={caMode}
-                  />
-                </View>
-
-                {/* Footer Metadata & Telemetry Card */}
-                <View style={styles.telemetryCard}>
-                  <View style={styles.telemetryHeader}>
-                    <View style={styles.telemetryNode}>
-                      <Server size={14} color={COMMAND_CENTER.cyanAccent} />
-                      <Text style={styles.telemetryClusterLabel}>{activeClusterName}</Text>
-                    </View>
-                    <Link href={"/cluster-selector" as any} asChild>
-                      <Pressable accessibilityRole="link" accessibilityLabel="Switch cluster" style={styles.switchClusterLink}>
-                        <Text style={styles.switchClusterText}>Switch Cluster</Text>
-                        <ArrowRight size={12} color={COMMAND_CENTER.cobaltPrimary} />
-                      </Pressable>
-                    </Link>
+                  <View style={styles.landscapeWrapper}>
+                    <InstitutionLandscape />
                   </View>
-
-                  <View style={styles.telemetrySpecsRow}>
-                    <Text style={styles.telemetrySpecItem}>NODE: {activeClusterId}</Text>
-                    <Text style={styles.telemetryDivider}>•</Text>
-                    <Text style={styles.telemetrySpecItem}>ZERO-TRUST ENCRYPTION</Text>
-                    <Text style={styles.telemetryDivider}>•</Text>
-                    <Text style={styles.telemetrySpecItem}>AES-256 GCM</Text>
+                  <View style={styles.domainRow}>
+                    <Text style={styles.domainText}>Schools</Text>
+                    <View style={styles.domainDot} />
+                    <Text style={styles.domainText}>Finance</Text>
+                    <View style={styles.domainDot} />
+                    <Text style={styles.domainText}>People</Text>
+                    <View style={styles.domainRule} />
+                    <Text style={styles.domainCaption}>ALL IN SYNC</Text>
                   </View>
+                </Animated.View>
+                <View style={styles.storyFooter}>
+                  <Text style={styles.storyFooterText}>
+                    Designed for the bigger picture.
+                  </Text>
+                  <Text style={styles.storyFooterIndex}>01 — NEXSYRUS</Text>
                 </View>
-              </Animated.View>
-            ) : null}
+              </View>
+            ) : (
+              <View style={styles.mobileHeader}>{brand}</View>
+            )}
 
-            {/* ── RIGHT PANEL: HIGH-PRECISION AUTHENTICATION CARD ── */}
-            <Animated.View
-              entering={reducedMotion ? undefined : FadeInUp.duration(360).delay(60)}
+            <View
               style={[
-                styles.rightPanel,
-                isDesktop && styles.rightPanelDesktop,
-                (isTablet || isMobile) && styles.rightPanelMobile,
+                styles.accessPanel,
+                !isDesktop && styles.accessPanelMobile,
+                isCompact && styles.accessPanelCompact,
               ]}
             >
-              {/* Compact Mobile/Tablet Header */}
-              {!isDesktop ? (
-                <View style={styles.mobileHeader}>
-                  <View style={styles.mobileLogoRow}>
-                    <Image
-                      source={require('../../../assets/logo.png')}
-                      style={styles.mobileLogoImage}
-                      resizeMode="contain"
-                    />
-                    <View>
-                      <Text style={styles.mobileBrandTitle}>NEXSYRUS</Text>
-                      <Text style={styles.mobileBrandSubtitle}>SUPERADMIN COMMAND CENTRE</Text>
-                    </View>
-                  </View>
-
-                  <View style={styles.mobileClusterPill}>
-                    <Server size={12} color={COMMAND_CENTER.cyanAccent} />
-                    <Text style={styles.mobileClusterText}>{activeClusterName}</Text>
-                  </View>
+              {isDesktop && (
+                <View style={styles.accessHeader}>
+                  <Lock size={12} color="#5D687A" />
+                  <Text style={styles.accessHeaderText}>PRIVATE WORKSPACE</Text>
                 </View>
-              ) : null}
-
-              {/* Liquid-Glass Authentication Terminal Card */}
-              <View style={styles.authCard}>
-                {/* Specular Edge Highlight */}
-                <View style={styles.cardSpecularTop} pointerEvents="none" />
-
-                {/* Mode Switcher: Operations vs CA Mode */}
-                <View style={styles.modeSwitcherContainer}>
-                  <Link href={"/(auth)/login" as any} asChild>
+              )}
+              <Animated.View
+                entering={
+                  reducedMotion ? undefined : FadeInUp.duration(360).delay(60)
+                }
+                style={[
+                  styles.formContent,
+                  !isDesktop && styles.formContentMobile,
+                ]}
+              >
+                <View style={styles.formIntro}>
+                  <Text style={styles.formEyebrow}>
+                    COMMAND CENTRE / {caMode ? 'FINANCE' : 'ADMINISTRATION'}
+                  </Text>
+                  <Text accessibilityRole="header" style={styles.terminalTitle}>
+                    {caMode ? 'Your financial workspace.' : 'Welcome back.'}
+                  </Text>
+                  <Text style={styles.terminalSubtitle}>
+                    A fresh start to a productive day. Sign in to continue.
+                  </Text>
+                </View>
+                <View
+                  style={styles.modeSwitcherContainer}
+                  accessibilityRole="tablist"
+                >
+                  <Link href={'/(auth)/login' as any} asChild>
                     <Pressable
                       accessibilityRole="tab"
                       accessibilityLabel="Operations SuperAdmin Access"
                       accessibilityState={{ selected: !caMode }}
-                      // Link's asChild slot merges styles as objects, so flatten native arrays first.
-                      style={StyleSheet.flatten([styles.modeTab, !caMode && styles.modeTabActive])}
+                      style={StyleSheet.flatten([
+                        styles.modeTab,
+                        !caMode && styles.modeTabActive,
+                      ])}
                     >
-                      <Shield size={14} color={!caMode ? '#FFFFFF' : COMMAND_CENTER.textTertiary} />
-                      <Text style={[styles.modeTabText, !caMode && styles.modeTabTextActive]}>
+                      <Shield
+                        size={15}
+                        color={!caMode ? brandColors.blue : '#5D687A'}
+                      />
+                      <Text
+                        style={[
+                          styles.modeTabText,
+                          !caMode && styles.modeTabTextActive,
+                        ]}
+                      >
                         SuperAdmin
                       </Text>
                     </Pressable>
                   </Link>
-
-                  <Link href={"/(auth)/ca-login" as any} asChild>
+                  <Link href={'/(auth)/ca-login' as any} asChild>
                     <Pressable
                       accessibilityRole="tab"
                       accessibilityLabel="Chartered Accountant Books Access"
                       accessibilityState={{ selected: caMode }}
-                      style={StyleSheet.flatten([styles.modeTab, caMode && styles.modeTabActiveCA])}
+                      style={StyleSheet.flatten([
+                        styles.modeTab,
+                        caMode && styles.modeTabActive,
+                      ])}
                     >
-                      <Layers size={14} color={caMode ? '#FFFFFF' : COMMAND_CENTER.textTertiary} />
-                      <Text style={[styles.modeTabText, caMode && styles.modeTabTextActive]}>
+                      <Layers
+                        size={15}
+                        color={caMode ? brandColors.blue : '#5D687A'}
+                      />
+                      <Text
+                        style={[
+                          styles.modeTabText,
+                          caMode && styles.modeTabTextActive,
+                        ]}
+                      >
                         Chartered Accountant
                       </Text>
                     </Pressable>
                   </Link>
                 </View>
-
-                {/* CA Dedicated Mode Notice */}
-                {caMode ? (
+                <Link href={'/cluster-selector' as any} asChild>
+                  <Pressable
+                    accessibilityRole="link"
+                    accessibilityLabel={`Switch cluster, currently ${activeClusterName}`}
+                    style={styles.clusterSelector}
+                  >
+                    <View style={styles.clusterIcon}>
+                      <Server size={17} color="#2455C6" />
+                    </View>
+                    <View style={styles.clusterDetails}>
+                      <Text style={styles.clusterCaption}>YOUR WORKSPACE</Text>
+                      <Text style={styles.clusterName} numberOfLines={1}>
+                        {activeClusterName}
+                      </Text>
+                    </View>
+                    <ChevronDown size={16} color="#746687" />
+                  </Pressable>
+                </Link>
+                {caMode && (
                   <View style={styles.caModeNotice}>
-                    <ShieldCheck size={16} color={COMMAND_CENTER.cyanAccent} />
+                    <ShieldCheck size={16} color="#2455C6" />
                     <Text style={styles.caModeNoticeText}>
-                      Chartered Accountant Gateway. Grants direct access to the Books Financial Ledger.
+                      Chartered Accountant Gateway · Access to the Books
+                      Financial Ledger.
                     </Text>
                   </View>
-                ) : null}
-
-                {/* Card Title & Instructions */}
-                <View style={styles.terminalHeader}>
-                  <Text style={styles.terminalTitle}>
-                    {caMode ? 'CA Financial Gateway' : 'Authenticate Session'}
-                  </Text>
-                  <Text style={styles.terminalSubtitle}>
-                    {caMode
-                      ? 'Enter your accredited accounting credentials to access institution ledgers.'
-                      : 'Provide your authorized credentials to access mission-critical operations.'}
-                  </Text>
-                </View>
-
-                {/* Status Alert Banner */}
-                {alertState.visible ? (
+                )}
+                {alertState.visible && (
                   <CommandCenterAlert
+                    appearance="light"
                     type={alertState.type}
                     title={alertState.title}
                     message={alertState.message}
-                    onDismiss={() => setAlertState((s) => ({ ...s, visible: false }))}
-                    onRetry={alertState.type === 'network' ? () => handleLogin() : undefined}
+                    onDismiss={() =>
+                      setAlertState((s) => ({ ...s, visible: false }))
+                    }
+                    onRetry={
+                      alertState.type === 'network'
+                        ? () => handleLogin()
+                        : undefined
+                    }
                   />
-                ) : null}
+                )}
 
-                {/* Unified Identifier Input */}
                 <CommandCenterInput
-                  label={caMode ? 'CA Account Identifier' : 'Authorized Identifier'}
-                  badge={caMode ? 'CA EMAIL • EMP ID' : 'EMAIL • PHONE • EMP ID'}
+                  appearance="light"
+                  label={
+                    caMode
+                      ? 'CA email or employee ID'
+                      : 'Email, phone, or employee ID'
+                  }
                   placeholder={
-                    caMode ? 'e.g. ca@nexsyrus.com or CA-104' : 'e.g. admin@nexsyrus.com, 9876543210, or SE-011'
+                    caMode ? 'ca@nexsyrus.com' : 'Enter your account identifier'
                   }
                   value={identifier}
                   onChangeText={(text) => {
                     setIdentifier(text);
                     if (identifierError) setIdentifierError('');
-                    if (alertState.visible) setAlertState((s) => ({ ...s, visible: false }));
+                    if (alertState.visible)
+                      setAlertState((s) => ({ ...s, visible: false }));
                   }}
                   error={identifierError}
                   required
                   detectType
                   autoCapitalize="none"
                   autoCorrect={false}
+                  autoComplete="username"
+                  textContentType="username"
                   returnKeyType="next"
+                  blurOnSubmit={false}
+                  onSubmitEditing={() => passwordInput.current?.focus()}
                   editable={!loading && !authSuccess}
                 />
-
-                {/* Password Input */}
                 <CommandCenterInput
+                  appearance="light"
+                  ref={passwordInput}
                   label="Password"
-                  badge="MASTER KEY"
-                  placeholder="Enter your security password"
+                  placeholder="Enter your password"
                   value={password}
                   onChangeText={(text) => {
                     setPassword(text);
                     if (passwordError) setPasswordError('');
-                    if (alertState.visible) setAlertState((s) => ({ ...s, visible: false }));
+                    if (alertState.visible)
+                      setAlertState((s) => ({ ...s, visible: false }));
                   }}
                   error={passwordError}
                   required
@@ -478,78 +533,92 @@ export default function LoginScreen({ caMode = false }: { caMode?: boolean }) {
                   onSubmitEditing={() => handleLogin()}
                   editable={!loading && !authSuccess}
                 />
-
-                {/* Aux Actions: Remember Device & Forgot Password */}
                 <View style={styles.auxRow}>
                   <Pressable
                     accessibilityRole="checkbox"
-                    accessibilityLabel="Remember this terminal"
-                    accessibilityState={{ checked: rememberTerminal }}
+                    accessibilityLabel="Remember my identifier"
+                    accessibilityHint="Saves your account identifier on this device. Your password is never saved."
+                    accessibilityState={{
+                      checked: rememberTerminal,
+                      disabled: loading || authSuccess,
+                    }}
+                    disabled={loading || authSuccess}
                     onPress={() => setRememberTerminal((prev) => !prev)}
                     style={styles.rememberBox}
                   >
-                    <View style={[styles.checkbox, rememberTerminal && styles.checkboxChecked]}>
-                      {rememberTerminal && <Check size={12} color="#FFFFFF" strokeWidth={3} />}
+                    <View
+                      style={[
+                        styles.checkbox,
+                        rememberTerminal && styles.checkboxChecked,
+                      ]}
+                    >
+                      {rememberTerminal && (
+                        <Check size={12} color="#FFFFFF" strokeWidth={3} />
+                      )}
                     </View>
-                    <Text style={styles.rememberLabel}>Remember terminal</Text>
+                    <Text style={styles.rememberLabel}>Remember my ID</Text>
                   </Pressable>
-
                   <Pressable
                     accessibilityRole="button"
                     accessibilityLabel="Forgot password recovery"
                     onPress={() => setRecoveryModalVisible(true)}
-                    style={({ pressed }) => [styles.forgotButton, pressed && { opacity: 0.7 }]}
+                    style={({ pressed }) => [
+                      styles.forgotButton,
+                      pressed && { opacity: 0.7 },
+                    ]}
                   >
                     <Text style={styles.forgotText}>Forgot password?</Text>
                   </Pressable>
                 </View>
-
-                {/* Primary Sign-In Button */}
                 <CommandCenterButton
-                  title={caMode ? 'Authenticate CA Gateway' : 'Sign In to Command Centre'}
+                  appearance="light"
+                  title={
+                    caMode ? 'Sign in to Books' : 'Sign in to Command Centre'
+                  }
                   onPress={() => handleLogin()}
                   loading={loading}
                   success={authSuccess}
                   style={styles.submitButton}
                 />
-
-                {/* Hardware Security / Biometric Footprint */}
                 <View style={styles.securityFootprint}>
                   <Pressable
                     accessibilityRole="button"
-                    accessibilityLabel="Hardware security protocols and biometric guidance"
+                    accessibilityLabel="View sign-in security and biometric options"
                     onPress={() => setMfaModalVisible(true)}
-                    style={({ pressed }) => [styles.securityBadgeRow, pressed && { opacity: 0.7 }]}
+                    style={({ pressed }) => [
+                      styles.securityBadgeRow,
+                      pressed && { opacity: 0.7 },
+                    ]}
                   >
-                    <Fingerprint size={14} color={COMMAND_CENTER.cobaltPrimary} />
+                    <Fingerprint size={17} color="#5D687A" />
                     <Text style={styles.securityBadgeText}>
-                      Protected by rotating session tokens & hardware biometrics
+                      About secure sign-in
                     </Text>
+                    <ArrowRight size={13} color="#5D687A" />
                   </Pressable>
                 </View>
-              </View>
-
-              {/* Bottom Assurance Note */}
-              <View style={styles.bottomAssurance}>
-                <Lock size={12} color={COMMAND_CENTER.textTertiary} />
-                <Text style={styles.bottomAssuranceText}>
-                  NexSyrus Cloud Security • 256-Bit SSL Encrypted Handshake
+              </Animated.View>
+              <View style={styles.accessFooter}>
+                <View style={styles.footerSecurity}>
+                  <ShieldCheck size={13} color="#5D687A" />
+                  <Text style={styles.footerText}>
+                    Role-based access. A space you can trust.
+                  </Text>
+                </View>
+                <Text style={styles.footerCopyright}>
+                  Nexsyrus · Institutional operations
                 </Text>
               </View>
-            </Animated.View>
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-
-      {/* Zero-Disclosure Password Recovery Modal */}
       <CommandCenterRecoveryModal
         visible={recoveryModalVisible}
         onClose={() => setRecoveryModalVisible(false)}
         initialIdentifier={identifier}
         clusterLabel={activeClusterName}
       />
-
-      {/* Hardware MFA & Biometrics Guidance Modal */}
       <CommandCenterMfaModal
         visible={mfaModalVisible}
         onClose={() => setMfaModalVisible(false)}
@@ -558,418 +627,296 @@ export default function LoginScreen({ caMode = false }: { caMode?: boolean }) {
   );
 }
 
-const styles = StyleSheet.create({
-  outerCanvas: {
-    flex: 1,
-    backgroundColor: COMMAND_CENTER.canvas,
-  },
-  container: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    paddingVertical: 32,
-    paddingHorizontal: 20,
-  },
-  desktopScrollContent: {
-    paddingVertical: 48,
-    paddingHorizontal: 48,
-  },
-  mainLayout: {
-    width: '100%',
-    maxWidth: 1320,
-    alignSelf: 'center',
-  },
-  desktopLayout: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 56,
-  },
+const serifFont = Platform.select({
+  web: "Georgia, 'Times New Roman', serif",
+  ios: 'Georgia',
+  android: 'serif',
+});
 
-  // ── LEFT PANEL STYLES (DESKTOP) ──
-  leftPanel: {
-    flex: 1.15,
-    maxWidth: 620,
-    paddingRight: 24,
-    gap: 28,
+const styles = StyleSheet.create({
+  outerCanvas: { flex: 1, backgroundColor: '#FCFDFE' },
+  container: { flex: 1 },
+  scrollContent: { flexGrow: 1 },
+  pageShell: { flex: 1, width: '100%', maxWidth: 1920, alignSelf: 'center' },
+  desktopShell: { flexDirection: 'row' },
+  storyPanel: {
+    flex: 1.06,
+    minWidth: 0,
+    backgroundColor: brandColors.navy,
+    paddingHorizontal: 64,
+    paddingTop: 34,
+    paddingBottom: 28,
+    borderRightWidth: 1,
+    borderRightColor: '#263B58',
   },
-  brandHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-  },
+  storyPanelNarrow: { paddingHorizontal: 40 },
+  brandHeader: { flexDirection: 'row', alignItems: 'center', gap: 11 },
   brandLogoBox: {
-    width: 60,
-    height: 60,
-    borderRadius: COMMAND_CENTER.radii.lg,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    width: 44,
+    height: 44,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 11,
     borderWidth: 1,
-    borderColor: COMMAND_CENTER.glassBorder,
+    borderColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
-    overflow: 'hidden',
-    ...(Platform.OS === 'web'
-      ? {
-          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
-        }
-      : {}),
-  } as any,
-  brandLogoImage: {
-    width: 36,
-    height: 36,
   },
-  brandTitleBox: {
-    gap: 3,
-  },
-  brandWordmarkRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
+  brandLogoImage: { width: 30, height: 30 },
+  brandTitleBox: { gap: 5 },
   brandWordmark: {
-    fontSize: 22,
+    color: '#FFFFFF',
+    fontSize: 19,
     fontWeight: '800',
-    color: COMMAND_CENTER.textPrimary,
-    letterSpacing: 1.5,
+    letterSpacing: 1.8,
   },
-  brandBadge: {
+  brandSubtitle: {
+    color: '#B6C7DF',
+    fontSize: 8,
+    fontWeight: '600',
+    letterSpacing: 1.7,
+  },
+  storyContent: {
+    flex: 1,
+    width: '100%',
+    maxWidth: 560,
+    alignSelf: 'center',
+    justifyContent: 'center',
+    paddingTop: 42,
+    paddingBottom: 30,
+  },
+  eyebrowRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    backgroundColor: COMMAND_CENTER.cobaltMuted,
-    borderRadius: COMMAND_CENTER.radii.pill,
-    borderWidth: 1,
-    borderColor: 'rgba(10, 132, 255, 0.3)',
+    gap: 8,
+    marginBottom: 24,
   },
-  livePulseDot: {
+  eyebrowDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: COMMAND_CENTER.statusActive,
+    backgroundColor: brandColors.gold,
   },
-  brandBadgeText: {
-    fontSize: 10.5,
-    fontFamily: COMMAND_CENTER.fonts.mono,
-    fontWeight: '700',
-    color: COMMAND_CENTER.cyanAccent,
-    letterSpacing: 0.8,
-  },
-  brandSubtitle: {
-    fontSize: 12,
-    fontFamily: COMMAND_CENTER.fonts.mono,
-    fontWeight: '500',
-    color: COMMAND_CENTER.textTertiary,
-    letterSpacing: 1,
-  },
-  statementBox: {
-    gap: 12,
+  eyebrow: {
+    fontSize: 9,
+    letterSpacing: 1.6,
+    fontWeight: '600',
+    color: '#D8BE8C',
   },
   headline: {
-    fontSize: 34,
-    fontWeight: '800',
-    lineHeight: 42,
-    color: COMMAND_CENTER.textPrimary,
-    letterSpacing: -0.8,
-  },
-  leadParagraph: {
-    fontSize: 15,
-    lineHeight: 24,
-    color: COMMAND_CENTER.textSecondary,
+    color: '#F7FAFF',
+    fontFamily: serifFont,
+    fontSize: 65,
+    lineHeight: 69,
     fontWeight: '400',
-    letterSpacing: 0.1,
+    letterSpacing: -2.3,
   },
-  orbitalWrapper: {
+  headlineNarrow: { fontSize: 56, lineHeight: 61 },
+  headlineAccent: { color: brandColors.gold, fontStyle: 'italic' },
+  leadParagraph: {
+    color: '#BCCCE2',
+    fontSize: 14,
+    lineHeight: 23,
+    maxWidth: 380,
+    marginTop: 22,
+  },
+  landscapeWrapper: { width: '100%', maxWidth: 500, height: 235, marginTop: 8 },
+  domainRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginVertical: -16,
+    gap: 12,
+    marginTop: 12,
   },
-  telemetryCard: {
-    padding: 16,
-    borderRadius: COMMAND_CENTER.radii.lg,
-    backgroundColor: 'rgba(11, 18, 33, 0.65)',
-    borderWidth: 1,
-    borderColor: COMMAND_CENTER.glassBorder,
-    gap: 10,
+  domainText: { fontSize: 11, color: '#DDE6F3', fontWeight: '500' },
+  domainDot: {
+    width: 3,
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: '#D4B57C',
   },
-  telemetryHeader: {
+  domainRule: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#3A4E6B',
+    marginHorizontal: 4,
+  },
+  domainCaption: {
+    color: '#AFC1D8',
+    fontSize: 8,
+    letterSpacing: 1.4,
+    fontWeight: '600',
+  },
+  storyFooter: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: 12,
   },
-  telemetryNode: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  telemetryClusterLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: COMMAND_CENTER.textPrimary,
-    letterSpacing: 0.2,
-  },
-  switchClusterLink: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  switchClusterText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: COMMAND_CENTER.cobaltPrimary,
-  },
-  telemetrySpecsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  telemetrySpecItem: {
-    fontSize: 10.5,
-    fontFamily: COMMAND_CENTER.fonts.mono,
-    color: COMMAND_CENTER.textTertiary,
-    letterSpacing: 0.5,
-  },
-  telemetryDivider: {
-    fontSize: 10,
-    color: COMMAND_CENTER.textMuted,
-  },
-
-  // ── RIGHT PANEL STYLES (AUTHENTICATION CARD) ──
-  rightPanel: {
-    width: '100%',
-  },
-  rightPanelDesktop: {
-    flex: 0.95,
-    maxWidth: 500,
-  },
-  rightPanelMobile: {
-    maxWidth: 480,
-    alignSelf: 'center',
-  },
+  storyFooterText: { fontSize: 10, color: '#AFC1D8' },
+  storyFooterIndex: { fontSize: 8, color: '#AFC1D8', letterSpacing: 1.1 },
   mobileHeader: {
-    alignItems: 'center',
-    marginBottom: 24,
-    gap: 12,
+    backgroundColor: brandColors.navy,
+    paddingHorizontal: 26,
+    paddingVertical: 22,
+    borderBottomWidth: 1,
+    borderBottomColor: '#263B58',
   },
-  mobileLogoRow: {
+  accessPanel: {
+    flex: 1,
+    minWidth: 0,
+    paddingHorizontal: 64,
+    paddingTop: 42,
+    paddingBottom: 24,
+    backgroundColor: '#FCFDFE',
+  },
+  accessPanelMobile: { paddingTop: 36, paddingHorizontal: 30 },
+  accessPanelCompact: { paddingHorizontal: 24, paddingTop: 30 },
+  accessHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    alignSelf: 'flex-end',
+    gap: 7,
   },
-  mobileLogoImage: {
-    width: 38,
-    height: 38,
+  accessHeaderText: {
+    color: '#5D687A',
+    fontSize: 8,
+    letterSpacing: 1.4,
+    fontWeight: '500',
   },
-  mobileBrandTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: COMMAND_CENTER.textPrimary,
-    letterSpacing: 1,
+  formContent: {
+    flex: 1,
+    justifyContent: 'center',
+    width: '100%',
+    maxWidth: 400,
+    alignSelf: 'center',
+    paddingVertical: 38,
   },
-  mobileBrandSubtitle: {
-    fontSize: 10.5,
-    fontFamily: COMMAND_CENTER.fonts.mono,
-    color: COMMAND_CENTER.cyanAccent,
-    letterSpacing: 0.8,
+  formContentMobile: { paddingTop: 8, paddingBottom: 20 },
+  formIntro: { marginBottom: 25 },
+  formEyebrow: {
+    color: '#5D687A',
+    fontSize: 8,
+    fontWeight: '600',
+    letterSpacing: 1.5,
+    marginBottom: 14,
   },
-  mobileClusterPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: COMMAND_CENTER.radii.pill,
-    borderWidth: 1,
-    borderColor: COMMAND_CENTER.glassBorder,
+  terminalTitle: {
+    color: '#1D2A3E',
+    fontSize: 32,
+    lineHeight: 38,
+    fontWeight: '600',
+    letterSpacing: -1.2,
   },
-  mobileClusterText: {
-    fontSize: 11.5,
-    fontFamily: COMMAND_CENTER.fonts.mono,
-    color: COMMAND_CENTER.textSecondary,
-  },
-  authCard: {
-    backgroundColor: COMMAND_CENTER.surfaceCard,
-    borderRadius: COMMAND_CENTER.radii.xxl,
-    borderWidth: 1,
-    borderColor: COMMAND_CENTER.glassBorder,
-    paddingHorizontal: 30,
-    paddingTop: 28,
-    paddingBottom: 28,
-    overflow: 'hidden',
-    position: 'relative',
-    ...(Platform.OS === 'web'
-      ? {
-          boxShadow: COMMAND_CENTER.shadows.cardWeb,
-          backdropFilter: 'blur(20px)',
-        }
-      : {
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 16 },
-          shadowOpacity: 0.45,
-          shadowRadius: 32,
-          elevation: 12,
-        }),
-  } as any,
-  cardSpecularTop: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 1,
-    backgroundColor: COMMAND_CENTER.glassSpecularTop,
+  terminalSubtitle: {
+    color: '#5D687A',
+    fontSize: 13,
+    lineHeight: 20,
+    marginTop: 9,
   },
   modeSwitcherContainer: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(9, 14, 27, 0.7)',
-    borderRadius: COMMAND_CENTER.radii.md,
-    padding: 4,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: COMMAND_CENTER.glassBorder,
+    marginBottom: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: '#DEE5EE',
   },
   modeTab: {
     flex: 1,
+    minWidth: 0,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 8,
-    borderRadius: COMMAND_CENTER.radii.sm,
+    gap: 7,
+    minHeight: 45,
+    paddingHorizontal: 4,
+    paddingBottom: 13,
+    paddingTop: 5,
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+    marginBottom: -1,
   },
-  modeTabActive: {
-    backgroundColor: COMMAND_CENTER.cobaltPrimary,
-    ...(Platform.OS === 'web'
-      ? {
-          boxShadow: '0 4px 12px rgba(10, 132, 255, 0.4)',
-        }
-      : {}),
-  } as any,
-  modeTabActiveCA: {
-    backgroundColor: '#0284C7',
-    ...(Platform.OS === 'web'
-      ? {
-          boxShadow: '0 4px 12px rgba(2, 132, 199, 0.4)',
-        }
-      : {}),
-  } as any,
+  modeTabActive: { borderBottomColor: brandColors.blue },
   modeTabText: {
-    fontSize: 12.5,
-    fontWeight: '600',
-    color: COMMAND_CENTER.textTertiary,
+    fontSize: 12,
+    color: '#5D687A',
+    flexShrink: 1,
+    textAlign: 'center',
+    fontWeight: '500',
   },
-  modeTabTextActive: {
-    color: '#FFFFFF',
-  },
-  caModeNotice: {
+  modeTabTextActive: { color: brandColors.blue, fontWeight: '600' },
+  clusterSelector: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    padding: 12,
-    backgroundColor: COMMAND_CENTER.caPillBg,
-    borderRadius: COMMAND_CENTER.radii.md,
+    backgroundColor: '#F1F5FB',
     borderWidth: 1,
-    borderColor: COMMAND_CENTER.caPillBorder,
-    marginBottom: 18,
+    borderColor: '#DCE4EF',
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+    borderRadius: 6,
+    marginBottom: 25,
   },
-  caModeNoticeText: {
-    flex: 1,
-    fontSize: 12,
-    lineHeight: 17,
-    color: COMMAND_CENTER.cyanAccent,
+  clusterIcon: { width: 28, alignItems: 'center' },
+  clusterDetails: { flex: 1, minWidth: 0, gap: 4 },
+  clusterCaption: {
+    color: '#5D687A',
+    fontSize: 8,
     fontWeight: '500',
+    letterSpacing: 1.1,
   },
-  terminalHeader: {
-    marginBottom: 22,
-    gap: 6,
-  },
-  terminalTitle: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: COMMAND_CENTER.textPrimary,
-    letterSpacing: -0.4,
-  },
-  terminalSubtitle: {
-    fontSize: 13.5,
-    lineHeight: 20,
-    color: COMMAND_CENTER.textSecondary,
-    fontWeight: '400',
-  },
-  auxRow: {
+  clusterName: { color: '#263852', fontSize: 12, fontWeight: '500' },
+  caModeNotice: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 8,
+    padding: 12,
+    backgroundColor: '#EDF2FA',
+    borderRadius: 6,
+    marginBottom: 22,
+  },
+  caModeNoticeText: { flex: 1, color: '#415B83', fontSize: 11, lineHeight: 17 },
+  auxRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 24,
-    marginTop: 4,
+    columnGap: 12,
+    marginTop: -6,
+    marginBottom: 18,
   },
   rememberBox: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    minHeight: 40,
   },
   checkbox: {
-    width: 18,
-    height: 18,
-    borderRadius: 5,
-    borderWidth: 1.5,
-    borderColor: COMMAND_CENTER.textTertiary,
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    width: 15,
+    height: 15,
+    borderRadius: 3,
+    borderWidth: 1,
+    borderColor: '#9EADC3',
+    backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
   },
   checkboxChecked: {
-    backgroundColor: COMMAND_CENTER.cobaltPrimary,
-    borderColor: COMMAND_CENTER.cobaltPrimary,
+    backgroundColor: brandColors.blue,
+    borderColor: brandColors.blue,
   },
-  rememberLabel: {
-    fontSize: 13,
-    color: COMMAND_CENTER.textSecondary,
-    fontWeight: '500',
-  },
-  forgotButton: {
-    paddingVertical: 4,
-  },
-  forgotText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: COMMAND_CENTER.cobaltPrimary,
-  },
-  submitButton: {
-    width: '100%',
-  },
-  securityFootprint: {
-    marginTop: 20,
-    paddingTop: 18,
-    borderTopWidth: 1,
-    borderTopColor: COMMAND_CENTER.glassBorder,
-    alignItems: 'center',
-  },
+  rememberLabel: { color: '#5D687A', fontSize: 12 },
+  forgotButton: { minHeight: 40, justifyContent: 'center' },
+  forgotText: { color: brandColors.blue, fontSize: 12, fontWeight: '600' },
+  submitButton: { width: '100%', borderRadius: 6 },
+  securityFootprint: { marginTop: 20, alignItems: 'center' },
   securityBadgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  securityBadgeText: {
-    fontSize: 11.5,
-    color: COMMAND_CENTER.textTertiary,
-    textAlign: 'center',
-  },
-  bottomAssurance: {
-    flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    marginTop: 24,
+    gap: 7,
+    minHeight: 36,
   },
-  bottomAssuranceText: {
-    fontSize: 11.5,
-    fontFamily: COMMAND_CENTER.fonts.mono,
-    color: COMMAND_CENTER.textTertiary,
-    letterSpacing: 0.4,
-  },
+  securityBadgeText: { fontSize: 10, color: '#5D687A' },
+  accessFooter: { alignItems: 'center', gap: 10, paddingTop: 16 },
+  footerSecurity: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  footerText: { color: '#5D687A', fontSize: 10 },
+  footerCopyright: { color: '#5D687A', fontSize: 9 },
 });

@@ -1,5 +1,9 @@
 import React from 'react';
 import {
+  brandColors,
+  experienceColors,
+} from '../../constants/experienceColors';
+import {
   ActivityIndicator,
   Pressable,
   StyleSheet,
@@ -13,45 +17,24 @@ import type { Resource } from './useDashboardData';
 
 export function useDashboardPalette() {
   const { isDark } = useTheme();
-  return isDark
-    ? {
-        canvas: '#111B1A',
-        surface: '#182523',
-        inset: '#20312D',
-        ink: '#EFF5EF',
-        muted: '#B1C4BA',
-        line: '#334640',
-        green: '#93DCC0',
-        greenFill: '#21654E',
-        lime: '#D5F080',
-        amber: '#F4CD91',
-        amberBg: '#382F22',
-        blue: '#A8C8F0',
-        hero: '#143E32',
-        heroText: '#F4F8EA',
-      }
-    : {
-        canvas: '#F4F5EF',
-        surface: '#FFFFFF',
-        inset: '#F0F3EC',
-        ink: '#172D27',
-        muted: '#5B6D63',
-        line: '#DDE4DA',
-        green: '#25634D',
-        greenFill: '#25634D',
-        lime: '#D5EF8B',
-        amber: '#8A571A',
-        amberBg: '#FCF1DF',
-        blue: '#315D91',
-        hero: '#173C30',
-        heroText: '#F4F8EA',
-      };
+  const palette = isDark ? experienceColors.dark : experienceColors.light;
+  return {
+    ...palette,
+    // Retain the existing chart API while using one interaction accent.
+    green: palette.action,
+    greenFill: palette.actionFill,
+    lime: isDark ? '#D5F080' : '#D5EF8B',
+    amber: isDark ? '#F4CD91' : '#8A571A',
+    amberBg: isDark ? '#382F22' : '#FCF1DF',
+    blue: isDark ? '#A8C8F0' : '#315D91',
+  };
 }
 export type DashboardPalette = ReturnType<typeof useDashboardPalette>;
 export function DashButton({
   label,
   onPress,
   primary = false,
+  inverse = false,
   icon = true,
   disabled = false,
   busy = false,
@@ -59,11 +42,19 @@ export function DashButton({
   label: string;
   onPress: () => void;
   primary?: boolean;
+  inverse?: boolean;
   icon?: boolean;
   disabled?: boolean;
   busy?: boolean;
 }) {
   const p = useDashboardPalette();
+  const foreground = inverse
+    ? primary
+      ? brandColors.goldInk
+      : '#FFFFFF'
+    : primary
+    ? '#FFFFFF'
+    : p.ink;
   return (
     <Pressable
       accessibilityRole="button"
@@ -75,31 +66,39 @@ export function DashButton({
       style={({ pressed, hovered }: any) => [
         ds.button,
         {
-          backgroundColor: primary
+          backgroundColor: inverse
+            ? primary
+              ? brandColors.gold
+              : hovered
+              ? '#FFFFFF25'
+              : '#FFFFFF12'
+            : primary
             ? p.greenFill
             : hovered
-              ? p.inset
-              : p.surface,
-          borderColor: primary ? p.greenFill : p.line,
+            ? p.inset
+            : p.surface,
+          borderColor: inverse
+            ? primary
+              ? brandColors.gold
+              : '#FFFFFF45'
+            : primary
+            ? p.greenFill
+            : p.line,
           opacity: disabled || busy ? 0.55 : pressed ? 0.75 : 1,
         },
       ]}
     >
-      {busy ? (
-        <ActivityIndicator size="small" color={primary ? '#FFFFFF' : p.green} />
-      ) : null}
+      {busy ? <ActivityIndicator size="small" color={foreground} /> : null}
       <Text
         style={{
           fontSize: 13,
           fontWeight: '600',
-          color: primary ? '#FFFFFF' : p.ink,
+          color: foreground,
         }}
       >
         {label}
       </Text>
-      {icon && !busy ? (
-        <ArrowUpRight size={16} color={primary ? '#FFFFFF' : p.green} />
-      ) : null}
+      {icon && !busy ? <ArrowUpRight size={16} color={foreground} /> : null}
     </Pressable>
   );
 }

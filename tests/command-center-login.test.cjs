@@ -23,7 +23,10 @@ function createAuthLoader(options = {}) {
     Text: 'Text',
     ScrollView: 'ScrollView',
     Pressable: React.forwardRef(({ children, onPress, ...props }, ref) => React.createElement('Pressable', { ...props, onPress, ref }, children)),
-    TextInput: ({ ...props }) => React.createElement('TextInput', { ...props }),
+    TextInput: React.forwardRef((props, ref) => {
+      React.useImperativeHandle(ref, () => ({ focus: () => {} }));
+      return React.createElement('TextInput', props);
+    }),
     ActivityIndicator: 'ActivityIndicator',
     Modal: ({ visible, children }) => (visible ? React.createElement('Modal', null, children) : null),
     KeyboardAvoidingView: ({ children }) => React.createElement('KeyboardAvoidingView', null, children),
@@ -156,17 +159,17 @@ test('Desktop layout renders two-panel NexSyrus Command Centre composition', asy
   // Left Panel Brand Identity
   assert.ok(content.includes('NEXSYRUS'), 'renders NEXSYRUS wordmark');
   assert.ok(content.includes('COMMAND CENTRE'), 'renders COMMAND CENTRE badge');
-  assert.ok(content.includes('Unified Mission Control for Institutional Operations'), 'renders brand headline');
+  assert.ok(content.includes('A clearer view.'), 'renders brand headline');
   assert.ok(content.includes('Delhi NCR Hub Cluster'), 'renders real active cluster from ClusterContext');
-  assert.ok(content.includes('ZERO-TRUST ENCRYPTION'), 'renders zero-trust security metadata');
+  assert.ok(content.includes('Role-based access'), 'renders security information');
 
   // Right Panel Authentication Terminal
-  assert.ok(content.includes('Authenticate Session'), 'renders terminal authentication title');
-  assert.ok(content.includes('Authorized Identifier'), 'renders unified identifier label');
+  assert.ok(content.includes('Welcome back.'), 'renders terminal authentication title');
+  assert.ok(content.includes('Email, phone, or employee ID'), 'renders unified identifier label');
   assert.ok(content.includes('Password'), 'renders password label');
-  assert.ok(content.includes('Remember terminal'), 'renders remember terminal checkbox');
+  assert.ok(content.includes('Remember my ID'), 'renders remember terminal checkbox');
   assert.ok(content.includes('Forgot password?'), 'renders forgot password link');
-  assert.ok(content.includes('Sign In to Command Centre'), 'renders sign-in button');
+  assert.ok(content.includes('Sign in to Command Centre'), 'renders sign-in button');
 });
 
 test('Mobile layout renders compact command header without horizontal overflow', async () => {
@@ -181,10 +184,10 @@ test('Mobile layout renders compact command header without horizontal overflow',
   assert.ok(content.includes('SUPERADMIN COMMAND CENTRE'), 'renders mobile brand subtitle');
   assert.ok(content.includes('Delhi NCR Hub Cluster'), 'renders mobile cluster pill');
   // Form Card
-  assert.ok(content.includes('Authenticate Session'), 'renders form card');
-  assert.ok(content.includes('Sign In to Command Centre'), 'renders action button');
+  assert.ok(content.includes('Welcome back.'), 'renders form card');
+  assert.ok(content.includes('Sign in to Command Centre'), 'renders action button');
   // Left panel statement omitted on mobile
-  assert.ok(!content.includes('Unified Mission Control for Institutional Operations'), 'omits heavy desktop copy on mobile');
+  assert.ok(!content.includes('A clearer view.'), 'omits heavy desktop copy on mobile');
 });
 
 test('CA Mode renders Chartered Accountant branding and Books workspace access notice', async () => {
@@ -195,10 +198,10 @@ test('CA Mode renders Chartered Accountant branding and Books workspace access n
   });
 
   const content = textOf(screen.root);
-  assert.ok(content.includes('CA Financial Gateway'), 'renders CA Financial Gateway title');
-  assert.ok(content.includes('CA Account Identifier'), 'renders CA account identifier input label');
+  assert.ok(content.includes('Your financial workspace.'), 'renders Your financial workspace. title');
+  assert.ok(content.includes('CA email or employee ID'), 'renders CA account identifier input label');
   assert.ok(content.includes('Chartered Accountant Gateway'), 'renders Books ledger access notice');
-  assert.ok(content.includes('Authenticate CA Gateway'), 'renders CA authenticate action');
+  assert.ok(content.includes('Sign in to Books'), 'renders CA authenticate action');
 });
 
 test('Both access modes pass valid styles through the real router slot', async () => {
@@ -229,7 +232,7 @@ test('Empty credentials submission triggers validation warning', async () => {
 
   // Find and click the Sign In button
   const buttons = screen.root.findAllByType('Pressable');
-  const signInButton = buttons.find((b) => textOf(b).includes('Sign In to Command Centre'));
+  const signInButton = buttons.find((b) => textOf(b).includes('Sign in to Command Centre'));
   assert.ok(signInButton, 'Sign In button exists');
 
   await act(async () => {
@@ -239,7 +242,7 @@ test('Empty credentials submission triggers validation warning', async () => {
   const content = textOf(screen.root);
   assert.ok(content.includes('Missing Required Credentials'), 'displays missing credentials alert');
   assert.ok(content.includes('Enter email, phone, or employee ID.'), 'displays identifier error');
-  assert.ok(content.includes('Enter your master password.'), 'displays password error');
+  assert.ok(content.includes('Enter your password.'), 'displays password error');
 });
 
 test('Invalid credentials result in high-assurance error alert', async () => {
@@ -263,7 +266,7 @@ test('Invalid credentials result in high-assurance error alert', async () => {
   });
 
   const buttons = screen.root.findAllByType('Pressable');
-  const signInButton = buttons.find((b) => textOf(b).includes('Sign In to Command Centre'));
+  const signInButton = buttons.find((b) => textOf(b).includes('Sign in to Command Centre'));
 
   await act(async () => {
     await signInButton.props.onPress();
@@ -292,7 +295,7 @@ test('Inactive or locked account displays access suspended alert', async () => {
   });
 
   const buttons = screen.root.findAllByType('Pressable');
-  const signInButton = buttons.find((b) => textOf(b).includes('Sign In to Command Centre'));
+  const signInButton = buttons.find((b) => textOf(b).includes('Sign in to Command Centre'));
 
   await act(async () => {
     await signInButton.props.onPress();

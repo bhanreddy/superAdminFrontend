@@ -14,6 +14,7 @@ import { dashboardStyles as st } from './dashboardStyles';
 import React, { useState } from 'react';
 import {
   Pressable,
+  Platform,
   RefreshControl,
   ScrollView,
   Text,
@@ -22,7 +23,7 @@ import {
 } from 'react-native';
 
 import { useRouter } from 'expo-router';
-import { Layers } from 'lucide-react-native';
+import { Layers, LayoutGrid, BarChart3 } from 'lucide-react-native';
 import { useAuth } from '../../hooks/useAuth';
 import { useFounderAuth } from '../../hooks/useFounderAuth';
 import { useCluster } from '../../contexts/ClusterContext';
@@ -43,7 +44,9 @@ export default function ExecutiveDashboard() {
   const { user, currentAdmin, founder } = useAuth();
   const { selectedCluster } = useCluster();
   // A different account or cluster gets a new controller and no previous-account data.
-  const scope = `${user?.id || founder?.id || currentAdmin?.id || 'signed-in'}:${selectedCluster?.cluster_id || 'default'}`;
+  const scope = `${
+    user?.id || founder?.id || currentAdmin?.id || 'signed-in'
+  }:${selectedCluster?.cluster_id || 'default'}`;
   return <ExecutiveWorkspace key={scope} scope={scope} />;
 }
 function ExecutiveWorkspace({ scope }: { scope: string }) {
@@ -65,14 +68,14 @@ function ExecutiveWorkspace({ scope }: { scope: string }) {
     unit,
     scope,
     canReadSchools,
-    canApproveReject,
+    canApproveReject
   );
 
   const workspaces = dashboardWorkspaces.filter(
     (w) =>
       !('permission' in w) ||
       can(w.permission) ||
-      ('alternate' in w && can(w.alternate)),
+      ('alternate' in w && can(w.alternate))
   );
 
   const name = (
@@ -98,7 +101,7 @@ function ExecutiveWorkspace({ scope }: { scope: string }) {
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: p.canvas }}
-      contentContainerStyle={{ padding: phone ? 16 : 30, paddingBottom: 48 }}
+      contentContainerStyle={{ padding: phone ? 18 : 36, paddingBottom: 48 }}
       showsVerticalScrollIndicator={false}
       refreshControl={
         <RefreshControl
@@ -111,9 +114,55 @@ function ExecutiveWorkspace({ scope }: { scope: string }) {
       <View
         style={{ maxWidth: 1500, width: '100%', alignSelf: 'center', gap: 24 }}
       >
-        <View style={[st.header, phone && { alignItems: 'stretch' }]}>
+        <View
+          style={[
+            st.header,
+            {
+              backgroundColor: p.hero,
+              borderRadius: 22,
+              padding: phone ? 24 : 32,
+              minHeight: phone ? 210 : 174,
+              overflow: 'hidden',
+              position: 'relative',
+            },
+            Platform.OS === 'web' &&
+              ({
+                backgroundImage:
+                  'linear-gradient(115deg, #101F35 0%, #172D4B 65%, #244467 100%)',
+              } as any),
+            phone && { alignItems: 'stretch' },
+          ]}
+        >
+          <View
+            pointerEvents="none"
+            style={{
+              position: 'absolute',
+              width: 290,
+              height: 150,
+              borderRadius: 24,
+              transform: [{ rotate: '-24deg' }],
+              borderWidth: 1,
+              borderColor: '#E4B86B22',
+              right: 160,
+              top: -70,
+            }}
+          />
+          <View
+            pointerEvents="none"
+            style={{
+              position: 'absolute',
+              width: 190,
+              height: 190,
+              borderRadius: 28,
+              transform: [{ rotate: '-24deg' }],
+              borderWidth: 1,
+              borderColor: '#FFFFFF12',
+              right: -50,
+              bottom: -130,
+            }}
+          />
           <View style={{ flex: 1, minWidth: 220 }}>
-            <Text style={[ds.eyebrow, { color: p.muted }]}>
+            <Text style={[ds.eyebrow, { color: '#E4B86B' }]}>
               {date.toLocaleDateString('en-IN', {
                 weekday: 'long',
                 day: 'numeric',
@@ -124,22 +173,27 @@ function ExecutiveWorkspace({ scope }: { scope: string }) {
             <Text
               accessibilityRole="header"
               style={{
-                color: p.ink,
+                color: '#FFFFFF',
                 fontSize: phone ? 31 : 38,
                 lineHeight: phone ? 38 : 46,
                 fontWeight: '600',
                 letterSpacing: -1.5,
               }}
             >
-              The big picture.
+              {tab === 'Workspaces'
+                ? 'Your work, connected.'
+                : 'The big picture.'}
             </Text>
-            <Text style={[ds.body, { color: p.muted, marginTop: 7 }]}>
-              Welcome back, {name}. Make space for what matters next.
+            <Text style={[ds.body, { color: '#CDDAED', marginTop: 7 }]}>
+              {tab === 'Workspaces'
+                ? 'Find your focus. Every tool and team, in one place.'
+                : `Welcome back, ${name}. Make space for what matters next.`}
             </Text>
           </View>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 9 }}>
             <DashButton
               label="Refresh"
+              inverse
               icon={false}
               busy={d.refreshing}
               onPress={() => void d.refresh()}
@@ -147,6 +201,7 @@ function ExecutiveWorkspace({ scope }: { scope: string }) {
             {can(PERMISSIONS.SCHOOLS_CREATE) ? (
               <DashButton
                 label="Add school"
+                inverse
                 primary
                 onPress={() => go('/(app)/schools/add')}
               />
@@ -154,10 +209,22 @@ function ExecutiveWorkspace({ scope }: { scope: string }) {
           </View>
         </View>
 
-        <View style={[st.nav, { borderColor: p.line }]}>
+        <View
+          style={[
+            st.nav,
+            {
+              borderColor: p.line,
+              backgroundColor: p.surface,
+              borderWidth: 1,
+              borderRadius: 12,
+              padding: 5,
+              paddingRight: 16,
+            },
+          ]}
+        >
           <View
             accessibilityRole="tablist"
-            style={{ flexDirection: 'row', gap: phone ? 20 : 30 }}
+            style={{ flexDirection: 'row', gap: 4 }}
           >
             {(['Overview', 'Workspaces'] as const).map((t) => (
               <Pressable
@@ -166,23 +233,57 @@ function ExecutiveWorkspace({ scope }: { scope: string }) {
                 accessibilityState={{ selected: tab === t }}
                 aria-selected={tab === t}
                 onPress={() => setTab(t)}
-                style={{
-                  minHeight: 50,
-                  borderBottomWidth: 2,
-                  borderBottomColor: tab === t ? p.green : 'transparent',
-                  justifyContent: 'center',
-                }}
+                style={({ hovered }: any) => ({
+                  minHeight: 42,
+                  borderRadius: 8,
+                  paddingHorizontal: phone ? 12 : 16,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 8,
+                  backgroundColor:
+                    tab === t ? p.greenFill : hovered ? p.inset : 'transparent',
+                })}
               >
+                {t === 'Overview' ? (
+                  <BarChart3
+                    size={15}
+                    color={tab === t ? '#FFFFFF' : p.muted}
+                  />
+                ) : (
+                  <LayoutGrid
+                    size={15}
+                    color={tab === t ? '#FFFFFF' : p.muted}
+                  />
+                )}
                 <Text
                   style={{
-                    color: tab === t ? p.green : p.muted,
+                    color: tab === t ? '#FFFFFF' : p.muted,
                     fontWeight: '600',
-                    fontSize: 13,
+                    fontSize: 12,
                   }}
                 >
                   {t}
-                  {t === 'Workspaces' ? `  ${workspaces.length}` : ''}
                 </Text>
+                {t === 'Workspaces' && (
+                  <View
+                    style={{
+                      borderRadius: 5,
+                      backgroundColor: tab === t ? '#FFFFFF20' : p.inset,
+                      paddingHorizontal: 6,
+                      paddingVertical: 2,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: tab === t ? '#FFFFFF' : p.muted,
+                        fontSize: 10,
+                        fontWeight: '600',
+                      }}
+                    >
+                      {workspaces.length}
+                    </Text>
+                  </View>
+                )}
               </Pressable>
             ))}
           </View>
@@ -198,7 +299,7 @@ function ExecutiveWorkspace({ scope }: { scope: string }) {
           ) : null}
         </View>
 
-        {sourceErrors ? (
+        {sourceErrors && tab === 'Overview' ? (
           <View
             accessibilityRole="alert"
             style={{
@@ -305,11 +406,11 @@ function ExecutiveWorkspace({ scope }: { scope: string }) {
             NEXSYRUS / {roleLabel || 'WORKSPACE'}
           </Text>
           <Text style={{ color: p.muted, fontSize: 11 }}>
-            {sourceErrors
+            {sourceErrors && tab === 'Overview'
               ? 'Some data sources need attention'
               : d.refreshing
-                ? 'Refreshing your workspace…'
-                : 'Your workspace, in perspective.'}
+              ? 'Refreshing your workspace…'
+              : 'Your workspace, in perspective.'}
           </Text>
         </View>
       </View>
