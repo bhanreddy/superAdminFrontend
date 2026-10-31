@@ -378,7 +378,8 @@ export default function LoginScreen({ caMode = false }: { caMode?: boolean }) {
                       accessibilityRole="tab"
                       accessibilityLabel="Operations SuperAdmin Access"
                       accessibilityState={{ selected: !caMode }}
-                      style={[styles.modeTab, !caMode && styles.modeTabActive]}
+                      // Link's asChild slot merges styles as objects, so flatten native arrays first.
+                      style={StyleSheet.flatten([styles.modeTab, !caMode && styles.modeTabActive])}
                     >
                       <Shield size={14} color={!caMode ? '#FFFFFF' : COMMAND_CENTER.textTertiary} />
                       <Text style={[styles.modeTabText, !caMode && styles.modeTabTextActive]}>
@@ -392,7 +393,7 @@ export default function LoginScreen({ caMode = false }: { caMode?: boolean }) {
                       accessibilityRole="tab"
                       accessibilityLabel="Chartered Accountant Books Access"
                       accessibilityState={{ selected: caMode }}
-                      style={[styles.modeTab, caMode && styles.modeTabActiveCA]}
+                      style={StyleSheet.flatten([styles.modeTab, caMode && styles.modeTabActiveCA])}
                     >
                       <Layers size={14} color={caMode ? '#FFFFFF' : COMMAND_CENTER.textTertiary} />
                       <Text style={[styles.modeTabText, caMode && styles.modeTabTextActive]}>

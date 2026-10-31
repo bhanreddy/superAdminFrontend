@@ -2,6 +2,8 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const path = require('node:path');
 const React = require('react');
+const { Slot } = require('@radix-ui/react-slot');
+const { StyleSheet } = require('react-native-web');
 const { create, act } = require('react-test-renderer');
 const { frontend, textOf } = require('./helpers.cjs');
 
@@ -20,14 +22,14 @@ function createAuthLoader(options = {}) {
     View: 'View',
     Text: 'Text',
     ScrollView: 'ScrollView',
-    Pressable: ({ children, onPress, ...props }) => React.createElement('Pressable', { ...props, onPress }, children),
+    Pressable: React.forwardRef(({ children, onPress, ...props }, ref) => React.createElement('Pressable', { ...props, onPress, ref }, children)),
     TextInput: ({ ...props }) => React.createElement('TextInput', { ...props }),
     ActivityIndicator: 'ActivityIndicator',
     Modal: ({ visible, children }) => (visible ? React.createElement('Modal', null, children) : null),
     KeyboardAvoidingView: ({ children }) => React.createElement('KeyboardAvoidingView', null, children),
     Image: ({ source, ...props }) => React.createElement('Image', { ...props }),
     Platform: { OS: 'web', select: (obj) => obj.web || obj.default },
-    StyleSheet: { create: (s) => s, absoluteFill: {} },
+    StyleSheet: { create: (s) => s, flatten: StyleSheet.flatten, absoluteFill: {} },
     useWindowDimensions: () => ({ width: windowWidth, height: windowHeight }),
     Animated: {
       Value: class {
@@ -75,7 +77,9 @@ function createAuthLoader(options = {}) {
   const expoRouter = {
     useRouter: () => ({ push: () => {}, replace: () => {} }),
     useLocalSearchParams: () => ({}),
-    Link: ({ children, href, asChild }) => children,
+    // Expo Router uses this real slot for asChild. Its object style merge must
+    // remain in the test: returning children hid the production startup crash.
+    Link: ({ children, href, asChild }) => React.createElement(Slot, { style: undefined }, children),
   };
 
   const themeContext = {
@@ -195,6 +199,25 @@ test('CA Mode renders Chartered Accountant branding and Books workspace access n
   assert.ok(content.includes('CA Account Identifier'), 'renders CA account identifier input label');
   assert.ok(content.includes('Chartered Accountant Gateway'), 'renders Books ledger access notice');
   assert.ok(content.includes('Authenticate CA Gateway'), 'renders CA authenticate action');
+});
+
+test('Both access modes pass valid styles through the real router slot', async () => {
+  for (const caMode of [false, true]) {
+    let screen;
+    const { LoginScreen } = createAuthLoader({ caMode });
+    await act(async () => {
+      screen = create(React.createElement(LoginScreen, { caMode }));
+    });
+    const tabs = screen.root.findAllByType('Pressable').filter((tab) => tab.props.accessibilityRole === 'tab');
+    assert.equal(tabs.length, 2);
+    for (const tab of tabs) {
+      assert.ok(!Object.keys(tab.props.style).some((key) => /^\d+$/.test(key)),
+        'router slot must not turn style arrays into indexed CSS properties');
+      assert.equal(tab.props.style.flexDirection, 'row', 'retains the actual native style properties');
+    }
+    assert.equal(tabs.filter((tab) => tab.props.accessibilityState.selected).length, 1);
+    screen.unmount();
+  }
 });
 
 test('Empty credentials submission triggers validation warning', async () => {
