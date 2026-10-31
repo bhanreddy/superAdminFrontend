@@ -11,6 +11,8 @@ import { usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
+import { useAuth } from '../../hooks/useAuth';
+import { isFounderOrSuperAdmin } from '../../constants/rbac';
 import { useTheme, WorkspaceThemeProvider } from '../../contexts/ThemeContext';
 
 interface DashboardLayoutProps {
@@ -22,7 +24,10 @@ const DashboardShell = React.memo(function DashboardShell({
 }: DashboardLayoutProps) {
   const { colors, layout: layoutTokens, isDark, zIndex } = useTheme();
   const { width: screenWidth } = useWindowDimensions();
-  const isConnect = usePathname() === '/connect';
+  const pathname = usePathname();
+  const { role } = useAuth();
+  const isConnect = pathname === '/connect';
+  const isExecutive = (pathname === '/' || pathname === '/console') && isFounderOrSuperAdmin(role);
   const isMobile = screenWidth < layoutTokens.mobileBreakpoint;
   const isCompactMobile = screenWidth < 480;
 
@@ -119,8 +124,8 @@ const DashboardShell = React.memo(function DashboardShell({
           style={[
             styles.scroller,
             {
-              paddingTop: isConnect ? 0 : isMobile ? 16 : 28,
-              paddingHorizontal: isConnect
+              paddingTop: isConnect || isExecutive ? 0 : isMobile ? 16 : 28,
+              paddingHorizontal: isConnect || isExecutive
                 ? 0
                 : isCompactMobile
                   ? 12
@@ -129,7 +134,7 @@ const DashboardShell = React.memo(function DashboardShell({
                     : screenWidth < 1200
                       ? 24
                       : 36,
-              paddingBottom: isConnect ? 0 : 48,
+              paddingBottom: isConnect || isExecutive ? 0 : 48,
               ...(isConnect ? { overflow: 'hidden' as const } : {}),
             },
           ]}

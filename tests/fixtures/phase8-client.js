@@ -1,11 +1,13 @@
 // Browser-side boundary used only by phase8-preview.cjs. All values are synthetic.
 import { getRolePermissions } from './src/constants/rbac';
+import { dashboardFixture } from './tests/fixtures/dashboard-fixture';
 const params = new URLSearchParams(location.search);
 const self = { id: '10000000-0000-4000-8000-000000000001', full_name: 'QA Demo User', employee_id: 'QA-001', role: 'FOUNDER' };
 const permissions = getRolePermissions(params.get('role') || 'FOUNDER');
 const school = { id: 101, name: 'QA Academy', school_name: 'QA Academy', code: 'QA101', city: 'Hyderabad', state: 'Telangana', address: 'Synthetic QA address', school_code: 'QA101', is_active: true, onboarding_status: 'pending_build', cluster_id: 'qa_cluster', student_count: 120, staff_count: 12 };
 const report = { organization_name: 'QA Books', currency: 'INR', from: '2026-04-01', to: '2026-10-30', aging_as_of: '2026-10-30', income: 0, expenses: 0, profit: 0, cash: 0, assets: 0, liabilities: 0, equity: 0, retained: 0, receivables: 0, payables: 0, trial: [], aging: [], cashflow: [], taxes: [], profit_loss: { income: [], expenses: [], total_income: 0, total_expenses: 0, net_profit: 0 }, balance_sheet: { as_of: '2026-10-30', assets: [], liabilities: [], equity: [], total_assets: 0, total_liabilities: 0, total_equity: 0, owner_equity: 0, prior_earnings: 0, period_earnings: 0, accumulated_earnings: 0, liabilities_and_equity: 0, difference: 0 }, cash_flow: { method: 'direct', opening_cash: 0, closing_cash: 0, net_change: 0, difference: 0, classification_complete: true, activities: [] } };
-function body(url) {
+function body(url, options = {}) {
+  if (params.get('dashboard') === '1') { const result = dashboardFixture(url, options); if (result !== undefined) return result; }
   if (url === '/api/v1/medical/shops/101/build-config') return { data: { env_file: '# Synthetic local QA configuration', tauri_config_changes: { productName: 'QA Medical' }, setup_commands: [], subscription_info: { razorpay_plan_id: null, subscription_status: 'trialing', trial_ends_at: null } } };
   if (url === '/api/v1/medical/shops') return { data: [] };
   if (url.includes('/books/')) {
@@ -47,11 +49,11 @@ function body(url) {
   // never silently treated as successful live integration tests.
   throw new Error(`QA fixture has no response contract for ${url}`);
 }
-async function get(url) {
+async function get(url, options = {}) {
   const state = new URLSearchParams(location.search).get('state');
   if (state === 'loading') return new Promise(() => {});
   if (state === 'error') throw new Error('QA simulated network failure. Retry is available where the screen supports it.');
-  return { data: body(url) };
+  return { data: body(url, options) };
 }
 const blocked = async () => { throw new Error('QA fixture is read only; this action did not change production data.'); };
 export const superAdminClient = { get, post: blocked, put: blocked, patch: blocked, delete: blocked, defaults: { headers: {} }, interceptors: { request: { use() {} }, response: { use() {} } } };

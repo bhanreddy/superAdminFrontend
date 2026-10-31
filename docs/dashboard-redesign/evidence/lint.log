@@ -1,0 +1,3 @@
+
+> nexsyrus-superadmin@1.0.0 lint
+> eslint app src tests scripts --ext .js,.cjs,.ts,.tsx

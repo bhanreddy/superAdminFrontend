@@ -1,0 +1,25 @@
+env: load .env
+env: export EXPO_PUBLIC_SUPERADMIN_API_URL EXPO_PUBLIC_SUPERADMIN_API_URL_WEB
+Starting Metro Bundler
+transform[stderr]: (node:89756) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+transform[stderr]: (Use `node --trace-warnings ...` to show where the warning was created)
+transform[stderr]: (node:89755) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+transform[stderr]: (Use `node --trace-warnings ...` to show where the warning was created)
+Android Bundled 2988ms (node_modules/expo-router/entry.js)
+
+Exporting 11 assets:
+assets/logo.png (354 kB)
+node_modules/@react-navigation/elements/src/assets/back-icon-mask.png (913 B)
+node_modules/@react-navigation/elements/src/assets/back-icon.png (5 variations | 148 B)
+node_modules/expo-router/assets/error.png (516 B)
+node_modules/expo-router/assets/file.png (158 B)
+node_modules/expo-router/assets/forward.png (250 B)
+node_modules/expo-router/assets/pkg.png (429 B)
+
+Exporting 1 bundle for android:
+_expo/static/js/android/entry-b570765caf8564deb344f5ebfe9d9027.hbc (7.75 MB)
+
+Exporting 1 file:
+metadata.json (842 B)
+
+App exported to: /tmp/nexsyrus-dashboard-android
