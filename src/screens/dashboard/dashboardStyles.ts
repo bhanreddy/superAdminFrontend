@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { borderRadius } from '../../constants/theme';
 export const dashboardStyles = StyleSheet.create({
   header: {
     flexDirection: 'row',
@@ -13,7 +14,12 @@ export const dashboardStyles = StyleSheet.create({
     justifyContent: 'space-between',
     borderBottomWidth: 1,
   },
-  hero: { borderRadius: 24, padding: 27, minWidth: 0, overflow: 'hidden' },
+  hero: {
+    borderRadius: borderRadius.xl,
+    padding: 28,
+    minWidth: 0,
+    overflow: 'hidden',
+  },
   pill: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -34,7 +40,7 @@ export const dashboardStyles = StyleSheet.create({
   heroLink: {
     alignSelf: 'flex-start',
     minHeight: 44,
-    borderRadius: 9,
+    borderRadius: borderRadius.md,
     paddingHorizontal: 15,
     paddingVertical: 12,
     flexDirection: 'row',

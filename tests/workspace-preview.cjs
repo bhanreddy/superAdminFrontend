@@ -102,7 +102,7 @@ async function start() {
           build.onLoad({ filter: /.*/, namespace: 'fixture' }, (args) => ({
             contents:
               args.path === 'motion'
-                ? "import React from 'react';import {View,Text} from 'react-native';const chain={duration:()=>chain,delay:()=>chain,springify:()=>chain};export const FadeInDown=chain,FadeInUp=chain,FadeInRight=chain,FadeIn=chain;export const useSharedValue=v=>({value:v});export const useAnimatedStyle=f=>f();export const withTiming=v=>v,withSpring=v=>v;export default {View,Text};"
+                ? "import React from 'react';import {View,Text} from 'react-native';const chain={duration:()=>chain,delay:()=>chain,springify:()=>chain};export const FadeInDown=chain,FadeInUp=chain,FadeInRight=chain,FadeInLeft=chain,FadeIn=chain;export const useSharedValue=v=>({value:v});export const useAnimatedStyle=f=>f();export const withTiming=v=>v,withSpring=v=>v;export const cancelAnimation=()=>{};export const withRepeat=v=>v;export default {View,Text,createAnimatedComponent:c=>c};"
                 : args.path === 'navigation'
                   ? "import React from 'react';export const useFocusEffect=fn=>React.useEffect(fn,[fn]);"
                   : args.path === 'router'

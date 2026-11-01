@@ -6,6 +6,28 @@ const ts = require('typescript');
 const frontend = path.resolve(__dirname, '..');
 const backend = path.resolve(frontend, '../SuperAdminBackend');
 
+// Native animation boundaries are synchronous in Node. Interaction state and
+// production handlers still execute; browser QA uses the real Reanimated runtime.
+function motionMock(native = {}) {
+  const React = require("react");
+  const chain = { duration: () => chain, delay: () => chain };
+  return {
+    __esModule: true,
+    default: {
+      View: native.View || "View",
+      createAnimatedComponent: (component) => component,
+    },
+    FadeInDown: chain,
+    FadeInLeft: chain,
+    cancelAnimation() {},
+    useSharedValue: (value) => React.useRef({ value }).current,
+    useAnimatedStyle: (factory) => factory(),
+    withTiming: (value) => value,
+    withSpring: (value) => value,
+    withRepeat: (value) => value,
+  };
+}
+
 // Load the real TS/TSX modules with explicit boundaries for native UI and infrastructure.
 function loader(mocks = {}) {
   const cache = new Map();
@@ -18,6 +40,7 @@ function loader(mocks = {}) {
     const localRequire = createRequire(filename);
     function requireModule(id) {
       if (Object.hasOwn(mocks, id)) return mocks[id];
+      if (id === 'react-native-reanimated') return motionMock(mocks['react-native']);
       if (!id.startsWith('.')) return localRequire(id);
       const base = path.resolve(path.dirname(filename), id);
       const resolved = [base, `${base}.ts`, `${base}.tsx`, `${base}.js`, `${base}/index.js`].find((p) => fs.existsSync(p) && fs.statSync(p).isFile());

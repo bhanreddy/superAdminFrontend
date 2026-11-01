@@ -1,16 +1,29 @@
-import React, { createContext, useContext, useCallback, useState, useRef, useEffect } from 'react';
+import { MotionPressable } from './MotionPressable';
+import React, {
+  createContext,
+  useContext,
+  useCallback,
+  useState,
+  useRef,
+  useEffect,
+} from 'react';
 import {
   View,
   Text,
   StyleSheet,
-
   Pressable,
   Platform,
   Dimensions,
   useWindowDimensions,
 } from 'react-native';
 import { Animated } from '../../utils/accessibleAnimation';
-import { X, CheckCircle2, AlertTriangle, AlertCircle, Info } from 'lucide-react-native';
+import {
+  X,
+  CheckCircle2,
+  AlertTriangle,
+  AlertCircle,
+  Info,
+} from 'lucide-react-native';
 import { useTheme, clayStyle } from '../../contexts/ThemeContext';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -24,7 +37,11 @@ interface ToastData {
 }
 
 interface ToastContextValue {
-  showToast: (message: string, variant?: ToastVariant, duration?: number) => void;
+  showToast: (
+    message: string,
+    variant?: ToastVariant,
+    duration?: number
+  ) => void;
 }
 
 const ToastContext = createContext<ToastContextValue>({
@@ -47,6 +64,7 @@ const ToastItem = React.memo(function ToastItem({
   const translateY = useRef(new Animated.Value(-30)).current;
   const opacity = useRef(new Animated.Value(0)).current;
   const progress = useRef(new Animated.Value(1)).current;
+  const [progressTrackWidth, setProgressTrackWidth] = useState(0);
 
   const duration = toast.duration || 4000;
 
@@ -66,11 +84,24 @@ const ToastItem = React.memo(function ToastItem({
 
   useEffect(() => {
     Animated.parallel([
-      Animated.spring(translateY, { toValue: 0, tension: 200, friction: 18, useNativeDriver: true }),
-      Animated.timing(opacity, { toValue: 1, duration: 200, useNativeDriver: true }),
+      Animated.spring(translateY, {
+        toValue: 0,
+        tension: 200,
+        friction: 18,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }),
     ]).start();
 
-    Animated.timing(progress, { toValue: 0, duration, useNativeDriver: false }).start();
+    Animated.timing(progress, {
+      toValue: 0,
+      duration,
+      useNativeDriver: true,
+    }).start();
 
     const timer = setTimeout(() => dismiss(), duration);
     return () => clearTimeout(timer);
@@ -78,20 +109,30 @@ const ToastItem = React.memo(function ToastItem({
 
   const dismiss = () => {
     Animated.parallel([
-      Animated.timing(translateY, { toValue: -30, duration: 150, useNativeDriver: true }),
-      Animated.timing(opacity, { toValue: 0, duration: 150, useNativeDriver: true }),
+      Animated.timing(translateY, {
+        toValue: -30,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacity, {
+        toValue: 0,
+        duration: 150,
+        useNativeDriver: true,
+      }),
     ]).start(() => onDismiss(toast.id));
   };
 
-  const progressWidth = progress.interpolate({
+  const progressOffset = progress.interpolate({
     inputRange: [0, 1],
-    outputRange: ['0%', '100%'],
+    outputRange: [-progressTrackWidth / 2, 0],
   });
 
   return (
     <Animated.View
       accessibilityRole={toast.variant === 'error' ? 'alert' : undefined}
-      accessibilityLiveRegion={toast.variant === 'error' ? 'assertive' : 'polite'}
+      accessibilityLiveRegion={
+        toast.variant === 'error' ? 'assertive' : 'polite'
+      }
       style={[
         styles.toast,
         {
@@ -103,15 +144,28 @@ const ToastItem = React.memo(function ToastItem({
       ]}
     >
       {/* Accent glow strip */}
-      <View style={[styles.toastAccent, { backgroundColor: `${accentColors[toast.variant]}30` }]}>
-        <View style={[styles.toastAccentLine, { backgroundColor: accentColors[toast.variant] }]} />
+      <View
+        style={[
+          styles.toastAccent,
+          { backgroundColor: `${accentColors[toast.variant]}30` },
+        ]}
+      >
+        <View
+          style={[
+            styles.toastAccentLine,
+            { backgroundColor: accentColors[toast.variant] },
+          ]}
+        />
       </View>
       <View style={styles.toastBody}>
         <View style={styles.toastIconWrap}>{icons[toast.variant]}</View>
-        <Text style={[styles.toastMessage, { color: colors.textPrimary }]} numberOfLines={3}>
+        <Text
+          style={[styles.toastMessage, { color: colors.textPrimary }]}
+          numberOfLines={3}
+        >
           {toast.message}
         </Text>
-        <Pressable
+        <MotionPressable
           accessibilityRole="button"
           accessibilityLabel="Dismiss notification"
           onPress={dismiss}
@@ -122,14 +176,18 @@ const ToastItem = React.memo(function ToastItem({
           hitSlop={8}
         >
           <X size={14} color={colors.textTertiary} />
-        </Pressable>
+        </MotionPressable>
       </View>
       <Animated.View
+        onLayout={(event) =>
+          setProgressTrackWidth(event.nativeEvent.layout.width)
+        }
         style={[
           styles.toastProgress,
           {
             backgroundColor: accentColors[toast.variant],
-            width: progressWidth as any,
+            width: '100%',
+            transform: [{ translateX: progressOffset }, { scaleX: progress }],
           },
         ]}
       />
@@ -145,9 +203,12 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const showToast = useCallback(
     (message: string, variant: ToastVariant = 'info', duration = 4000) => {
       const id = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-      setToasts((prev) => [...prev.slice(-4), { id, message, variant, duration }]);
+      setToasts((prev) => [
+        ...prev.slice(-4),
+        { id, message, variant, duration },
+      ]);
     },
-    [],
+    []
   );
 
   const dismissToast = useCallback((id: string) => {
@@ -157,7 +218,13 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      <View style={[styles.container, { width: Math.max(0, Math.min(380, width - 32)) }]} pointerEvents="box-none">
+      <View
+        style={[
+          styles.container,
+          { width: Math.max(0, Math.min(380, width - 32)) },
+        ]}
+        pointerEvents="box-none"
+      >
         {toasts.map((toast) => (
           <ToastItem key={toast.id} toast={toast} onDismiss={dismissToast} />
         ))}

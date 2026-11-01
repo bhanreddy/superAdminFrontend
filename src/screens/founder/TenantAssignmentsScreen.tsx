@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Building2, Store, ShoppingBag, Contact, UserRound, ShieldAlert, Users2 } from 'lucide-react-native';
@@ -162,7 +163,7 @@ function OwnerPill({ label, active, isDark, colors, onPress }: { label: string; 
       style={({ pressed }) => [
         st.ownerPill,
         active
-          ? { backgroundColor: 'rgba(14,165,233,0.14)', borderColor: '#0EA5E9' }
+          ? { backgroundColor: 'rgba(14,165,233,0.14)', borderColor: brandColors.blue }
           : { backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : colors.surface, borderColor: isDark ? 'rgba(255,255,255,0.08)' : colors.border },
         ...pressableWebStyles(pressed, { pressedOpacity: 0.75 }),
       ]}

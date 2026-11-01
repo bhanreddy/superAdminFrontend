@@ -51,7 +51,7 @@ function ensureTransitionStyles() {
         [role="button"], button { min-height: 44px; min-width: 44px; }
       }
       [tabindex]:focus-visible, a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
-        outline: 3px solid var(--nex-focus, #3155C6) !important; outline-offset: 3px;
+        outline: 3px solid var(--nex-focus, #B52E35) !important; outline-offset: 3px;
       }
       @media (prefers-reduced-motion: reduce) {
         *, *::before, *::after {
@@ -183,22 +183,14 @@ export function WorkspaceThemeProvider({
   const workspaceModule = getWorkspaceModule(path);
   const value = useMemo(() => {
     const palette = workspaceModules[workspaceModule];
-    const primary = base.isDark ? palette.dark : palette.light;
     const tint = base.isDark ? palette.night : palette.tint;
     return {
       ...base,
       workspaceModule,
       colors: {
         ...base.colors,
-        primary,
-        primaryFill: palette.fill,
-        primaryHover: palette.fill,
-        primaryDim: tint,
-        primaryMuted: tint,
-        focusRing: primary,
         headerGradientStart: tint,
         headerGradientEnd: base.colors.card,
-        tabBarActive: primary,
       },
     };
   }, [base, workspaceModule]);

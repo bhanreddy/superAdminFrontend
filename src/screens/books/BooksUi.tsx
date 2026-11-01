@@ -1,8 +1,12 @@
+import { brandColors, type CardTone } from '../../constants/experienceColors';
+import { borderRadius } from '../../constants/theme';
+import { MotionPressable } from '../../components/ui/MotionPressable';
+import { Card } from '../../components/ui/Card';
+import { MotionSection } from '../../components/ui/MotionSection';
 import React, { createContext, useContext, useState } from 'react';
 import {
   View,
   Text,
-  Pressable,
   TextInput,
   ScrollView,
   Modal,
@@ -32,7 +36,7 @@ export function Action({
 }) {
   const { colors } = useTheme();
   return (
-    <Pressable
+    <MotionPressable
       accessibilityRole="button"
       accessibilityLabel={label}
       disabled={disabled}
@@ -46,8 +50,8 @@ export function Action({
           backgroundColor: secondary
             ? colors.background
             : danger
-              ? '#be344b'
-              : colors.primaryFill,
+            ? brandColors.redDark
+            : colors.primaryFill,
           borderColor: secondary ? colors.border : 'transparent',
           opacity: disabled ? 0.45 : pressed ? 0.75 : 1,
         },
@@ -63,19 +67,26 @@ export function Action({
       >
         {label}
       </Text>
-    </Pressable>
+    </MotionPressable>
   );
 }
 export function Panel({
   children,
   style,
+  tone,
+  material = 'panel',
 }: {
   children: React.ReactNode;
   style?: object;
+  tone?: CardTone;
+  material?: 'soft' | 'panel';
 }) {
   const { colors } = useTheme();
   return (
-    <View
+    <Card
+      noPadding
+      tone={tone}
+      material={material}
       style={[
         ui.panel,
         { backgroundColor: colors.surface, borderColor: colors.border },
@@ -83,13 +94,27 @@ export function Panel({
       ]}
     >
       {children}
-    </View>
+    </Card>
   );
 }
 const InFormRow = createContext(false);
 /** Fields grow horizontally only inside an explicit form row, never down a dialog. */
-export function FormRow({ children, style }: { children: React.ReactNode; style?: object }) {
-  return <InFormRow.Provider value={true}><View style={[ui.wrap, { flexShrink: 0, alignItems: 'flex-start' }, style]}>{children}</View></InFormRow.Provider>;
+export function FormRow({
+  children,
+  style,
+}: {
+  children: React.ReactNode;
+  style?: object;
+}) {
+  return (
+    <InFormRow.Provider value={true}>
+      <View
+        style={[ui.wrap, { flexShrink: 0, alignItems: 'flex-start' }, style]}
+      >
+        {children}
+      </View>
+    </InFormRow.Provider>
+  );
 }
 function useFieldLayout() {
   return [ui.field, useContext(InFormRow) && ui.fieldInRow];
@@ -148,17 +173,22 @@ export function Select({
 }) {
   const [open, setOpen] = useState(false),
     [query, setQuery] = useState('');
-  const { colors } = useTheme();
+  const { colors, reducedMotion } = useTheme();
   const { width, height } = useWindowDimensions();
   const layout = useFieldLayout();
-  const filtered = options.filter(o => o.label.toLowerCase().includes(query.trim().toLowerCase()));
+  const filtered = options.filter((o) =>
+    o.label.toLowerCase().includes(query.trim().toLowerCase()),
+  );
   return (
     <View style={layout}>
-      {!compact && <Text style={[ui.label, { color: colors.textSecondary }]}>{label}</Text>}
-      <Pressable
+      {!compact && (
+        <Text style={[ui.label, { color: colors.textSecondary }]}>{label}</Text>
+      )}
+      <MotionPressable
         accessibilityRole="button"
         accessibilityLabel={label}
-        accessibilityState={{ expanded: open }} aria-expanded={open}
+        accessibilityState={{ expanded: open }}
+        aria-expanded={open}
         onPress={() => {
           setQuery('');
           setOpen(true);
@@ -179,62 +209,106 @@ export function Select({
           {options.find((o) => o.value === value)?.label || 'Select…'}
         </Text>
         <ChevronDown size={15} color={colors.textSecondary} />
-      </Pressable>
+      </MotionPressable>
       <Modal
         visible={open}
         transparent
-        animationType="fade"
+        animationType={reducedMotion ? 'none' : 'fade'}
         onRequestClose={() => setOpen(false)}
       >
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={ui.overlay}>
-          <InFormRow.Provider value={false}><View
-            role="dialog"
-            accessibilityLabel={label}
-            accessibilityViewIsModal
-            style={[
-              ui.selector,
-              { width: Math.min(480, Math.max(200, width - 32)), maxHeight: Math.max(180, height - 32), backgroundColor: colors.surface, borderColor: colors.border },
-            ]}
-          >
-            <View style={[ui.row, { justifyContent: 'space-between', flexShrink: 0 }]}>
-              <Text style={[ui.title, { color: colors.textPrimary, flex: 1, minWidth: 0 }]}>
-                {label}
-              </Text>
-              <Action label="Close" secondary onPress={() => setOpen(false)} />
-            </View>
-            <Field label="Find an option" value={query} onChange={setQuery} />
-            <ScrollView accessibilityLabel={`${label} options`} style={ui.modalBody} contentContainerStyle={{ gap: 4 }} keyboardShouldPersistTaps="handled">
-              <View role="radiogroup" accessibilityLabel={`${label} options`} style={{ gap: 4 }}>
-              {filtered.map((o) => (
-                  <Pressable
-                    key={o.value}
-                    role="radio"
-                    accessibilityState={{ checked: o.value === value }} aria-checked={o.value === value}
-                    onPress={() => {
-                      onChange(o.value);
-                      setOpen(false);
-                    }}
-                    style={[
-                      ui.option,
-                      {
-                        backgroundColor:
-                          o.value === value
-                            ? colors.primary + '18'
-                            : 'transparent',
-                      },
-                    ]}
-                  >
-                    <Text style={{ color: colors.textPrimary }}>{o.label}</Text>
-                  </Pressable>
-                ))}
-              {!filtered.length && (
-                <Text style={{ color: colors.textSecondary, padding: 16, lineHeight: 21 }}>
-                  {options.length ? 'No options match your search.' : 'No records yet. Create one first.'}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={ui.overlay}
+        >
+          <InFormRow.Provider value={false}>
+            <View
+              role="dialog"
+              accessibilityLabel={label}
+              accessibilityViewIsModal
+              style={[
+                ui.selector,
+                {
+                  width: Math.min(480, Math.max(200, width - 32)),
+                  maxHeight: Math.max(180, height - 32),
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                },
+              ]}
+            >
+              <View
+                style={[
+                  ui.row,
+                  { justifyContent: 'space-between', flexShrink: 0 },
+                ]}
+              >
+                <Text
+                  style={[
+                    ui.title,
+                    { color: colors.textPrimary, flex: 1, minWidth: 0 },
+                  ]}
+                >
+                  {label}
                 </Text>
-              )}
+                <Action
+                  label="Close"
+                  secondary
+                  onPress={() => setOpen(false)}
+                />
               </View>
-            </ScrollView>
-          </View></InFormRow.Provider>
+              <Field label="Find an option" value={query} onChange={setQuery} />
+              <ScrollView
+                accessibilityLabel={`${label} options`}
+                style={ui.modalBody}
+                contentContainerStyle={{ gap: 4 }}
+                keyboardShouldPersistTaps="handled"
+              >
+                <View
+                  role="radiogroup"
+                  accessibilityLabel={`${label} options`}
+                  style={{ gap: 4 }}
+                >
+                  {filtered.map((o) => (
+                    <MotionPressable
+                      key={o.value}
+                      role="radio"
+                      accessibilityState={{ checked: o.value === value }}
+                      aria-checked={o.value === value}
+                      onPress={() => {
+                        onChange(o.value);
+                        setOpen(false);
+                      }}
+                      style={[
+                        ui.option,
+                        {
+                          backgroundColor:
+                            o.value === value
+                              ? colors.primary + '18'
+                              : 'transparent',
+                        },
+                      ]}
+                    >
+                      <Text style={{ color: colors.textPrimary }}>
+                        {o.label}
+                      </Text>
+                    </MotionPressable>
+                  ))}
+                  {!filtered.length && (
+                    <Text
+                      style={{
+                        color: colors.textSecondary,
+                        padding: 16,
+                        lineHeight: 21,
+                      }}
+                    >
+                      {options.length
+                        ? 'No options match your search.'
+                        : 'No records yet. Create one first.'}
+                    </Text>
+                  )}
+                </View>
+              </ScrollView>
+            </View>
+          </InFormRow.Provider>
         </KeyboardAvoidingView>
       </Modal>
     </View>
@@ -252,13 +326,28 @@ export function Toggle({
   const { colors } = useTheme();
   return (
     <View
-      style={[ui.row, { justifyContent: 'space-between', paddingVertical: 12, flexShrink: 0 }]}
+      style={[
+        ui.row,
+        { justifyContent: 'space-between', paddingVertical: 12, flexShrink: 0 },
+      ]}
     >
-      <Text style={{ color: colors.textPrimary, flex: 1, minWidth: 0, lineHeight: 21 }}>{label}</Text>
+      <Text
+        style={{
+          color: colors.textPrimary,
+          flex: 1,
+          minWidth: 0,
+          lineHeight: 21,
+        }}
+      >
+        {label}
+      </Text>
       <Switch
         accessibilityLabel={label}
         value={value}
         onValueChange={onChange}
+        trackColor={{ false: colors.border, true: colors.primaryFill }}
+        thumbColor={brandColors.white}
+        ios_backgroundColor={colors.border}
       />
     </View>
   );
@@ -278,84 +367,92 @@ export function Dialog({
   busy?: boolean;
   maxWidth?: number;
 }) {
-  const { colors } = useTheme();
+  const { colors, reducedMotion } = useTheme();
   const { width, height } = useWindowDimensions();
   return (
     <Modal
       visible
       transparent
-      animationType="fade"
+      animationType={reducedMotion ? 'none' : 'fade'}
       onRequestClose={() => {
         if (!busy) onClose();
       }}
     >
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={ui.overlay}>
-        <InFormRow.Provider value={false}><View
-          role="dialog"
-          accessibilityLabel={title}
-          accessibilityViewIsModal
-          style={[
-            ui.dialog,
-            {
-              width: Math.min(maxWidth, Math.max(200, width - 32)),
-              maxHeight: Math.max(180, height - 32),
-              backgroundColor: colors.surface,
-              borderColor: colors.border,
-            },
-          ]}
-        >
-          <View
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={ui.overlay}
+      >
+        <InFormRow.Provider value={false}>
+          <MotionSection
+            role="dialog"
+            accessibilityLabel={title}
+            accessibilityViewIsModal
             style={[
-              ui.row,
+              ui.dialog,
               {
-                justifyContent: 'space-between',
-                padding: width < 600 ? 16 : 22,
-                flexShrink: 0,
-                borderBottomWidth: 1,
+                width: Math.min(maxWidth, Math.max(200, width - 32)),
+                maxHeight: Math.max(180, height - 32),
+                backgroundColor: colors.surface,
                 borderColor: colors.border,
               },
             ]}
           >
-            <Text style={[ui.title, { color: colors.textPrimary, flex: 1 }]}>
-              {title}
-            </Text>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Close dialog"
-              disabled={busy}
-              onPress={onClose}
-              style={ui.closeButton}
-              hitSlop={4}
-            >
-              <X size={22} color={colors.textSecondary} />
-            </Pressable>
-          </View>
-          <ScrollView
-            style={ui.modalBody}
-            contentContainerStyle={{ padding: width < 600 ? 16 : 22, gap: 20 }}
-            keyboardShouldPersistTaps="handled"
-          >
-            {children}
-          </ScrollView>
-          {footer && (
             <View
               style={[
                 ui.row,
                 {
-                  padding: width < 600 ? 16 : 18,
+                  justifyContent: 'space-between',
+                  padding: width < 600 ? 16 : 22,
                   flexShrink: 0,
-                  borderTopWidth: 1,
+                  borderBottomWidth: 1,
                   borderColor: colors.border,
-                  justifyContent: 'flex-end',
-                  flexWrap: 'wrap',
                 },
               ]}
             >
-              {busy && <ActivityIndicator color={colors.primary} />}
-              {footer}
+              <Text style={[ui.title, { color: colors.textPrimary, flex: 1 }]}>
+                {title}
+              </Text>
+              <MotionPressable
+                accessibilityRole="button"
+                accessibilityLabel="Close dialog"
+                disabled={busy}
+                onPress={onClose}
+                style={ui.closeButton}
+                hitSlop={4}
+              >
+                <X size={22} color={colors.textSecondary} />
+              </MotionPressable>
             </View>
-          )}
-        </View></InFormRow.Provider>
+            <ScrollView
+              style={ui.modalBody}
+              contentContainerStyle={{
+                padding: width < 600 ? 16 : 22,
+                gap: 20,
+              }}
+              keyboardShouldPersistTaps="handled"
+            >
+              {children}
+            </ScrollView>
+            {footer && (
+              <View
+                style={[
+                  ui.row,
+                  {
+                    padding: width < 600 ? 16 : 18,
+                    flexShrink: 0,
+                    borderTopWidth: 1,
+                    borderColor: colors.border,
+                    justifyContent: 'flex-end',
+                    flexWrap: 'wrap',
+                  },
+                ]}
+              >
+                {busy && <ActivityIndicator color={colors.primary} />}
+                {footer}
+              </View>
+            )}
+          </MotionSection>
+        </InFormRow.Provider>
       </KeyboardAvoidingView>
     </Modal>
   );
@@ -405,7 +502,7 @@ export function Table({
             ))}
           </View>
           {rows.map((row, i) => (
-            <Pressable
+            <MotionPressable
               key={row.id || row.code || i}
               accessibilityRole={onRow ? 'button' : undefined}
               onPress={() => onRow?.(row)}
@@ -446,7 +543,7 @@ export function Table({
                   )}
                 </View>
               ))}
-            </Pressable>
+            </MotionPressable>
           ))}
           {!rows.length && (
             <Text
@@ -461,18 +558,19 @@ export function Table({
   );
 }
 export function Badge({ value }: { value: string }) {
+  const { colors } = useTheme();
   const color =
     (
       {
-        draft: '#b48223',
-        posted: '#12926f',
-        void: '#b83d55',
-        paid: '#12926f',
-        active: '#12926f',
-        matched: '#12926f',
-        unmatched: '#b48223',
+        draft: colors.warning,
+        posted: colors.success,
+        void: colors.error,
+        paid: colors.success,
+        active: colors.success,
+        matched: colors.success,
+        unmatched: colors.warning,
       } as Record<string, string>
-    )[value] || '#68778a';
+    )[value] || colors.textSecondary;
   return (
     <View
       style={{
@@ -503,20 +601,21 @@ export function Notice({
   text: string;
   error?: boolean;
 }) {
+  const { colors } = useTheme();
   return (
     <View
       accessibilityRole="alert"
       style={{
         padding: 14,
         borderRadius: 10,
-        backgroundColor: error ? '#be344b15' : '#297ac215',
+        backgroundColor: error ? colors.errorDim : colors.infoDim,
         borderWidth: 1,
-        borderColor: error ? '#be344b40' : '#297ac230',
+        borderColor: error ? colors.errorDim : colors.infoDim,
       }}
     >
       <Text
         style={{
-          color: error ? '#c6465a' : '#4284bd',
+          color: error ? colors.error : colors.info,
           lineHeight: 21,
           fontSize: 13,
         }}
@@ -527,32 +626,52 @@ export function Notice({
   );
 }
 export const ui = StyleSheet.create({
-  field: { gap: 7, flexShrink: 0, minWidth: 0, maxWidth: '100%', alignSelf: 'stretch' },
+  field: {
+    gap: 7,
+    flexShrink: 0,
+    minWidth: 0,
+    maxWidth: '100%',
+    alignSelf: 'stretch',
+  },
   fieldInRow: { flexGrow: 1, flexShrink: 0, flexBasis: 160, minWidth: 150 },
   modalBody: { flexGrow: 0, flexShrink: 1, minHeight: 0 },
-  closeButton: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', borderRadius: 8, flexShrink: 0 },
+  closeButton: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: borderRadius.md,
+    flexShrink: 0,
+  },
   row: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },
   action: {
-    minHeight: 40,
+    minHeight: 44,
     flexShrink: 0,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    borderRadius: 8,
+    borderRadius: borderRadius.md,
     flexDirection: 'row',
     gap: 7,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
   },
-  panel: { borderWidth: 1, borderRadius: 14, padding: 22, gap: 16, flexShrink: 0, minWidth: 0 },
+  panel: {
+    borderWidth: 1,
+    borderRadius: borderRadius.xl,
+    padding: 22,
+    gap: 16,
+    flexShrink: 0,
+    minWidth: 0,
+  },
   label: { fontSize: 12, lineHeight: 18, fontWeight: '600', flexShrink: 0 },
   input: {
     flexShrink: 0,
     minWidth: 0,
     lineHeight: 20,
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: borderRadius.md,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 14,
@@ -586,5 +705,10 @@ export const ui = StyleSheet.create({
     borderWidth: 1,
     gap: 18,
   },
-  option: { padding: 14, borderRadius: 8, minHeight: 44, flexShrink: 0 },
+  option: {
+    padding: 14,
+    borderRadius: borderRadius.md,
+    minHeight: 44,
+    flexShrink: 0,
+  },
 });

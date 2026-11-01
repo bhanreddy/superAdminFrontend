@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View,
@@ -86,7 +87,7 @@ export default function SprintCommandCenterScreen() {
         shortName: 'Tech',
         subtitle: definition?.roles.tech.subtitle || 'Cross-functional technical strike force',
         icon: '🛠️',
-        color: isDark ? '#38bdf8' : '#0369A1',
+        color: isDark ? brandColors.blueBright : brandColors.blue,
         bg: isDark ? 'rgba(56, 189, 248, 0.12)' : 'rgba(3, 105, 161, 0.08)',
         border: isDark ? 'rgba(56, 189, 248, 0.3)' : 'rgba(3, 105, 161, 0.25)',
       },
@@ -95,7 +96,7 @@ export default function SprintCommandCenterScreen() {
         shortName: 'Curriculum',
         subtitle: definition?.roles.curr.subtitle || 'Academic architecture, validation, evidence',
         icon: '📚',
-        color: isDark ? '#818cf8' : '#6366F1',
+        color: isDark ? brandColors.violetBright : brandColors.violet,
         bg: isDark ? 'rgba(129, 140, 248, 0.12)' : 'rgba(99, 102, 241, 0.08)',
         border: isDark ? 'rgba(129, 140, 248, 0.3)' : 'rgba(99, 102, 241, 0.25)',
       },
@@ -104,16 +105,16 @@ export default function SprintCommandCenterScreen() {
         shortName: 'Sales',
         subtitle: definition?.roles.sales.subtitle || 'Pipeline, positioning, demos, commercial execution',
         icon: '📈',
-        color: isDark ? '#34d399' : '#059669',
-        bg: isDark ? 'rgba(52, 211, 153, 0.12)' : 'rgba(5, 150, 105, 0.08)',
-        border: isDark ? 'rgba(52, 211, 153, 0.3)' : 'rgba(5, 150, 105, 0.25)',
+        color: isDark ? brandColors.blueBright : brandColors.blue,
+        bg: isDark ? 'rgba(51, 95, 144, 0.12)' : 'rgba(51, 95, 144, 0.08)',
+        border: isDark ? 'rgba(51, 95, 144, 0.3)' : 'rgba(51, 95, 144, 0.25)',
       },
       scale: {
         name: definition?.roles.scale.name || 'Member 4 — Sales Scale & Hiring Lead',
         shortName: 'Scale',
         subtitle: definition?.roles.scale.subtitle || 'Brochure, hiring, training, enablement, operations',
         icon: '🚀',
-        color: isDark ? '#fbbf24' : '#B45309',
+        color: isDark ? brandColors.amberBright : brandColors.amber,
         bg: isDark ? 'rgba(251, 191, 36, 0.12)' : 'rgba(180, 83, 9, 0.08)',
         border: isDark ? 'rgba(251, 191, 36, 0.3)' : 'rgba(180, 83, 9, 0.25)',
       },
@@ -123,7 +124,7 @@ export default function SprintCommandCenterScreen() {
   const statusColors = useMemo(() => {
     return {
       todo: colors.textSecondary,
-      doing: isDark ? '#38bdf8' : '#0284C7',
+      doing: isDark ? brandColors.blueBright : brandColors.blue,
       blocked: colors.error,
       done: colors.success,
     };
@@ -132,7 +133,7 @@ export default function SprintCommandCenterScreen() {
   const gateColors = useMemo(() => {
     return {
       pending: { label: 'Pending', color: colors.textSecondary, border: colors.border },
-      in_progress: { label: 'Evaluating', color: isDark ? '#38bdf8' : '#0284C7', border: isDark ? '#38bdf8' : '#0284C7' },
+      in_progress: { label: 'Evaluating', color: isDark ? brandColors.blueBright : brandColors.blue, border: isDark ? brandColors.blueBright : brandColors.blue },
       passed: { label: 'Passed ✅', color: colors.success, border: colors.success },
       blocked: { label: 'At Risk ⚠️', color: colors.error, border: colors.error },
     };
@@ -369,7 +370,7 @@ export default function SprintCommandCenterScreen() {
               <Text style={[styles.brandP, { color: colors.textSecondary }]}>
                 100 hard deliverables. 4 owners. Technical work belongs only to the Tech Lead. No task closes without evidence.
               </Text>
-              <Text style={[styles.operatingRule, { color: isDark ? '#FECACA' : '#991B1B' }]}>
+              <Text style={[styles.operatingRule, { color: isDark ? brandColors.redBright : brandColors.rose }]}>
                 <Text style={{ fontWeight: '800' }}>Operating rule: </Text>
                 {definition?.operating_rule || 'Every task must end in an artifact, validated decision, logged activity, working build, or measurable result.'}
               </Text>
@@ -382,7 +383,7 @@ export default function SprintCommandCenterScreen() {
                 <View
                   style={[
                     styles.progressBarWrap,
-                    { backgroundColor: isDark ? '#22222E' : '#E5E5EA' },
+                    { backgroundColor: isDark ? experienceColors.dark.surface : brandColors.paperDeep },
                   ]}
                 >
                   <View
@@ -406,7 +407,7 @@ export default function SprintCommandCenterScreen() {
 
               <View style={styles.metricBox}>
                 <Text style={[styles.metricLbl, { color: colors.textSecondary }]}>In motion</Text>
-                <Text style={[styles.metricVal, { color: isDark ? '#38BDF8' : '#0369A1' }]}>{doingCount}</Text>
+                <Text style={[styles.metricVal, { color: isDark ? brandColors.blueBright : brandColors.blue }]}>{doingCount}</Text>
               </View>
 
               <View style={styles.metricBox}>
@@ -428,7 +429,7 @@ export default function SprintCommandCenterScreen() {
                 style={[
                   styles.btn,
                   {
-                    backgroundColor: isDark ? '#1E1E28' : '#FFFFFF',
+                    backgroundColor: isDark ? experienceColors.dark.surface : brandColors.white,
                     borderColor: colors.border,
                   },
                   clayStyle(clayShadows.subtle),
@@ -443,7 +444,7 @@ export default function SprintCommandCenterScreen() {
                 style={[
                   styles.btn,
                   {
-                    backgroundColor: isDark ? '#1E1E28' : '#FFFFFF',
+                    backgroundColor: isDark ? experienceColors.dark.surface : brandColors.white,
                     borderColor: colors.border,
                   },
                   clayStyle(clayShadows.subtle),
@@ -603,8 +604,8 @@ export default function SprintCommandCenterScreen() {
                 style={[
                   styles.briefBox,
                   {
-                    backgroundColor: isDark ? '#181824' : '#F0F9FF',
-                    borderLeftColor: isDark ? '#38bdf8' : '#0284C7',
+                    backgroundColor: isDark ? experienceColors.dark.surface : brandColors.paperDeep,
+                    borderLeftColor: isDark ? brandColors.blueBright : brandColors.blue,
                   },
                 ]}
               >
@@ -621,7 +622,7 @@ export default function SprintCommandCenterScreen() {
                   styles.briefBox,
                   styles.briefBoxGate,
                   {
-                    backgroundColor: isDark ? '#181824' : '#F0FDF4',
+                    backgroundColor: isDark ? experienceColors.dark.surface : brandColors.paperDeep,
                     borderLeftColor: colors.success,
                   },
                 ]}
@@ -635,7 +636,7 @@ export default function SprintCommandCenterScreen() {
                       value={currentDay.gate_status}
                       onChange={(e) => handleUpdateGateStatus(e.target.value as SprintGateStatus)}
                       style={{
-                        backgroundColor: isDark ? '#121216' : '#FFFFFF',
+                        backgroundColor: isDark ? experienceColors.dark.surface : brandColors.white,
                         borderWidth: 1,
                         borderColor: gateColors[currentDay.gate_status].border,
                         color: gateColors[currentDay.gate_status].color,
@@ -689,7 +690,7 @@ export default function SprintCommandCenterScreen() {
                 style={[
                   styles.searchWrap,
                   {
-                    backgroundColor: isDark ? '#0F0F14' : '#F5F5F7',
+                    backgroundColor: isDark ? experienceColors.dark.surface : brandColors.paperDeep,
                     borderColor: colors.border,
                   },
                 ]}
@@ -720,7 +721,7 @@ export default function SprintCommandCenterScreen() {
                       {
                         backgroundColor: selectedRoleFilter === r
                           ? colors.primary
-                          : isDark ? '#1E1E28' : '#F5F5F7',
+                          : isDark ? experienceColors.dark.surface : brandColors.paperDeep,
                         borderColor: selectedRoleFilter === r ? colors.primary : colors.border,
                       },
                     ]}
@@ -752,7 +753,7 @@ export default function SprintCommandCenterScreen() {
                       {
                         backgroundColor: selectedStatusFilter === s
                           ? colors.primary
-                          : isDark ? '#1E1E28' : '#F5F5F7',
+                          : isDark ? experienceColors.dark.surface : brandColors.paperDeep,
                         borderColor: selectedStatusFilter === s ? colors.primary : colors.border,
                       },
                     ]}
@@ -883,7 +884,7 @@ export default function SprintCommandCenterScreen() {
             style={[
               styles.modal,
               {
-                backgroundColor: isDark ? '#181824' : '#FFFFFF',
+                backgroundColor: isDark ? experienceColors.dark.surface : brandColors.white,
                 borderColor: colors.clayBorderColor,
               },
               clayStyle(clayShadows.clayElevated),
@@ -904,9 +905,9 @@ export default function SprintCommandCenterScreen() {
               style={[
                 styles.modalTextarea,
                 {
-                  backgroundColor: isDark ? '#0F0F14' : '#F5F5F7',
+                  backgroundColor: isDark ? experienceColors.dark.surface : brandColors.paperDeep,
                   borderColor: colors.border,
-                  color: isDark ? '#38bdf8' : '#0284C7',
+                  color: isDark ? brandColors.blueBright : brandColors.blue,
                 },
               ]}
               multiline
@@ -940,7 +941,7 @@ export default function SprintCommandCenterScreen() {
             style={[
               styles.modal,
               {
-                backgroundColor: isDark ? '#181824' : '#FFFFFF',
+                backgroundColor: isDark ? experienceColors.dark.surface : brandColors.white,
                 borderColor: colors.clayBorderColor,
               },
               clayStyle(clayShadows.clayElevated),
@@ -978,7 +979,7 @@ export default function SprintCommandCenterScreen() {
                     style={[
                       styles.fieldInput,
                       {
-                        backgroundColor: isDark ? '#0F0F14' : '#F5F5F7',
+                        backgroundColor: isDark ? experienceColors.dark.surface : brandColors.paperDeep,
                         borderColor: editBlockerReason ? colors.error : colors.border,
                         color: colors.textPrimary,
                       },
@@ -1006,7 +1007,7 @@ export default function SprintCommandCenterScreen() {
                         {
                           backgroundColor: editAssigneeId === null
                             ? colors.primary
-                            : isDark ? '#1E1E28' : '#F5F5F7',
+                            : isDark ? experienceColors.dark.surface : brandColors.paperDeep,
                           borderColor: editAssigneeId === null ? colors.primary : colors.border,
                         },
                       ]}
@@ -1034,7 +1035,7 @@ export default function SprintCommandCenterScreen() {
                           {
                             backgroundColor: editAssigneeId === m.id
                               ? colors.primary
-                              : isDark ? '#1E1E28' : '#F5F5F7',
+                              : isDark ? experienceColors.dark.surface : brandColors.paperDeep,
                             borderColor: editAssigneeId === m.id ? colors.primary : colors.border,
                           },
                         ]}
@@ -1069,7 +1070,7 @@ export default function SprintCommandCenterScreen() {
                     style={[
                       styles.fieldInput,
                       {
-                        backgroundColor: isDark ? '#0F0F14' : '#F5F5F7',
+                        backgroundColor: isDark ? experienceColors.dark.surface : brandColors.paperDeep,
                         borderColor: editingTask.status === 'done' && !editNotes.trim() ? colors.error : colors.border,
                         color: colors.textPrimary,
                         height: 70,
@@ -1088,7 +1089,7 @@ export default function SprintCommandCenterScreen() {
                     style={[
                       styles.btn,
                       {
-                        backgroundColor: isDark ? '#1E1E28' : '#F5F5F7',
+                        backgroundColor: isDark ? experienceColors.dark.surface : brandColors.paperDeep,
                         borderColor: colors.border,
                         marginRight: 8,
                       },
@@ -1122,7 +1123,7 @@ export default function SprintCommandCenterScreen() {
             style={[
               styles.modal,
               {
-                backgroundColor: isDark ? '#181824' : '#FFFFFF',
+                backgroundColor: isDark ? experienceColors.dark.surface : brandColors.white,
                 borderColor: colors.clayBorderColor,
               },
               clayStyle(clayShadows.clayElevated),
@@ -1148,7 +1149,7 @@ export default function SprintCommandCenterScreen() {
                     style={[
                       styles.logRow,
                       {
-                        backgroundColor: isDark ? '#1F1F2C' : '#F5F5F7',
+                        backgroundColor: isDark ? experienceColors.dark.surface : brandColors.paperDeep,
                         borderColor: colors.border,
                       },
                     ]}
@@ -1192,7 +1193,7 @@ function TaskCard({ task, isDark, colors, clayShadows, statusColor, onSetStatus,
       style={[
         styles.card,
         {
-          backgroundColor: isDark ? '#1E1E2A' : '#FFFFFF',
+          backgroundColor: isDark ? experienceColors.dark.surface : brandColors.white,
           borderColor: isBlocked
             ? isDark ? 'rgba(255, 69, 58, 0.4)' : 'rgba(255, 59, 48, 0.3)'
             : isDoing
@@ -1215,7 +1216,7 @@ function TaskCard({ task, isDark, colors, clayShadows, statusColor, onSetStatus,
           style={[
             styles.cardId,
             {
-              backgroundColor: isDark ? '#121216' : '#F0F0F4',
+              backgroundColor: isDark ? experienceColors.dark.surface : brandColors.paperDeep,
               borderColor: colors.border,
               color: colors.textSecondary,
             },
@@ -1278,7 +1279,7 @@ function TaskCard({ task, isDark, colors, clayShadows, statusColor, onSetStatus,
             value={task.status}
             onChange={(e) => onSetStatus(task, e.target.value as SprintTaskStatus)}
             style={{
-              backgroundColor: isDark ? '#121216' : '#FFFFFF',
+              backgroundColor: isDark ? experienceColors.dark.surface : brandColors.white,
               borderWidth: 1,
               borderColor: statusColor,
               color: statusColor,
@@ -1290,10 +1291,10 @@ function TaskCard({ task, isDark, colors, clayShadows, statusColor, onSetStatus,
               outline: 'none',
             }}
           >
-            <option value="todo" style={{ background: isDark ? '#121216' : '#FFFFFF', color: colors.textSecondary }}>To Do</option>
-            <option value="doing" style={{ background: isDark ? '#121216' : '#FFFFFF', color: isDark ? '#38bdf8' : '#0284C7' }}>Doing</option>
-            <option value="blocked" style={{ background: isDark ? '#121216' : '#FFFFFF', color: colors.error }}>Blocked</option>
-            <option value="done" style={{ background: isDark ? '#121216' : '#FFFFFF', color: colors.success }}>Done</option>
+            <option value="todo" style={{ background: isDark ? experienceColors.dark.surface : brandColors.white, color: colors.textSecondary }}>To Do</option>
+            <option value="doing" style={{ background: isDark ? experienceColors.dark.surface : brandColors.white, color: isDark ? brandColors.blueBright : brandColors.blue }}>Doing</option>
+            <option value="blocked" style={{ background: isDark ? experienceColors.dark.surface : brandColors.white, color: colors.error }}>Blocked</option>
+            <option value="done" style={{ background: isDark ? experienceColors.dark.surface : brandColors.white, color: colors.success }}>Done</option>
           </select>
         ) : (
           <Pressable accessibilityRole="button"
@@ -1306,7 +1307,7 @@ function TaskCard({ task, isDark, colors, clayShadows, statusColor, onSetStatus,
               };
               onSetStatus(task, next[task.status]);
             }}
-            style={[styles.statusPillNative, { borderColor: statusColor, backgroundColor: isDark ? '#121216' : '#FFFFFF' }]}
+            style={[styles.statusPillNative, { borderColor: statusColor, backgroundColor: isDark ? experienceColors.dark.surface : brandColors.white }]}
           >
             <Text style={[styles.statusPillNativeText, { color: statusColor }]}>
               {task.status.toUpperCase()}
@@ -1544,7 +1545,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   briefBoxGate: {
-    borderLeftColor: '#34d399',
+    borderLeftColor: '#335F90',
   },
   briefBoxGateHeader: {
     flexDirection: 'row',

@@ -101,7 +101,7 @@ export const INTAKE_STATUS: Record<IntakeStatus, { label: string; color: string 
   CHANGES_REQUESTED: { label: 'Changes requested', color: '#64D2FF' },
   REJECTED: { label: 'Not accepted', color: '#FF453A' },
   PROVISIONING: { label: 'Onboarding', color: '#0A84FF' },
-  ONBOARDED: { label: 'Onboarded', color: '#30D158' },
+  ONBOARDED: { label: 'Onboarded', color: '#335F90' },
   FAILED: { label: 'Needs another try', color: '#FF6B7A' },
 };
 

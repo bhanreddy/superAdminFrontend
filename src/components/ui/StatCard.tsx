@@ -1,8 +1,16 @@
+import { MotionPressable } from './MotionPressable';
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, Platform } from 'react-native';
-import { TrendingUp, TrendingDown } from 'lucide-react-native';
+import { ArrowUpRight, TrendingUp, TrendingDown } from 'lucide-react-native';
 import { MetricValue } from './MetricValue';
 import { useTheme } from '../../contexts/ThemeContext';
+import { Card } from './Card';
+import { borderRadius } from '../../constants/theme';
+import {
+  brandColors,
+  getCardTone,
+  type CardTone,
+} from '../../constants/experienceColors';
 interface StatCardProps {
   title: string;
   value: number | string;
@@ -10,6 +18,8 @@ interface StatCardProps {
   trend?: { value: string; direction: 'up' | 'down' };
   accentColor?: string;
   onPress?: () => void;
+  description?: string;
+  tone?: CardTone;
 }
 export const StatCard = React.memo(function StatCard({
   title,
@@ -18,15 +28,32 @@ export const StatCard = React.memo(function StatCard({
   trend,
   accentColor,
   onPress,
+  description,
+  tone,
 }: StatCardProps) {
-  const { colors } = useTheme();
-  const accent = accentColor || colors.primary;
+  const { colors, isDark } = useTheme();
+  const inferredTone: CardTone =
+    accentColor === brandColors.blue || accentColor === brandColors.blueBright
+      ? 'blue'
+      : accentColor === brandColors.amber ||
+        accentColor === brandColors.amberBright
+      ? 'honey'
+      : accentColor === brandColors.violet ||
+        accentColor === brandColors.violetBright
+      ? 'lavender'
+      : accentColor === brandColors.rose
+      ? 'rose'
+      : 'crimson';
+  const resolvedTone = tone || inferredTone;
+  const paint = getCardTone(resolvedTone, isDark);
+  const accent = paint.accent;
   const content = (
     <>
       <View style={styles.header}>
-        <View style={[styles.icon, { backgroundColor: `${accent}16` }]}>
+        <View style={[styles.icon, { backgroundColor: `${accent}14` }]}>
           {icon}
         </View>
+        {!trend && onPress ? <ArrowUpRight size={18} color={accent} /> : null}
         {trend && (
           <View
             style={[
@@ -57,14 +84,17 @@ export const StatCard = React.memo(function StatCard({
         )}
       </View>
       <MetricValue
-        style={[styles.value, { color: colors.textPrimary }]}
+        style={[styles.value, { color: paint.ink }]}
         value={
           typeof value === 'number' ? value.toLocaleString('en-IN') : value
         }
       />
-      <Text style={[styles.title, { color: colors.textSecondary }]}>
-        {title}
-      </Text>
+      <Text style={[styles.title, { color: paint.muted }]}>{title}</Text>
+      {description ? (
+        <Text style={[styles.description, { color: paint.muted }]}>
+          {description}
+        </Text>
+      ) : null}
     </>
   );
   const cardStyle = [
@@ -72,36 +102,28 @@ export const StatCard = React.memo(function StatCard({
     {
       backgroundColor: colors.card,
       borderColor: colors.borderSubtle || colors.border,
-      borderTopColor: accent,
     },
   ];
-  return onPress ? (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={`${title}: ${value}`}
+  return (
+    <Card
+      noPadding
+      tone={resolvedTone}
       onPress={onPress}
-      style={({ hovered, pressed }: any) => [
-        ...cardStyle,
-        hovered && { backgroundColor: colors.primaryMuted },
-        pressed && { opacity: 0.86 },
-        Platform.OS === 'web' && ({ cursor: 'pointer' } as any),
-      ]}
+      accessibilityLabel={`${title}: ${value}`}
+      style={cardStyle}
     >
       {content}
-    </Pressable>
-  ) : (
-    <View style={cardStyle}>{content}</View>
+    </Card>
   );
 });
 const styles = StyleSheet.create({
   card: {
     flex: 1,
     minWidth: 0,
-    borderRadius: 16,
+    borderRadius: borderRadius.xl,
     borderWidth: 1,
-    borderTopWidth: 3,
-    padding: 20,
-    minHeight: 154,
+    padding: 22,
+    minHeight: 190,
   },
   header: {
     flexDirection: 'row',
@@ -112,9 +134,9 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   icon: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
+    width: 46,
+    height: 46,
+    borderRadius: borderRadius.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -132,5 +154,6 @@ const styles = StyleSheet.create({
     letterSpacing: -0.8,
     marginBottom: 6,
   },
+  description: { fontSize: 12, lineHeight: 18, marginTop: 6 },
   title: { fontSize: 14, lineHeight: 20, fontWeight: '500' },
 });

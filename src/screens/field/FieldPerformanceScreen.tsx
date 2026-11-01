@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -24,9 +25,9 @@ export default function FieldPerformanceScreen() {
 
   const t = data?.today?.totals || {};
   const cards = [
-    ['Schools Visited', t.visited ?? 0, '#0A84FF'],
+    ['Schools Visited', t.visited ?? 0, brandColors.red],
     ['Distance (KM)', t.distance_km ?? 0, '#64D2FF'],
-    ['Qualified Leads', t.qualified ?? 0, '#30D158'],
+    ['Qualified Leads', t.qualified ?? 0, '#335F90'],
     ['Follow-ups Breached', t.followups_breached ?? 0, '#FF453A'],
   ];
 

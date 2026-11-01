@@ -1,3 +1,4 @@
+import { MotionPressable } from './MotionPressable';
 import React from 'react';
 import {
   View,
@@ -10,6 +11,7 @@ import {
 import { ChevronLeft } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../../contexts/ThemeContext';
+import { borderRadius } from '../../constants/theme';
 
 interface ScreenHeaderProps {
   title: string;
@@ -50,10 +52,12 @@ export const ScreenHeader = React.memo(function ScreenHeader({
         ]}
       >
         {showBack && (
-          <Pressable
+          <MotionPressable
             accessibilityRole="button"
             accessibilityLabel="Go back"
-            onPress={() => router.canGoBack() ? router.back() : router.replace('/(app)/')}
+            onPress={() =>
+              router.canGoBack() ? router.back() : router.replace('/(app)/')
+            }
             style={({ pressed, hovered }: any) => [
               styles.backBtn,
               {
@@ -75,7 +79,7 @@ export const ScreenHeader = React.memo(function ScreenHeader({
               color={colors.textSecondary}
               strokeWidth={2}
             />
-          </Pressable>
+          </MotionPressable>
         )}
         <View
           style={[
@@ -151,14 +155,12 @@ const styles = StyleSheet.create({
   backBtn: {
     width: 44,
     height: 44,
-    borderRadius: 11,
+    borderRadius: borderRadius.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
   titleBlock: {
     flex: 1,
-    borderLeftWidth: 3,
-    paddingLeft: 14,
   },
   title: {
     fontSize: 30,

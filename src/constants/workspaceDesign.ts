@@ -1,76 +1,78 @@
+import { brandColors as b } from './experienceColors';
+
 /** Functional colour families. Status colours remain independent of screen colour. */
 export const workspaceModules = {
   overview: {
     label: 'Overview',
-    light: '#2455C6',
-    dark: '#A8C2FF',
-    fill: '#2455C6',
-    tint: '#EDF2FA',
-    night: '#21314B',
+    light: b.red,
+    dark: b.redBright,
+    fill: b.red,
+    tint: b.redSoft,
+    night: b.redNight,
   },
   schools: {
     label: 'Schools & operations',
-    light: '#2455C6',
-    dark: '#A8C2FF',
-    fill: '#2455C6',
-    tint: '#EDF2FC',
-    night: '#21314B',
+    light: b.blue,
+    dark: b.blueBright,
+    fill: b.blue,
+    tint: b.blueSoft,
+    night: '#192B46',
   },
   finance: {
     label: 'Finance',
-    light: '#187154',
-    dark: '#8AD9B5',
-    fill: '#187154',
-    tint: '#EAF5EE',
-    night: '#183B32',
+    light: b.amber,
+    dark: b.amberBright,
+    fill: b.amber,
+    tint: b.honeySoft,
+    night: '#3C3327',
   },
   connect: {
     label: 'Collaboration',
-    light: '#5A4C97',
-    dark: '#C2B6EB',
-    fill: '#5A4C97',
-    tint: '#F1EEF8',
-    night: '#302A45',
+    light: b.red,
+    dark: b.redBright,
+    fill: b.red,
+    tint: b.redSoft,
+    night: b.redNight,
   },
   sales: {
     label: 'Sales & growth',
-    light: '#8A5E16',
-    dark: '#EBCD89',
-    fill: '#8A5E16',
-    tint: '#FFF5DC',
-    night: '#3C3223',
+    light: b.amber,
+    dark: b.amberBright,
+    fill: b.amber,
+    tint: b.honeySoft,
+    night: '#3C3327',
   },
   team: {
     label: 'People & teams',
-    light: '#5C568F',
-    dark: '#C5BDEB',
-    fill: '#5C568F',
-    tint: '#F1EFF8',
-    night: '#302B45',
+    light: b.rose,
+    dark: b.redBright,
+    fill: b.rose,
+    tint: b.roseSoft,
+    night: b.redNight,
   },
   content: {
     label: 'Content studio',
-    light: '#5A4C97',
-    dark: '#C2B6EB',
-    fill: '#5A4C97',
-    tint: '#F1EEF8',
-    night: '#302A45',
+    light: b.violet,
+    dark: b.violetBright,
+    fill: b.violet,
+    tint: b.violetSoft,
+    night: '#352D42',
   },
   support: {
     label: 'Service & support',
-    light: '#226D80',
-    dark: '#9FD5E1',
-    fill: '#226D80',
-    tint: '#EDF6F8',
-    night: '#213B43',
+    light: b.blue,
+    dark: b.blueBright,
+    fill: b.blue,
+    tint: b.blueSoft,
+    night: '#29394B',
   },
   system: {
     label: 'Administration',
-    light: '#52617A',
-    dark: '#BAC9E3',
-    fill: '#52617A',
-    tint: '#EFF2F7',
-    night: '#273248',
+    light: b.ink,
+    dark: b.blueBright,
+    fill: b.ink,
+    tint: b.blueSoft,
+    night: '#29394B',
   },
 } as const;
 
@@ -162,7 +164,7 @@ export function getWorkspaceModule(path: string): WorkspaceModule {
 /** Prefer the deepest visible navigation item; root must never match every page. */
 export function activeWorkspaceRoute(
   path: string,
-  routes: string[]
+  routes: string[],
 ): string | undefined {
   const current = normalizeWorkspacePath(path);
   return routes
@@ -175,6 +177,6 @@ export function activeWorkspaceRoute(
     })
     .sort(
       (a, b) =>
-        normalizeWorkspacePath(b).length - normalizeWorkspacePath(a).length
+        normalizeWorkspacePath(b).length - normalizeWorkspacePath(a).length,
     )[0];
 }

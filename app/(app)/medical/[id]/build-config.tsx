@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../../../src/constants/experienceColors';
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Alert, Pressable, Platform } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -154,7 +155,7 @@ export default function MedicalBuildConfigScreen() {
           <Button title="Copy" size="sm" variant="secondary" onPress={() => copyToClipboard(config.env_file, '.env contents')} />
         </View>
         <ScrollView horizontal style={styles.codeBlockContainer}>
-          <Text style={[styles.codeBlock, { color: isDark ? '#A6E22E' : '#22863A' }]}>{config.env_file}</Text>
+          <Text style={[styles.codeBlock, { color: isDark ? brandColors.blueBright : brandColors.blue }]}>{config.env_file}</Text>
         </ScrollView>
       </View>
 
@@ -165,7 +166,7 @@ export default function MedicalBuildConfigScreen() {
           <Button title="Copy JSON" size="sm" variant="secondary" onPress={() => copyToClipboard(JSON.stringify(config.tauri_config_changes, null, 2), 'Tauri config updates')} />
         </View>
         <ScrollView horizontal style={styles.codeBlockContainer}>
-          <Text style={[styles.codeBlock, { color: isDark ? '#66D9EF' : '#005CC5' }]}>
+          <Text style={[styles.codeBlock, { color: isDark ? brandColors.blueBright : brandColors.blue }]}>
             {JSON.stringify(config.tauri_config_changes, null, 2)}
           </Text>
         </ScrollView>
@@ -175,7 +176,7 @@ export default function MedicalBuildConfigScreen() {
       <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>6. Setup Commands</Text>
         {config.setup_commands.map((cmd, idx) => (
-          <View key={idx} style={[styles.commandRow, { backgroundColor: isDark ? '#1E1E1E' : '#F1F5F9', borderColor: colors.border }]}>
+          <View key={idx} style={[styles.commandRow, { backgroundColor: isDark ? experienceColors.dark.surface : brandColors.paperDeep, borderColor: colors.border }]}>
             <Terminal size={14} color={colors.textSecondary} style={{ marginRight: 8 }} />
             <Text style={[styles.commandText, { color: colors.textPrimary }]} numberOfLines={1}>{cmd}</Text>
             <Pressable accessibilityLabel="Copy details" accessibilityRole="button" onPress={() => copyToClipboard(cmd, 'Command')} style={styles.copyBtn}>
@@ -212,8 +213,8 @@ export default function MedicalBuildConfigScreen() {
 function StatusStep({ label, completed, onPress, colors }: any) {
   return (
     <Pressable accessibilityRole="button" style={styles.stepRow} onPress={onPress} disabled={!onPress}>
-      {completed ? <CheckCircle size={20} color="#10B981" /> : <Circle size={20} color={colors?.textSecondary || '#888'} />}
-      <Text style={[styles.stepText, { color: completed ? '#10B981' : (colors?.textPrimary || '#333') }]}>{label}</Text>
+      {completed ? <CheckCircle size={20} color={brandColors.blue} /> : <Circle size={20} color={colors?.textSecondary || '#888'} />}
+      <Text style={[styles.stepText, { color: completed ? brandColors.blue : (colors?.textPrimary || '#333') }]}>{label}</Text>
     </Pressable>
   );
 }
@@ -221,7 +222,7 @@ function StatusStep({ label, completed, onPress, colors }: any) {
 function CheckItem({ label, checked, onToggle, readonly, colors }: any) {
   return (
     <Pressable accessibilityRole="button" style={styles.checkboxRow} onPress={readonly ? undefined : onToggle} disabled={readonly}>
-      {checked ? <CheckCircle size={22} color={readonly ? "#10B981" : colors.primary} /> : <Circle size={22} color={colors.textSecondary} />}
+      {checked ? <CheckCircle size={22} color={readonly ? brandColors.blue : colors.primary} /> : <Circle size={22} color={colors.textSecondary} />}
       <Text style={[styles.checkboxText, { color: readonly ? colors.textSecondary : colors.textPrimary }]}>{label}</Text>
     </Pressable>
   );

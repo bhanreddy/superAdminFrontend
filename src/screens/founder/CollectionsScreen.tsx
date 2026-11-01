@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../constants/experienceColors';
 import type { Animated as NativeAnimated } from 'react-native';
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import {
@@ -76,9 +77,9 @@ const TYPE = {
 // ─── Brand Accents ────────────────────────────────────────────────────────────
 
 const ACCENT = {
-  teal: { d: '#14B8A6', l: '#0D9488', bg: 'rgba(20,184,166,0.12)' },
+  blue: { d: brandColors.blueBright, l: brandColors.blue, bg: 'rgba(51, 95, 144, 0.12)' },
   cyan: { d: '#06B6D4', l: '#0891B2', bg: 'rgba(6,182,212,0.12)' },
-  amber: { d: '#FBB040', l: '#D97706', bg: 'rgba(251,176,64,0.12)' },
+  amber: { d: '#FBB040', l: brandColors.amber, bg: 'rgba(251,176,64,0.12)' },
   rose: { d: '#FB7185', l: '#E11D48', bg: 'rgba(251,113,133,0.12)' },
   slate: { d: '#94A3B8', l: '#64748B', bg: 'rgba(148,163,184,0.10)' },
 } as const;
@@ -98,7 +99,7 @@ const PERIOD_OPTS: { key: CollectionPeriodFilter; label: string; icon: string; s
 const STATUS_OPTS: { key: CollectionStatusFilter; label: string; accent: AccentKey }[] = [
   { key: 'ALL', label: 'All', accent: 'slate' },
   { key: 'PENDING', label: 'Pending', accent: 'amber' },
-  { key: 'APPROVED', label: 'Approved', accent: 'teal' },
+  { key: 'APPROVED', label: 'Approved', accent: 'blue' },
 ];
 
 const PAYMENT: { mode: CollectionPaymentMode; emoji: string; label: string }[] = [
@@ -111,7 +112,7 @@ const PAYMENT: { mode: CollectionPaymentMode; emoji: string; label: string }[] =
 
 const STATUS_META: Record<string, AccentKey> = {
   PENDING: 'amber',
-  APPROVED: 'teal',
+  APPROVED: 'blue',
   REJECTED: 'rose',
 };
 
@@ -269,7 +270,7 @@ function CollectionCard({ r, index, canApprove, onApprove, onReject, colors, isD
               <View
                 style={[
                   styles.metaPill,
-                  { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : aBg('teal') },
+                  { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : aBg('blue') },
                 ]}
               >
                 <Text style={[styles.metaPillTxt, { color: colors.textSecondary }]} numberOfLines={1}>
@@ -316,15 +317,15 @@ function CollectionCard({ r, index, canApprove, onApprove, onReject, colors, isD
                   style={({ pressed }) => [
                     styles.actionBtn,
                     {
-                      backgroundColor: isDark ? 'rgba(20,184,166,0.10)' : aBg('teal'),
-                      borderColor: `${a('teal', isDark)}40`,
+                      backgroundColor: isDark ? 'rgba(51, 95, 144, 0.10)' : aBg('blue'),
+                      borderColor: `${a('blue', isDark)}40`,
                     },
                     ...pressableWebStyles(pressed, { pressedOpacity: 0.75 }),
                   ]}
                   onPress={safePressHandler(() => triggerOptimistic(() => onApprove(r.id)))}
                 >
-                  <Check color={a('teal', isDark)} size={15} />
-                  <Text style={[styles.actionBtnTxt, { color: a('teal', isDark) }]}>Approve</Text>
+                  <Check color={a('blue', isDark)} size={15} />
+                  <Text style={[styles.actionBtnTxt, { color: a('blue', isDark) }]}>Approve</Text>
                 </Pressable>
                 <Pressable accessibilityRole="button"
                   style={({ pressed }) => [
@@ -392,7 +393,7 @@ function PeriodChip({
       >
         {selected ? (
           <LinearGradient
-            colors={['#14B8A6', '#0891B2', '#0EA5E9']}
+            colors={[brandColors.blue, '#0891B2', brandColors.blue]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.chipSelected}
@@ -530,7 +531,7 @@ function PayModeSelector({
   const { isDark, colors } = useTheme();
   const { width: payW } = useWindowDimensions();
   const payChipMin = Math.max(56, (payW - 72) / 5);
-  const tealAccent = a('teal', isDark);
+  const approvedAccent = a('blue', isDark);
 
   return (
     <View style={styles.payGrid}>
@@ -544,7 +545,7 @@ function PayModeSelector({
               styles.payChip,
               { minWidth: payChipMin },
               sel
-                ? { backgroundColor: aBg('teal'), borderColor: tealAccent }
+                ? { backgroundColor: aBg('blue'), borderColor: approvedAccent }
                 : {
                     backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : colors.glassBackground,
                     borderColor: isDark ? 'rgba(255,255,255,0.08)' : colors.border,
@@ -554,15 +555,15 @@ function PayModeSelector({
           >
             {sel && (
               <LinearGradient
-                colors={isDark ? ['rgba(20,184,166,0.10)', 'transparent'] : ['rgba(20,184,166,0.05)', 'transparent']}
+                colors={isDark ? ['rgba(51, 95, 144, 0.10)', 'transparent'] : ['rgba(51, 95, 144, 0.05)', 'transparent']}
                 style={StyleSheet.absoluteFill}
               />
             )}
             <Text style={styles.payEmoji}>{p.emoji}</Text>
-            <Text style={[styles.payLabel, { color: sel ? tealAccent : isDark ? 'rgba(255,255,255,0.65)' : colors.textSecondary }]}>
+            <Text style={[styles.payLabel, { color: sel ? approvedAccent : isDark ? 'rgba(255,255,255,0.65)' : colors.textSecondary }]}>
               {p.label}
             </Text>
-            {sel && <View style={[styles.payActiveDot, { backgroundColor: tealAccent }]} />}
+            {sel && <View style={[styles.payActiveDot, { backgroundColor: approvedAccent }]} />}
           </Pressable>
         );
       })}
@@ -584,7 +585,7 @@ const SummaryBanner = React.memo(function SummaryBanner({ total, rows, isLG, isM
   const animatedTotal = useAnimatedNumber(totalAmt);
   const formattedTotal = founderDb.formatInr(animatedTotal, 0);
 
-  const tealAccent = a('teal', isDark);
+  const approvedAccent = a('blue', isDark);
   const amberAccent = a('amber', isDark);
 
   if (isSM) {
@@ -603,7 +604,7 @@ const SummaryBanner = React.memo(function SummaryBanner({ total, rows, isLG, isM
           <View style={{ width: 1, height: 24, backgroundColor: colors.border }} />
           <View style={{ alignItems: 'center' }}>
             <Text style={{ color: colors.textSecondary, fontSize: 11, fontWeight: '700', textTransform: 'uppercase' }}>Approved</Text>
-            <Text style={{ color: tealAccent, fontSize: 15, fontWeight: '800' }}>{approved}</Text>
+            <Text style={{ color: approvedAccent, fontSize: 15, fontWeight: '800' }}>{approved}</Text>
           </View>
         </View>
       </ClayView>
@@ -612,8 +613,8 @@ const SummaryBanner = React.memo(function SummaryBanner({ total, rows, isLG, isM
 
   return (
     <View style={{ flexDirection: 'row', gap: 12, marginBottom: 20 }}>
-      <ClayView isDark={isDark} color={aBg('teal')} radius={clayTokens.radius.card} style={{ flex: 1.5, padding: 16 }}>
-        <TrendingUp color={tealAccent} size={18} />
+      <ClayView isDark={isDark} color={aBg('blue')} radius={clayTokens.radius.card} style={{ flex: 1.5, padding: 16 }}>
+        <TrendingUp color={approvedAccent} size={18} />
         <Text style={{ color: colors.textPrimary, fontSize: 22, fontWeight: '800', marginTop: 8 }}>{formattedTotal}</Text>
         <Text style={{ color: colors.textSecondary, fontSize: 12, fontWeight: '700', textTransform: 'uppercase' }}>Page Total</Text>
       </ClayView>
@@ -622,8 +623,8 @@ const SummaryBanner = React.memo(function SummaryBanner({ total, rows, isLG, isM
         <Text style={{ color: colors.textPrimary, fontSize: 22, fontWeight: '800', marginTop: 4 }}>{pending}</Text>
         <Text style={{ color: colors.textSecondary, fontSize: 12, fontWeight: '700', textTransform: 'uppercase' }}>Pending</Text>
       </ClayView>
-      <ClayView isDark={isDark} color={aBg('teal')} radius={clayTokens.radius.card} style={{ flex: 1, padding: 16 }}>
-        <Check color={tealAccent} size={18} />
+      <ClayView isDark={isDark} color={aBg('blue')} radius={clayTokens.radius.card} style={{ flex: 1, padding: 16 }}>
+        <Check color={approvedAccent} size={18} />
         <Text style={{ color: colors.textPrimary, fontSize: 22, fontWeight: '800', marginTop: 8 }}>{approved}</Text>
         <Text style={{ color: colors.textSecondary, fontSize: 12, fontWeight: '700', textTransform: 'uppercase' }}>Approved</Text>
       </ClayView>
@@ -649,7 +650,7 @@ function FilterSectionAccent({
   return (
     <View style={[styles.filterSectionHead, { marginTop }, compact && styles.filterSectionHeadCompact]}>
       <LinearGradient
-        colors={['#14B8A6', '#0EA5E9']}
+        colors={[brandColors.blue, brandColors.blue]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
         style={[styles.filterAccentBar, compact && styles.filterAccentBarCompact]}
@@ -686,18 +687,18 @@ function NewCollectionHero({
         style={[
           styles.heroOuter,
           compact && styles.heroOuterCompact,
-          { borderColor: isDark ? 'rgba(20,184,166,0.4)' : colors.border },
+          { borderColor: isDark ? 'rgba(51, 95, 144, 0.4)' : colors.border },
           !isDark && { shadowOpacity: 0.1 },
         ]}
       >
         <LinearGradient
-          colors={['rgba(20,184,166,0.2)', 'rgba(14,165,233,0.08)']}
+          colors={['rgba(51, 95, 144, 0.2)', 'rgba(14,165,233,0.08)']}
           style={StyleSheet.absoluteFill}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
         />
         <LinearGradient
-          colors={['#0D9488', '#0EA5E9', '#38BDF8']}
+          colors={[brandColors.blue, brandColors.blue, '#38BDF8']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={[styles.heroInner, compact && styles.heroInnerCompact]}
@@ -731,8 +732,8 @@ const CollectionsEmptyState = React.memo(function CollectionsEmptyState({ onAdd,
   return (
     <View style={{ alignItems: 'center', paddingVertical: 20 }}>
       <ClayView isDark={isDark} color={isDark ? 'rgba(255,255,255,0.02)' : colors.surface} radius={32} style={{ width: '100%', maxWidth: 400, padding: 32, alignItems: 'center', borderWidth: 1, borderColor: isDark ? 'rgba(255,255,255,0.05)' : colors.border }}>
-        <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: isDark ? 'rgba(20,184,166,0.15)' : 'rgba(20,184,166,0.1)', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
-          <Mailbox color={isDark ? '#5EEAD4' : '#0F766E'} size={32} />
+        <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: isDark ? 'rgba(51, 95, 144, 0.15)' : 'rgba(51, 95, 144, 0.1)', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+          <Mailbox color={isDark ? brandColors.blueBright : brandColors.blue} size={32} />
         </View>
         <Text style={{ fontSize: 22, fontWeight: '800', color: colors.textPrimary, marginBottom: 8, textAlign: 'center' }}>
           {filterActive ? 'No matches' : 'No collections yet'}
@@ -741,7 +742,7 @@ const CollectionsEmptyState = React.memo(function CollectionsEmptyState({ onAdd,
           {filterActive ? 'No records match the current filters. Try clearing them.' : 'Record money received from each business unit.'}
         </Text>
         <PressScale onPress={filterActive ? onClearFilters : onAdd} style={{ width: '100%' }}>
-          <View style={{ backgroundColor: a('teal', isDark), paddingVertical: 14, borderRadius: clayTokens.radius.button, alignItems: 'center' }}>
+          <View style={{ backgroundColor: a('blue', isDark), paddingVertical: 14, borderRadius: clayTokens.radius.button, alignItems: 'center' }}>
             <Text style={{ color: '#fff', fontSize: 15, fontWeight: '800' }}>
               {filterActive ? 'Clear filters' : 'Record a collection'}
             </Text>
@@ -863,12 +864,12 @@ function FilterSummaryPill({
         styles.filterPill,
         {
           backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : colors.surface,
-          borderColor: isDark ? 'rgba(20,184,166,0.18)' : colors.border,
+          borderColor: isDark ? 'rgba(51, 95, 144, 0.18)' : colors.border,
         },
         ...pressableWebStyles(pressed, { pressedOpacity: 0.8 }),
       ]}
     >
-      <SlidersHorizontal color={a('teal', isDark)} size={14} />
+      <SlidersHorizontal color={a('blue', isDark)} size={14} />
       <Text style={[styles.filterPillTxt, { color: colors.textPrimary }]} numberOfLines={1}>
         {periodLabel} · {statusLabel} · {unitName}
       </Text>
@@ -1303,7 +1304,7 @@ export default function CollectionsScreen({ approvalsOnly = false, embedded = fa
       {showFAB && (
         <Animated.View style={[styles.fab, { transform: [{ scale: fabScale }] }]}>
           <Pressable accessibilityLabel="Add collection" accessibilityRole="button" onPress={pressFab} style={({ pressed }) => [...pressableWebStyles(pressed, { pressedOpacity: 1 })]}>
-            <LinearGradient colors={['#14B8A6', '#0EA5E9']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.fabInner}>
+            <LinearGradient colors={[brandColors.blue, brandColors.blue]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.fabInner}>
               <Plus color="#fff" size={24} strokeWidth={2.5} />
             </LinearGradient>
           </Pressable>
@@ -1346,7 +1347,7 @@ export default function CollectionsScreen({ approvalsOnly = false, embedded = fa
 
             <View style={[styles.sheetHeaderGroup, { marginBottom: isXS ? 18 : 24 }]}>
               <LinearGradient
-                colors={isDark ? ['rgba(14,165,233,0.18)', 'rgba(20,184,166,0.06)'] : ['rgba(14,165,233,0.1)', 'transparent']}
+                colors={isDark ? ['rgba(14,165,233,0.18)', 'rgba(51, 95, 144, 0.06)'] : ['rgba(14,165,233,0.1)', 'transparent']}
                 style={styles.sheetIconWrap}
               >
                 <Wallet size={18} color={a('cyan', isDark)} strokeWidth={2} />
@@ -1480,7 +1481,7 @@ export default function CollectionsScreen({ approvalsOnly = false, embedded = fa
                   ]}
                 >
                   <LinearGradient
-                    colors={['#0D9488', '#0EA5E9']}
+                    colors={[brandColors.blue, brandColors.blue]}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={[styles.saveBtn, saving && { opacity: 0.6 }]}
@@ -1758,7 +1759,7 @@ const styles = StyleSheet.create({
     padding: 1,
     overflow: 'hidden',
     borderWidth: 1,
-    shadowColor: '#0D9488',
+    shadowColor: brandColors.blue,
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.28,
     shadowRadius: 20,
@@ -2122,7 +2123,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 22,
     borderRadius: 16,
     marginTop: 18,
-    shadowColor: '#0D9488',
+    shadowColor: brandColors.blue,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.25,
     shadowRadius: 12,
@@ -2136,7 +2137,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: bottomTabPad + 16,
     right: 20,
-    shadowColor: '#14B8A6',
+    shadowColor: brandColors.blue,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.4,
     shadowRadius: 12,
@@ -2164,7 +2165,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 30,
     borderTopWidth: 1,
     maxHeight: '92%',
-    shadowColor: '#0EA5E9',
+    shadowColor: brandColors.blue,
     shadowOffset: { width: 0, height: -8 },
     shadowOpacity: 0.35,
     shadowRadius: 24,

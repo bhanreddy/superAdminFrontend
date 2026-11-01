@@ -1,3 +1,5 @@
+import { brandColors, experienceColors } from '../../constants/experienceColors';
+import { borderRadius as radii } from '../../constants/theme';
 import React, { useEffect, useRef } from 'react';
 import {
   View,
@@ -26,11 +28,11 @@ import {
 const { width: W } = Dimensions.get('window');
 
 export const founderGradients = {
-  primary: ['#3155C6', '#2848AA'] as const,
-  success: ['#15704D', '#126546'] as const,
-  danger: ['#BF3547', '#A52A3B'] as const,
-  warning: ['#9B5215', '#874510'] as const,
-  info: ['#24679E', '#1C5686'] as const,
+  primary: [brandColors.red, brandColors.redDark] as const,
+  success: [brandColors.blue, brandColors.navy] as const,
+  danger: [brandColors.rose, brandColors.redDark] as const,
+  warning: [brandColors.amber, brandColors.amber] as const,
+  info: [brandColors.blue, brandColors.blue] as const,
   cardDark: ['rgba(33,31,45,0.95)', 'rgba(27,26,37,0.98)'] as const,
 };
 
@@ -161,7 +163,7 @@ export const GlassCard = React.memo(function GlassCard({
       style={[
         {
           borderWidth: 1,
-          borderRadius: 16,
+          borderRadius: radii.xl,
           borderColor: colors.borderSubtle || colors.border,
           backgroundColor:
             variant === 'lightweight' ? colors.glassLightweight : colors.card,
@@ -323,7 +325,7 @@ export const KpiTile = React.memo(function KpiTile({
         <ClayView
           isDark={isDark}
           color={colors.card}
-          radius={16}
+          radius={radii.xl}
           style={{ padding: 18, flex: 1, overflow: 'hidden' }}
         >
           {/* Top colored edge accent */}
@@ -406,8 +408,8 @@ export const KpiTile = React.memo(function KpiTile({
                   backgroundColor:
                     changeDir === 'up'
                       ? isDark
-                        ? 'rgba(0,212,173,0.15)'
-                        : 'rgba(0,212,173,0.1)'
+                        ? 'rgba(51, 95, 144, 0.15)'
+                        : 'rgba(51, 95, 144, 0.1)'
                       : changeDir === 'down'
                         ? isDark
                           ? 'rgba(255,107,122,0.15)'
@@ -512,7 +514,7 @@ export const FinancialSummaryBanner = React.memo(
     const { colors, isDark, clayShadows } = useTheme();
     const isHealthy = netProfit >= 0;
     const grad: [string, string] = isHealthy
-      ? ['#00D4AD', '#059669']
+      ? ['#335F90', brandColors.blue]
       : ['#FF6B7A', '#DC2626'];
 
     return (
@@ -578,7 +580,7 @@ export const FinancialSummaryBanner = React.memo(
               <View
                 style={[
                   styles.financialMiniDot,
-                  { backgroundColor: '#00D4AD' },
+                  { backgroundColor: '#335F90' },
                 ]}
               />
               <View>

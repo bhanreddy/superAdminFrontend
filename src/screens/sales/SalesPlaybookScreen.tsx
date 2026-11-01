@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useMemo, useRef, useState } from 'react';
 import { View, Text, ScrollView, TextInput, Pressable, StyleSheet, Linking } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -15,15 +16,15 @@ const tabs = [
   { label: 'Visit planner' as Tab, icon: ClipboardList, detail: 'Make your next move' },
 ];
 const journey = [
-  { title: 'Connect', caption: 'Earn permission', chapter: 'discovery', icon: Users, color: '#7660C9', background: '#F0EAFC' },
-  { title: 'Discover', caption: 'Find the real friction', chapter: 'incumbent', icon: Search, color: '#498A78', background: '#EAF5EF' },
-  { title: 'Demonstrate', caption: 'Show one useful outcome', chapter: 'demo', icon: Monitor, color: '#5886C6', background: '#EDF3FC' },
-  { title: 'Build value', caption: 'Measure the difference', chapter: 'pricing', icon: TrendingUp, color: '#B2823A', background: '#FCF3E4' },
-  { title: 'Agree', caption: 'Owner + action + date', chapter: 'close', icon: Flag, color: '#B06D89', background: '#FAEDF3' },
+  { title: 'Connect', caption: 'Earn permission', chapter: 'discovery', icon: Users, color: brandColors.violet, background: brandColors.violetSoft },
+  { title: 'Discover', caption: 'Find the real friction', chapter: 'incumbent', icon: Search, color: brandColors.blue, background: brandColors.blueSoft },
+  { title: 'Demonstrate', caption: 'Show one useful outcome', chapter: 'demo', icon: Monitor, color: brandColors.blue, background: brandColors.blueSoft },
+  { title: 'Build value', caption: 'Measure the difference', chapter: 'pricing', icon: TrendingUp, color: brandColors.amber, background: brandColors.honeySoft },
+  { title: 'Agree', caption: 'Owner + action + date', chapter: 'close', icon: Flag, color: brandColors.rose, background: brandColors.roseSoft },
 ];
 
 export default function SalesPlaybookScreen() {
-  const { isDark } = useTheme();
+  const { isDark, colors } = useTheme();
   const router = useRouter();
   const { chapter } = useLocalSearchParams<{ chapter?: string | string[] }>();
   const chapterId = Array.isArray(chapter) ? chapter[0] : chapter;
@@ -74,13 +75,13 @@ export default function SalesPlaybookScreen() {
   const principle = psychologyPrinciples.find((item) => item.id === principleId)!;
   const objection = fieldObjections.find((item) => item.id === objectionId)!;
   const plan = buildVisitPlan({ school, region, stakeholderId, priority, stage, baseline, owner, reviewDate });
-  const border = isDark ? '#303345' : '#E7E9F2';
-  const pageBackground = isDark ? '#11141F' : '#F7F8FC';
-  const card = { backgroundColor: isDark ? '#1B1F2D' : '#FFFFFF', borderColor: border };
-  const muted = { color: isDark ? '#ADB1C5' : '#70768C' };
-  const ink = { color: isDark ? '#F1F1FA' : '#252941' };
-  const accent = isDark ? '#C0B5FF' : '#6655C9';
-  const tint = isDark ? '#2D2845' : '#F0EDFC';
+  const border = colors.borderSubtle;
+  const pageBackground = colors.background;
+  const card = { backgroundColor: colors.card, borderColor: border };
+  const muted = { color: colors.textSecondary };
+  const ink = { color: colors.textPrimary };
+  const accent = colors.primary;
+  const tint = colors.primaryMuted;
   const copy = async (value: string, label: string) => {
     try {
       const copied = await Clipboard.setStringAsync(value);
@@ -92,7 +93,7 @@ export default function SalesPlaybookScreen() {
   };
   const pill = (label: string, active: boolean, onPress: () => void, a11y = label) => (
     <Pressable key={label} accessibilityRole="button" accessibilityLabel={a11y} accessibilityState={{ selected: active }} aria-selected={active} onPress={onPress}
-      style={({ pressed }) => [ui.filter, { borderColor: active ? (isDark ? '#66559C' : '#6655C9') : border, backgroundColor: active ? (isDark ? '#4B3E7D' : '#6655C9') : card.backgroundColor, opacity: pressed ? 0.7 : 1 }]}>
+      style={({ pressed }) => [ui.filter, { borderColor: active ? (colors.primaryFill) : border, backgroundColor: active ? (colors.primaryFill) : card.backgroundColor, opacity: pressed ? 0.7 : 1 }]}>
       <Text style={[ui.pillText, { color: active ? '#FFFFFF' : muted.color }]}>{label}</Text>
     </Pressable>
   );
@@ -105,7 +106,7 @@ export default function SalesPlaybookScreen() {
     <View style={ui.field}>
       <Text style={[ui.smallBold, ink]}>{label}</Text>
       <TextInput accessibilityLabel={label} value={value} onChangeText={onChangeText} placeholder={placeholder} placeholderTextColor={muted.color}
-        multiline={multiline} style={[ui.input, ink, { borderColor: border, backgroundColor: isDark ? '#111D27' : '#F8FAF9', minHeight: multiline ? 82 : 46, textAlignVertical: multiline ? 'top' : 'center' }]} />
+        multiline={multiline} style={[ui.input, ink, { borderColor: border, backgroundColor: isDark ? experienceColors.dark.surface : brandColors.paperDeep, minHeight: multiline ? 82 : 46, textAlignVertical: multiline ? 'top' : 'center' }]} />
     </View>
   );
   const switchTab = (next: Tab) => {
@@ -154,14 +155,14 @@ export default function SalesPlaybookScreen() {
           </Pressable>
         </View>
 
-        <View style={[ui.hero, { padding: compact ? 24 : 36, backgroundColor: isDark ? '#252139' : '#EEEAFC', borderColor: isDark ? '#3B3358' : '#E4DEF7' }]}>
+        <View style={[ui.hero, { padding: compact ? 24 : 36, backgroundColor: colors.primaryMuted, borderColor: colors.borderSubtle }]}>
           <View pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[ui.heroOrbit, { borderColor: isDark ? '#3C3456' : '#DDD5F4' }]} />
           <View pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[ui.heroOrbitInner, { borderColor: isDark ? '#3C3456' : '#DDD5F4' }]} />
           <View style={ui.heroRow}>
             <View style={ui.heroCopy}>
-              <View style={[ui.heroBadge, { backgroundColor: isDark ? '#382F50' : '#FFFFFFAA' }]}><Sparkles size={13} color={accent} /><Text style={[ui.heroBadgeText, { color: accent }]}>THE REGIONAL FIELD EDITION</Text></View>
+              <View style={[ui.heroBadge, { backgroundColor: isDark ? brandColors.redNight : '#FFFFFFAA' }]}><Sparkles size={13} color={accent} /><Text style={[ui.heroBadgeText, { color: accent }]}>THE REGIONAL FIELD EDITION</Text></View>
               <Text accessibilityRole="header" style={[ui.heroTitle, ink, { fontSize: compact ? 30 : wide ? 44 : 37, lineHeight: compact ? 37 : wide ? 53 : 46 }]}>Better conversations.{'\n'}<Text style={{ color: accent }}>Stronger school{wide ? ' ' : '\n'}partnerships.</Text></Text>
-              <Text style={[ui.heroSubtitle, { color: isDark ? '#BDB5D3' : '#706B86' }]}>A little preparation. A deeper understanding. Your field guide to meaningful school partnerships in Telangana & Karnataka.</Text>
+              <Text style={[ui.heroSubtitle, { color: isDark ? experienceColors.dark.muted : brandColors.muted }]}>A little preparation. A deeper understanding. Your field guide to meaningful school partnerships in Telangana & Karnataka.</Text>
               <Pressable accessibilityRole="button" accessibilityLabel="Prepare my next visit" onPress={() => switchTab('Visit planner')} style={({ pressed }) => [ui.heroButton, { opacity: pressed ? 0.85 : 1, transform: [{ translateY: pressed ? 1 : 0 }] }]}>
                 <ClipboardList size={16} color="#FFFFFF" /><Text style={ui.heroButtonText}>Prepare my next visit</Text><ArrowRight size={17} color="#FFFFFF" />
               </Pressable>
@@ -171,19 +172,19 @@ export default function SalesPlaybookScreen() {
               <View style={ui.bookBack} />
               <View style={ui.bookCover}>
                 <View style={ui.bookSpine} />
-                <View style={ui.bookBrand}><BookOpen size={15} color="#C6B9F5" /><Text style={ui.bookBrandText}>SCHOOLIMS</Text></View>
+                <View style={ui.bookBrand}><BookOpen size={15} color={brandColors.honey} /><Text style={ui.bookBrandText}>SCHOOLIMS</Text></View>
                 <View style={ui.bookCoverRule} />
                 <Text style={ui.bookEdition}>THE FIELD NOTES</Text>
                 <Text style={ui.bookTitle}>School{'\n'}partnerships.</Text>
                 <View style={ui.bookCoverArt}><View style={ui.bookArcOne} /><View style={ui.bookArcTwo} /><View style={ui.bookArcThree} /></View>
                 <Text style={ui.bookRegion}>TELANGANA · KARNATAKA</Text>
               </View>
-              <View style={[ui.floatingNote, { top: 7, right: 0, transform: [{ rotate: '4deg' }] }]}><View style={ui.noteIcon}><Brain size={15} color="#7D65BD" /></View><Text style={ui.floatingNoteText}>Understand people.</Text></View>
-              <View style={[ui.floatingNote, { bottom: 14, left: 0, transform: [{ rotate: '-3deg' }] }]}><View style={[ui.noteIcon, { backgroundColor: '#E8F2EC' }]}><ShieldCheck size={15} color="#54836B" /></View><Text style={ui.floatingNoteText}>Lead with evidence.</Text></View>
+              <View style={[ui.floatingNote, { top: 7, right: 0, transform: [{ rotate: '4deg' }] }]}><View style={ui.noteIcon}><Brain size={15} color={brandColors.red} /></View><Text style={ui.floatingNoteText}>Understand people.</Text></View>
+              <View style={[ui.floatingNote, { bottom: 14, left: 0, transform: [{ rotate: '-3deg' }] }]}><View style={[ui.noteIcon, { backgroundColor: brandColors.blueSoft }]}><ShieldCheck size={15} color={brandColors.blue} /></View><Text style={ui.floatingNoteText}>Lead with evidence.</Text></View>
             </View>}
           </View>
-          <View style={[ui.heroFooter, { borderTopColor: isDark ? '#443B5D' : '#DBD4EF' }]}>
-            {[{ icon: BookOpen, label: `${playbookChapters.length} practical chapters` }, { icon: Brain, label: `${psychologyPrinciples.length} psychology lenses` }, { icon: MessageSquare, label: `${fieldObjections.length} objection responses` }].map(({ icon: Icon, label }) => <View key={label} style={ui.heroMeta}><Icon size={14} color={accent} /><Text style={[ui.heroFooterText, { color: isDark ? '#C9C1DC' : '#736B89' }]}>{label}</Text></View>)}
+          <View style={[ui.heroFooter, { borderTopColor: isDark ? brandColors.redNight : brandColors.line }]}>
+            {[{ icon: BookOpen, label: `${playbookChapters.length} practical chapters` }, { icon: Brain, label: `${psychologyPrinciples.length} psychology lenses` }, { icon: MessageSquare, label: `${fieldObjections.length} objection responses` }].map(({ icon: Icon, label }) => <View key={label} style={ui.heroMeta}><Icon size={14} color={accent} /><Text style={[ui.heroFooterText, { color: isDark ? experienceColors.dark.muted : brandColors.muted }]}>{label}</Text></View>)}
           </View>
         </View>
 
@@ -194,9 +195,9 @@ export default function SalesPlaybookScreen() {
         </View>
         <ScrollView onLayout={(event) => { navigationTop.current = event.nativeEvent.layout.y; }} horizontal showsHorizontalScrollIndicator={false} style={[ui.tabShell, card]} contentContainerStyle={ui.tabBar}>
           {tabs.map(({ label, icon: Icon, detail }) => <Pressable key={label} accessibilityRole="tab" accessibilityLabel={label} accessibilityState={{ selected: tab === label }} aria-selected={tab === label} onPress={() => switchTab(label)}
-            style={({ pressed }) => [ui.tab, { backgroundColor: tab === label ? tint : 'transparent', borderColor: tab === label ? (isDark ? '#4A3F6C' : '#E2DCF6') : 'transparent', opacity: pressed ? 0.75 : 1 }]}>
-            <View style={[ui.tabIcon, { backgroundColor: tab === label ? (isDark ? '#4B3E7D' : '#6655C9') : pageBackground }]}><Icon size={18} color={tab === label ? '#FFFFFF' : muted.color} /></View>
-            <View style={{ gap: 2 }}><View style={ui.brandRow}><Text style={[ui.tabText, { color: tab === label ? accent : ink.color }]}>{label}</Text>{label === 'Objection lab' && <Text style={[ui.tabCount, { backgroundColor: isDark ? '#393146' : '#EAE6F5', color: accent }]}>{fieldObjections.length}</Text>}</View>{!compact && <Text style={[ui.caption, muted]}>{detail}</Text>}</View>
+            style={({ pressed }) => [ui.tab, { backgroundColor: tab === label ? tint : 'transparent', borderColor: tab === label ? (isDark ? brandColors.redNight : brandColors.roseSoft) : 'transparent', opacity: pressed ? 0.75 : 1 }]}>
+            <View style={[ui.tabIcon, { backgroundColor: tab === label ? (colors.primaryFill) : pageBackground }]}><Icon size={18} color={tab === label ? '#FFFFFF' : muted.color} /></View>
+            <View style={{ gap: 2 }}><View style={ui.brandRow}><Text style={[ui.tabText, { color: tab === label ? accent : ink.color }]}>{label}</Text>{label === 'Objection lab' && <Text style={[ui.tabCount, { backgroundColor: isDark ? experienceColors.dark.surface : brandColors.paperDeep, color: accent }]}>{fieldObjections.length}</Text>}</View>{!compact && <Text style={[ui.caption, muted]}>{detail}</Text>}</View>
           </Pressable>)}
         </ScrollView>
         {!!notice && <View accessibilityRole="alert" accessibilityLiveRegion="polite" style={[ui.notice, { backgroundColor: tint }]}>
@@ -336,13 +337,13 @@ export default function SalesPlaybookScreen() {
 // Shared typography and card primitives are also used by SalesTrainingScreen.
 export const styles = StyleSheet.create({
   page: { padding: 28, paddingBottom: 100, gap: 18, flexGrow: 1 },
-  eyebrow: { color: '#3186D8', fontWeight: '800', fontSize: 10, letterSpacing: 1.4, marginBottom: 5, lineHeight: 17 },
+  eyebrow: { color: brandColors.red, fontWeight: '800', fontSize: 10, letterSpacing: 1.4, marginBottom: 5, lineHeight: 17 },
   title: { fontSize: 32, fontWeight: '800', letterSpacing: -0.8 },
   subtitle: { fontSize: 15, lineHeight: 23, marginTop: 8 },
   chapter: { borderWidth: 1, borderRadius: 14, padding: 20, gap: 12 },
   sectionTitle: { fontSize: 19, fontWeight: '700', lineHeight: 27, letterSpacing: -0.3 },
   body: { fontSize: 14, lineHeight: 24 },
-  primary: { backgroundColor: '#216254', borderRadius: 10, padding: 15, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
+  primary: { backgroundColor: brandColors.red, borderRadius: 10, padding: 15, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
   primaryText: { color: '#FFFFFF', fontWeight: '700', fontSize: 13 },
   filters: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
   filter: { paddingHorizontal: 13, paddingVertical: 9, borderWidth: 1, borderRadius: 8 },
@@ -382,28 +383,28 @@ const ui = StyleSheet.create({
   heroBadgeText: { fontSize: 9, letterSpacing: 1.4, fontWeight: '700' },
   heroTitle: { fontWeight: '700', letterSpacing: -1.8 },
   heroSubtitle: { fontSize: 14, lineHeight: 24, maxWidth: 450 },
-  heroButton: { backgroundColor: '#6655C9', flexDirection: 'row', gap: 10, alignItems: 'center', alignSelf: 'flex-start', borderRadius: 11, paddingHorizontal: 17, paddingVertical: 14, shadowColor: '#6655C9', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.18, shadowRadius: 12, elevation: 2 },
+  heroButton: { backgroundColor: brandColors.red, flexDirection: 'row', gap: 10, alignItems: 'center', alignSelf: 'flex-start', borderRadius: 11, paddingHorizontal: 17, paddingVertical: 14, shadowColor: brandColors.red, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.18, shadowRadius: 12, elevation: 2 },
   heroButtonText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
   heroFooter: { flexDirection: 'row', flexWrap: 'wrap', gap: 22, borderTopWidth: 1, paddingTop: 20 },
   heroFooterText: { fontSize: 11, fontWeight: '500', lineHeight: 18 },
   bookScene: { width: 290, height: 290, marginHorizontal: 4 },
   bookShadow: { position: 'absolute', bottom: 7, left: 45, width: 200, height: 22, borderRadius: 100, backgroundColor: '#51416C', opacity: 0.1, transform: [{ rotate: '-5deg' }] },
-  bookBack: { position: 'absolute', top: 28, left: 76, width: 174, height: 239, borderRadius: 12, backgroundColor: '#B9A9E7', borderWidth: 1, borderColor: '#AE9FDB', transform: [{ rotate: '10deg' }] },
-  bookCover: { position: 'absolute', top: 12, left: 48, width: 181, height: 247, borderRadius: 12, backgroundColor: '#2B2847', borderWidth: 1, borderColor: '#4B456A', padding: 21, gap: 10, transform: [{ rotate: '-8deg' }], shadowColor: '#302741', shadowOffset: { width: 0, height: 14 }, shadowOpacity: 0.24, shadowRadius: 18, elevation: 5, overflow: 'hidden' },
-  bookSpine: { position: 'absolute', left: 8, top: 0, bottom: 0, width: 1, backgroundColor: '#5A5279' },
+  bookBack: { position: 'absolute', top: 28, left: 76, width: 174, height: 239, borderRadius: 12, backgroundColor: brandColors.peach, borderWidth: 1, borderColor: brandColors.rose, transform: [{ rotate: '10deg' }] },
+  bookCover: { position: 'absolute', top: 12, left: 48, width: 181, height: 247, borderRadius: 12, backgroundColor: brandColors.redDark, borderWidth: 1, borderColor: brandColors.red, padding: 21, gap: 10, transform: [{ rotate: '-8deg' }], shadowColor: brandColors.ink, shadowOffset: { width: 0, height: 14 }, shadowOpacity: 0.24, shadowRadius: 18, elevation: 5, overflow: 'hidden' },
+  bookSpine: { position: 'absolute', left: 8, top: 0, bottom: 0, width: 1, backgroundColor: brandColors.rose },
   bookBrand: { flexDirection: 'row', gap: 6, alignItems: 'center' },
-  bookBrandText: { color: '#D9D0F1', fontSize: 8, letterSpacing: 1.7, fontWeight: '700' },
-  bookCoverRule: { height: 1, backgroundColor: '#4F486A', marginTop: 3, marginBottom: 3 },
-  bookEdition: { color: '#AA9CCB', fontSize: 7, fontWeight: '600', letterSpacing: 1.5 },
-  bookTitle: { color: '#F8F4FF', fontSize: 24, lineHeight: 30, fontWeight: '600', letterSpacing: -0.8 },
-  bookRegion: { color: '#C1B5D6', fontSize: 6, fontWeight: '600', letterSpacing: 1.2, marginTop: 5 },
+  bookBrandText: { color: brandColors.paper, fontSize: 8, letterSpacing: 1.7, fontWeight: '700' },
+  bookCoverRule: { height: 1, backgroundColor: brandColors.rose, marginTop: 3, marginBottom: 3 },
+  bookEdition: { color: brandColors.honey, fontSize: 7, fontWeight: '600', letterSpacing: 1.5 },
+  bookTitle: { color: brandColors.paper, fontSize: 24, lineHeight: 30, fontWeight: '600', letterSpacing: -0.8 },
+  bookRegion: { color: brandColors.paper, fontSize: 6, fontWeight: '600', letterSpacing: 1.2, marginTop: 5 },
   bookCoverArt: { height: 49, overflow: 'hidden', marginTop: 3 },
-  bookArcOne: { position: 'absolute', width: 130, height: 130, top: 0, left: 0, borderRadius: 65, borderWidth: 1, borderColor: '#9B89C2' },
-  bookArcTwo: { position: 'absolute', width: 96, height: 96, top: 15, left: 17, borderRadius: 48, borderWidth: 1, borderColor: '#9B89C2' },
-  bookArcThree: { position: 'absolute', width: 62, height: 62, top: 30, left: 34, borderRadius: 31, borderWidth: 1, borderColor: '#9B89C2' },
-  floatingNote: { position: 'absolute', flexDirection: 'row', gap: 8, alignItems: 'center', padding: 10, paddingRight: 13, borderRadius: 11, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#EFEDF5', shadowColor: '#51426F', shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.08, shadowRadius: 13, elevation: 3 },
-  floatingNoteText: { fontSize: 10, fontWeight: '600', color: '#504861' },
-  noteIcon: { backgroundColor: '#F0EAF9', width: 27, height: 27, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
+  bookArcOne: { position: 'absolute', width: 130, height: 130, top: 0, left: 0, borderRadius: 65, borderWidth: 1, borderColor: brandColors.peach },
+  bookArcTwo: { position: 'absolute', width: 96, height: 96, top: 15, left: 17, borderRadius: 48, borderWidth: 1, borderColor: brandColors.peach },
+  bookArcThree: { position: 'absolute', width: 62, height: 62, top: 30, left: 34, borderRadius: 31, borderWidth: 1, borderColor: brandColors.peach },
+  floatingNote: { position: 'absolute', flexDirection: 'row', gap: 8, alignItems: 'center', padding: 10, paddingRight: 13, borderRadius: 11, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: brandColors.line, shadowColor: brandColors.ink, shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.08, shadowRadius: 13, elevation: 3 },
+  floatingNoteText: { fontSize: 10, fontWeight: '600', color: brandColors.ink },
+  noteIcon: { backgroundColor: brandColors.roseSoft, width: 27, height: 27, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
   contextBar: { borderWidth: 1, borderRadius: 16, padding: 16, flexDirection: 'row', flexWrap: 'wrap', gap: 20, alignItems: 'center' },
   contextIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   contextLanguage: { flex: 1, minWidth: 200, gap: 3 },
@@ -426,7 +427,7 @@ const ui = StyleSheet.create({
   columns: { flexDirection: 'row', alignItems: 'stretch', gap: 22 },
   mainColumn: { flex: 1, minWidth: 0, gap: 22 },
   sideColumn: { width: 286, gap: 22 },
-  panel: { borderWidth: 1, borderRadius: 20, padding: 25, gap: 16, shadowColor: '#2C3152', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.025, shadowRadius: 15, elevation: 1 },
+  panel: { borderWidth: 1, borderRadius: 20, padding: 25, gap: 16, shadowColor: brandColors.ink, shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.025, shadowRadius: 15, elevation: 1 },
   quoteBox: { padding: 20, borderRadius: 13, borderLeftWidth: 0, gap: 12 },
   localGreeting: { fontSize: 26, fontWeight: '700', lineHeight: 38 },
   promptNumber: { fontSize: 11, fontWeight: '700', lineHeight: 23, width: 23 },
@@ -455,6 +456,6 @@ const ui = StyleSheet.create({
   objectionStep: { flexDirection: 'row', gap: 15, paddingVertical: 10 },
   input: { borderWidth: 1, borderRadius: 11, paddingHorizontal: 14, paddingVertical: 13, fontSize: 13, lineHeight: 22 },
   planHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10, paddingBottom: 17, borderBottomWidth: 1 },
-  primary: { backgroundColor: '#6655C9', borderRadius: 11, padding: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
+  primary: { backgroundColor: brandColors.red, borderRadius: 11, padding: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
   footer: { borderTopWidth: 1, paddingTop: 25, gap: 14, marginTop: 12 },
 });

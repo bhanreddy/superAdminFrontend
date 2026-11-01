@@ -130,7 +130,7 @@ function PhasePip({
   const animStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
 
   const bg = done
-    ? colors.success || '#22C55E'
+    ? colors.success || '#335F90'
     : active
     ? colors.primary
     : colors.border;
@@ -530,7 +530,7 @@ export default function SetupGuideScreen() {
                 <PhasePip number={i + 1} label={p.label} done={p.done} active={p.active} colors={colors} index={i} />
                 {i < 3 && (
                   <View
-                    style={[styles.pipConnector, { backgroundColor: p.done ? (colors.success || '#22C55E') : colors.border }]}
+                    style={[styles.pipConnector, { backgroundColor: p.done ? (colors.success || '#335F90') : colors.border }]}
                   />
                 )}
               </React.Fragment>
@@ -549,7 +549,7 @@ export default function SetupGuideScreen() {
             </View>
             <View style={[styles.progressTrack, { backgroundColor: colors.border }]}>
               <Animated.View
-                style={[styles.progressFill, { backgroundColor: allDone ? (colors.success || '#22C55E') : colors.primary }, animatedProgressStyle]}
+                style={[styles.progressFill, { backgroundColor: allDone ? (colors.success || '#335F90') : colors.primary }, animatedProgressStyle]}
               />
             </View>
           </View>
@@ -569,10 +569,10 @@ export default function SetupGuideScreen() {
           {allDone && (
             <Animated.View
               entering={FadeInDown.springify()}
-              style={[styles.completeBanner, { backgroundColor: (colors.success || '#22C55E') + '14', borderColor: (colors.success || '#22C55E') + '40' }]}
+              style={[styles.completeBanner, { backgroundColor: (colors.success || '#335F90') + '14', borderColor: (colors.success || '#335F90') + '40' }]}
             >
-              <CheckCircle2 size={18} color={colors.success || '#22C55E'} />
-              <Text style={[styles.completeBannerText, { color: colors.success || '#22C55E' }]}>
+              <CheckCircle2 size={18} color={colors.success || '#335F90'} />
+              <Text style={[styles.completeBannerText, { color: colors.success || '#335F90' }]}>
                 All phases complete — {school.name} is live!
               </Text>
             </Animated.View>
@@ -722,7 +722,7 @@ export default function SetupGuideScreen() {
                   >
                     <CheckCircle2
                       size={18}
-                      color={stepState.step_configure_env ? (colors.success || '#22C55E') : colors.textSecondary}
+                      color={stepState.step_configure_env ? (colors.success || '#335F90') : colors.textSecondary}
                     />
                     <Text style={[styles.inlineCheckText, { color: colors.textPrimary }]}>.env configured</Text>
                   </Pressable>
@@ -761,7 +761,7 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key`}
                   >
                     <CheckCircle2
                       size={18}
-                      color={stepState.step_configure_appjson ? (colors.success || '#22C55E') : colors.textSecondary}
+                      color={stepState.step_configure_appjson ? (colors.success || '#335F90') : colors.textSecondary}
                     />
                     <Text style={[styles.inlineCheckText, { color: colors.textPrimary }]}>app.json updated</Text>
                   </Pressable>
@@ -798,7 +798,7 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key`}
                   >
                     <CheckCircle2
                       size={18}
-                      color={stepState.step_configure_easjson ? (colors.success || '#22C55E') : colors.textSecondary}
+                      color={stepState.step_configure_easjson ? (colors.success || '#335F90') : colors.textSecondary}
                     />
                     <Text style={[styles.inlineCheckText, { color: colors.textPrimary }]}>eas.json profile added</Text>
                   </Pressable>
@@ -843,7 +843,7 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key`}
                   >
                     <CheckCircle2
                       size={18}
-                      color={stepState.step_configure_firebase ? (colors.success || '#22C55E') : colors.textSecondary}
+                      color={stepState.step_configure_firebase ? (colors.success || '#335F90') : colors.textSecondary}
                     />
                     <Text style={[styles.inlineCheckText, { color: colors.textPrimary }]}>google-services.json replaced</Text>
                   </Pressable>
@@ -893,7 +893,7 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key`}
                     'Runs npx expo prebuild --clean',
                   ].map((item, i) => (
                     <View key={i} style={styles.subCheckRow}>
-                      <CheckCircle2 size={14} color={colors.success || '#22C55E'} />
+                      <CheckCircle2 size={14} color={colors.success || '#335F90'} />
                       <Text style={[styles.subCheckText, { color: colors.textSecondary }]}>{item}</Text>
                     </View>
                   ))}
@@ -1028,8 +1028,8 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key`}
             >
               {school.is_active ? (
                 <View style={styles.liveRow}>
-                  <CheckCircle2 size={16} color={colors.success || '#22C55E'} />
-                  <Text style={[styles.liveText, { color: colors.success || '#22C55E' }]}>School is live</Text>
+                  <CheckCircle2 size={16} color={colors.success || '#335F90'} />
+                  <Text style={[styles.liveText, { color: colors.success || '#335F90' }]}>School is live</Text>
                 </View>
               ) : (
                 <Button

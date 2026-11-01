@@ -1,5 +1,6 @@
+import { MotionPressable } from '../../components/ui/MotionPressable';
 import React, { useMemo, useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Platform, Pressable, Text, View } from 'react-native';
 import Svg, { Line, Path, Circle } from 'react-native-svg';
 import { collectionTrend, money, type AnalyticsRow } from './dashboardModel';
 import {
@@ -21,7 +22,7 @@ export function CollectionsChart({
     [table, setTable] = useState(false);
   const points = useMemo(
     () => collectionTrend(income, expenses, range),
-    [income, expenses, range],
+    [income, expenses, range]
   );
   const all = points
     .flatMap((r) => [r.collections, r.expenses])
@@ -55,7 +56,7 @@ export function CollectionsChart({
         action={
           <View style={{ flexDirection: 'row', gap: 4 }}>
             {[3, 6].map((n) => (
-              <Pressable
+              <MotionPressable
                 key={n}
                 accessibilityRole="button"
                 accessibilityLabel={`Show ${n} months`}
@@ -73,14 +74,14 @@ export function CollectionsChart({
               >
                 <Text
                   style={{
-                    color: range === n ? p.green : p.muted,
+                    color: range === n ? p.action : p.muted,
                     fontSize: 12,
                     fontWeight: '600',
                   }}
                 >
                   {n}M
                 </Text>
-              </Pressable>
+              </MotionPressable>
             ))}
           </View>
         }
@@ -96,7 +97,7 @@ export function CollectionsChart({
             }}
           >
             {[
-              ['Approved collections', p.green],
+              ['Approved collections', p.action],
               ['Approved expenses', p.blue],
             ].map(([label, color]) => (
               <View
@@ -117,14 +118,25 @@ export function CollectionsChart({
           </View>
           <View
             accessible
-            accessibilityLabel={`Monthly approved collections and expenses. ${points.map((r) => `${r.label}: collections ${r.collections == null ? 'unavailable' : money(r.collections)}, expenses ${r.expenses == null ? 'unavailable' : money(r.expenses)}`).join('. ')}`}
+            accessibilityLabel={`Monthly approved collections and expenses. ${points
+              .map(
+                (r) =>
+                  `${r.label}: collections ${
+                    r.collections == null ? 'unavailable' : money(r.collections)
+                  }, expenses ${
+                    r.expenses == null ? 'unavailable' : money(r.expenses)
+                  }`
+              )
+              .join('. ')}`}
           >
             <Svg
               width="100%"
               height={185}
               viewBox="0 0 620 180"
               preserveAspectRatio="none"
-              accessible={false}
+              {...(Platform.OS === 'web'
+                ? { 'aria-hidden': true }
+                : { accessible: false })}
             >
               {[22, 67, 112, 156].map((v) => (
                 <Line
@@ -158,7 +170,7 @@ export function CollectionsChart({
               <Path
                 d={path('collections')}
                 fill="none"
-                stroke={p.green}
+                stroke={p.action}
                 strokeWidth={3}
               />
               {points.map((r, i) => (
@@ -169,7 +181,7 @@ export function CollectionsChart({
                       cy={y(r.collections)}
                       r={4}
                       fill={p.surface}
-                      stroke={p.green}
+                      stroke={p.action}
                       strokeWidth={2}
                     />
                   ) : null}
@@ -205,17 +217,17 @@ export function CollectionsChart({
             <Text style={[ds.body, { color: p.muted, flex: 1, minWidth: 150 }]}>
               Monthly operations · separate from Books revenue.
             </Text>
-            <Pressable
+            <MotionPressable
               accessibilityRole="button"
               accessibilityState={{ expanded: table }}
               aria-expanded={table}
               onPress={() => setTable((v) => !v)}
               style={{ minHeight: 44, justifyContent: 'center' }}
             >
-              <Text style={{ color: p.green, fontSize: 12, fontWeight: '700' }}>
+              <Text style={{ color: p.action, fontSize: 12, fontWeight: '700' }}>
                 {table ? 'Hide values' : 'View values'}
               </Text>
-            </Pressable>
+            </MotionPressable>
           </View>
           {table ? (
             <View
@@ -234,7 +246,7 @@ export function CollectionsChart({
                   <Text style={{ color: p.muted, width: 52, fontSize: 12 }}>
                     {r.label}
                   </Text>
-                  <Text style={{ color: p.green, flex: 1, fontSize: 12 }}>
+                  <Text style={{ color: p.action, flex: 1, fontSize: 12 }}>
                     In {r.collections == null ? '—' : money(r.collections)}
                   </Text>
                   <Text style={{ color: p.blue, flex: 1, fontSize: 12 }}>

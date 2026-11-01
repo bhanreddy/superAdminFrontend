@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../../../src/constants/experienceColors';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Alert, Pressable, Platform } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -101,7 +102,7 @@ export default function BuildConfigScreen() {
       affiliation_label: field(config, suggestions, 'affiliation_label'),
       recognition_line: field(config, suggestions, 'recognition_line'),
       recognition_no: field(config, suggestions, 'recognition_no'),
-      primary: field(config, suggestions, 'primary') || '#1A73E8',
+      primary: field(config, suggestions, 'primary') || brandColors.red,
       secondary: field(config, suggestions, 'secondary') || '#F5921B',
       accent: field(config, suggestions, 'accent') || '#F9A825',
       slug: field(config, suggestions, 'slug'),
@@ -144,7 +145,7 @@ export default function BuildConfigScreen() {
 
   const preview = draft?.preview || {};
   const blockers = draft?.readiness?.blockers || [];
-  const primary = form.primary || '#1A73E8';
+  const primary = form.primary || brandColors.red;
 
   const save = async (extra: Record<string, any> = {}) => {
     if (!draft || !clusterId) return;
@@ -361,7 +362,7 @@ export default function BuildConfigScreen() {
               <Field key={key} label={key} value={form[key] || ''} onChangeText={(value) => setForm({ ...form, [key]: value })} colors={colors} editable={canEdit} />
             ))}
             <View style={styles.row}>
-              <View style={[styles.swatch, { backgroundColor: form.primary || '#1A73E8' }]} />
+              <View style={[styles.swatch, { backgroundColor: form.primary || brandColors.red }]} />
               <View style={[styles.swatch, { backgroundColor: form.secondary || '#F5921B' }]} />
               <View style={[styles.swatch, { backgroundColor: form.accent || '#F9A825' }]} />
             </View>

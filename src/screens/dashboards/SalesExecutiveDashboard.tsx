@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
@@ -45,8 +46,8 @@ interface SchoolItem {
 
 const STATUS_BADGE: Record<string, { label: string; color: string; bg: string }> = {
   pending_build: { label: 'Waiting for Data / Build', color: '#FF9F0A', bg: 'rgba(255, 159, 10, 0.12)' },
-  apk_delivered: { label: 'Build Ready / APK Delivered', color: '#30D158', bg: 'rgba(48, 209, 88, 0.12)' },
-  live: { label: 'Live in Production', color: '#0A84FF', bg: 'rgba(10, 132, 255, 0.12)' },
+  apk_delivered: { label: 'Build Ready / APK Delivered', color: '#335F90', bg: 'rgba(51, 95, 144, 0.12)' },
+  live: { label: 'Live in Production', color: brandColors.red, bg: 'rgba(10, 132, 255, 0.12)' },
   suspended: { label: 'Suspended', color: '#FF453A', bg: 'rgba(255, 69, 58, 0.12)' },
 };
 
@@ -137,15 +138,15 @@ export default function SalesExecutiveDashboard() {
         <View style={styles.quickGrid}>
           <GlassCard style={styles.quickCard}>
             <View style={[styles.quickIcon, { backgroundColor: 'rgba(10, 132, 255, 0.12)' }]}>
-              <School size={20} color="#0A84FF" />
+              <School size={20} color={brandColors.red} />
             </View>
             <Text style={[styles.quickVal, { color: colors.textPrimary }]}>{schools.length}</Text>
             <Text style={[styles.quickLabel, { color: colors.textSecondary }]}>Assigned Schools</Text>
           </GlassCard>
 
           <GlassCard style={styles.quickCard}>
-            <View style={[styles.quickIcon, { backgroundColor: 'rgba(48, 209, 88, 0.12)' }]}>
-              <CheckCircle2 size={20} color="#30D158" />
+            <View style={[styles.quickIcon, { backgroundColor: 'rgba(51, 95, 144, 0.12)' }]}>
+              <CheckCircle2 size={20} color="#335F90" />
             </View>
             <Text style={[styles.quickVal, { color: colors.textPrimary }]}>
               {schools.filter((s) => s.onboarding_status === 'live' || s.onboarding_status === 'apk_delivered').length}
@@ -273,8 +274,8 @@ export default function SalesExecutiveDashboard() {
                     onPress={() => router.push(`/(app)/checklist` as any)}
                     style={({ pressed }: any) => [styles.actionBtn, pressed && { opacity: 0.8 }]}
                   >
-                    <CheckCircle2 size={14} color="#30D158" />
-                    <Text style={[styles.actionBtnText, { color: '#30D158' }]}>Onboarding Checklist</Text>
+                    <CheckCircle2 size={14} color="#335F90" />
+                    <Text style={[styles.actionBtnText, { color: '#335F90' }]}>Onboarding Checklist</Text>
                   </Pressable>
 
                   <Pressable accessibilityRole="button"
@@ -362,7 +363,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: '#0A84FF',
+    backgroundColor: brandColors.red,
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 12,
@@ -397,7 +398,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(10,132,255,0.12)',
   },
   intakeCountText: {
-    color: '#0A84FF',
+    color: brandColors.red,
     fontWeight: '800',
     fontSize: 16,
   },
@@ -509,7 +510,7 @@ const styles = StyleSheet.create({
   codeText: {
     fontSize: 10,
     fontWeight: '700',
-    color: '#0A84FF',
+    color: brandColors.red,
   },
   schoolAddr: {
     fontSize: 12,

@@ -1,10 +1,12 @@
+import { MotionPressable as Pressable } from '../../components/ui/MotionPressable';
+import { MotionSection } from '../../components/ui/MotionSection';
+import { Skeleton } from '../../components/ui/Skeleton';
+import { getCardTone } from '../../constants/experienceColors';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
   ScrollView,
-  Pressable,
-  ActivityIndicator,
   StyleSheet,
   Platform,
   Share,
@@ -140,7 +142,7 @@ function financialStart(month = 4) {
   return `${y}-${String(month).padStart(2, '0')}-01`;
 }
 export default function BooksScreen() {
-  const { colors } = useTheme(),
+  const { colors, isDark } = useTheme(),
     { width } = useWindowDimensions();
   const [availableWidth, setAvailableWidth] = useState(width);
   const [navCollapsed, setNavCollapsed] = useState(false);
@@ -775,10 +777,15 @@ export default function BooksScreen() {
       { key: 'entity_id', label: 'Record ID', width: 310 },
     ];
   }
+  const homeTone = getCardTone('honey', isDark);
   const main = (
-    <View style={{ gap: 18, minWidth: 0, flexShrink: 0 }}>
-      <View style={st.moduleHeader}>
-        <View style={{ flex: 1, minWidth: 180, gap: 5 }}>
+    <MotionSection transitionKey={`${module}:${loading}`} style={{ gap: 20, minWidth: 0, flexShrink: 0 }}>
+      <View style={[st.moduleHeader, { backgroundColor: colors.surface, borderColor: colors.border, padding: compact ? 16 : 22, borderWidth: 1, borderRadius: 24 }]}>
+        <View style={{ width: '100%', flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <BookOpen size={15} color={colors.primary} />
+          <Text style={{ color: colors.primary, fontSize: 11, fontWeight: '700', letterSpacing: 1.4 }}>BOOKS / ACCOUNTING</Text>
+        </View>
+        <View style={{ flex: 1, minWidth: 180, gap: 8 }}>
           {wide ? <View style={ui.row}>
             <Pressable accessibilityRole="button" accessibilityLabel={navCollapsed ? 'Show Books navigation' : 'Hide Books navigation'} onPress={() => setNavCollapsed(current => !current)} style={[st.navToggle, { borderColor: colors.border, backgroundColor: colors.surface }]}>
               {navCollapsed ? <PanelLeftOpen size={17} color={colors.textSecondary} /> : <PanelLeftClose size={17} color={colors.textSecondary} />}
@@ -831,9 +838,9 @@ export default function BooksScreen() {
       {error && <Notice error text={error} />}
       {notice && <Notice text={notice} />}
       {loading && (
-        <View style={[ui.row, { gap: 10 }]}>
-          <ActivityIndicator color={colors.primary} />
-          <Text style={{ color: colors.textSecondary }}>Loading books…</Text>
+        <View accessibilityLabel="Loading books" accessibilityRole="progressbar" style={{ gap: 16 }}>
+          <View style={ui.wrap}>{[0, 1, 2, 3].map(item => <View key={item} style={{ flex: 1, minWidth: 155 }}><Skeleton height={132} borderRadius={24} /></View>)}</View>
+          <Skeleton height={220} borderRadius={24} />
         </View>
       )}
       {!bootstrap && !loading && (
@@ -860,11 +867,11 @@ export default function BooksScreen() {
           {module === 'home' && report && (
             <>
               <Kpis report={report} />
-              <Panel>
+              <Panel tone="honey">
                 <View style={[ui.row, { justifyContent: 'space-between' }]}>
                   <View style={{ gap: 6, flex: 1 }}>
                     <Text style={[ui.title, { color: colors.textPrimary }]}>
-                      Welcome to {bootstrap.settings.organization_name} Books
+                      Your next move, in one place
                     </Text>
                     <Text
                       style={{
@@ -873,10 +880,10 @@ export default function BooksScreen() {
                         fontSize: 13,
                       }}
                     >
-                      Keep your sales, purchases, and accounts together.
+                      {bootstrap.settings.organization_name} · Create a transaction or explore your financial reports.
                     </Text>
                   </View>
-                  <BookOpen color={colors.primary} size={34} />
+                  <View style={{ width: 56, height: 56, borderRadius: 18, backgroundColor: homeTone.cover, alignItems: 'center', justifyContent: 'center' }}><BookOpen color={homeTone.accent} size={26} /></View>
                 </View>
                 <View style={[ui.row, { flexWrap: 'wrap' }]}>
                   <Action
@@ -930,10 +937,11 @@ export default function BooksScreen() {
                 ].filter(k => allowed(k.target)).map((k) => (
                   <Pressable accessibilityRole="button"
                     key={k.label}
+                    lift
                     onPress={() => navigate(k.target)}
                     style={{ flex: 1, minWidth: 180 }}
                   >
-                    <Panel>
+                    <Panel tone={k.target === 'customers' ? 'blue' : k.target === 'items' ? 'lavender' : 'rose'}>
                       <View
                         style={[ui.row, { justifyContent: 'space-between' }]}
                       >
@@ -1156,7 +1164,7 @@ export default function BooksScreen() {
           )}
         </>
       )}
-    </View>
+    </MotionSection>
   );
   return (
     <View style={[st.root, { backgroundColor: colors.background }]} onLayout={event => { if (event.nativeEvent.layout.width > 0) setAvailableWidth(event.nativeEvent.layout.width); }}>
@@ -1164,9 +1172,14 @@ export default function BooksScreen() {
         {wide && !navCollapsed && <ScrollView
           accessibilityLabel="Books navigation"
           showsVerticalScrollIndicator
-          style={[st.nav, { borderColor: colors.border }]}
+          style={[st.nav, { borderColor: colors.border, backgroundColor: colors.surface }]}
           contentContainerStyle={{ padding: 12, paddingBottom: 28, gap: 18 }}
         >
+          <View style={{ gap: 8, paddingHorizontal: 10, paddingVertical: 12 }}>
+            <View style={{ width: 44, height: 44, borderRadius: 14, backgroundColor: homeTone.cover, alignItems: 'center', justifyContent: 'center' }}><BookOpen size={22} color={homeTone.accent} /></View>
+            <Text style={{ color: colors.textPrimary, fontSize: 20, fontWeight: '700' }}>Books</Text>
+            <Text style={{ color: colors.textSecondary, fontSize: 12, lineHeight: 18 }}>Your finance workspace</Text>
+          </View>
           {visibleGroups.map((g) => (
             <View
               key={g.label}
@@ -1178,7 +1191,7 @@ export default function BooksScreen() {
                 <Text
                   style={{
                     color: colors.textTertiary,
-                    fontSize: 9,
+                    fontSize: 10,
                     fontWeight: '700',
                     letterSpacing: 1,
                     paddingLeft: 10,
@@ -1198,10 +1211,11 @@ export default function BooksScreen() {
                     ui.row,
                     {
                       paddingHorizontal: 11,
-                      paddingVertical: 10,
-                      borderRadius: 8,
+                      paddingVertical: 12,
+                      minHeight: 44,
+                      borderRadius: 14,
                       backgroundColor:
-                        key === module ? colors.primary + '18' : 'transparent',
+                        key === module ? colors.primaryMuted : 'transparent',
                       minWidth: 0,
                     },
                   ]}
@@ -1369,9 +1383,9 @@ export default function BooksScreen() {
 const st = StyleSheet.create({
   root: { flex: 1, minHeight: 0, minWidth: 0, overflow: 'hidden' },
   workspace: { flex: 1, minHeight: 0, minWidth: 0, flexDirection: 'row', overflow: 'hidden' },
-  nav: { width: 176, maxWidth: 176, flexGrow: 0, flexShrink: 0, minHeight: 0, borderRightWidth: 1 },
+  nav: { width: 208, maxWidth: 208, flexGrow: 0, flexShrink: 0, minHeight: 0, borderRightWidth: 1 },
   content: { flex: 1, minHeight: 0, minWidth: 0 },
   moduleHeader: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 14 },
   moduleTitle: { fontSize: 26, fontWeight: '700', letterSpacing: -0.7, lineHeight: 32 },
-  navToggle: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderRadius: 8 },
+  navToggle: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderRadius: 8 },
 });

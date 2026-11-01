@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
@@ -260,20 +261,20 @@ export function DatabaseBackupsScreen() {
       </View>
 
       {loadError ? (
-        <View style={[styles.failureAlert, { backgroundColor: 'rgba(239,68,68,0.08)', borderColor: '#EF4444' }]}>
-          <AlertTriangle size={20} color="#EF4444" style={{ marginTop: 2 }} />
+        <View style={[styles.failureAlert, { backgroundColor: 'rgba(239,68,68,0.08)', borderColor: brandColors.red }]}>
+          <AlertTriangle size={20} color={brandColors.red} style={{ marginTop: 2 }} />
           <View style={{ flex: 1, gap: 4 }}>
-            <Text style={[styles.failureTitle, { color: '#EF4444' }]}>Unable to load backup metadata</Text>
+            <Text style={[styles.failureTitle, { color: brandColors.red }]}>Unable to load backup metadata</Text>
             <Text style={[styles.failureText, { color: colors.textSecondary }]}>{loadError}</Text>
           </View>
         </View>
       ) : null}
 
       {stats?.staleBackup?.isStale ? (
-        <View style={[styles.failureAlert, { backgroundColor: 'rgba(217,119,6,0.10)', borderColor: '#D97706' }]}>
-          <AlertTriangle size={20} color="#D97706" style={{ marginTop: 2 }} />
+        <View style={[styles.failureAlert, { backgroundColor: 'rgba(217,119,6,0.10)', borderColor: brandColors.amber }]}>
+          <AlertTriangle size={20} color={brandColors.amber} style={{ marginTop: 2 }} />
           <View style={{ flex: 1, gap: 4 }}>
-            <Text style={[styles.failureTitle, { color: '#D97706' }]}>Backup freshness alert</Text>
+            <Text style={[styles.failureTitle, { color: brandColors.amber }]}>Backup freshness alert</Text>
             <Text style={[styles.failureText, { color: colors.textSecondary }]}>{stats.staleBackup.message}</Text>
           </View>
         </View>
@@ -303,15 +304,15 @@ export function DatabaseBackupsScreen() {
             label="Last Successful Backup"
             value={stats?.lastSuccessfulBackup ? `${stats.lastSuccessfulBackup.age_hours}h ago` : 'None'}
             subtitle={stats?.lastSuccessfulBackup ? formatDate(stats.lastSuccessfulBackup.completed_at) : 'No successful backups yet'}
-            icon={<CheckCircle2 size={20} color="#10B981" />}
-            gradient={['rgba(16,185,129,0.12)', 'rgba(5,150,105,0.06)']}
+            icon={<CheckCircle2 size={20} color={brandColors.blue} />}
+            gradient={['rgba(51, 95, 144, 0.12)', 'rgba(51, 95, 144, 0.06)']}
           />
 
           <StatCard
             label="Current Status"
             value={stats?.currentStatus?.status ? stats.currentStatus.status.replace('_', ' ') : 'Idle'}
             subtitle={stats?.currentStatus?.backup_id || 'No backup jobs recorded'}
-            icon={<Activity size={20} color="#6366F1" />}
+            icon={<Activity size={20} color={brandColors.violet} />}
             gradient={['rgba(99,102,241,0.12)', 'rgba(79,70,229,0.06)']}
           />
 
@@ -319,7 +320,7 @@ export function DatabaseBackupsScreen() {
             label="Next Scheduled Run"
             value="02:00 IST"
             subtitle={stats?.nextScheduledBackup || 'Daily Cloud Scheduler trigger'}
-            icon={<Clock size={20} color="#6366F1" />}
+            icon={<Clock size={20} color={brandColors.violet} />}
             gradient={['rgba(99,102,241,0.12)', 'rgba(79,70,229,0.06)']}
           />
 
@@ -336,7 +337,7 @@ export function DatabaseBackupsScreen() {
             label="30-Day Archive Volume"
             value={formatBytes(stats?.thirtyDayStats.totalStorageBytes)}
             subtitle={`Avg duration: ${stats?.thirtyDayStats.averageDurationSeconds ?? 0}s`}
-            icon={<Database size={20} color="#8B5CF6" />}
+            icon={<Database size={20} color={brandColors.violet} />}
             gradient={['rgba(139,92,246,0.12)', 'rgba(124,58,237,0.06)']}
           />
         </View>
@@ -354,15 +355,15 @@ export function DatabaseBackupsScreen() {
             </View>
             <View style={styles.timelineLegend}>
               <View style={styles.legendItem}>
-                <View style={[styles.legendDot, { backgroundColor: '#10B981' }]} />
+                <View style={[styles.legendDot, { backgroundColor: brandColors.blue }]} />
                 <Text style={[styles.legendText, { color: colors.textSecondary }]}>Success</Text>
               </View>
               <View style={styles.legendItem}>
-                <View style={[styles.legendDot, { backgroundColor: '#EF4444' }]} />
+                <View style={[styles.legendDot, { backgroundColor: brandColors.red }]} />
                 <Text style={[styles.legendText, { color: colors.textSecondary }]}>Failed</Text>
               </View>
               <View style={styles.legendItem}>
-                <View style={[styles.legendDot, { backgroundColor: isDark ? '#374151' : '#E5E7EB' }]} />
+                <View style={[styles.legendDot, { backgroundColor: isDark ? experienceColors.dark.surface : brandColors.paperDeep }]} />
                 <Text style={[styles.legendText, { color: colors.textSecondary }]}>Idle</Text>
               </View>
             </View>
@@ -372,12 +373,10 @@ export function DatabaseBackupsScreen() {
             {stats.thirtyDayStats.dailyTimeline.map((day, idx) => {
               const bg =
                 day.status === 'success'
-                  ? '#10B981'
+                  ? brandColors.blue
                   : day.status === 'failed'
-                  ? '#EF4444'
-                  : isDark
-                  ? '#374151'
-                  : '#E5E7EB';
+                  ? brandColors.red
+                  : isDark ? experienceColors.dark.surface : brandColors.paperDeep;
 
               return (
                 <View
@@ -392,10 +391,10 @@ export function DatabaseBackupsScreen() {
 
       {/* ── Recent Failures Alert (if any) ────────────────────────────────── */}
       {stats?.recentFailures && stats.recentFailures.length > 0 && (
-        <View style={[styles.failureAlert, { backgroundColor: 'rgba(239,68,68,0.08)', borderColor: '#EF4444' }]}>
-          <AlertTriangle size={20} color="#EF4444" style={{ marginTop: 2 }} />
+        <View style={[styles.failureAlert, { backgroundColor: 'rgba(239,68,68,0.08)', borderColor: brandColors.red }]}>
+          <AlertTriangle size={20} color={brandColors.red} style={{ marginTop: 2 }} />
           <View style={{ flex: 1, gap: 4 }}>
-            <Text style={[styles.failureTitle, { color: '#EF4444' }]}>
+            <Text style={[styles.failureTitle, { color: brandColors.red }]}>
               Recent Backup Failure Detected
             </Text>
             {stats.recentFailures.slice(0, 2).map((fail) => (
@@ -489,7 +488,7 @@ export function DatabaseBackupsScreen() {
                   <Text style={[styles.tableCellMono, { color: colors.textPrimary }]}>{job.backup_id}</Text>
                   <Pressable accessibilityLabel="Copy details" accessibilityRole="button" onPress={() => handleCopy(job.backup_id, `id-${job.id}`)}>
                     {copiedField === `id-${job.id}` ? (
-                      <Check size={14} color="#10B981" />
+                      <Check size={14} color={brandColors.blue} />
                     ) : (
                       <Copy size={14} color={colors.textSecondary} />
                     )}
@@ -499,14 +498,14 @@ export function DatabaseBackupsScreen() {
                 <View style={{ flex: 1 }}>
                   <GlassBadge
                     text={job.backup_type}
-                    color={job.backup_type === 'manual' ? '#EC4899' : '#6366F1'}
+                    color={job.backup_type === 'manual' ? '#EC4899' : brandColors.violet}
                   />
                 </View>
 
                 <View style={{ flex: 1.2 }}>
                   <GlassBadge
                     text={job.status.toUpperCase()}
-                    color={isSuccess ? '#10B981' : isFailed ? '#EF4444' : '#F59E0B'}
+                    color={isSuccess ? brandColors.blue : isFailed ? brandColors.red : '#F59E0B'}
                   />
                 </View>
 
@@ -521,7 +520,7 @@ export function DatabaseBackupsScreen() {
                 <View style={{ flex: 1.2 }}>
                   <GlassBadge
                     text={isVerified ? 'VERIFIED' : job.verification_status.toUpperCase()}
-                    color={isVerified ? '#10B981' : isFailed ? '#EF4444' : '#9CA3AF'}
+                    color={isVerified ? brandColors.blue : isFailed ? brandColors.red : '#9CA3AF'}
                   />
                 </View>
 
@@ -595,7 +594,7 @@ export function DatabaseBackupsScreen() {
                     <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>STATUS</Text>
                     <GlassBadge
                       text={selectedJob.status.toUpperCase()}
-                      color={selectedJob.status === 'success' ? '#10B981' : '#EF4444'}
+                      color={selectedJob.status === 'success' ? brandColors.blue : brandColors.red}
                     />
                   </View>
 
@@ -610,7 +609,7 @@ export function DatabaseBackupsScreen() {
                     <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>VERIFICATION</Text>
                     <GlassBadge
                       text={(selectedJob.verification_status || 'unverified').toUpperCase()}
-                      color={selectedJob.verification_status === 'verified' ? '#10B981' : selectedJob.verification_status === 'failed' ? '#EF4444' : '#9CA3AF'}
+                      color={selectedJob.verification_status === 'verified' ? brandColors.blue : selectedJob.verification_status === 'failed' ? brandColors.red : '#9CA3AF'}
                     />
                   </View>
 
@@ -668,7 +667,7 @@ export function DatabaseBackupsScreen() {
                     </Text>
                     <Pressable accessibilityLabel="Copy details" accessibilityRole="button" onPress={() => handleCopy(selectedJob.storage_path, 'storage_path')}>
                       {copiedField === 'storage_path' ? (
-                        <Check size={16} color="#10B981" />
+                        <Check size={16} color={brandColors.blue} />
                       ) : (
                         <Copy size={16} color={colors.textSecondary} />
                       )}
@@ -687,7 +686,7 @@ export function DatabaseBackupsScreen() {
                     </Text>
                     <Pressable accessibilityLabel="Copy details" accessibilityRole="button" onPress={() => handleCopy(selectedJob.checksum_sha256, 'checksum')}>
                       {copiedField === 'checksum' ? (
-                        <Check size={16} color="#10B981" />
+                        <Check size={16} color={brandColors.blue} />
                       ) : (
                         <Copy size={16} color={colors.textSecondary} />
                       )}
@@ -697,8 +696,8 @@ export function DatabaseBackupsScreen() {
 
                 {/* Failure message if failed */}
                 {selectedJob.error_message && (
-                  <View style={[styles.failureBlock, { borderColor: '#EF4444', backgroundColor: 'rgba(239,68,68,0.1)' }]}>
-                    <Text style={{ fontWeight: '700', color: '#EF4444', marginBottom: 4 }}>
+                  <View style={[styles.failureBlock, { borderColor: brandColors.red, backgroundColor: 'rgba(239,68,68,0.1)' }]}>
+                    <Text style={{ fontWeight: '700', color: brandColors.red, marginBottom: 4 }}>
                       EXECUTION ERROR
                     </Text>
                     <Text style={{ color: colors.textPrimary, fontSize: 13 }}>
@@ -722,7 +721,7 @@ export function DatabaseBackupsScreen() {
                   <View style={styles.eventTimeline}>
                     {selectedJobEvents.map((evt) => (
                       <View key={evt.id} style={styles.timelineItem}>
-                        <View style={[styles.eventBullet, { backgroundColor: evt.event_type.includes('FAIL') ? '#EF4444' : '#10B981' }]} />
+                        <View style={[styles.eventBullet, { backgroundColor: evt.event_type.includes('FAIL') ? brandColors.red : brandColors.blue }]} />
                         <View style={{ flex: 1, gap: 2 }}>
                           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                             <Text style={[styles.eventType, { color: colors.textPrimary }]}>{evt.event_type}</Text>
@@ -773,8 +772,8 @@ export function DatabaseBackupsScreen() {
               </View>
 
               {triggerSuccessMsg ? (
-                <View style={[styles.warningBox, { backgroundColor: 'rgba(16,185,129,0.1)', borderColor: '#10B981' }]}>
-                  <Text style={{ color: '#10B981', fontWeight: '600' }}>{triggerSuccessMsg}</Text>
+                <View style={[styles.warningBox, { backgroundColor: 'rgba(51, 95, 144, 0.1)', borderColor: brandColors.blue }]}>
+                  <Text style={{ color: brandColors.blue, fontWeight: '600' }}>{triggerSuccessMsg}</Text>
                 </View>
               ) : null}
             </View>

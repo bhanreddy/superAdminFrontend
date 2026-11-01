@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
@@ -169,7 +170,7 @@ export default function ImplementationDashboard() {
               <Pressable accessibilityRole="button"
                 style={[
                   styles.quickActionButton,
-                  { backgroundColor: '#0284C7' },
+                  { backgroundColor: brandColors.blue },
                 ]}
                 onPress={() => router.push('/checklist' as any)}
               >
@@ -228,7 +229,7 @@ export default function ImplementationDashboard() {
               </Text>
             </View>
             <View style={styles.statCell}>
-              <Text style={[styles.statValue, { color: '#10B981' }]}>
+              <Text style={[styles.statValue, { color: brandColors.blue }]}>
                 {liveCount}
               </Text>
               <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
@@ -236,7 +237,7 @@ export default function ImplementationDashboard() {
               </Text>
             </View>
             <View style={styles.statCell}>
-              <Text style={[styles.statValue, { color: '#6366F1' }]}>100%</Text>
+              <Text style={[styles.statValue, { color: brandColors.violet }]}>100%</Text>
               <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
                 Server SLA
               </Text>
@@ -333,10 +334,10 @@ export default function ImplementationDashboard() {
                         styles.badgePill,
                         {
                           backgroundColor: isLive
-                            ? 'rgba(16, 185, 129, 0.12)'
+                            ? 'rgba(51, 95, 144, 0.12)'
                             : 'rgba(245, 158, 11, 0.12)',
                           borderColor: isLive
-                            ? 'rgba(16, 185, 129, 0.3)'
+                            ? 'rgba(51, 95, 144, 0.3)'
                             : 'rgba(245, 158, 11, 0.3)',
                         },
                       ]}
@@ -344,7 +345,7 @@ export default function ImplementationDashboard() {
                       <Text
                         style={[
                           styles.badgeText,
-                          { color: isLive ? '#10B981' : '#F59E0B' },
+                          { color: isLive ? brandColors.blue : '#F59E0B' },
                         ]}
                       >
                         {isLive ? 'LIVE' : 'ONBOARDING'}
@@ -368,8 +369,8 @@ export default function ImplementationDashboard() {
                         router.push(`/checklist?schoolId=${s.id}` as any)
                       }
                     >
-                      <CheckSquare size={14} color="#0284C7" />
-                      <Text style={[styles.cardBtnText, { color: '#0284C7' }]}>
+                      <CheckSquare size={14} color={brandColors.blue} />
+                      <Text style={[styles.cardBtnText, { color: brandColors.blue }]}>
                         Checklist
                       </Text>
                     </Pressable>
@@ -385,8 +386,8 @@ export default function ImplementationDashboard() {
                       ]}
                       onPress={() => router.push(`/schools/${s.id}` as any)}
                     >
-                      <UploadCloud size={14} color="#6366F1" />
-                      <Text style={[styles.cardBtnText, { color: '#6366F1' }]}>
+                      <UploadCloud size={14} color={brandColors.violet} />
+                      <Text style={[styles.cardBtnText, { color: brandColors.violet }]}>
                         Data Import
                       </Text>
                     </Pressable>

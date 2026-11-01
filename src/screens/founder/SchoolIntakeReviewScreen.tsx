@@ -110,7 +110,7 @@ export default function SchoolIntakeReviewScreen() {
   const dossier = item.dossier || {};
   const report = item.intelligence;
   const canAct = item.status === 'SUBMITTED' || item.status === 'FAILED';
-  const tone = report?.grade === 'BLOCKED' ? '#FF453A' : report?.grade === 'READY' ? '#30D158' : '#FF9F0A';
+  const tone = report?.grade === 'BLOCKED' ? '#FF453A' : report?.grade === 'READY' ? '#335F90' : '#FF9F0A';
 
   return (
     <ConsoleAmbientBackground>
@@ -141,7 +141,7 @@ export default function SchoolIntakeReviewScreen() {
           ))}
           {(item.provision_steps || []).map((step) => (
             <View key={step.id} style={styles.step}>
-              <CheckCircle2 size={14} color={step.status === 'done' ? '#30D158' : '#FF9F0A'} />
+              <CheckCircle2 size={14} color={step.status === 'done' ? '#335F90' : '#FF9F0A'} />
               <Text style={{ color: colors.textPrimary, flex: 1, fontSize: 13 }}>{step.detail || step.id}</Text>
             </View>
           ))}
@@ -185,7 +185,7 @@ export default function SchoolIntakeReviewScreen() {
 
         {password ? (
           <GlassCard variant="lightweight" style={styles.card}>
-            <Text style={[styles.heading, { color: '#30D158' }]}>One-time admin password</Text>
+            <Text style={[styles.heading, { color: '#335F90' }]}>One-time admin password</Text>
             <Text style={{ color: colors.textSecondary, fontSize: 13 }}>Shown once for {adminEmail}. It is not stored again.</Text>
             <Text selectable style={[styles.password, { color: colors.textPrimary }]}>{password}</Text>
             <Button title="Copy password" variant="secondary" onPress={async () => { await Clipboard.setStringAsync(password); showToast('Password copied.', 'success'); }} />

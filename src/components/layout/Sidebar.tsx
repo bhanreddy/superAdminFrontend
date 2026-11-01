@@ -1,4 +1,5 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import { MotionPressable } from '../ui/MotionPressable';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -21,6 +22,7 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Calendar,
   LayoutDashboard,
   BarChart3,
@@ -56,6 +58,8 @@ import {
 } from '../../constants/rbac';
 
 import { activeWorkspaceRoute } from '../../constants/workspaceDesign';
+import { brandColors } from '../../constants/experienceColors';
+import { borderRadius } from '../../constants/theme';
 
 // ─── Nav Item Types ─────────────────────────────────────────────────────────
 interface NavItem {
@@ -777,6 +781,78 @@ function getNavGroupsForRole(
   ];
 }
 
+function organizeFounderNavigation(groups: NavGroup[]): NavGroup[] {
+  const all = groups.flatMap((group) => group.items);
+  const primaryKeys = [
+    'dashboard',
+    'connect',
+    'schools',
+    'books',
+    'crm',
+    'users',
+  ];
+  const assigned = new Set(primaryKeys);
+  const domains = [
+    {
+      title: 'Schools & operations',
+      keys: [
+        'school-intake',
+        'checklist',
+        'requirements',
+        'complaints',
+        'students',
+        'school-import',
+        'import-history',
+        'tenant-assignments',
+        'sprint',
+      ],
+    },
+    {
+      title: 'Finance & accounting',
+      keys: ['books-access', 'billing', 'expenses'],
+    },
+    {
+      title: 'Sales & relationships',
+      keys: [
+        'enquiries',
+        'school-prospects',
+        'sales-command',
+        'field-board',
+        'field-feedback',
+        'tracking-links',
+        'sales-playbook',
+        'sales-training',
+        'messenger',
+      ],
+    },
+    {
+      title: 'Content & learning',
+      keys: ['media-qr', 'content-studio', 'festival-posters'],
+    },
+    {
+      title: 'Platform & security',
+      keys: ['clusters', 'admins', 'audit-logs', 'backups', 'settings'],
+    },
+  ];
+  const result: NavGroup[] = [
+    {
+      items: primaryKeys.flatMap((key) =>
+        all.filter((item) => item.key === key)
+      ),
+    },
+  ];
+  for (const domain of domains) {
+    const items = domain.keys.flatMap((key) =>
+      all.filter((item) => item.key === key)
+    );
+    items.forEach((item) => assigned.add(item.key));
+    if (items.length) result.push({ title: domain.title, items });
+  }
+  const remaining = all.filter((item) => !assigned.has(item.key));
+  if (remaining.length) result.push({ title: 'More tools', items: remaining });
+  return result;
+}
+
 interface SidebarProps {
   collapsed: boolean;
   onToggle: () => void;
@@ -802,6 +878,9 @@ export const Sidebar = React.memo(function Sidebar({
   const router = useRouter();
   const pathname = usePathname() || '/';
   const [query, setQuery] = useState('');
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(
+    () => new Set()
+  );
   const navGroups = useMemo(() => {
     const groups = getNavGroupsForRole(
       role,
@@ -813,7 +892,6 @@ export const Sidebar = React.memo(function Sidebar({
     );
     if (role)
       groups.splice(1, 0, {
-        title: 'COLLABORATION',
         items: [
           {
             key: 'connect',
@@ -841,7 +919,10 @@ export const Sidebar = React.memo(function Sidebar({
           },
         ],
       });
-    return groups.map((group) => ({
+    // Keep frequent destinations visible; every other permitted route belongs to
+    // one searchable domain. This changes presentation, never role authorization.
+    const organized = isFounder ? organizeFounderNavigation(groups) : groups;
+    return organized.map((group) => ({
       ...group,
       items: group.items.filter(
         (item) => !item.requiresSuperAdmin || isSuperAdmin
@@ -860,6 +941,14 @@ export const Sidebar = React.memo(function Sidebar({
     pathname,
     navGroups.flatMap((group) => group.items.map((item) => item.route))
   );
+  const activeGroupTitle = navGroups.find(
+    (group) =>
+      group.title && group.items.some((item) => item.route === activeRoute)
+  )?.title;
+  useEffect(() => {
+    if (activeGroupTitle)
+      setExpandedGroups((current) => new Set(current).add(activeGroupTitle));
+  }, [activeGroupTitle]);
   const filteredGroups = useMemo(() => {
     const needle = query.trim().toLowerCase();
     if (!needle || collapsed) return navGroups;
@@ -904,9 +993,9 @@ export const Sidebar = React.memo(function Sidebar({
         </View>
         {!collapsed && (
           <View style={{ flex: 1 }}>
-            <Text style={styles.brandName}>NexSyrus</Text>
+            <Text style={[styles.brandName, { color: colors.sidebarText }]}>NexSyrus</Text>
             <Text style={[styles.brandSub, { color: colors.sidebarTextMuted }]}>
-              Your workspace, connected.
+              WORKSPACE
             </Text>
           </View>
         )}
@@ -915,7 +1004,10 @@ export const Sidebar = React.memo(function Sidebar({
         <View
           style={[
             styles.search,
-            { borderColor: colors.sidebarBorder, backgroundColor: '#FFFFFF05' },
+            {
+              borderColor: colors.sidebarBorder,
+              backgroundColor: colors.sidebarItemHover,
+            },
           ]}
         >
           <Search size={16} color={colors.sidebarTextMuted} />
@@ -934,14 +1026,14 @@ export const Sidebar = React.memo(function Sidebar({
             underlineColorAndroid="transparent"
           />
           {!!query && (
-            <Pressable
+            <MotionPressable
               accessibilityRole="button"
               accessibilityLabel="Clear navigation search"
               onPress={() => setQuery('')}
               style={styles.clear}
             >
               <X size={14} color={colors.sidebarText} />
-            </Pressable>
+            </MotionPressable>
           )}
         </View>
       )}
@@ -951,84 +1043,142 @@ export const Sidebar = React.memo(function Sidebar({
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {filteredGroups.map((group, index) => (
-          <View key={group.title || index} style={styles.group}>
-            {group.title && !collapsed && (
-              <Text
-                style={[styles.groupTitle, { color: colors.sidebarTextMuted }]}
-              >
-                {group.title}
-              </Text>
-            )}
-            {group.title && collapsed && (
-              <View
-                style={[
-                  styles.divider,
-                  { backgroundColor: colors.sidebarBorder },
-                ]}
-              />
-            )}
-            {group.items.map((item) => {
-              const active = activeRoute === item.route;
-              return (
-                <Pressable
-                  key={item.key}
+        {filteredGroups.map((group, index) => {
+          const title = group.title;
+          const open =
+            !title || Boolean(query.trim()) || expandedGroups.has(title);
+          const toggleGroup = () => {
+            if (collapsed) onToggle();
+            if (!title) return;
+            setExpandedGroups((current) => {
+              const next = new Set(current);
+              if (next.has(title)) next.delete(title);
+              else next.add(title);
+              return next;
+            });
+          };
+          return (
+            <View key={title || index} style={styles.group}>
+              {title && (
+                <MotionPressable
                   accessibilityRole="button"
-                  accessibilityLabel={item.label}
-                  accessibilityState={{ selected: active }}
-                  aria-selected={active}
-                  onPress={() => navigate(item.route)}
-                  style={({ pressed, hovered }: any) => [
-                    styles.navItem,
+                  accessibilityLabel={`${
+                    open ? 'Collapse' : 'Expand'
+                  } ${title}`}
+                  accessibilityState={{ expanded: open }}
+                  onPress={toggleGroup}
+                  style={({ hovered }) => [
+                    styles.groupToggle,
                     collapsed && styles.collapsedItem,
                     {
-                      backgroundColor: active
-                        ? colors.sidebarItemActive
-                        : hovered
+                      backgroundColor: hovered
                         ? colors.sidebarItemHover
                         : 'transparent',
-                      opacity: pressed ? 0.82 : 1,
                     },
-                    Platform.OS === 'web'
-                      ? ({
-                          cursor: 'pointer',
-                          transition: 'background-color 120ms ease',
-                        } as any)
-                      : null,
                   ]}
                 >
-                  <View
-                    style={[
-                      styles.iconTile,
-                      {
-                        backgroundColor: active ? '#E1EAF9' : '#FFFFFF08',
-                      },
-                    ]}
-                  >
-                    {item.icon(
-                      active ? '#2455C6' : colors.sidebarTextMuted,
-                      18
-                    )}
-                  </View>
-                  {!collapsed && (
-                    <Text
-                      style={[
-                        styles.navLabel,
+                  {collapsed ? (
+                    group.items[0]?.icon(colors.sidebarTextMuted, 19)
+                  ) : (
+                    <>
+                      <Text
+                        style={[
+                          styles.groupTitle,
+                          { color: colors.sidebarTextMuted },
+                        ]}
+                      >
+                        {title}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.groupCount,
+                          { color: colors.sidebarTextMuted },
+                        ]}
+                      >
+                        {group.items.length}
+                      </Text>
+                      {open ? (
+                        <ChevronDown
+                          size={14}
+                          color={colors.sidebarTextMuted}
+                        />
+                      ) : (
+                        <ChevronRight
+                          size={14}
+                          color={colors.sidebarTextMuted}
+                        />
+                      )}
+                    </>
+                  )}
+                </MotionPressable>
+              )}
+              {(!title || (open && !collapsed)) &&
+                group.items.map((item) => {
+                  const active = activeRoute === item.route;
+                  return (
+                    <MotionPressable
+                      key={item.key}
+                      accessibilityRole="button"
+                      accessibilityLabel={item.label}
+                      accessibilityState={{ selected: active }}
+                      aria-selected={active}
+                      onPress={() => navigate(item.route)}
+                      style={({ hovered }) => [
+                        styles.navItem,
+                        collapsed && styles.collapsedItem,
                         {
-                          color: active ? '#14243A' : colors.sidebarText,
-                          fontWeight: active ? '600' : '500',
+                          backgroundColor: active
+                            ? colors.sidebarItemActive
+                            : hovered
+                            ? colors.sidebarItemHover
+                            : 'transparent',
                         },
                       ]}
-                      numberOfLines={1}
                     >
-                      {item.label}
-                    </Text>
-                  )}
-                </Pressable>
-              );
-            })}
-          </View>
-        ))}
+                      {active && (
+                        <View
+                          style={[
+                            styles.activeMarker,
+                            { backgroundColor: colors.primary },
+                          ]}
+                        />
+                      )}
+                      <View style={styles.iconTile}>
+                        {item.icon(
+                          active ? colors.primary : colors.sidebarTextMuted,
+                          19
+                        )}
+                      </View>
+                      {!collapsed && (
+                        <Text
+                          style={[
+                            styles.navLabel,
+                            {
+                              color: active
+                                ? colors.primary
+                                : colors.sidebarText,
+                              fontWeight: active ? '600' : '400',
+                            },
+                          ]}
+                          numberOfLines={1}
+                        >
+                          {item.label}
+                        </Text>
+                      )}
+                      {!collapsed && active && (
+                        <View
+                          style={[
+                            styles.activeDot,
+                            { backgroundColor: colors.primary },
+                          ]}
+                        />
+                      )}
+                    </MotionPressable>
+                  );
+                })}
+            </View>
+          );
+        })}
         {!filteredGroups.length && (
           <Text style={[styles.noResults, { color: colors.sidebarTextMuted }]}>
             No pages match “{query}”.
@@ -1045,7 +1195,7 @@ export const Sidebar = React.memo(function Sidebar({
                 fontWeight: '600',
               }}
             >
-              NexSyrus workspace
+              Your workspace
             </Text>
             <Text
               style={{
@@ -1058,7 +1208,7 @@ export const Sidebar = React.memo(function Sidebar({
             </Text>
           </View>
         )}
-        <Pressable
+        <MotionPressable
           accessibilityRole="button"
           accessibilityLabel={
             onNavigate
@@ -1083,7 +1233,7 @@ export const Sidebar = React.memo(function Sidebar({
           ) : (
             <ChevronLeft size={18} color={colors.sidebarTextMuted} />
           )}
-        </Pressable>
+        </MotionPressable>
       </View>
     </View>
   );
@@ -1095,24 +1245,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 11,
     paddingHorizontal: 20,
-    paddingVertical: 24,
+    paddingVertical: 22,
   },
   logoMark: {
     width: 40,
     height: 40,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: brandColors.red,
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
     flexShrink: 0,
   },
   brandName: {
-    color: '#FFFFFF',
+    color: brandColors.white,
     fontSize: 21,
     fontWeight: '700',
     letterSpacing: -0.6,
   },
-  brandSub: { fontSize: 10, marginTop: 4 },
+  brandSub: {
+    fontSize: 9,
+    letterSpacing: 2.4,
+    marginTop: 4,
+    fontWeight: '600',
+  },
   search: {
     marginHorizontal: 16,
     marginBottom: 12,
@@ -1137,16 +1292,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  navContent: { paddingHorizontal: 12, paddingBottom: 16 },
-  group: { marginBottom: 8 },
-  groupTitle: {
-    fontSize: 10,
-    fontWeight: '600',
-    letterSpacing: 1.2,
+  navContent: { paddingHorizontal: 12, paddingTop: 4, paddingBottom: 20 },
+  group: { marginBottom: 4 },
+  groupToggle: {
+    minHeight: 44,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
     paddingHorizontal: 12,
-    paddingTop: 18,
-    paddingBottom: 9,
+    borderRadius: borderRadius.sm,
+    marginTop: 4,
   },
+  groupCount: { fontSize: 10, fontWeight: '500' },
+  activeMarker: {
+    position: 'absolute',
+    left: 0,
+    width: 3,
+    height: 18,
+    borderRadius: 2,
+  },
+  activeDot: { width: 5, height: 5, borderRadius: 3, marginRight: 6 },
+  groupTitle: { flex: 1, fontSize: 11, fontWeight: '500' },
   divider: { height: 1, marginHorizontal: 8, marginVertical: 12 },
   navItem: {
     minHeight: 46,
@@ -1155,12 +1321,12 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingHorizontal: 9,
     paddingVertical: 5,
-    borderRadius: 10,
+    borderRadius: borderRadius.sm,
     marginBottom: 3,
   },
   collapsedItem: { paddingHorizontal: 0, justifyContent: 'center' },
   iconTile: {
-    width: 30,
+    width: 28,
     height: 32,
     borderRadius: 8,
     alignItems: 'center',

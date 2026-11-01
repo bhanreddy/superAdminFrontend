@@ -1,3 +1,4 @@
+import { MotionPressable } from '../../components/ui/MotionPressable';
 import React, { useMemo, useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -30,10 +31,10 @@ export function SchoolPortfolio({
     [schoolFilter, setSchoolFilter] = useState('All');
   const schools = useMemo(
     () => filterSchools(resource.data || [], query, schoolFilter),
-    [resource.data, query, schoolFilter],
+    [resource.data, query, schoolFilter]
   );
   return (
-    <Panel>
+    <Panel tone="blue">
       <SectionHeading
         eyebrow="YOUR SCHOOL NETWORK"
         title="A portfolio of possibilities"
@@ -79,7 +80,7 @@ export function SchoolPortfolio({
             }}
           />
           {query ? (
-            <Pressable
+            <MotionPressable
               accessibilityRole="button"
               accessibilityLabel="Clear school search"
               onPress={() => setQuery('')}
@@ -89,13 +90,13 @@ export function SchoolPortfolio({
                 justifyContent: 'center',
               }}
             >
-              <Text style={{ color: p.green, fontSize: 12 }}>Clear</Text>
-            </Pressable>
+              <Text style={{ color: p.action, fontSize: 12 }}>Clear</Text>
+            </MotionPressable>
           ) : null}
         </View>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4 }}>
           {['All', 'Live', 'Onboarding', 'Paused'].map((status) => (
-            <Pressable
+            <MotionPressable
               key={status}
               accessibilityRole="button"
               accessibilityState={{
@@ -114,14 +115,14 @@ export function SchoolPortfolio({
             >
               <Text
                 style={{
-                  color: schoolFilter === status ? p.green : p.muted,
+                  color: schoolFilter === status ? p.action : p.muted,
                   fontSize: 12,
                   fontWeight: '600',
                 }}
               >
                 {status}
               </Text>
-            </Pressable>
+            </MotionPressable>
           ))}
         </View>
       </View>
@@ -131,7 +132,7 @@ export function SchoolPortfolio({
             {schools.slice(0, 5).map((s, i) => {
               const status = schoolState(s);
               return (
-                <Pressable
+                <MotionPressable
                   key={`${s.cluster_id || 'selected'}:${s.id}`}
                   accessibilityRole="button"
                   accessibilityLabel={`Open ${s.name}, ${s.code}, ${status}`}
@@ -157,7 +158,7 @@ export function SchoolPortfolio({
                   <View style={[st.monogram, { backgroundColor: p.inset }]}>
                     <Text
                       style={{
-                        color: p.green,
+                        color: p.action,
                         fontWeight: '700',
                         fontSize: 16,
                       }}
@@ -198,7 +199,7 @@ export function SchoolPortfolio({
                   >
                     <Text
                       style={{
-                        color: status === 'Onboarding' ? p.amber : p.green,
+                        color: status === 'Onboarding' ? p.amber : p.action,
                         fontSize: 10,
                         fontWeight: '600',
                       }}
@@ -207,7 +208,7 @@ export function SchoolPortfolio({
                     </Text>
                   </View>
                   <ChevronRight size={16} color={p.muted} />
-                </Pressable>
+                </MotionPressable>
               );
             })}
             <Text style={{ color: p.muted, fontSize: 11, paddingTop: 15 }}>

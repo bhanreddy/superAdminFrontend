@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useState } from 'react';
 import {
   View,
@@ -86,7 +87,7 @@ export default function NotificationsScreen() {
       <ScreenHeader title="Notifications" subtitle="Inbox" />
       <View style={styles.pad}>
         {loading ? (
-          <ActivityIndicator color="#7C6FFF" style={{ marginTop: 32 }} />
+          <ActivityIndicator color={brandColors.violet} style={{ marginTop: 32 }} />
         ) : (
           <ScrollView
             showsVerticalScrollIndicator={false}
@@ -157,7 +158,7 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#7C6FFF',
+    backgroundColor: brandColors.violet,
     marginLeft: 8,
     marginTop: 4,
   },

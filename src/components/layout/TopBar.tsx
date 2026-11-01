@@ -1,3 +1,4 @@
+import { MotionPressable } from '../ui/MotionPressable';
 import React from 'react';
 import {
   View,
@@ -74,14 +75,14 @@ export const TopBar = React.memo(function TopBar({
     >
       <View style={[styles.left, compact && { gap: 4 }]}>
         {showMenu && (
-          <Pressable
+          <MotionPressable
             accessibilityRole="button"
             accessibilityLabel="Open navigation"
             onPress={onMenuPress}
             style={iconStyle}
           >
             <Menu size={21} color={colors.textPrimary} />
-          </Pressable>
+          </MotionPressable>
         )}
         <View style={styles.location}>
           {!compact && (
@@ -110,7 +111,7 @@ export const TopBar = React.memo(function TopBar({
           role !== 'CA' &&
           role !== 'CA_LEAD' &&
           width >= 1100 && (
-            <Pressable
+            <MotionPressable
               accessibilityRole="button"
               accessibilityLabel={`Switch cluster: ${selectedCluster.label}`}
               onPress={() => router.push('/cluster-selector' as any)}
@@ -126,20 +127,20 @@ export const TopBar = React.memo(function TopBar({
               >
                 {selectedCluster.label}
               </Text>
-            </Pressable>
+            </MotionPressable>
           )}
       </View>
       <View style={styles.right}>
         <FingerprintSecurityControl />
-        <Pressable
+        <MotionPressable
           accessibilityRole="button"
           accessibilityLabel="Open NexSyrus Connect"
           onPress={() => router.push('/(app)/connect' as any)}
           style={iconStyle}
         >
           <MessageCircle size={19} color={colors.primary} />
-        </Pressable>
-        <Pressable
+        </MotionPressable>
+        <MotionPressable
           accessibilityRole="button"
           accessibilityLabel={
             isDark ? 'Switch to light theme' : 'Switch to dark theme'
@@ -152,16 +153,16 @@ export const TopBar = React.memo(function TopBar({
           ) : (
             <Moon size={19} color={colors.textSecondary} />
           )}
-        </Pressable>
+        </MotionPressable>
         {isFounder && !compact && (
-          <Pressable
+          <MotionPressable
             accessibilityRole="button"
             accessibilityLabel="Open notifications"
             onPress={() => router.push('/(app)/console/notifications' as any)}
             style={iconStyle}
           >
             <Bell size={19} color={colors.textSecondary} />
-          </Pressable>
+          </MotionPressable>
         )}
         {!compact && (
           <View
@@ -194,7 +195,7 @@ export const TopBar = React.memo(function TopBar({
             </Text>
           </View>
         )}
-        <Pressable
+        <MotionPressable
           accessibilityRole="button"
           accessibilityLabel="Sign out"
           onPress={async () => {
@@ -205,7 +206,7 @@ export const TopBar = React.memo(function TopBar({
           style={iconStyle}
         >
           <LogOut size={18} color={colors.textSecondary} />
-        </Pressable>
+        </MotionPressable>
       </View>
     </View>
   );

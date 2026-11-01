@@ -1,3 +1,4 @@
+import { MotionPressable } from './MotionPressable';
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, Platform } from 'react-native';
 import { ChevronRight } from 'lucide-react-native';
@@ -88,7 +89,7 @@ export const Breadcrumb = React.memo(function Breadcrumb({
                 </Text>
               </View>
             ) : item.href ? (
-              <Pressable accessibilityRole="button"
+              <MotionPressable accessibilityRole="button"
                 onPress={() => {
                   if (item.href) router.push(item.href as any);
                 }}
@@ -107,7 +108,7 @@ export const Breadcrumb = React.memo(function Breadcrumb({
                 >
                   {item.label}
                 </Text>
-              </Pressable>
+              </MotionPressable>
             ) : <Text style={[styles.linkText, { color: colors.textSecondary }]}>{item.label}</Text>}
           </View>
         );

@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -111,7 +112,7 @@ export default function AuditLogsScreen() {
         <FilterChips<string> options={actionChips} value={action} onChange={setAction} />
 
         {loading ? (
-          <ActivityIndicator color="#7C6FFF" style={{ marginTop: 24 }} />
+          <ActivityIndicator color={brandColors.violet} style={{ marginTop: 24 }} />
         ) : (
           <ScrollView
             showsVerticalScrollIndicator={false}
@@ -119,7 +120,7 @@ export default function AuditLogsScreen() {
           >
             {rows.map((r) => (
               <GlassCard key={r.id} style={{ marginBottom: 10 }}>
-                <Text style={[styles.ent, { color: '#7C6FFF' }]}>
+                <Text style={[styles.ent, { color: brandColors.violet }]}>
                   {r.entity_type} · {r.action}
                 </Text>
                 <Text style={[styles.time, { color: colors.textSecondary }]}>

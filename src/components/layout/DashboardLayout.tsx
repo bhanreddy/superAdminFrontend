@@ -14,6 +14,8 @@ import { TopBar } from './TopBar';
 import { useAuth } from '../../hooks/useAuth';
 import { isFounderOrSuperAdmin } from '../../constants/rbac';
 import { useTheme, WorkspaceThemeProvider } from '../../contexts/ThemeContext';
+import Animated, { FadeInLeft } from 'react-native-reanimated';
+import { animation } from '../../constants/theme';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -22,12 +24,20 @@ interface DashboardLayoutProps {
 const DashboardShell = React.memo(function DashboardShell({
   children,
 }: DashboardLayoutProps) {
-  const { colors, layout: layoutTokens, isDark, zIndex } = useTheme();
+  const {
+    colors,
+    layout: layoutTokens,
+    isDark,
+    zIndex,
+    reducedMotion,
+  } = useTheme();
   const { width: screenWidth } = useWindowDimensions();
   const pathname = usePathname();
   const { role } = useAuth();
   const isConnect = pathname === '/connect';
-  const isExecutive = (pathname === '/' || pathname === '/console') && isFounderOrSuperAdmin(role);
+  const isExecutive =
+    (pathname === '/' || pathname === '/console') &&
+    isFounderOrSuperAdmin(role);
   const isMobile = screenWidth < layoutTokens.mobileBreakpoint;
   const isCompactMobile = screenWidth < 480;
 
@@ -81,7 +91,7 @@ const DashboardShell = React.memo(function DashboardShell({
         <Modal
           transparent
           visible={mobileOpen}
-          animationType="none"
+          animationType={reducedMotion ? 'none' : 'fade'}
           onRequestClose={closeMobileSidebar}
         >
           <View
@@ -96,10 +106,15 @@ const DashboardShell = React.memo(function DashboardShell({
               accessibilityLabel="Dismiss navigation"
               onPress={closeMobileSidebar}
             />
-            <View
+            <Animated.View
+              entering={
+                reducedMotion ? undefined : FadeInLeft.duration(animation.slow)
+              }
               style={[
                 styles.mobileSidebarPanel,
-                { width: layoutTokens.sidebarWidth },
+                {
+                  width: Math.min(layoutTokens.sidebarWidth, screenWidth - 44),
+                },
               ]}
             >
               <Sidebar
@@ -107,7 +122,7 @@ const DashboardShell = React.memo(function DashboardShell({
                 onToggle={closeMobileSidebar}
                 onNavigate={closeMobileSidebar}
               />
-            </View>
+            </Animated.View>
           </View>
         </Modal>
       )}
@@ -125,15 +140,16 @@ const DashboardShell = React.memo(function DashboardShell({
             styles.scroller,
             {
               paddingTop: isConnect || isExecutive ? 0 : isMobile ? 16 : 28,
-              paddingHorizontal: isConnect || isExecutive
-                ? 0
-                : isCompactMobile
+              paddingHorizontal:
+                isConnect || isExecutive
+                  ? 0
+                  : isCompactMobile
                   ? 12
                   : isMobile
-                    ? 16
-                    : screenWidth < 1200
-                      ? 24
-                      : 36,
+                  ? 16
+                  : screenWidth < 1200
+                  ? 24
+                  : 36,
               paddingBottom: isConnect || isExecutive ? 0 : 48,
               ...(isConnect ? { overflow: 'hidden' as const } : {}),
             },

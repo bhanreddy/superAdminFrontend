@@ -1,129 +1,71 @@
 import type { DashboardReport as apiDashboardReport } from '../../api/books';
 import React, { useState } from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text } from 'react-native';
+import { ArrowDownLeft, ArrowUpRight, Landmark, TrendingUp } from 'lucide-react-native';
+import { MotionPressable as Pressable } from '../../components/ui/MotionPressable';
+import { MotionSection } from '../../components/ui/MotionSection';
+import { MetricValue } from '../../components/ui/MetricValue';
+import { borderRadius } from '../../constants/theme';
+import { brandColors, getCardTone, type CardTone } from '../../constants/experienceColors';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Report, Account, money, message } from '../../api/books';
 import { Panel, Table, Notice, Action, ui } from './BooksUi';
 import { reportRows, saveCsv } from './export';
 export function Kpis({ report: r }: { report: apiDashboardReport }) {
-  const { colors } = useTheme();
+  const { isDark } = useTheme();
+  const date = (value: string) => new Date(`${value}T00:00:00`).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
   return (
     <View style={ui.wrap}>
       {[
-        {
-          label: 'TOTAL RECEIVABLES',
-          value: r.receivables,
-          note: 'Current unpaid invoices',
-          color: '#3085cc',
-        },
-        {
-          label: 'TOTAL PAYABLES',
-          value: r.payables,
-          note: 'Current unpaid bills',
-          color: '#dc8650',
-        },
-        {
-          label: 'CASH & BANK',
-          value: r.cash,
-          note: `Ledger balance at ${r.to}`,
-          color: '#15a383',
-        },
-        {
-          label: 'NET PROFIT',
-          value: r.profit,
-          note: `${r.from} — ${r.to}`,
-          color: '#8876da',
-        },
-      ].map((k) => (
-        <Panel key={k.label} style={{ flex: 1, minWidth: 185, padding: 20 }}>
-          <Text
-            style={{
-              color: colors.textSecondary,
-              fontSize: 10,
-              fontWeight: '700',
-              letterSpacing: 0.8,
-            }}
-          >
-            {k.label}
-          </Text>
-          <Text
-            style={{
-              color: k.color,
-              fontSize: 27,
-              fontWeight: '700',
-              letterSpacing: -0.8,
-            }}
-          >
-            {money(k.value)}
-          </Text>
-          <Text style={{ color: colors.textTertiary, fontSize: 11 }}>
-            {k.note}
-          </Text>
-        </Panel>
-      ))}
+        { label: 'TOTAL RECEIVABLES', value: r.receivables, note: 'Current unpaid invoices', tone: 'blue', Icon: ArrowDownLeft },
+        { label: 'TOTAL PAYABLES', value: r.payables, note: 'Current unpaid bills', tone: 'rose', Icon: ArrowUpRight },
+        { label: 'CASH & BANK', value: r.cash, note: `As of ${date(r.to)}`, tone: 'honey', Icon: Landmark },
+        { label: 'NET PROFIT', value: r.profit, note: `${date(r.from)} — ${date(r.to)}`, tone: 'lavender', Icon: TrendingUp },
+      ].map(k => {
+        const tone = getCardTone(k.tone as CardTone, isDark);
+        return <Panel key={k.label} tone={k.tone as CardTone} material="soft" style={{ flex: 1, minWidth: 185, padding: 20, gap: 14 }}>
+          <View style={[ui.row, { justifyContent: 'space-between' }]}>
+            <Text style={{ color: tone.accent, fontSize: 10, fontWeight: '700', letterSpacing: 0.8, flex: 1 }}>{k.label}</Text>
+            <View style={{ width: 38, height: 38, borderRadius: 13, backgroundColor: tone.cover, alignItems: 'center', justifyContent: 'center' }}><k.Icon size={19} color={tone.accent} /></View>
+          </View>
+          <MetricValue value={money(k.value)} style={{ color: tone.ink, fontVariant: ['tabular-nums'] }} />
+          <Text style={{ color: tone.muted, fontSize: 12, lineHeight: 18 }}>{k.note}</Text>
+        </Panel>;
+      })}
     </View>
   );
 }
 export function CashChart({ report: r }: { report: apiDashboardReport }) {
-  const { colors } = useTheme(),
-    max = Math.max(
-      1,
-      ...r.cashflow.flatMap((v) => [Number(v.inflow), Number(v.outflow)]),
-    );
+  const { colors, isDark } = useTheme();
+  const max = Math.max(1, ...r.cashflow.flatMap(v => [Number(v.inflow), Number(v.outflow)]));
+  const receiptColor = isDark ? brandColors.blueBright : brandColors.blue;
+  const paymentColor = isDark ? brandColors.peach : brandColors.rose;
   return (
     <Panel>
-      <View style={[ui.row, { justifyContent: 'space-between' }]}>
-        <Text style={[ui.title, { color: colors.textPrimary }]}>
-          Cash movement
-        </Text>
-        <Text style={{ color: colors.textSecondary, fontSize: 12 }}>
-          ● Receipts ● Payments
-        </Text>
+      <View style={[ui.row, { justifyContent: 'space-between', flexWrap: 'wrap' }]}>
+        <View style={{ gap: 4 }}>
+          <Text style={[ui.title, { color: colors.textPrimary }]}>Cash movement</Text>
+          <Text style={{ color: colors.textSecondary, fontSize: 12 }}>Money in and out over time</Text>
+        </View>
+        <View style={ui.row}>
+          {[['Receipts', receiptColor], ['Payments', paymentColor]].map(([label, color]) => <View key={label} style={[ui.row, { gap: 6 }]}>
+            <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: color }} />
+            <Text style={{ color: colors.textSecondary, fontSize: 12 }}>{label}</Text>
+          </View>)}
+        </View>
       </View>
-      {r.cashflow.length ? (
-        r.cashflow.slice(-8).map((v) => (
-          <View key={v.month} style={ui.row}>
-            <Text
-              style={{ color: colors.textSecondary, width: 70, fontSize: 12 }}
-            >
-              {v.month}
-            </Text>
-            <View style={{ flex: 1, gap: 5 }}>
-              <View
-                style={{
-                  height: 9,
-                  width: `${Math.max(0, (Number(v.inflow) / max) * 100)}%`,
-                  backgroundColor: '#3085cc',
-                  borderRadius: 4,
-                }}
-              />
-              <View
-                style={{
-                  height: 9,
-                  width: `${Math.max(0, (Number(v.outflow) / max) * 100)}%`,
-                  backgroundColor: '#dc8650',
-                  borderRadius: 4,
-                }}
-              />
-            </View>
-            <Text
-              style={{
-                color: colors.textSecondary,
-                fontSize: 11,
-                width: 125,
-                textAlign: 'right',
-              }}
-            >
-              {money(v.inflow)} / {money(v.outflow)}
-            </Text>
+      {r.cashflow.length ? r.cashflow.slice(-8).map(v => (
+        <View key={v.month} accessible accessibilityLabel={`${v.month}: receipts ${money(v.inflow)}, payments ${money(v.outflow)}`} style={{ gap: 8 }}>
+          <View style={[ui.row, { justifyContent: 'space-between', flexWrap: 'wrap' }]}>
+            <Text style={{ color: colors.textPrimary, fontWeight: '600', fontSize: 12 }}>{v.month}</Text>
+            <Text style={{ color: colors.textSecondary, fontSize: 12 }}>{money(v.inflow)} / {money(v.outflow)}</Text>
           </View>
-        ))
-      ) : (
-        <Text style={{ color: colors.textSecondary, lineHeight: 22 }}>
-          Cash movements will appear after you record payments, cash expenses,
-          or cash journals.
-        </Text>
-      )}
+          <View style={{ gap: 5 }}>
+            <View style={{ height: 9, width: `${Math.max(0, Number(v.inflow) / max * 100)}%`, backgroundColor: receiptColor, borderRadius: 5 }} />
+            <View style={{ height: 9, width: `${Math.max(0, Number(v.outflow) / max * 100)}%`, backgroundColor: paymentColor, borderRadius: 5 }} />
+          </View>
+        </View>
+      )) : <Text style={{ color: colors.textSecondary, lineHeight: 22 }}>Cash movements will appear after you record payments, cash expenses, or cash journals.</Text>}
     </Panel>
   );
 }
@@ -170,7 +112,7 @@ export default function ReportsView({
     ]} />{summary(`Total ${label.toLowerCase()}`, total)}
   </Panel>;
   return (
-    <>
+    <MotionSection transitionKey={tab} style={{ gap: 18 }}>
       <Kpis report={r} />
       <Notice text={`${r.organization_name} · ${r.from} to ${r.to} · INR · Accrual basis. Balance sheet is as of ${r.to}. Only posted journals and their dated reversals affect these statements.`} />
       {exportError ? <Notice error text={exportError} /> : null}
@@ -186,9 +128,11 @@ export default function ReportsView({
             style={{
               paddingHorizontal: 13,
               paddingVertical: 10,
-              borderRadius: 8,
+              minHeight: 44,
+              justifyContent: 'center',
+              borderRadius: borderRadius.md,
               backgroundColor:
-                tab === n ? colors.primary + '18' : colors.surface,
+                tab === n ? colors.primaryMuted : colors.surface,
             }}
           >
             <Text
@@ -299,6 +243,6 @@ export default function ReportsView({
         <Notice error={r.cash_flow.difference !== 0} text={r.cash_flow.difference === 0 ? 'Cash reconciles to the balance sheet.' : 'Cash does not reconcile. Review ledger classifications before using this statement.'} />
         <CashChart report={r} />
       </>}
-    </>
+    </MotionSection>
   );
 }

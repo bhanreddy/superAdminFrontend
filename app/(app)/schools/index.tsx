@@ -1,3 +1,4 @@
+import { StatCard as WorkspaceStatCard } from '../../../src/components/ui/StatCard';
 import React, { useCallback, useEffect, useState, useMemo, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable, Platform,  Easing, ScrollView, useWindowDimensions, Alert } from 'react-native';
 import { Animated } from '../../../src/utils/accessibleAnimation';
@@ -37,110 +38,11 @@ function FadeIn({ delay = 0, children }: { delay?: number; children: React.React
   return <Animated.View style={{ opacity, transform: [{ translateY: ty }] }}>{children}</Animated.View>;
 }
 
-/* ─── Stat Card ───────────────────────────────────────────────────────────── */
-function StatCard({ title, value, badge, icon, accent, description, compact = false, tiny = false }: {
-  title: string; value: number | string; badge?: string;
-  icon: React.ReactNode; accent: string; description?: string; compact?: boolean; tiny?: boolean;
+function StatCard({ title, value, badge, icon, accent, description }: {
+  title: string; value: number | string; badge?: string; icon: React.ReactNode;
+  accent: string; description?: string; compact?: boolean; tiny?: boolean;
 }) {
-  const { colors, isDark, clayShadows } = useTheme();
-  const scale = useRef(new Animated.Value(1)).current;
-
-  return (
-    <Pressable
-      onPressIn={() => Animated.spring(scale, { toValue: 0.978, tension: 280, friction: 16, useNativeDriver: true }).start()}
-      onPressOut={() => Animated.spring(scale, { toValue: 1, tension: 280, friction: 16, useNativeDriver: true }).start()}
-      style={st.statWrap}
-    >
-      {({ hovered }: any) => {
-        const shadow = hovered ? clayShadows.clayElevated : clayShadows.clay;
-        return (
-          <Animated.View style={[
-            {
-              transform: [{ scale }],
-              borderRadius: 18,
-            },
-            Platform.OS === 'web' ? {
-              transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-              transform: hovered ? 'scale(1.025)' : 'none',
-            } as any : {},
-          ]}>
-            <LinearGradient
-              colors={isDark
-                ? [`${accent}12`, `${accent}06`, 'transparent']
-                : [`${accent}0A`, `${accent}04`, 'transparent']}
-              style={[
-                st.stat,
-                compact && st.statCompact,
-                tiny && st.statTiny,
-                {
-                  borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.8)',
-                  borderWidth: 1,
-                  backgroundColor: colors.card,
-                },
-                Platform.OS === 'web' ? {
-                  boxShadow: isDark
-                    ? `inset 3px 3px 6px rgba(255,255,255,0.07), inset -4px -4px 8px ${accent}0A, inset -2px -2px 4px rgba(0,0,0,0.35), ${shadow.web}`
-                    : `inset 3px 3px 6px rgba(255,255,255,0.95), inset -4px -4px 8px ${accent}12, inset -2px -2px 4px rgba(0,0,0,0.04), ${shadow.web}`,
-                } as any : {},
-              ]}
-              start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-            >
-              <View style={[st.statGlow, { backgroundColor: `${accent}${isDark ? '06' : '04'}` }]} />
-
-              <View style={[st.statRow1, compact && st.statRow1Compact]}>
-                <View style={[st.statIcon, {
-                  backgroundColor: isDark ? `${accent}16` : `${accent}0A`,
-                  borderColor: isDark ? `${accent}25` : `${accent}12`,
-                  borderWidth: 1,
-                },
-                Platform.OS === 'web' ? {
-                  boxShadow: isDark
-                    ? `inset 1.5px 1.5px 3px rgba(0,0,0,0.4), inset -1.5px -1.5px 3px rgba(255,255,255,0.05)`
-                    : `inset 1.5px 1.5px 3px rgba(255,255,255,0.95), inset -2px -2px 4px ${accent}20, inset -1.5px -1.5px 3px rgba(0,0,0,0.03)`,
-                } as any : {},
-                compact && st.statIconCompact]}>
-                  {icon}
-                </View>
-                {badge && (
-                  <View style={[st.statBadge, {
-                    backgroundColor: isDark ? `${accent}14` : `${accent}08`,
-                    borderColor: `${accent}18`,
-                    borderWidth: 1,
-                  },
-                  Platform.OS === 'web' ? {
-                    boxShadow: isDark
-                      ? `inset 1px 1.5px 3px rgba(255,255,255,0.1), inset -1.5px -1.5px 3px rgba(0,0,0,0.3)`
-                      : `inset 1.5px 1.5px 3px rgba(255,255,255,0.9), inset -1.5px -1.5px 3px rgba(0,0,0,0.04)`,
-                  } as any : {},
-                  compact && st.statBadgeCompact]}>
-                    {!tiny && <TrendingUp size={10} color={accent} strokeWidth={2.5} />}
-                    <Text style={[st.statBadgeText, compact && st.statBadgeTextCompact, { color: accent }]} numberOfLines={1}>
-                      {badge}
-                    </Text>
-                  </View>
-                )}
-              </View>
-
-              <View style={st.statValRow}>
-                <Text style={[st.statVal, compact && st.statValCompact, { color: colors.textPrimary }]}>{value}</Text>
-              </View>
-              <Text style={[st.statLabel, compact && st.statLabelCompact, { color: colors.textSecondary }]} numberOfLines={2}>
-                {title}
-              </Text>
-
-              {description && (
-                <Text style={[st.statDesc, compact && st.statDescCompact, { color: colors.textTertiary }]} numberOfLines={2}>
-                  {description}
-                </Text>
-              )}
-
-              <View style={[st.statLine, { backgroundColor: accent, opacity: 0.7 }]} />
-            </LinearGradient>
-          </Animated.View>
-        );
-      }}
-    </Pressable>
-  );
+  return <WorkspaceStatCard title={title} value={value} icon={icon} accentColor={accent} description={description} />;
 }
 
 /* ─── Main ────────────────────────────────────────────────────────────────── */

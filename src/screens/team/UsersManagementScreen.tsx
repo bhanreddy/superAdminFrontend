@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
@@ -487,8 +488,8 @@ export default function UsersManagementScreen() {
                     { backgroundColor: 'rgba(99, 102, 241, 0.12)', borderColor: 'rgba(99, 102, 241, 0.3)' },
                   ]}
                 >
-                  <Users size={14} color="#6366F1" />
-                  <Text style={[styles.badgeText, { color: '#6366F1' }]}>OPERATIONAL DELEGATION & TEAM</Text>
+                  <Users size={14} color={brandColors.violet} />
+                  <Text style={[styles.badgeText, { color: brandColors.violet }]}>OPERATIONAL DELEGATION & TEAM</Text>
                 </View>
               </View>
               <Text style={[styles.pageTitle, { color: colors.textPrimary }]}>Employee Hierarchy & Accountability</Text>
@@ -638,11 +639,11 @@ export default function UsersManagementScreen() {
                             style={[
                               styles.statusBadge,
                               {
-                                backgroundColor: isActive ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)',
+                                backgroundColor: isActive ? 'rgba(51, 95, 144, 0.12)' : 'rgba(239, 68, 68, 0.12)',
                               },
                             ]}
                           >
-                            <Text style={[styles.statusText, { color: isActive ? '#10B981' : '#EF4444' }]}>
+                            <Text style={[styles.statusText, { color: isActive ? brandColors.blue : brandColors.red }]}>
                               {u.status}
                             </Text>
                           </View>
@@ -745,7 +746,7 @@ export default function UsersManagementScreen() {
                                   borderColor: colors.border,
                                   backgroundColor: isActive
                                     ? 'rgba(239, 68, 68, 0.08)'
-                                    : 'rgba(16, 185, 129, 0.08)',
+                                    : 'rgba(51, 95, 144, 0.08)',
                                 },
                               ]}
                               onPress={() => {
@@ -759,7 +760,7 @@ export default function UsersManagementScreen() {
                               <Text
                                 style={[
                                   styles.cardActionText,
-                                  { color: isActive ? '#EF4444' : '#10B981' },
+                                  { color: isActive ? brandColors.red : brandColors.blue },
                                 ]}
                               >
                                 {isActive ? 'Deactivate' : 'Activate'}
@@ -836,7 +837,7 @@ export default function UsersManagementScreen() {
               {/* Managers and Direct Reports Trees */}
               <View style={styles.hierarchySection}>
                 <View style={styles.sectionHeaderRow}>
-                  <Users size={18} color="#0A84FF" />
+                  <Users size={18} color={brandColors.red} />
                   <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
                     Supervising Managers & Reporting Teams
                   </Text>
@@ -863,7 +864,7 @@ export default function UsersManagementScreen() {
                       >
                         {/* Manager Header */}
                         <View style={styles.managerHeaderRow}>
-                          <View style={[styles.avatarWrap, { backgroundColor: '#0A84FF' }]}>
+                          <View style={[styles.avatarWrap, { backgroundColor: brandColors.red }]}>
                             <Text style={styles.avatarText}>{(mgr.full_name || 'M').slice(0, 2).toUpperCase()}</Text>
                           </View>
                           <View style={{ flex: 1 }}>
@@ -873,7 +874,7 @@ export default function UsersManagementScreen() {
                             </Text>
                           </View>
                           <View style={[styles.teamCountBadge, { backgroundColor: 'rgba(10, 132, 255, 0.12)' }]}>
-                            <Text style={[styles.teamCountText, { color: '#0A84FF' }]}>
+                            <Text style={[styles.teamCountText, { color: brandColors.red }]}>
                               {subordinates.length} Direct Report{subordinates.length === 1 ? '' : 's'}
                             </Text>
                           </View>
@@ -891,7 +892,7 @@ export default function UsersManagementScreen() {
                                 key={sub.id}
                                 style={[
                                   styles.subordinateCard,
-                                  { backgroundColor: isDark ? '#161b22' : '#FFFFFF', borderColor: colors.border },
+                                  { backgroundColor: isDark ? experienceColors.dark.surface : brandColors.white, borderColor: colors.border },
                                 ]}
                                 onPress={() => openUserDetails(sub)}
                               >
@@ -906,8 +907,8 @@ export default function UsersManagementScreen() {
                                 </View>
                                 <View style={styles.subRight}>
                                   <View style={[styles.schoolPill, { backgroundColor: 'rgba(99, 102, 241, 0.1)' }]}>
-                                    <School size={11} color="#6366F1" />
-                                    <Text style={[styles.schoolPillText, { color: '#6366F1' }]}>
+                                    <School size={11} color={brandColors.violet} />
+                                    <Text style={[styles.schoolPillText, { color: brandColors.violet }]}>
                                       {sub.assigned_schools_count || 0} School{sub.assigned_schools_count === 1 ? '' : 's'}
                                     </Text>
                                   </View>
@@ -927,7 +928,7 @@ export default function UsersManagementScreen() {
               {(hierarchyData?.directExecutives || []).length > 0 && (
                 <View style={styles.hierarchySection}>
                   <View style={styles.sectionHeaderRow}>
-                    <Briefcase size={18} color="#30D158" />
+                    <Briefcase size={18} color="#335F90" />
                     <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
                       Direct Founder Reports (Founder → Sales Executive)
                     </Text>
@@ -944,7 +945,7 @@ export default function UsersManagementScreen() {
                         onPress={() => openUserDetails(sub)}
                       >
                         <View style={styles.treeNodeTop}>
-                          <View style={[styles.avatarWrap, { backgroundColor: '#30D158' }]}>
+                          <View style={[styles.avatarWrap, { backgroundColor: '#335F90' }]}>
                             <Text style={styles.avatarText}>{(sub.full_name || 'E').slice(0, 2).toUpperCase()}</Text>
                           </View>
                           <View style={{ flex: 1 }}>
@@ -1013,7 +1014,7 @@ export default function UsersManagementScreen() {
               <View
                 style={[
                   styles.modalCard,
-                  { backgroundColor: isDark ? '#161b22' : '#FFFFFF', borderColor: colors.border },
+                  { backgroundColor: isDark ? experienceColors.dark.surface : brandColors.white, borderColor: colors.border },
                 ]}
               >
                 <View style={styles.modalHeader}>
@@ -1233,7 +1234,7 @@ export default function UsersManagementScreen() {
               <View
                 style={[
                   styles.modalCard,
-                  { backgroundColor: isDark ? '#161b22' : '#FFFFFF', borderColor: colors.border },
+                  { backgroundColor: isDark ? experienceColors.dark.surface : brandColors.white, borderColor: colors.border },
                 ]}
               >
                 <View style={styles.modalHeader}>
@@ -1265,7 +1266,7 @@ export default function UsersManagementScreen() {
                     </View>
                     <View style={styles.detailRow}>
                       <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>Status:</Text>
-                      <Text style={[styles.detailValue, { color: selectedUser?.status === 'ACTIVE' ? '#10B981' : '#EF4444' }]}>{selectedUser?.status}</Text>
+                      <Text style={[styles.detailValue, { color: selectedUser?.status === 'ACTIVE' ? brandColors.blue : brandColors.red }]}>{selectedUser?.status}</Text>
                     </View>
                     <View style={styles.detailRow}>
                       <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>Direct Reports:</Text>
@@ -1283,7 +1284,7 @@ export default function UsersManagementScreen() {
                   <View style={styles.permissionChipsWrap}>
                     {effectivePermissions.map((perm) => (
                       <View key={perm} style={[styles.permChip, { borderColor: colors.border, backgroundColor: isDark ? 'rgba(99, 102, 241, 0.1)' : '#EEF2FF' }]}>
-                        <CheckSquare size={12} color="#6366F1" />
+                        <CheckSquare size={12} color={brandColors.violet} />
                         <Text style={styles.permChipText}>{perm}</Text>
                       </View>
                     ))}
@@ -1308,12 +1309,12 @@ export default function UsersManagementScreen() {
               <View
                 style={[
                   styles.modalCard,
-                  { backgroundColor: isDark ? '#161b22' : '#FFFFFF', borderColor: '#EF4444' },
+                  { backgroundColor: isDark ? experienceColors.dark.surface : brandColors.white, borderColor: brandColors.red },
                 ]}
               >
                 <View style={styles.modalHeader}>
                   <View>
-                    <Text style={[styles.modalTitle, { color: '#EF4444' }]}>Deactivate Employee Account</Text>
+                    <Text style={[styles.modalTitle, { color: brandColors.red }]}>Deactivate Employee Account</Text>
                     <Text style={[styles.modalSub, { color: colors.textSecondary }]}>
                       {deactivatingUser?.full_name} ({deactivatingUser?.employee_id})
                     </Text>
@@ -1326,7 +1327,7 @@ export default function UsersManagementScreen() {
                 <ScrollView style={styles.modalForm}>
                   {loadingImpact ? (
                     <View style={{ padding: 30, alignItems: 'center' }}>
-                      <ActivityIndicator size="small" color="#EF4444" />
+                      <ActivityIndicator size="small" color={brandColors.red} />
                       <Text style={{ marginTop: 8, fontSize: 12, color: colors.textSecondary }}>
                         Analyzing dependent responsibilities...
                       </Text>
@@ -1335,9 +1336,9 @@ export default function UsersManagementScreen() {
                     <>
                       {/* Impact Warning */}
                       <View style={[styles.impactBox, { backgroundColor: 'rgba(239, 68, 68, 0.08)', borderColor: 'rgba(239, 68, 68, 0.2)' }]}>
-                        <AlertTriangle size={20} color="#EF4444" />
+                        <AlertTriangle size={20} color={brandColors.red} />
                         <View style={{ flex: 1 }}>
-                          <Text style={[styles.impactTitle, { color: '#EF4444' }]}>
+                          <Text style={[styles.impactTitle, { color: brandColors.red }]}>
                             Impact Assessment on Responsibilities
                           </Text>
                           <Text style={[styles.impactSub, { color: colors.textSecondary }]}>
@@ -1468,7 +1469,7 @@ export default function UsersManagementScreen() {
                     <Text style={[styles.cancelBtnText, { color: colors.textSecondary }]}>Cancel</Text>
                   </Pressable>
                   <Pressable accessibilityRole="button"
-                    style={[styles.submitBtn, { backgroundColor: '#EF4444' }]}
+                    style={[styles.submitBtn, { backgroundColor: brandColors.red }]}
                     onPress={handleConfirmDeactivation}
                     disabled={deactivating || loadingImpact}
                   >
@@ -1489,7 +1490,7 @@ export default function UsersManagementScreen() {
               <View
                 style={[
                   styles.modalCard,
-                  { backgroundColor: isDark ? '#161b22' : '#FFFFFF', borderColor: colors.border },
+                  { backgroundColor: isDark ? experienceColors.dark.surface : brandColors.white, borderColor: colors.border },
                 ]}
               >
                 <View style={styles.modalHeader}>
@@ -1573,7 +1574,7 @@ export default function UsersManagementScreen() {
               <View
                 style={[
                   styles.modalCard,
-                  { backgroundColor: isDark ? '#161b22' : '#FFFFFF', borderColor: colors.border, maxWidth: 440 },
+                  { backgroundColor: isDark ? experienceColors.dark.surface : brandColors.white, borderColor: colors.border, maxWidth: 440 },
                 ]}
               >
                 <View style={styles.modalHeader}>
@@ -1629,7 +1630,7 @@ export default function UsersManagementScreen() {
               <View
                 style={[
                   styles.modalCard,
-                  { backgroundColor: isDark ? '#161b22' : '#FFFFFF', borderColor: colors.border },
+                  { backgroundColor: isDark ? experienceColors.dark.surface : brandColors.white, borderColor: colors.border },
                 ]}
               >
                 <View style={styles.modalHeader}>
@@ -1822,7 +1823,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: '#6366F1',
+    backgroundColor: brandColors.violet,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1975,7 +1976,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     borderWidth: 1,
   },
-  permChipText: { fontSize: 10.5, fontWeight: '600', color: '#6366F1' },
+  permChipText: { fontSize: 10.5, fontWeight: '600', color: brandColors.violet },
 
   // Impact Modal styles
   impactBox: {

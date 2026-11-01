@@ -32,12 +32,13 @@ const native = {
   ActivityIndicator: "ActivityIndicator",
   Image: "Image",
   KeyboardAvoidingView: "KeyboardAvoidingView",
-  Platform: { OS: "web" },
+  Platform: { OS: "web", select: options => options.web ?? options.default },
   StyleSheet: { create: (x) => x },
   Modal: ({ visible, children }) =>
     visible ? React.createElement("Modal", null, children) : null,
   useWindowDimensions: () => ({ width: 1300, height: 900 }),
 };
+const fixtureTheme = loader({ 'react-native': native })(p('src/constants/theme.ts')).lightTheme;
 function env({
   rows = [base],
   createExpense,
@@ -76,7 +77,8 @@ function env({
     },
     "lucide-react-native": new Proxy({}, { get: () => () => null }),
     [p("src/contexts/ThemeContext.tsx")]: {
-      useTheme: () => ({ colors, isDark: false }),
+      useTheme: () => ({ ...fixtureTheme, colors: { ...fixtureTheme.colors, ...colors }, isDark: false }),
+      clayStyle: () => ({}),
     },
     [p("src/hooks/useFounderAuth.ts")]: {
       useFounderAuth: () => ({

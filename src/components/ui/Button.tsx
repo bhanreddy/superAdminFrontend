@@ -1,3 +1,4 @@
+import { MotionPressable } from './MotionPressable';
 import React from 'react';
 import {
   Pressable,
@@ -11,6 +12,7 @@ import {
 } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 import { safePressHandler } from '../../utils/safePressHandler';
+import { borderRadius } from '../../constants/theme';
 
 interface ButtonProps extends Omit<PressableProps, 'children' | 'style'> {
   title?: string;
@@ -50,22 +52,23 @@ export const Button = React.memo(function Button({
   const foreground = filled
     ? colors.onPrimary || '#FFFFFF'
     : variant === 'ghost'
-      ? colors.textSecondary
-      : colors.textPrimary;
+    ? colors.textSecondary
+    : colors.textPrimary;
   const background =
     variant === 'primary'
       ? colors.primaryFill || colors.primary
       : variant === 'danger'
-        ? '#BF3547'
-        : variant === 'secondary'
-          ? colors.primaryMuted
-          : 'transparent';
+      ? '#BF3547'
+      : variant === 'secondary'
+      ? colors.primaryMuted
+      : 'transparent';
   const iconOnly = Boolean(icon && !title && !children);
   return (
-    <Pressable
+    <MotionPressable
       accessibilityRole="button"
       accessibilityLabel={title}
-      accessibilityState={{ disabled: blocked, busy: Boolean(loading) }} aria-busy={Boolean(loading)}
+      accessibilityState={{ disabled: blocked, busy: Boolean(loading) }}
+      aria-busy={Boolean(loading)}
       disabled={blocked}
       onPress={safePressHandler(onPress as any)}
       {...props}
@@ -81,8 +84,8 @@ export const Button = React.memo(function Button({
             variant === 'outline'
               ? colors.border
               : variant === 'secondary'
-                ? colors.primaryDim
-                : 'transparent',
+              ? colors.primaryDim
+              : 'transparent',
           opacity: blocked ? 0.5 : pressed ? 0.82 : 1,
         },
         iconOnly && { minWidth: s.height },
@@ -116,7 +119,7 @@ export const Button = React.memo(function Button({
           {rightIcon}
         </>
       )}
-    </Pressable>
+    </MotionPressable>
   );
 });
 const styles = StyleSheet.create({
@@ -124,7 +127,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 11,
+    borderRadius: borderRadius.md,
     borderWidth: 1,
     gap: 8,
   },

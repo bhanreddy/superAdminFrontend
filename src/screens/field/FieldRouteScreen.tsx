@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
@@ -208,7 +209,7 @@ export default function FieldRouteScreen() {
 
                     <Text style={[styles.meta, { color: colors.textSecondary }]}>
                       {v.route_distance_km ?? v.straight_distance_km ?? '—'} KM away ·{' '}
-                      <Text style={{ fontWeight: '700', color: isDone ? '#30D158' : colors.textPrimary }}>
+                      <Text style={{ fontWeight: '700', color: isDone ? '#335F90' : colors.textPrimary }}>
                         {v.visit_outcome?.replace(/_/g, ' ') || v.status}
                       </Text>
                       {v.school_locality ? ` · ${v.school_locality}` : ''}
@@ -233,7 +234,7 @@ export default function FieldRouteScreen() {
                   {isInProgress || isDone ? (
                     <Pressable accessibilityRole="button"
                       onPress={() => router.push(`/(app)/field/visit/${v.id}` as any)}
-                      style={[styles.checkBtn, isDone ? { backgroundColor: '#30D158' } : { backgroundColor: '#FF9F0A' }]}
+                      style={[styles.checkBtn, isDone ? { backgroundColor: '#335F90' } : { backgroundColor: '#FF9F0A' }]}
                     >
                       <CheckCircle2 size={15} color="#fff" />
                       <Text style={styles.checkText}>{isDone ? 'Review Visit' : 'Open Workspace'}</Text>
@@ -273,7 +274,7 @@ export default function FieldRouteScreen() {
                       onPress={() => Linking.openURL(`tel:${phone}`).catch(() => {})}
                       style={[styles.iconBtn, { borderColor: colors.glassBorder }]}
                     >
-                      <Phone size={15} color="#30D158" />
+                      <Phone size={15} color="#335F90" />
                     </Pressable>
                   )}
 
@@ -282,7 +283,7 @@ export default function FieldRouteScreen() {
                       onPress={() => Linking.openURL(`https://wa.me/91${phone.replace(/\D/g, '')}`).catch(() => {})}
                       style={[styles.iconBtn, { borderColor: colors.glassBorder }]}
                     >
-                      <MessageCircle size={15} color="#30D158" />
+                      <MessageCircle size={15} color="#335F90" />
                     </Pressable>
                   )}
 
@@ -338,7 +339,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#0A84FF',
+    backgroundColor: brandColors.red,
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 12,

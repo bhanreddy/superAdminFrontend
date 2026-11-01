@@ -362,7 +362,7 @@ export default function LoginScreen({ caMode = false }: { caMode?: boolean }) {
             >
               {isDesktop && (
                 <View style={styles.accessHeader}>
-                  <Lock size={12} color="#5D687A" />
+                  <Lock size={12} color={brandColors.muted} />
                   <Text style={styles.accessHeaderText}>PRIVATE WORKSPACE</Text>
                 </View>
               )}
@@ -402,7 +402,7 @@ export default function LoginScreen({ caMode = false }: { caMode?: boolean }) {
                     >
                       <Shield
                         size={15}
-                        color={!caMode ? brandColors.blue : '#5D687A'}
+                        color={!caMode ? brandColors.red : brandColors.muted}
                       />
                       <Text
                         style={[
@@ -426,7 +426,7 @@ export default function LoginScreen({ caMode = false }: { caMode?: boolean }) {
                     >
                       <Layers
                         size={15}
-                        color={caMode ? brandColors.blue : '#5D687A'}
+                        color={caMode ? brandColors.red : brandColors.muted}
                       />
                       <Text
                         style={[
@@ -446,7 +446,7 @@ export default function LoginScreen({ caMode = false }: { caMode?: boolean }) {
                     style={styles.clusterSelector}
                   >
                     <View style={styles.clusterIcon}>
-                      <Server size={17} color="#2455C6" />
+                      <Server size={17} color={brandColors.red} />
                     </View>
                     <View style={styles.clusterDetails}>
                       <Text style={styles.clusterCaption}>YOUR WORKSPACE</Text>
@@ -454,12 +454,12 @@ export default function LoginScreen({ caMode = false }: { caMode?: boolean }) {
                         {activeClusterName}
                       </Text>
                     </View>
-                    <ChevronDown size={16} color="#746687" />
+                    <ChevronDown size={16} color={brandColors.muted} />
                   </Pressable>
                 </Link>
                 {caMode && (
                   <View style={styles.caModeNotice}>
-                    <ShieldCheck size={16} color="#2455C6" />
+                    <ShieldCheck size={16} color={brandColors.red} />
                     <Text style={styles.caModeNoticeText}>
                       Chartered Accountant Gateway · Access to the Books
                       Financial Ledger.
@@ -590,17 +590,17 @@ export default function LoginScreen({ caMode = false }: { caMode?: boolean }) {
                       pressed && { opacity: 0.7 },
                     ]}
                   >
-                    <Fingerprint size={17} color="#5D687A" />
+                    <Fingerprint size={17} color={brandColors.muted} />
                     <Text style={styles.securityBadgeText}>
                       About secure sign-in
                     </Text>
-                    <ArrowRight size={13} color="#5D687A" />
+                    <ArrowRight size={13} color={brandColors.muted} />
                   </Pressable>
                 </View>
               </Animated.View>
               <View style={styles.accessFooter}>
                 <View style={styles.footerSecurity}>
-                  <ShieldCheck size={13} color="#5D687A" />
+                  <ShieldCheck size={13} color={brandColors.muted} />
                   <Text style={styles.footerText}>
                     Role-based access. A space you can trust.
                   </Text>
@@ -634,7 +634,7 @@ const serifFont = Platform.select({
 });
 
 const styles = StyleSheet.create({
-  outerCanvas: { flex: 1, backgroundColor: '#FCFDFE' },
+  outerCanvas: { flex: 1, backgroundColor: brandColors.paper },
   container: { flex: 1 },
   scrollContent: { flexGrow: 1 },
   pageShell: { flex: 1, width: '100%', maxWidth: 1920, alignSelf: 'center' },
@@ -642,12 +642,12 @@ const styles = StyleSheet.create({
   storyPanel: {
     flex: 1.06,
     minWidth: 0,
-    backgroundColor: brandColors.navy,
+    backgroundColor: brandColors.red,
     paddingHorizontal: 64,
     paddingTop: 34,
     paddingBottom: 28,
     borderRightWidth: 1,
-    borderRightColor: '#263B58',
+    borderRightColor: brandColors.redDark,
   },
   storyPanelNarrow: { paddingHorizontal: 40 },
   brandHeader: { flexDirection: 'row', alignItems: 'center', gap: 11 },
@@ -670,7 +670,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1.8,
   },
   brandSubtitle: {
-    color: '#B6C7DF',
+    color: brandColors.paper,
     fontSize: 8,
     fontWeight: '600',
     letterSpacing: 1.7,
@@ -700,20 +700,20 @@ const styles = StyleSheet.create({
     fontSize: 9,
     letterSpacing: 1.6,
     fontWeight: '600',
-    color: '#D8BE8C',
+    color: brandColors.paper,
   },
   headline: {
-    color: '#F7FAFF',
-    fontFamily: serifFont,
+    color: brandColors.paper,
+    fontFamily: Platform.OS === 'web' ? 'Inter, system-ui, sans-serif' : undefined,
     fontSize: 65,
     lineHeight: 69,
-    fontWeight: '400',
+    fontWeight: '600',
     letterSpacing: -2.3,
   },
   headlineNarrow: { fontSize: 56, lineHeight: 61 },
   headlineAccent: { color: brandColors.gold, fontStyle: 'italic' },
   leadParagraph: {
-    color: '#BCCCE2',
+    color: brandColors.paper,
     fontSize: 14,
     lineHeight: 23,
     maxWidth: 380,
@@ -726,21 +726,21 @@ const styles = StyleSheet.create({
     gap: 12,
     marginTop: 12,
   },
-  domainText: { fontSize: 11, color: '#DDE6F3', fontWeight: '500' },
+  domainText: { fontSize: 11, color: brandColors.paper, fontWeight: '500' },
   domainDot: {
     width: 3,
     height: 3,
     borderRadius: 2,
-    backgroundColor: '#D4B57C',
+    backgroundColor: brandColors.honey,
   },
   domainRule: {
     flex: 1,
     height: 1,
-    backgroundColor: '#3A4E6B',
+    backgroundColor: brandColors.redDark,
     marginHorizontal: 4,
   },
   domainCaption: {
-    color: '#AFC1D8',
+    color: brandColors.paper,
     fontSize: 8,
     letterSpacing: 1.4,
     fontWeight: '600',
@@ -751,14 +751,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 12,
   },
-  storyFooterText: { fontSize: 10, color: '#AFC1D8' },
-  storyFooterIndex: { fontSize: 8, color: '#AFC1D8', letterSpacing: 1.1 },
+  storyFooterText: { fontSize: 10, color: brandColors.paper },
+  storyFooterIndex: { fontSize: 8, color: brandColors.paper, letterSpacing: 1.1 },
   mobileHeader: {
-    backgroundColor: brandColors.navy,
+    backgroundColor: brandColors.red,
     paddingHorizontal: 26,
     paddingVertical: 22,
     borderBottomWidth: 1,
-    borderBottomColor: '#263B58',
+    borderBottomColor: brandColors.redDark,
   },
   accessPanel: {
     flex: 1,
@@ -766,7 +766,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 64,
     paddingTop: 42,
     paddingBottom: 24,
-    backgroundColor: '#FCFDFE',
+    backgroundColor: brandColors.paper,
   },
   accessPanelMobile: { paddingTop: 36, paddingHorizontal: 30 },
   accessPanelCompact: { paddingHorizontal: 24, paddingTop: 30 },
@@ -777,7 +777,7 @@ const styles = StyleSheet.create({
     gap: 7,
   },
   accessHeaderText: {
-    color: '#5D687A',
+    color: brandColors.muted,
     fontSize: 8,
     letterSpacing: 1.4,
     fontWeight: '500',
@@ -793,21 +793,21 @@ const styles = StyleSheet.create({
   formContentMobile: { paddingTop: 8, paddingBottom: 20 },
   formIntro: { marginBottom: 25 },
   formEyebrow: {
-    color: '#5D687A',
+    color: brandColors.muted,
     fontSize: 8,
     fontWeight: '600',
     letterSpacing: 1.5,
     marginBottom: 14,
   },
   terminalTitle: {
-    color: '#1D2A3E',
+    color: brandColors.ink,
     fontSize: 32,
     lineHeight: 38,
     fontWeight: '600',
     letterSpacing: -1.2,
   },
   terminalSubtitle: {
-    color: '#5D687A',
+    color: brandColors.muted,
     fontSize: 13,
     lineHeight: 20,
     marginTop: 9,
@@ -816,7 +816,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginBottom: 24,
     borderBottomWidth: 1,
-    borderBottomColor: '#DEE5EE',
+    borderBottomColor: brandColors.line,
   },
   modeTab: {
     flex: 1,
@@ -833,22 +833,22 @@ const styles = StyleSheet.create({
     borderBottomColor: 'transparent',
     marginBottom: -1,
   },
-  modeTabActive: { borderBottomColor: brandColors.blue },
+  modeTabActive: { borderBottomColor: brandColors.red },
   modeTabText: {
     fontSize: 12,
-    color: '#5D687A',
+    color: brandColors.muted,
     flexShrink: 1,
     textAlign: 'center',
     fontWeight: '500',
   },
-  modeTabTextActive: { color: brandColors.blue, fontWeight: '600' },
+  modeTabTextActive: { color: brandColors.red, fontWeight: '600' },
   clusterSelector: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    backgroundColor: '#F1F5FB',
+    backgroundColor: brandColors.paperDeep,
     borderWidth: 1,
-    borderColor: '#DCE4EF',
+    borderColor: brandColors.line,
     paddingHorizontal: 12,
     paddingVertical: 11,
     borderRadius: 6,
@@ -857,22 +857,22 @@ const styles = StyleSheet.create({
   clusterIcon: { width: 28, alignItems: 'center' },
   clusterDetails: { flex: 1, minWidth: 0, gap: 4 },
   clusterCaption: {
-    color: '#5D687A',
+    color: brandColors.muted,
     fontSize: 8,
     fontWeight: '500',
     letterSpacing: 1.1,
   },
-  clusterName: { color: '#263852', fontSize: 12, fontWeight: '500' },
+  clusterName: { color: brandColors.ink, fontSize: 12, fontWeight: '500' },
   caModeNotice: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     padding: 12,
-    backgroundColor: '#EDF2FA',
+    backgroundColor: brandColors.blueSoft,
     borderRadius: 6,
     marginBottom: 22,
   },
-  caModeNoticeText: { flex: 1, color: '#415B83', fontSize: 11, lineHeight: 17 },
+  caModeNoticeText: { flex: 1, color: brandColors.blue, fontSize: 11, lineHeight: 17 },
   auxRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -893,18 +893,18 @@ const styles = StyleSheet.create({
     height: 15,
     borderRadius: 3,
     borderWidth: 1,
-    borderColor: '#9EADC3',
+    borderColor: brandColors.muted,
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
   },
   checkboxChecked: {
-    backgroundColor: brandColors.blue,
-    borderColor: brandColors.blue,
+    backgroundColor: brandColors.red,
+    borderColor: brandColors.red,
   },
-  rememberLabel: { color: '#5D687A', fontSize: 12 },
+  rememberLabel: { color: brandColors.muted, fontSize: 12 },
   forgotButton: { minHeight: 40, justifyContent: 'center' },
-  forgotText: { color: brandColors.blue, fontSize: 12, fontWeight: '600' },
+  forgotText: { color: brandColors.red, fontSize: 12, fontWeight: '600' },
   submitButton: { width: '100%', borderRadius: 6 },
   securityFootprint: { marginTop: 20, alignItems: 'center' },
   securityBadgeRow: {
@@ -914,9 +914,9 @@ const styles = StyleSheet.create({
     gap: 7,
     minHeight: 36,
   },
-  securityBadgeText: { fontSize: 10, color: '#5D687A' },
+  securityBadgeText: { fontSize: 10, color: brandColors.muted },
   accessFooter: { alignItems: 'center', gap: 10, paddingTop: 16 },
   footerSecurity: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  footerText: { color: '#5D687A', fontSize: 10 },
-  footerCopyright: { color: '#5D687A', fontSize: 9 },
+  footerText: { color: brandColors.muted, fontSize: 10 },
+  footerCopyright: { color: brandColors.muted, fontSize: 9 },
 });

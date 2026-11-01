@@ -103,7 +103,7 @@ test('nested routes use one deepest active navigation item and reject prefix loo
   assert.equal(design.getWorkspaceModule('/users'), 'team');
 });
 
-test('screen palette changes preserve status meanings and inherit dark/light preference', () => {
+test('module navigation preserves a consistent crimson action and inherits dark/light preference', () => {
   const providerLoad = loader({ 'react-native': native });
   const { ThemeProvider, WorkspaceThemeProvider, useTheme } = providerLoad(
     path.join(frontend, 'src/contexts/ThemeContext.tsx'),
@@ -130,12 +130,12 @@ test('screen palette changes preserve status meanings and inherit dark/light pre
   try {
     assert.equal(current.isDark, true);
     const status = current.colors.error;
-    assert.equal(current.colors.primary, design.workspaceModules.finance.dark);
+    assert.equal(current.colors.primary, darkTheme.colors.primary);
     act(() => screen.update(render('/users')));
-    assert.equal(current.colors.primary, design.workspaceModules.team.dark);
+    assert.equal(current.colors.primary, darkTheme.colors.primary);
     assert.equal(current.colors.error, status);
     act(() => current.toggleTheme());
-    assert.equal(current.colors.primary, design.workspaceModules.team.light);
+    assert.equal(current.colors.primary, lightTheme.colors.primary);
     assert.equal(current.colors.error, lightTheme.colors.error);
   } finally {
     act(() => screen.unmount());
@@ -200,7 +200,7 @@ test('loading actions disable duplicate submission and retain an accessible name
     assert.equal(button.props.disabled, true);
     assert.equal(button.props.accessibilityLabel, 'Save details');
     assert.equal(button.props.accessibilityState.busy, true);
-    assert.ok(flatten(button.props.style({})).minHeight >= 44);
+    assert.ok(flatten(typeof button.props.style === 'function' ? button.props.style({}) : button.props.style).minHeight >= 44);
   } finally {
     act(() => screen.unmount());
   }
@@ -285,5 +285,208 @@ test('narrow KPI cards keep complete currency values in a single accessible text
     assert.ok(flatten(value().props.style).fontSize >= 28);
   } finally {
     act(() => screen.unmount());
+  }
+});
+
+test('sidebar groups keep secondary routes searchable and allow the active group to close', () => {
+  let pathname = '/console/school-intake';
+  const ui = uiLoader({
+    'react-native': native,
+    'expo-router': {
+      usePathname: () => pathname,
+      useRouter: () => ({ push() {} }),
+    },
+    [path.join(frontend, 'assets/logo.png')]: {},
+    [path.join(frontend, 'src/hooks/useAuth.ts')]: {
+      useAuth: () => ({
+        role: 'FOUNDER',
+        isFounder: true,
+        isSuperAdmin: false,
+        can: () => true,
+      }),
+    },
+    [path.join(frontend, 'src/contexts/ThemeContext.tsx')]: {
+      useTheme: () => ({ ...lightTheme, isDark: false }),
+    },
+  });
+  const { Sidebar } = ui(
+    path.join(frontend, 'src/components/layout/Sidebar.tsx')
+  );
+  let screen;
+  const render = () =>
+    React.createElement(Sidebar, { collapsed: false, onToggle() {} });
+  act(() => {
+    screen = create(render());
+  });
+  try {
+    assert.ok(pressable(screen.root, 'School Intake'));
+    assert.equal(pressable(screen.root, 'Database Backups'), undefined);
+    act(() =>
+      pressable(screen.root, 'Collapse Schools & operations').props.onPress()
+    );
+    assert.equal(pressable(screen.root, 'School Intake'), undefined);
+    const finder = screen.root.findByType('TextInput');
+    act(() => finder.props.onChangeText('backups'));
+    assert.ok(pressable(screen.root, 'Database Backups'));
+    act(() => finder.props.onChangeText('content studio'));
+    assert.equal(
+      pressable(screen.root, 'Content Studio'),
+      undefined,
+      'super-admin-only routes remain filtered out'
+    );
+    act(() => finder.props.onChangeText(''));
+    pathname = '/console/settings';
+    act(() => screen.update(render()));
+    assert.equal(
+      pressable(screen.root, 'Settings').props.accessibilityState.selected,
+      true
+    );
+    assert.ok(pressable(screen.root, 'Collapse Platform & security'));
+  } finally {
+    act(() => screen.unmount());
+  }
+});
+
+test('section transitions retain the same input and draft, avoid motion during typing, and honor reduced motion', () => {
+  let reducedMotion = false;
+  let transitions = 0;
+  const sectionLoader = uiLoader({
+    'react-native': native,
+    'react-native-reanimated': {
+      __esModule: true,
+      default: { View: 'View' },
+      useSharedValue: value => React.useRef({ value }).current,
+      useAnimatedStyle: fn => fn(),
+      withTiming: value => { transitions++; return value; },
+      cancelAnimation() {},
+    },
+    [path.join(frontend, 'src/contexts/ThemeContext.tsx')]: { useTheme: () => ({ reducedMotion }) },
+  });
+  const { MotionSection } = sectionLoader(path.join(frontend, 'src/components/ui/MotionSection.tsx'));
+  function Draft() {
+    const [value, setValue] = React.useState('Unsent message');
+    return React.createElement('TextInput', { value, onChangeText: setValue });
+  }
+  const render = section => React.createElement(MotionSection, { transitionKey: section }, React.createElement(Draft));
+  let screen;
+  act(() => { screen = create(render('conversation')); });
+  try {
+    const input = screen.root.findByType('TextInput');
+    transitions = 0;
+    act(() => input.props.onChangeText('Keep my draft'));
+    act(() => screen.update(render('conversation')));
+    assert.equal(transitions, 0, 'typing does not replay the section animation');
+    act(() => screen.update(render('thread')));
+    assert.equal(transitions, 2);
+    assert.equal(screen.root.findByType('TextInput'), input);
+    assert.equal(input.props.value, 'Keep my draft');
+    reducedMotion = true;
+    transitions = 0;
+    act(() => screen.update(render('conversation')));
+    assert.equal(transitions, 0);
+    assert.equal(screen.root.findByType('View').props.entering, undefined);
+    assert.equal(input.props.value, 'Keep my draft');
+  } finally { act(() => screen.unmount()); }
+});
+
+test('reduced motion cancels card movement and controls preserve interaction callbacks', () => {
+  let reducedMotion = false;
+  const calls = [],
+    values = [];
+  const useSharedValue = (initial) => {
+    const ref = React.useRef();
+    if (!ref.current) {
+      ref.current = { value: initial };
+      values.push(ref.current);
+    }
+    return ref.current;
+  };
+  const ui = uiLoader({
+    'react-native': native,
+    'react-native-reanimated': {
+      __esModule: true,
+      default: { createAnimatedComponent: (component) => component },
+      useSharedValue,
+      useAnimatedStyle: (fn) => fn(),
+      withTiming: (value) => {
+        calls.push('timing');
+        return value;
+      },
+      withSpring: (value) => {
+        calls.push('spring');
+        return value;
+      },
+      cancelAnimation: () => calls.push('cancel'),
+    },
+    [path.join(frontend, 'src/contexts/ThemeContext.tsx')]: {
+      useTheme: () => ({ reducedMotion }),
+    },
+  });
+  const { MotionPressable } = ui(
+    path.join(frontend, 'src/components/ui/MotionPressable.tsx')
+  );
+  let screen,
+    pressIn = 0,
+    pressOut = 0;
+  const render = (disabled) =>
+    React.createElement(
+      MotionPressable,
+      {
+        disabled,
+        lift: true,
+        onPressIn: () => pressIn++,
+        onPressOut: () => pressOut++,
+      },
+      'Open workspace'
+    );
+  act(() => {
+    screen = create(render(false));
+  });
+  try {
+    act(() => screen.root.findByType('Pressable').props.onHoverIn({}));
+    assert.ok(
+      values.some((v) => v.value < 0),
+      'cards lift on hover'
+    );
+    act(() => screen.root.findByType('Pressable').props.onPressIn({}));
+    assert.equal(pressIn, 1);
+    reducedMotion = true;
+    calls.length = 0;
+    act(() => screen.update(render(false)));
+    assert.deepEqual(
+      values.map((v) => v.value),
+      [1, 0]
+    );
+    assert.ok(calls.includes('cancel'));
+    assert.ok(!calls.includes('timing') && !calls.includes('spring'));
+    act(() => screen.root.findByType('Pressable').props.onPressOut({}));
+    assert.equal(pressOut, 1);
+    act(() => screen.update(render(true)));
+    assert.equal(screen.root.findByType('Pressable').props.disabled, true);
+  } finally {
+    act(() => screen.unmount());
+  }
+});
+
+test('colourful cards keep text readable on their surfaces and illustrated covers in both themes', () => {
+  const { cardTones } = load(path.join(frontend, 'src/constants/experienceColors.ts'));
+  for (const [name, modes] of Object.entries(cardTones)) {
+    for (const [mode, paint] of Object.entries(modes)) {
+      const theme = mode === 'dark' ? darkTheme : lightTheme;
+      for (const background of ['surface', 'panel']) {
+        for (const foreground of ['ink', 'muted', 'accent']) {
+          assert.ok(contrast(paint[foreground], paint[background]) >= 4.5,
+            `${name}/${mode} ${foreground} on ${background}`);
+        }
+      }
+      for (const background of ['cover', 'coverEnd']) {
+        assert.ok(contrast(paint.accent, paint[background]) >= 4.5,
+          `${name}/${mode} cover label on ${background}`);
+      }
+      for (const foreground of ['textPrimary', 'textSecondary']) {
+        assert.ok(contrast(theme.colors[foreground], paint.panel) >= 4.5,
+          `${name}/${mode} shared ${foreground} on panel`);
+      }
+    }
   }
 });

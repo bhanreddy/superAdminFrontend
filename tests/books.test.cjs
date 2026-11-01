@@ -26,10 +26,12 @@ const native = {
   Switch: 'Switch',
   Modal: ({ visible, children }) =>
     visible ? React.createElement('Modal', null, children) : null,
-  Platform: { OS: 'web' },
+  Platform: { OS: 'web', select: options => options.web ?? options.default },
   StyleSheet: { create: (x) => x },
   useWindowDimensions: () => ({ width: 1300, height: 900 }),
 };
+const fixtureTheme = loader({ 'react-native': native })(p('src/constants/theme.ts')).lightTheme;
+const fixtureThemeContext = { useTheme: () => ({ ...fixtureTheme, colors: { ...fixtureTheme.colors, ...colors }, isDark: false }), clayStyle: () => ({}) };
 const contact = {
   id: '11111111-1111-4111-8111-111111111111',
   kind: 'customer',
@@ -71,7 +73,7 @@ function environment(overrides = {}) {
       {},
       { get: (_, k) => (k === '__esModule' ? true : () => null) },
     ),
-    [p('src/contexts/ThemeContext.tsx')]: { useTheme: () => ({ colors }) },
+    [p('src/contexts/ThemeContext.tsx')]: fixtureThemeContext,
     [p('src/api/books.ts')]: api,
     [p('src/hooks/useAuth.ts')]: { useAuth: () => ({ isFounder: true, role: 'FOUNDER', permissions: [], can: () => true, refreshSessionProfile: async () => {} }) },
     [p('src/screens/books/BooksCompanyContext.tsx')]: { useBooksAccess: () => ({ isFounder: true, role: 'FOUNDER', permissions: [], can: () => true, refreshSessionProfile: async () => {} }) },
@@ -497,7 +499,7 @@ test('company switching remounts records under the new API scope and uses that c
   const env=environment({setBooksCompany:id=>scopes.push(id),get:async()=>[{id:'maxx',code:'nexmaxx',name:'Nexmaxx',permissions:['books.reports.view']},{id:'syrus',code:'nexsyrus',name:'Nexsyrus',permissions:['books.invoice.view']}],mocks:{...workspaceMocks(auth)}});
   // Load the real provider for this test, rather than the screen-boundary mock.
   const mocks={...workspaceMocks(auth)};delete mocks[p('src/screens/books/BooksCompanyContext.tsx')];
-  const load=loader({'expo-router':{useLocalSearchParams:()=>({company:'nexsyrus'})},'react-native':native,'lucide-react-native':new Proxy({},{get:()=>()=>null}),[p('src/contexts/ThemeContext.tsx')]:{useTheme:()=>({colors})},[p('src/api/books.ts')]:env.api,...mocks});
+  const load=loader({'expo-router':{useLocalSearchParams:()=>({company:'nexsyrus'})},'react-native':native,'lucide-react-native':new Proxy({},{get:()=>()=>null}),[p('src/contexts/ThemeContext.tsx')]:fixtureThemeContext,[p('src/api/books.ts')]:env.api,...mocks});
   const {default:Workspace,useBooksAccess}=load(p('src/screens/books/BooksCompanyContext.tsx'));
   function Records(){const {can}=useBooksAccess();React.useEffect(()=>{seen.push('mounted');return()=>seen.push('unmounted');},[]);return React.createElement('Text',null,can('books.invoice.view')?'Invoice records':'Report records');}
   let tree;await act(async()=>{tree=create(React.createElement(Workspace,null,React.createElement(Records)));});assert.match(textOf(tree.toJSON()),/Invoice records/);assert.equal(scopes.at(-1),'syrus');

@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../../src/constants/experienceColors';
 import { navigateBack } from '../../../src/utils/navigation';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -54,7 +55,7 @@ export default function SupportThreadScreen() {
         <SupportChatBackground />
         {!thread ? <ActivityIndicator color={colors.primary} style={{ marginTop: 50 }} /> : (
           <ScrollView ref={scrollRef} contentContainerStyle={st.messages} showsVerticalScrollIndicator={false}>
-            <View style={[st.notice, { backgroundColor: isDark ? 'rgba(30,41,59,0.88)' : 'rgba(255,251,235,0.92)' }]}><Text style={[st.noticeText, { color: isDark ? '#CBD5E1' : '#8A6D3B' }]}>Messages are encrypted in transit and visible to this school user and Nexsyrus Support.</Text></View>
+            <View style={[st.notice, { backgroundColor: isDark ? 'rgba(30,41,59,0.88)' : 'rgba(255,251,235,0.92)' }]}><Text style={[st.noticeText, { color: isDark ? brandColors.amberBright : brandColors.amber }]}>Messages are encrypted in transit and visible to this school user and Nexsyrus Support.</Text></View>
             {thread.messages.map((message, index) => <Bubble key={message.id} message={message} showDay={index === 0 || new Date(thread.messages[index - 1].created_at).toDateString() !== new Date(message.created_at).toDateString()} />)}
           </ScrollView>
         )}
@@ -77,7 +78,7 @@ function Bubble({ message, showDay }: { message: SupportMessage; showDay: boolea
   return <>
     {showDay ? <View style={st.day}><Text style={[st.dayText, { color: colors.textSecondary, backgroundColor: isDark ? 'rgba(30,41,59,0.82)' : 'rgba(226,232,240,0.88)' }]}>{when.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}</Text></View> : null}
     <View style={[st.bubbleRow, { justifyContent: mine ? 'flex-end' : 'flex-start' }]}>
-      <View style={[st.bubble, mine ? { backgroundColor: colors.primaryFill, borderBottomRightRadius: 4 } : { backgroundColor: isDark ? '#252838' : '#FFFFFF', borderBottomLeftRadius: 4, borderColor: colors.border, borderWidth: 1 }]}>
+      <View style={[st.bubble, mine ? { backgroundColor: colors.primaryFill, borderBottomRightRadius: 4 } : { backgroundColor: isDark ? experienceColors.dark.surface : brandColors.white, borderBottomLeftRadius: 4, borderColor: colors.border, borderWidth: 1 }]}>
         {!mine ? <Text style={[st.sender, { color: colors.primary }]}>{message.sender_name}</Text> : null}
         <Text style={[st.body, { color: mine ? '#FFFFFF' : colors.textPrimary }]}>{message.body}</Text>
         <Text style={[st.time, { color: mine ? 'rgba(255,255,255,0.72)' : colors.textTertiary }]}>{when.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}</Text>

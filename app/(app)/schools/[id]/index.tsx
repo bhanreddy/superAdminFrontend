@@ -323,12 +323,12 @@ function HealthCheckRow({ label, ok, colors, index }: { label: string; ok: boole
   return (
     <Animated.View entering={FadeInDown.delay(index * 50).springify()} style={[hcStyles.row, { borderBottomColor: colors.border }]}>
       {ok
-        ? <CheckCircle2 size={16} color={colors.success || '#22C55E'} />
+        ? <CheckCircle2 size={16} color={colors.success || '#335F90'} />
         : <AlertTriangle size={16} color={colors.warning} />
       }
       <Text style={[hcStyles.label, { color: colors.textPrimary }]}>{label}</Text>
-      <View style={[hcStyles.pill, { backgroundColor: ok ? (colors.success || '#22C55E') + '18' : colors.warning + '18' }]}>
-        <Text style={[hcStyles.pillText, { color: ok ? (colors.success || '#22C55E') : colors.warning }]}>
+      <View style={[hcStyles.pill, { backgroundColor: ok ? (colors.success || '#335F90') + '18' : colors.warning + '18' }]}>
+        <Text style={[hcStyles.pillText, { color: ok ? (colors.success || '#335F90') : colors.warning }]}>
           {ok ? 'Pass' : 'Fail'}
         </Text>
       </View>
@@ -512,7 +512,7 @@ export default function SchoolDetailScreen() {
         <View style={styles.statsRow}>
           <StatCard icon={GraduationCap} label="Students" value={healthStats.student_count} color={colors.primary} index={0} colors={colors} />
           <StatCard icon={UserCheck} label="Staff" value={healthStats.staff_count} color={colors.warning} index={1} colors={colors} />
-          <StatCard icon={Users} label="Users" value={healthStats.user_count} color={colors.success || '#22C55E'} index={2} colors={colors} />
+          <StatCard icon={Users} label="Users" value={healthStats.user_count} color={colors.success || '#335F90'} index={2} colors={colors} />
         </View>
       )}
 
@@ -543,11 +543,11 @@ export default function SchoolDetailScreen() {
 
       {/* Status card */}
       <Animated.View entering={FadeInDown.delay(120).springify()} style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-        <SectionHeader icon={CheckCircle2} title="Platform Status" subtitle="Activation and setup state" color={colors.success || '#22C55E'} colors={colors} />
+        <SectionHeader icon={CheckCircle2} title="Platform Status" subtitle="Activation and setup state" color={colors.success || '#335F90'} colors={colors} />
 
-        <View style={[styles.statusRow, { backgroundColor: school.is_active ? (colors.success || '#22C55E') + '10' : colors.error + '10', borderColor: school.is_active ? (colors.success || '#22C55E') + '30' : colors.error + '30' }]}>
-          <View style={[styles.statusDot, { backgroundColor: school.is_active ? (colors.success || '#22C55E') : colors.error }]} />
-          <Text style={[styles.statusText, { color: school.is_active ? (colors.success || '#22C55E') : colors.error }]}>
+        <View style={[styles.statusRow, { backgroundColor: school.is_active ? (colors.success || '#335F90') + '10' : colors.error + '10', borderColor: school.is_active ? (colors.success || '#335F90') + '30' : colors.error + '30' }]}>
+          <View style={[styles.statusDot, { backgroundColor: school.is_active ? (colors.success || '#335F90') : colors.error }]} />
+          <Text style={[styles.statusText, { color: school.is_active ? (colors.success || '#335F90') : colors.error }]}>
             {school.is_active ? 'School is live and accessible' : 'School is disabled — users cannot log in'}
           </Text>
         </View>
@@ -602,9 +602,9 @@ export default function SchoolDetailScreen() {
         />
 
         {healthStats?.first_admin_exists && (
-          <View style={[styles.infoBanner, { backgroundColor: (colors.success || '#22C55E') + '12', borderColor: (colors.success || '#22C55E') + '30' }]}>
-            <CheckCircle2 size={15} color={colors.success || '#22C55E'} />
-            <Text style={[styles.infoBannerText, { color: colors.success || '#22C55E' }]}>
+          <View style={[styles.infoBanner, { backgroundColor: (colors.success || '#335F90') + '12', borderColor: (colors.success || '#335F90') + '30' }]}>
+            <CheckCircle2 size={15} color={colors.success || '#335F90'} />
+            <Text style={[styles.infoBannerText, { color: colors.success || '#335F90' }]}>
               A first admin already exists for this school. Creating another will add a second admin.
             </Text>
           </View>
@@ -668,7 +668,7 @@ export default function SchoolDetailScreen() {
       {/* Health checks */}
       {healthStats && (
         <Animated.View entering={FadeInDown.delay(40).springify()} style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <SectionHeader icon={Activity} title="Health Checks" subtitle="Automated system validation" color={colors.success || '#22C55E'} colors={colors} />
+          <SectionHeader icon={Activity} title="Health Checks" subtitle="Automated system validation" color={colors.success || '#335F90'} colors={colors} />
           <HealthCheckRow label="School record exists in DB" ok={true} colors={colors} index={0} />
           <HealthCheckRow label="Default roles & permissions seeded" ok={!!healthStats.defaults_seeded} colors={colors} index={1} />
           <HealthCheckRow label="First admin account created" ok={!!healthStats.first_admin_exists} colors={colors} index={2} />

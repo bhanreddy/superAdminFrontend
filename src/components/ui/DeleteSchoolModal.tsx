@@ -1,3 +1,4 @@
+import { MotionPressable } from './MotionPressable';
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Modal, Pressable, Platform,  Easing } from 'react-native';
 import { Animated } from '../../utils/accessibleAnimation';
@@ -152,14 +153,14 @@ export function DeleteSchoolModal({ visible, onClose, onConfirm, school }: Props
   return (
     <Modal transparent visible={visible} animationType="none" onRequestClose={onClose}>
       <Animated.View style={[st.overlay, { opacity: fadeAnim }]}>
-        <Pressable accessibilityRole="button" style={StyleSheet.absoluteFill} onPress={step === 3 ? undefined : onClose} />
+        <MotionPressable accessibilityRole="button" style={StyleSheet.absoluteFill} onPress={step === 3 ? undefined : onClose} />
         <View style={[
           st.modal,
           { backgroundColor: colors.surface },
           clayStyle(clayShadows.clayStrong),
         ]}>
           {step < 3 && (
-            <Pressable accessibilityLabel="Close dialog" accessibilityRole="button"
+            <MotionPressable accessibilityLabel="Close dialog" accessibilityRole="button"
               style={({ pressed, hovered }: any) => [
                 st.closeBtn,
                 {
@@ -170,7 +171,7 @@ export function DeleteSchoolModal({ visible, onClose, onConfirm, school }: Props
               onPress={onClose}
             >
               <X size={20} color={colors.textTertiary} />
-            </Pressable>
+            </MotionPressable>
           )}
           {renderContent()}
         </View>

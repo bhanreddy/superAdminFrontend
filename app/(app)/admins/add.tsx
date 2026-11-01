@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../../src/constants/experienceColors';
 import { navigateBack } from '../../../src/utils/navigation';
 import React, { useState, useRef, useEffect } from 'react';
 import {
@@ -34,9 +35,9 @@ const C = {
   gold: '#D4AF37',
   goldGlow: 'rgba(212,175,55,0.15)',
   borderGold: 'rgba(212,175,55,0.3)',
-  green: '#10B981',
-  greenFaint: 'rgba(16,185,129,0.1)',
-  red: '#EF4444',
+  green: brandColors.blue,
+  greenFaint: 'rgba(51, 95, 144, 0.1)',
+  red: brandColors.red,
   borderRed: 'rgba(239,68,68,0.3)',
   border: 'rgba(255,255,255,0.08)',
   layer2: '#121214',
@@ -54,11 +55,11 @@ const getStrength = (pw: string) => {
   if (pw.length >= 12) s++;
 
   const map = [
-    { label: 'Too Weak', color: '#EF4444' },
+    { label: 'Too Weak', color: brandColors.red },
     { label: 'Weak', color: '#F59E0B' },
     { label: 'Fair', color: '#FBBF24' },
-    { label: 'Good', color: '#10B981' },
-    { label: 'Strong', color: '#059669' },
+    { label: 'Good', color: brandColors.blue },
+    { label: 'Strong', color: brandColors.blue },
     { label: 'Elite', color: '#D4AF37' },
   ];
   return { score: s, ...map[s] };
@@ -157,7 +158,7 @@ const FloatInput = ({
   const labelSize = floatAnim.interpolate({ inputRange: [0, 1], outputRange: [15, 11] });
   const labelColor = floatAnim.interpolate({ inputRange: [0, 1], outputRange: [isDark ? C.textD : colors.textSecondary, focused ? (isDark ? C.gold : colors.primary) : colors.textSecondary] });
   const borderColor = error ? C.borderRed
-    : success ? (isDark ? 'rgba(16,185,129,0.4)' : colors.success)
+    : success ? (isDark ? 'rgba(51, 95, 144, 0.4)' : colors.success)
       : borderAnim.interpolate({ inputRange: [0, 1], outputRange: [isDark ? C.border : '#CBD5E1', isDark ? C.borderGold : colors.primary] });
   const iconColor = error ? C.red : success ? C.green : focused ? (isDark ? C.gold : colors.primary) : (isDark ? C.textD : colors.textSecondary);
 
@@ -193,7 +194,7 @@ const FloatInput = ({
           </Pressable>
         ) : success ? (
           <View style={fi.iconRight}>
-            <View style={[fi.checkBadge, { backgroundColor: isDark ? C.greenFaint : colors.success + '1A', borderColor: isDark ? 'rgba(16,185,129,0.3)' : colors.success }]}>
+            <View style={[fi.checkBadge, { backgroundColor: isDark ? C.greenFaint : colors.success + '1A', borderColor: isDark ? 'rgba(51, 95, 144, 0.3)' : colors.success }]}>
               <Check size={10} color={C.green} strokeWidth={3} />
             </View>
           </View>
@@ -232,7 +233,7 @@ const ReqPill = ({ ok, label }: { ok: boolean; label: string }) => {
 };
 const rp = StyleSheet.create({
   pill: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20, borderWidth: 1 },
-  ok: { backgroundColor: C.greenFaint, borderColor: 'rgba(16,185,129,0.25)' },
+  ok: { backgroundColor: C.greenFaint, borderColor: 'rgba(51, 95, 144, 0.25)' },
   off: { },
   text: { fontSize: 11, fontWeight: '600' },
   dash: { width: 6, height: 1.5, borderRadius: 1, backgroundColor: C.textD },

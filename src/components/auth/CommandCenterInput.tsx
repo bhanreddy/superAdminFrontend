@@ -52,11 +52,11 @@ export const CommandCenterInput = forwardRef<
       onBlur,
       ...props
     },
-    ref
+    ref,
   ) => {
     const isLight = appearance === 'light';
-    const accent = isLight ? brandColors.blue : COMMAND_CENTER.cobaltPrimary;
-    const iconColor = isLight ? '#6B7D94' : COMMAND_CENTER.textTertiary;
+    const accent = isLight ? brandColors.red : COMMAND_CENTER.cobaltPrimary;
+    const iconColor = isLight ? brandColors.muted : COMMAND_CENTER.textTertiary;
     const [focused, setFocused] = useState(false);
     const [passwordVisible, setPasswordVisible] = useState(false);
     const [capsLockOn, setCapsLockOn] = useState(false);
@@ -231,24 +231,24 @@ export const CommandCenterInput = forwardRef<
         ) : null}
       </View>
     );
-  }
+  },
 );
 
 CommandCenterInput.displayName = 'CommandCenterInput';
 
 const styles = StyleSheet.create({
-  lightLabel: { color: '#3B4D65', fontSize: 12, fontWeight: '500' },
+  lightLabel: { color: brandColors.ink, fontSize: 12, fontWeight: '500' },
   lightWrapper: {
     backgroundColor: '#FFFFFF',
-    borderColor: '#CAD5E3',
-    borderRadius: 6,
+    borderColor: brandColors.line,
+    borderRadius: 16,
     height: 50,
   },
   lightWrapperFocused: {
     backgroundColor: '#FFFFFF',
-    borderColor: brandColors.blue,
+    borderColor: brandColors.red,
   },
-  lightInput: { color: '#1D2A3E', paddingLeft: 14, fontSize: 14 },
+  lightInput: { color: brandColors.ink, paddingLeft: 14, fontSize: 14 },
   container: {
     marginBottom: 20,
     width: '100%',

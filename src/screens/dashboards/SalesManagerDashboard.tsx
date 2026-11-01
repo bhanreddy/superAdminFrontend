@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
@@ -99,7 +100,7 @@ export default function SalesManagerDashboard() {
           <View>
             <View style={styles.badgeRow}>
               <View style={styles.roleTag}>
-                <Sparkles size={12} color="#0A84FF" />
+                <Sparkles size={12} color={brandColors.red} />
                 <Text style={styles.roleTagText}>Sales Management Console</Text>
               </View>
               {employeeId && (
@@ -121,7 +122,7 @@ export default function SalesManagerDashboard() {
         <View style={styles.statGrid}>
           <GlassCard style={styles.statCard}>
             <View style={[styles.statIcon, { backgroundColor: 'rgba(10, 132, 255, 0.12)' }]}>
-              <School size={20} color="#0A84FF" />
+              <School size={20} color={brandColors.red} />
             </View>
             <Text style={[styles.statVal, { color: colors.textPrimary }]}>{schools.length}</Text>
             <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Pipeline Schools</Text>
@@ -144,8 +145,8 @@ export default function SalesManagerDashboard() {
           </GlassCard>
 
           <GlassCard style={styles.statCard}>
-            <View style={[styles.statIcon, { backgroundColor: 'rgba(48, 209, 88, 0.12)' }]}>
-              <CheckCircle2 size={20} color="#30D158" />
+            <View style={[styles.statIcon, { backgroundColor: 'rgba(51, 95, 144, 0.12)' }]}>
+              <CheckCircle2 size={20} color="#335F90" />
             </View>
             <Text style={[styles.statVal, { color: colors.textPrimary }]}>{liveSchools + buildReadySchools}</Text>
             <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Build Ready / Live</Text>
@@ -202,7 +203,7 @@ export default function SalesManagerDashboard() {
 
                 <View style={{ alignItems: 'flex-end', gap: 4 }}>
                   <View style={styles.countPill}>
-                    <School size={12} color="#0A84FF" />
+                    <School size={12} color={brandColors.red} />
                     <Text style={styles.countText}>
                       {exec.assigned_schools_count || 0} Schools
                     </Text>
@@ -287,7 +288,7 @@ const styles = StyleSheet.create({
   roleTagText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#0A84FF',
+    color: brandColors.red,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
@@ -371,7 +372,7 @@ const styles = StyleSheet.create({
   execAvatarText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#0A84FF',
+    color: brandColors.red,
   },
   execName: {
     fontSize: 14.5,
@@ -404,7 +405,7 @@ const styles = StyleSheet.create({
   countText: {
     fontSize: 11.5,
     fontWeight: '700',
-    color: '#0A84FF',
+    color: brandColors.red,
   },
 
   reqRow: {

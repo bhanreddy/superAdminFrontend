@@ -1,3 +1,4 @@
+import { MotionPressable } from './MotionPressable';
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, Platform } from 'react-native';
 import { useTheme, clayStyle } from '../../contexts/ThemeContext';
@@ -32,7 +33,7 @@ export const EmptyState = React.memo(function EmptyState({
         </Text>
       )}
       {actionLabel && onAction && (
-        <Pressable
+        <MotionPressable
           accessibilityRole="button"
           onPress={onAction}
           style={({ pressed, hovered }: any) => [
@@ -49,7 +50,7 @@ export const EmptyState = React.memo(function EmptyState({
           ]}
         >
           <Text style={styles.actionText}>{actionLabel}</Text>
-        </Pressable>
+        </MotionPressable>
       )}
     </View>
   );

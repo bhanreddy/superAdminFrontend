@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import {
   View,
@@ -442,7 +443,7 @@ export default function FieldVisitDetailScreen() {
                   onPress={() => Linking.openURL(`tel:${visit.school_phone}`).catch(() => {})}
                   style={[styles.quickIconBtn, { borderColor: colors.glassBorder }]}
                 >
-                  <Phone size={15} color="#30D158" />
+                  <Phone size={15} color="#335F90" />
                 </Pressable>
               )}
               {visit?.school_name && (
@@ -475,7 +476,7 @@ export default function FieldVisitDetailScreen() {
           {isPlanned && (
             <View style={styles.checkInBanner}>
               <View style={{ flex: 1 }}>
-                <Text style={[styles.checkInBannerTitle, { color: '#0A84FF' }]}>Not Checked In Yet</Text>
+                <Text style={[styles.checkInBannerTitle, { color: brandColors.red }]}>Not Checked In Yet</Text>
                 <Text style={[styles.checkInBannerSub, { color: colors.textSecondary }]}>
                   Arrived at the school? Tap below to record arrival GPS and begin meeting.
                 </Text>
@@ -558,13 +559,13 @@ export default function FieldVisitDetailScreen() {
 
             <Text style={[styles.label, { color: colors.textSecondary }]}>Uses School ERP?</Text>
             <View style={styles.chips}>
-              <CHIP label="Yes" selected={usesErp === true} color="#0A84FF" onPress={() => setUsesErp(true)} />
-              <CHIP label="No" selected={usesErp === false} color="#30D158" onPress={() => setUsesErp(false)} />
+              <CHIP label="Yes" selected={usesErp === true} color={brandColors.red} onPress={() => setUsesErp(true)} />
+              <CHIP label="No" selected={usesErp === false} color="#335F90" onPress={() => setUsesErp(false)} />
             </View>
 
             <Text style={[styles.label, { color: colors.textSecondary }]}>Demo Delivered?</Text>
             <View style={styles.chips}>
-              <CHIP label="Yes" selected={demoGiven === true} color="#0A84FF" onPress={() => setDemoGiven(true)} />
+              <CHIP label="Yes" selected={demoGiven === true} color={brandColors.red} onPress={() => setDemoGiven(true)} />
               <CHIP label="No" selected={demoGiven === false} color="#8E8E93" onPress={() => setDemoGiven(false)} />
             </View>
           </GlassCard>
@@ -583,7 +584,7 @@ export default function FieldVisitDetailScreen() {
                   key={p}
                   label={p}
                   selected={products.includes(p)}
-                  color="#0A84FF"
+                  color={brandColors.red}
                   onPress={() => toggle(products, p, setProducts)}
                 />
               ))}
@@ -610,7 +611,7 @@ export default function FieldVisitDetailScreen() {
                   key={o}
                   label={o.replace(/_/g, ' ')}
                   selected={outcome === o}
-                  color="#30D158"
+                  color="#335F90"
                   onPress={() => {
                     setOutcome(o);
                     setNextAction(suggestNextAction(o));
@@ -730,7 +731,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 24, fontWeight: '800' },
   sub: { fontSize: 12.5, marginTop: 2, marginBottom: 12 },
   track: { height: 7, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.08)', overflow: 'hidden' },
-  fill: { height: 7, backgroundColor: '#30D158', borderRadius: 4 },
+  fill: { height: 7, backgroundColor: '#335F90', borderRadius: 4 },
   stagePill: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, borderWidth: 1, marginRight: 8 },
 
   schoolHeaderCard: {
@@ -793,7 +794,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#0A84FF',
+    backgroundColor: brandColors.red,
     paddingHorizontal: 14,
     paddingVertical: 9,
     borderRadius: 10,
@@ -813,10 +814,10 @@ const styles = StyleSheet.create({
   notes: { minHeight: 90, textAlignVertical: 'top' },
   meta: { fontSize: 12.5, lineHeight: 18 },
   event: { flexDirection: 'row', gap: 10, marginTop: 10 },
-  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#0A84FF', marginTop: 4 },
+  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: brandColors.red, marginTop: 4 },
   eventLabel: { fontSize: 13, fontWeight: '600' },
   navRow: { flexDirection: 'row', gap: 10, marginTop: 4 },
-  primary: { backgroundColor: '#0A84FF', padding: 14, borderRadius: 12, alignItems: 'center', marginTop: 12, flex: 1 },
+  primary: { backgroundColor: brandColors.red, padding: 14, borderRadius: 12, alignItems: 'center', marginTop: 12, flex: 1 },
   primaryText: { color: '#fff', fontWeight: '700' },
   ghost: { padding: 14, borderRadius: 12, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(150,150,160,0.3)', minWidth: 80 },
 });

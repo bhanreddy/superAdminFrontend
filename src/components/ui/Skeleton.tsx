@@ -1,8 +1,13 @@
-import React, { useRef, useEffect } from 'react';
-import { View,  StyleSheet, Easing } from 'react-native';
-import { Animated } from '../../utils/accessibleAnimation';
+import React, { useEffect } from 'react';
+import { View, StyleSheet } from 'react-native';
+import Animated, {
+  cancelAnimation,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+} from 'react-native-reanimated';
 import { useTheme } from '../../contexts/ThemeContext';
-import { LinearGradient } from 'expo-linear-gradient';
 
 interface SkeletonProps {
   width?: number | string;
@@ -11,64 +16,36 @@ interface SkeletonProps {
   style?: any;
 }
 
-function useShimmer() {
-  const anim = useRef(new Animated.Value(0)).current;
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.timing(anim, {
-        toValue: 1,
-        duration: 1500,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      }),
-    );
-    loop.start();
-    return () => loop.stop();
-  }, []);
-  return anim;
-}
-
+/** A single opacity pulse. No per-row gradient or continuously repainted blur. */
 export const Skeleton = React.memo(function Skeleton({
   width = '100%',
   height = 16,
-  borderRadius = 10,
+  borderRadius = 8,
   style,
 }: SkeletonProps) {
-  const { colors } = useTheme();
-  const shimmer = useShimmer();
-
-  const translateX = shimmer.interpolate({
-    inputRange: [0, 1],
-    outputRange: [-200, 200],
-  });
-
+  const { colors, reducedMotion } = useTheme();
+  const opacity = useSharedValue(1);
+  useEffect(() => {
+    opacity.value = reducedMotion
+      ? 1
+      : withRepeat(withTiming(0.5, { duration: 900 }), -1, true);
+    return () => cancelAnimation(opacity);
+  }, [reducedMotion, opacity]);
+  const pulse = useAnimatedStyle(() => ({ opacity: opacity.value }));
   return (
-    <View
+    <Animated.View
+      accessible={false}
       style={[
         {
           width: width as any,
           height,
           borderRadius,
           backgroundColor: colors.skeleton,
-          overflow: 'hidden',
         },
         style,
+        pulse,
       ]}
-    >
-      <Animated.View
-        style={[
-          StyleSheet.absoluteFill,
-          { transform: [{ translateX }] },
-        ]}
-      >
-        <LinearGradient
-          colors={['transparent', colors.skeletonHighlight, 'transparent']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={[StyleSheet.absoluteFill, { width: 200 }]}
-        />
-      </Animated.View>
-    </View>
+    />
   );
 });
 
@@ -126,7 +103,9 @@ export const SkeletonTable = React.memo(function SkeletonTable({
   return (
     <View style={{ gap: 1 }}>
       {/* Header */}
-      <View style={[skeletonStyles.tableRow, { backgroundColor: colors.surface }]}>
+      <View
+        style={[skeletonStyles.tableRow, { backgroundColor: colors.surface }]}
+      >
         {Array.from({ length: columns }).map((_, i) => (
           <View key={i} style={{ flex: i === 0 ? 2 : 1 }}>
             <Skeleton height={12} width="60%" borderRadius={6} />
@@ -135,10 +114,17 @@ export const SkeletonTable = React.memo(function SkeletonTable({
       </View>
       {/* Rows */}
       {Array.from({ length: rows }).map((_, ri) => (
-        <View key={ri} style={[skeletonStyles.tableRow, { backgroundColor: colors.card }]}>
+        <View
+          key={ri}
+          style={[skeletonStyles.tableRow, { backgroundColor: colors.card }]}
+        >
           {Array.from({ length: columns }).map((_, ci) => (
             <View key={ci} style={{ flex: ci === 0 ? 2 : 1 }}>
-              <Skeleton height={14} width={ci === 0 ? '80%' : '50%'} borderRadius={6} />
+              <Skeleton
+                height={14}
+                width={ci === 0 ? '80%' : '50%'}
+                borderRadius={6}
+              />
             </View>
           ))}
         </View>

@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -42,7 +43,7 @@ export default function SalesTrainingScreen() {
   }, [storageKey, reload]);
   const lesson = trainingModules.find((item) => item.id === activeId)!;
   const completedCount = trainingModules.filter((item) => completed[item.id]).length;
-  const card = { backgroundColor: isDark ? '#181D27' : '#FFFFFF', borderColor: colors.border };
+  const card = { backgroundColor: isDark ? experienceColors.dark.surface : brandColors.white, borderColor: colors.border };
   const chooseLesson = (id: string) => {
     setActiveId(id); setPracticed(false); setAnswer(null); setChecked(false);
   };
@@ -71,7 +72,7 @@ export default function SalesTrainingScreen() {
       <View style={[styles.chapter, card]}>
         <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>{completedCount} of {trainingModules.length} lessons completed</Text>
         <View accessibilityRole="progressbar" accessibilityValue={{ min: 0, max: trainingModules.length, now: completedCount }} style={{ height: 8, backgroundColor: colors.border, borderRadius: 8 }}>
-          <View style={{ height: 8, width: `${completedCount / trainingModules.length * 100}%`, backgroundColor: '#248A68', borderRadius: 8 }} />
+          <View style={{ height: 8, width: `${completedCount / trainingModules.length * 100}%`, backgroundColor: brandColors.blue, borderRadius: 8 }} />
         </View>
         <Text style={[styles.body, { color: colors.textSecondary }]}>Progress is saved for your account on this device. This is self-paced practice; arrange a manager-observed roleplay before independent field visits.</Text>
         {loading && <ActivityIndicator color={colors.primary} />}
@@ -104,11 +105,11 @@ export default function SalesTrainingScreen() {
         </Pressable>)}
         {button('Check answer', () => setChecked(true), answer === null || saving)}
         {checked && <View accessibilityRole="alert" style={{ gap: 8 }}>
-          <Text style={[styles.sectionTitle, { color: answer === lesson.answer ? '#248A68' : colors.textPrimary }]}>{answer === lesson.answer ? 'Correct' : 'Try again'}</Text>
+          <Text style={[styles.sectionTitle, { color: answer === lesson.answer ? brandColors.blue : colors.textPrimary }]}>{answer === lesson.answer ? 'Correct' : 'Try again'}</Text>
           <Text style={[styles.body, { color: colors.textSecondary }]}>{answer === lesson.answer ? lesson.explanation : 'Review the linked chapter, then choose another answer.'}</Text>
         </View>}
         {!completed[lesson.id] && button(saving ? 'Saving progress…' : 'Complete lesson', saveLesson, !practiced || !checked || answer !== lesson.answer || saving || loading || !!error || !storageKey)}
-        {completed[lesson.id] && <Text accessibilityLiveRegion="polite" style={[styles.body, { color: '#248A68' }]}>Lesson complete. Your progress is saved.</Text>}
+        {completed[lesson.id] && <Text accessibilityLiveRegion="polite" style={[styles.body, { color: brandColors.blue }]}>Lesson complete. Your progress is saved.</Text>}
       </View>
       {completedCount === trainingModules.length && <View style={[styles.chapter, card]}>
         <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Practice path complete</Text>

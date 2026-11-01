@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
@@ -70,12 +71,12 @@ const money = (n: number | string | null | undefined) => {
 
 const STATUS_META: Record<DocumentStatus, { label: string; color: string; bg: string }> = {
   draft: { label: 'Draft', color: '#FB923C', bg: 'rgba(251,146,60,0.15)' },
-  issued: { label: 'Issued', color: '#10D9A0', bg: 'rgba(16,217,160,0.15)' },
-  cancelled: { label: 'Cancelled', color: '#F43F5E', bg: 'rgba(244,63,94,0.15)' },
+  issued: { label: 'Issued', color: '#335F90', bg: 'rgba(51, 95, 144, 0.15)' },
+  cancelled: { label: 'Cancelled', color: brandColors.rose, bg: 'rgba(244,63,94,0.15)' },
 };
 
 const TYPE_META: Record<DocumentType, { label: string; color: string; bg: string }> = {
-  tax_invoice: { label: 'Tax Invoice', color: '#7C6FFF', bg: 'rgba(124,111,255,0.15)' },
+  tax_invoice: { label: 'Tax Invoice', color: brandColors.violet, bg: 'rgba(124,111,255,0.15)' },
   receipt: { label: 'Receipt', color: '#38C8F4', bg: 'rgba(56,200,244,0.15)' },
 };
 
@@ -304,7 +305,7 @@ export default function BillingScreen() {
               <View style={{ flex: 1 }}>
                 <View style={st.heroKickerRow}>
                   <View style={st.heroIcon}><WalletCards size={18} color="#FFFFFF" /></View>
-                  <Text style={[st.heroKicker, { color: isDark ? '#B8B1FF' : '#6255D9' }]}>FINANCIAL COMMAND CENTER</Text>
+                  <Text style={[st.heroKicker, { color: isDark ? brandColors.violetBright : brandColors.violet }]}>FINANCIAL COMMAND CENTER</Text>
                 </View>
                 <Text style={[st.heroTitle, { color: colors.textPrimary }]}>Subscriptions, billing and collections—together.</Text>
                 <Text style={[st.heroSubtitle, { color: colors.textSecondary }]}>Manage every school’s monthly plan and send payment links without leaving Founder Console.</Text>
@@ -314,8 +315,8 @@ export default function BillingScreen() {
               </Pressable>
             </View>
             <View style={[st.metricGrid, compact && st.metricGridCompact]}>
-              <HeroMetric icon={Building2} label="Active clients" value={String(activeClients.length)} tone="#7C6FFF" compact={compact} />
-              <HeroMetric icon={IndianRupee} label="Monthly recurring" value={money(monthlyRevenue)} tone="#10B981" compact={compact} />
+              <HeroMetric icon={Building2} label="Active clients" value={String(activeClients.length)} tone={brandColors.violet} compact={compact} />
+              <HeroMetric icon={IndianRupee} label="Monthly recurring" value={money(monthlyRevenue)} tone={brandColors.blue} compact={compact} />
               <HeroMetric icon={CheckCircle2} label="Plans configured" value={`${configuredClients.length}/${clients.length}`} tone="#38BDF8" compact={compact} />
               <HeroMetric icon={ReceiptText} label="Issued value" value={money(issuedRevenue)} tone="#F59E0B" compact={compact} />
             </View>
@@ -350,7 +351,7 @@ export default function BillingScreen() {
         {section === 'subscriptions' && <>
         <View style={st.sectionHeadingRow}>
           <View><Text style={[st.sectionHeading, { color: colors.textPrimary }]}>Client subscriptions</Text><Text style={[st.sectionSub, { color: colors.textSecondary }]}>{schoolCount} schools · {medicalCount} medical shops</Text></View>
-          <Badge label={`${clients.length} clients`} color="#7C6FFF" bg="rgba(124,111,255,0.14)" />
+          <Badge label={`${clients.length} clients`} color={brandColors.violet} bg="rgba(124,111,255,0.14)" />
         </View>
         <View style={[st.searchShell, { borderColor: colors.clayBorderColor, backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : '#FFFFFF' }]}>
           <Search size={17} color={colors.textSecondary} />
@@ -406,7 +407,7 @@ export default function BillingScreen() {
           </View>
         ) : listError ? (
           <GlassCard>
-            <Text style={{ color: '#F43F5E', fontWeight: '700', marginBottom: 8 }}>{listError}</Text>
+            <Text style={{ color: brandColors.rose, fontWeight: '700', marginBottom: 8 }}>{listError}</Text>
             <PrimaryGradientButton label="Retry" onPress={loadList} />
           </GlassCard>
         ) : docs.length === 0 ? (
@@ -555,15 +556,15 @@ function SubscriptionClientCard({ client, onChanged, compact }: { client: Billin
   return (
     <View style={[st.clientCard, { borderColor: colors.clayBorderColor, backgroundColor: isDark ? 'rgba(34,32,48,0.88)' : '#F8F6FC' }, Platform.OS === 'web' ? { boxShadow: clayShadows.clayElevated.web } as any : null]}>
       <Pressable accessibilityRole="button" onPress={() => setExpanded((value) => !value)} style={({ pressed }) => [st.clientSummary, { opacity: pressed ? 0.82 : 1 }]}>
-        <View style={[st.schoolAvatar, { backgroundColor: client.kind === 'medical' ? 'rgba(16,185,129,0.14)' : client.is_active ? 'rgba(124,111,255,0.16)' : 'rgba(148,163,184,0.14)' }]}>
-          {client.kind === 'medical' ? <Stethoscope size={20} color="#10B981" /> : <Text style={{ color: client.is_active ? '#7C6FFF' : colors.textSecondary, fontSize: 17, fontWeight: '900' }}>{client.name.slice(0, 2).toUpperCase()}</Text>}
+        <View style={[st.schoolAvatar, { backgroundColor: client.kind === 'medical' ? 'rgba(51, 95, 144, 0.14)' : client.is_active ? 'rgba(124,111,255,0.16)' : 'rgba(148,163,184,0.14)' }]}>
+          {client.kind === 'medical' ? <Stethoscope size={20} color={brandColors.blue} /> : <Text style={{ color: client.is_active ? brandColors.violet : colors.textSecondary, fontSize: 17, fontWeight: '900' }}>{client.name.slice(0, 2).toUpperCase()}</Text>}
         </View>
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={[st.schoolName, { color: colors.textPrimary }]} numberOfLines={1}>{client.name}</Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 3 }}><Text style={{ color: client.kind === 'medical' ? '#10B981' : colors.textSecondary, fontSize: 11, fontWeight: '700' }}>{client.kind === 'medical' ? 'Medical shop' : 'School'}</Text><View style={[st.metaDot, { backgroundColor: colors.textSecondary }]} /><Text style={{ color: colors.textSecondary, fontSize: 11 }} numberOfLines={1}>{client.code || 'No code'} · {client.cluster_id}</Text></View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 3 }}><Text style={{ color: client.kind === 'medical' ? brandColors.blue : colors.textSecondary, fontSize: 11, fontWeight: '700' }}>{client.kind === 'medical' ? 'Medical shop' : 'School'}</Text><View style={[st.metaDot, { backgroundColor: colors.textSecondary }]} /><Text style={{ color: colors.textSecondary, fontSize: 11 }} numberOfLines={1}>{client.code || 'No code'} · {client.cluster_id}</Text></View>
         </View>
         {!compact && <View style={{ alignItems: 'flex-end' }}><Text style={[st.feeValue, { color: colors.textPrimary }]}>{money(client.monthly_fee)}</Text><Text style={{ color: colors.textSecondary, fontSize: 10 }}>per month</Text></View>}
-        <Badge label={client.is_active ? 'Active' : 'Inactive'} color={client.is_active ? '#10D9A0' : '#F43F5E'} bg={client.is_active ? 'rgba(16,217,160,0.15)' : 'rgba(244,63,94,0.15)'} />
+        <Badge label={client.is_active ? 'Active' : 'Inactive'} color={client.is_active ? '#335F90' : brandColors.rose} bg={client.is_active ? 'rgba(51, 95, 144, 0.15)' : 'rgba(244,63,94,0.15)'} />
         <View style={[st.chevron, { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : '#FFFFFF' }]}><ChevronDown size={16} color={colors.textSecondary} style={{ transform: [{ rotate: expanded ? '180deg' : '0deg' }] }} /></View>
       </Pressable>
       {compact && <View style={[st.mobileFeeStrip, { borderColor: colors.border }]}><Text style={{ color: colors.textSecondary, fontSize: 11 }}>Monthly plan</Text><Text style={[st.feeValue, { color: colors.textPrimary }]}>{money(client.monthly_fee)}</Text></View>}
@@ -711,7 +712,7 @@ function ConfigModal({
             </View>
             <Input label="Default SAC code" value={sac} onChangeText={setSac} placeholder="Confirm with CA before first invoice" />
 
-            {err && <Text style={{ color: '#F43F5E', fontSize: 12, marginTop: 10 }}>{err}</Text>}
+            {err && <Text style={{ color: brandColors.rose, fontSize: 12, marginTop: 10 }}>{err}</Text>}
 
             <View style={{ height: 16 }} />
             <PrimaryGradientButton label={saving ? 'Saving…' : 'Save Config'} onPress={onSave} disabled={!canSave} />
@@ -946,7 +947,7 @@ function CreateDocumentModal({
                     st.suggestPanel,
                     {
                       borderColor: colors.border,
-                      backgroundColor: isDark ? '#1C1A28' : '#FFFFFF',
+                      backgroundColor: isDark ? experienceColors.dark.surface : brandColors.white,
                     },
                   ]}
                 >
@@ -997,14 +998,14 @@ function CreateDocumentModal({
                               st.suggestAvatar,
                               {
                                 backgroundColor:
-                                  client.kind === 'medical' ? 'rgba(16,185,129,0.14)' : 'rgba(124,111,255,0.16)',
+                                  client.kind === 'medical' ? 'rgba(51, 95, 144, 0.14)' : 'rgba(124,111,255,0.16)',
                               },
                             ]}
                           >
                             {client.kind === 'medical' ? (
-                              <Stethoscope size={14} color="#10B981" />
+                              <Stethoscope size={14} color={brandColors.blue} />
                             ) : (
-                              <Text style={{ color: '#7C6FFF', fontSize: 11, fontWeight: '900' }}>
+                              <Text style={{ color: brandColors.violet, fontSize: 11, fontWeight: '900' }}>
                                 {client.name.slice(0, 2).toUpperCase()}
                               </Text>
                             )}
@@ -1061,7 +1062,7 @@ function CreateDocumentModal({
                 if (invoice) { setAddress(invoice.client_billing_address); setGstin(invoice.client_gstin || ''); setItems([{ description: `Payment for ${invoice.document_number}`, quantity: 1, rate: Number(invoice.outstanding_amount) }]); }
               }} />
               <Text style={{ color: colors.textSecondary, fontSize: 12, lineHeight: 19 }}>{settleInvoice ? 'This receipt settles the selected invoice in Books. Change the amount below for a partial payment.' : 'Choose an existing invoice when collecting its payment. Standalone receipts record new non-GST revenue.'}</Text>
-              {!!invoiceError && <Text style={{ color: '#F43F5E', fontSize: 12 }}>{invoiceError}</Text>}
+              {!!invoiceError && <Text style={{ color: brandColors.rose, fontSize: 12 }}>{invoiceError}</Text>}
             </View>}
             {docType === 'tax_invoice' && (
               <Input
@@ -1088,7 +1089,7 @@ function CreateDocumentModal({
                   <Text style={{ color: colors.textSecondary, fontSize: 11, fontWeight: '700' }}>Item {idx + 1}</Text>
                   {items.length > 1 && (
                     <Pressable accessibilityLabel="Move down" accessibilityRole="button" onPress={() => removeItem(idx)} hitSlop={8}>
-                      <Trash2 size={15} color="#F43F5E" />
+                      <Trash2 size={15} color={brandColors.rose} />
                     </Pressable>
                   )}
                 </View>
@@ -1110,7 +1111,7 @@ function CreateDocumentModal({
               {!supplierReady ? (
                 <Text style={{ color: '#FB923C', fontSize: 12 }}>Configure supplier GSTIN to compute totals.</Text>
               ) : previewErr ? (
-                <Text style={{ color: '#F43F5E', fontSize: 12 }}>{previewErr}</Text>
+                <Text style={{ color: brandColors.rose, fontSize: 12 }}>{previewErr}</Text>
               ) : !preview ? (
                 <Text style={{ color: colors.textSecondary, fontSize: 12 }}>Fill in valid details to see the computed total.</Text>
               ) : (
@@ -1132,7 +1133,7 @@ function CreateDocumentModal({
             </GlassCard>
 
             {issueErr && (
-              <Text style={{ color: '#F43F5E', fontSize: 12, marginTop: 12 }}>{issueErr}</Text>
+              <Text style={{ color: brandColors.rose, fontSize: 12, marginTop: 12 }}>{issueErr}</Text>
             )}
 
             <View style={{ height: 16 }} />
@@ -1331,7 +1332,7 @@ function DocumentDetailModal({
               FY {doc.financial_year} · Issued {issuedFullDisplay} · Place of supply {doc.place_of_supply_state_code}
             </Text>
 
-            {actionErr && <Text style={{ color: '#F43F5E', fontSize: 12, marginTop: 12 }}>{actionErr}</Text>}
+            {actionErr && <Text style={{ color: brandColors.rose, fontSize: 12, marginTop: 12 }}>{actionErr}</Text>}
 
             <View style={{ height: 18 }} />
             <Pressable accessibilityRole="button" onPress={openDocument} style={[st.outlineBtn, { borderColor: colors.primary }]}>
@@ -1345,10 +1346,10 @@ function DocumentDetailModal({
               <Pressable accessibilityRole="button"
                 onPress={confirmCancel}
                 disabled={cancelling}
-                style={[st.outlineBtn, { borderColor: '#F43F5E', marginTop: 10, opacity: cancelling ? 0.5 : 1 }]}
+                style={[st.outlineBtn, { borderColor: brandColors.rose, marginTop: 10, opacity: cancelling ? 0.5 : 1 }]}
               >
-                <Ban size={16} color="#F43F5E" />
-                <Text style={{ color: '#F43F5E', fontWeight: '700' }}>{cancelling ? 'Cancelling…' : 'Cancel Document'}</Text>
+                <Ban size={16} color={brandColors.rose} />
+                <Text style={{ color: brandColors.rose, fontWeight: '700' }}>{cancelling ? 'Cancelling…' : 'Cancel Document'}</Text>
               </Pressable>
             )}
           </ScrollView>

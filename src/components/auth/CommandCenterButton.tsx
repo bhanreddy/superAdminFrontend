@@ -62,7 +62,7 @@ export const CommandCenterButton: React.FC<CommandCenterButtonProps> = ({
         isLight && isBlocked && { opacity: 0.6 },
         isLight &&
           hovered &&
-          !isBlocked && { backgroundColor: brandColors.blueHover },
+          !isBlocked && { backgroundColor: brandColors.redDark },
         Platform.OS === 'web'
           ? ({
               cursor: isBlocked ? 'not-allowed' : 'pointer',
@@ -74,8 +74,8 @@ export const CommandCenterButton: React.FC<CommandCenterButtonProps> = ({
                 ? 'none'
                 : variant === 'primary'
                 ? hovered
-                  ? '0 6px 20px -4px rgba(45, 110, 230, 0.35)'
-                  : '0 4px 12px -4px rgba(45, 110, 230, 0.25)'
+                  ? '0 6px 20px -4px rgba(181, 46, 53, 0.35)'
+                  : '0 4px 12px -4px rgba(181, 46, 53, 0.25)'
                 : 'none',
               transform: pressed && !isBlocked ? 'scale(0.99)' : 'none',
             } as any)
@@ -86,7 +86,7 @@ export const CommandCenterButton: React.FC<CommandCenterButtonProps> = ({
       {/* Primary Radiant Gradient with Specular Sheen */}
       {variant === 'primary' && !isBlocked && !isLight && (
         <LinearGradient
-          colors={['#2E70E6', '#2B6FE6', '#2465D6']}
+          colors={[brandColors.red, brandColors.red, brandColors.redDark]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={StyleSheet.absoluteFill}
@@ -144,9 +144,9 @@ export const CommandCenterButton: React.FC<CommandCenterButtonProps> = ({
 
 const styles = StyleSheet.create({
   lightBase: {
-    backgroundColor: brandColors.blue,
-    borderColor: brandColors.blue,
-    borderRadius: 6,
+    backgroundColor: brandColors.red,
+    borderColor: brandColors.red,
+    borderRadius: 16,
     height: 50,
   },
   base: {
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
   },
   disabledBase: {
     opacity: 0.55,
-    backgroundColor: 'rgba(10, 132, 255, 0.4)',
+    backgroundColor: 'rgba(181, 46, 53, 0.4)',
   },
   pressedBase: {
     opacity: 0.88,

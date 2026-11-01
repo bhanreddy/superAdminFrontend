@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
@@ -59,7 +60,7 @@ const ASSIGNED_OPTS_BASE = [
 const STATUS_META: Record<EnquiryStatus, { color: string; label: string }> = {
   NEW: { color: '#A78BFA', label: 'New' },
   CONTACTED: { color: '#38C8F4', label: 'Contacted' },
-  QUALIFIED: { color: '#00D4AD', label: 'Qualified' },
+  QUALIFIED: { color: '#335F90', label: 'Qualified' },
   CLOSED: { color: '#38BDF8', label: 'Closed' },
   REJECTED: { color: '#FF6B7A', label: 'Rejected' },
 };
@@ -275,7 +276,7 @@ function LegacyEnquiryBrowser() {
             { label: 'Total leads', value: stats.total, color: colors.primary, Icon: Inbox },
             { label: 'New', value: stats.neu, color: '#A78BFA', Icon: Activity },
             { label: 'Unassigned', value: stats.unassigned, color: colors.warning, Icon: UserRound },
-            { label: 'Qualified', value: stats.qualified, color: '#00D4AD', Icon: UserRoundCheck },
+            { label: 'Qualified', value: stats.qualified, color: '#335F90', Icon: UserRoundCheck },
           ].map(({ label, value, color, Icon }) => (
             <View
               key={label}
@@ -420,7 +421,7 @@ function LegacyEnquiryBrowser() {
                       </View>
                       {e.deal_value != null ? (
                         <View style={styles.dealWrap}>
-                          <Text style={[styles.dealTxt, { color: '#00D4AD' }]}>{founderDb.formatInr(Number(e.deal_value), 0)}</Text>
+                          <Text style={[styles.dealTxt, { color: '#335F90' }]}>{founderDb.formatInr(Number(e.deal_value), 0)}</Text>
                           <Text style={[styles.dealLbl, { color: colors.textTertiary }]}>deal value</Text>
                         </View>
                       ) : null}
@@ -445,8 +446,8 @@ function LegacyEnquiryBrowser() {
             <View style={[styles.sheetHandle, { backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : colors.border }]} />
 
             <View style={styles.sheetHeaderGroup}>
-               <LinearGradient colors={isDark ? ['rgba(14,165,233,0.18)', 'rgba(0,212,173,0.06)'] : ['rgba(14,165,233,0.1)', 'transparent']} style={styles.sheetIconWrap}>
-                 <MessageCircle size={18} color="#0EA5E9" strokeWidth={2} />
+               <LinearGradient colors={isDark ? ['rgba(14,165,233,0.18)', 'rgba(51, 95, 144, 0.06)'] : ['rgba(14,165,233,0.1)', 'transparent']} style={styles.sheetIconWrap}>
+                 <MessageCircle size={18} color={brandColors.blue} strokeWidth={2} />
                </LinearGradient>
                <View style={{ flex: 1, marginLeft: 14 }}>
                  <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>Lead details</Text>
@@ -470,15 +471,15 @@ function LegacyEnquiryBrowser() {
                      style={({ pressed }) => [
                        styles.unitCard,
                        !assignId && styles.unitCardActive,
-                       !isDark && { borderColor: !assignId ? '#0EA5E9' : colors.border, backgroundColor: !assignId ? 'rgba(14,165,233,0.06)' : colors.surface },
+                       !isDark && { borderColor: !assignId ? brandColors.blue : colors.border, backgroundColor: !assignId ? 'rgba(14,165,233,0.06)' : colors.surface },
                        ...pressableWebStyles(pressed, { pressedOpacity: 0.7 })
                      ]}
                    >
                      <View style={[styles.unitIconCircle, !assignId && { backgroundColor: 'transparent' }]}>
                        {!assignId && <LinearGradient colors={isDark ? ['rgba(14,165,233,0.25)', 'transparent'] : ['rgba(14,165,233,0.15)', 'transparent']} style={StyleSheet.absoluteFillObject} />}
-                       <UserRound size={13} color={!assignId ? (isDark ? '#38BDF8' : '#0284C7') : colors.textSecondary} />
+                       <UserRound size={13} color={!assignId ? (isDark ? brandColors.blueBright : brandColors.blue) : colors.textSecondary} />
                      </View>
-                     <Text style={[styles.unitLabel, { color: !assignId ? (isDark ? '#38BDF8' : '#0284C7') : colors.textPrimary }]}>Unassigned</Text>
+                     <Text style={[styles.unitLabel, { color: !assignId ? (isDark ? brandColors.blueBright : brandColors.blue) : colors.textPrimary }]}>Unassigned</Text>
                      {!assignId && <View style={styles.unitActiveDot} />}
                    </Pressable>
                    {founders.map((f) => {
@@ -490,15 +491,15 @@ function LegacyEnquiryBrowser() {
                          style={({ pressed }) => [
                            styles.unitCard,
                            active && styles.unitCardActive,
-                           !isDark && { borderColor: active ? '#0EA5E9' : colors.border, backgroundColor: active ? 'rgba(14,165,233,0.06)' : colors.surface },
+                           !isDark && { borderColor: active ? brandColors.blue : colors.border, backgroundColor: active ? 'rgba(14,165,233,0.06)' : colors.surface },
                            ...pressableWebStyles(pressed, { pressedOpacity: 0.7 })
                          ]}
                        >
                          <View style={[styles.unitIconCircle, active && { backgroundColor: 'transparent' }]}>
                            {active && <LinearGradient colors={isDark ? ['rgba(14,165,233,0.25)', 'transparent'] : ['rgba(14,165,233,0.15)', 'transparent']} style={StyleSheet.absoluteFillObject} />}
-                           <UserRound size={13} color={active ? (isDark ? '#38BDF8' : '#0284C7') : colors.textSecondary} />
+                           <UserRound size={13} color={active ? (isDark ? brandColors.blueBright : brandColors.blue) : colors.textSecondary} />
                          </View>
-                         <Text style={[styles.unitLabel, { color: active ? (isDark ? '#38BDF8' : '#0284C7') : colors.textPrimary }]}>{f.full_name || f.email || f.id}</Text>
+                         <Text style={[styles.unitLabel, { color: active ? (isDark ? brandColors.blueBright : brandColors.blue) : colors.textPrimary }]}>{f.full_name || f.email || f.id}</Text>
                          {active && <View style={styles.unitActiveDot} />}
                        </Pressable>
                      )
@@ -511,7 +512,7 @@ function LegacyEnquiryBrowser() {
               <View style={styles.statusGrid}>
                  {(['NEW', 'CONTACTED', 'QUALIFIED', 'CLOSED', 'REJECTED'] as EnquiryStatus[]).map((s) => {
                    const active = statusPick === s;
-                   const sColor = s === 'QUALIFIED' ? '#00D4AD' : s === 'CLOSED' ? '#38BDF8' : s === 'REJECTED' ? '#FF6B7A' : '#A78BFA';
+                   const sColor = s === 'QUALIFIED' ? '#335F90' : s === 'CLOSED' ? '#38BDF8' : s === 'REJECTED' ? '#FF6B7A' : '#A78BFA';
                    return (
                      <Pressable accessibilityRole="button"
                        key={s}
@@ -519,7 +520,7 @@ function LegacyEnquiryBrowser() {
                        style={({ pressed }) => [
                          styles.statusChip,
                          active
-                            ? { backgroundColor: `rgba(${sColor === '#00D4AD' ? '0,212,173' : sColor === '#38BDF8' ? '56,189,248' : sColor === '#FF6B7A' ? '255,107,122' : '167,139,250'},0.15)`, borderColor: sColor }
+                            ? { backgroundColor: `rgba(${sColor === '#335F90' ? '0,212,173' : sColor === '#38BDF8' ? '56,189,248' : sColor === '#FF6B7A' ? '255,107,122' : '167,139,250'},0.15)`, borderColor: sColor }
                             : { backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : colors.glassBackground, borderColor: isDark ? 'rgba(255,255,255,0.08)' : colors.border },
                          ...pressableWebStyles(pressed, { pressedOpacity: 0.75 })
                        ]}
@@ -541,9 +542,9 @@ function LegacyEnquiryBrowser() {
               </View>
 
               {/* ACCEPT / ONBOARD */}
-              <View style={[styles.onboardBlock, { borderColor: isDark ? 'rgba(0,212,173,0.22)' : colors.border, backgroundColor: isDark ? 'rgba(0,212,173,0.05)' : colors.glassBackground }]}>
+              <View style={[styles.onboardBlock, { borderColor: isDark ? 'rgba(51, 95, 144, 0.22)' : colors.border, backgroundColor: isDark ? 'rgba(51, 95, 144, 0.05)' : colors.glassBackground }]}>
                 <View style={styles.onboardHeader}>
-                  <Rocket size={15} color="#00D4AD" />
+                  <Rocket size={15} color="#335F90" />
                   <Text style={[styles.onboardTitle, { color: colors.textPrimary }]}>Accept & onboard</Text>
                 </View>
                 <Text style={[styles.onboardHint, { color: colors.textSecondary }]}>
@@ -559,13 +560,13 @@ function LegacyEnquiryBrowser() {
                         style={({ pressed }) => [
                           styles.verticalChip,
                           active
-                            ? { backgroundColor: 'rgba(0,212,173,0.15)', borderColor: '#00D4AD' }
+                            ? { backgroundColor: 'rgba(51, 95, 144, 0.15)', borderColor: '#335F90' }
                             : { backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : colors.surface, borderColor: isDark ? 'rgba(255,255,255,0.08)' : colors.border },
                           ...pressableWebStyles(pressed, { pressedOpacity: 0.8 }),
                         ]}
                       >
-                        <Icon size={14} color={active ? '#00D4AD' : colors.textSecondary} />
-                        <Text style={[styles.verticalChipLbl, { color: active ? '#00D4AD' : colors.textSecondary }]}>{label}</Text>
+                        <Icon size={14} color={active ? '#335F90' : colors.textSecondary} />
+                        <Text style={[styles.verticalChipLbl, { color: active ? '#335F90' : colors.textSecondary }]}>{label}</Text>
                       </Pressable>
                     );
                   })}
@@ -575,7 +576,7 @@ function LegacyEnquiryBrowser() {
                   disabled={accepting}
                   style={({ pressed }) => [{ marginTop: 12 }, ...pressableWebStyles(pressed, { disabled: accepting, pressedOpacity: 0.85 })]}
                 >
-                  <LinearGradient colors={['#059669', '#00D4AD']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={[styles.acceptBtn, accepting && { opacity: 0.6 }]}>
+                  <LinearGradient colors={[brandColors.blue, '#335F90']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={[styles.acceptBtn, accepting && { opacity: 0.6 }]}>
                     <Rocket size={16} color="#fff" />
                     <Text style={styles.acceptTxt}>
                       {accepting ? 'Accepting…' : vertical === 'OTHER' ? 'Accept & convert' : `Accept → ${VERTICAL_LABELS[vertical]}`}
@@ -618,7 +619,7 @@ function LegacyEnquiryBrowser() {
                   ]}
                 >
                   <LinearGradient
-                    colors={['#0D9488', '#0EA5E9']}
+                    colors={[brandColors.blue, brandColors.blue]}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={[styles.saveBtn, saving && { opacity: 0.6 }]}
@@ -703,7 +704,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
     maxHeight: '92%',
-    shadowColor: '#0EA5E9',
+    shadowColor: brandColors.blue,
     shadowOffset: { width: 0, height: -8 },
     shadowOpacity: 0.35,
     shadowRadius: 24,
@@ -760,7 +761,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   unitLabel: { fontSize: 13, fontWeight: '700', letterSpacing: 0.2, maxWidth: 160 },
-  unitActiveDot: { position: 'absolute', top: 8, right: 8, width: 6, height: 6, borderRadius: 3, backgroundColor: '#0EA5E9' },
+  unitActiveDot: { position: 'absolute', top: 8, right: 8, width: 6, height: 6, borderRadius: 3, backgroundColor: brandColors.blue },
 
   statusGrid: {
     flexDirection: 'row',

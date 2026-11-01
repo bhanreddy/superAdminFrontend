@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
@@ -50,9 +51,9 @@ import {
 } from "./expenseModel";
 
 const statusColors = {
-  PENDING: "#B77910",
-  APPROVED: "#059669",
-  REJECTED: "#E05268",
+  PENDING: brandColors.amber,
+  APPROVED: brandColors.blue,
+  REJECTED: brandColors.rose,
 };
 const statusLabels = {
   PENDING: "Pending",
@@ -270,7 +271,7 @@ export default function ExpensesScreen({
       value: money(summary.unpaid),
       hint: "Approved, awaiting payment",
       icon: ArrowUpRight,
-      color: "#279C87",
+      color: brandColors.blue,
     },
     {
       label: "Missing receipts",
@@ -416,12 +417,12 @@ export default function ExpensesScreen({
           style={[
             s.connection,
             {
-              backgroundColor: isDark ? "#172726" : "#EEF8F5",
-              borderColor: isDark ? "#29433D" : "#D3EBE2",
+              backgroundColor: isDark ? experienceColors.dark.surface : brandColors.paperDeep,
+              borderColor: isDark ? '#192B46' : brandColors.blueSoft,
             },
           ]}
         >
-          <CheckCircle2 size={19} color="#279C87" />
+          <CheckCircle2 size={19} color={brandColors.blue} />
           <View style={{ flex: 1, gap: 3, minWidth: compact ? 200 : 0 }}>
             <Text
               style={{
@@ -732,7 +733,7 @@ export default function ExpensesScreen({
                       {
                         backgroundColor:
                           row.books_state === "posted"
-                            ? "#279C87"
+                            ? brandColors.blue
                             : colors.textSecondary,
                       },
                     ]}
@@ -741,7 +742,7 @@ export default function ExpensesScreen({
                     style={{
                       color:
                         row.books_state === "posted"
-                          ? "#279C87"
+                          ? brandColors.blue
                           : colors.textSecondary,
                       fontSize: 11,
                     }}

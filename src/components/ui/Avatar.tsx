@@ -1,4 +1,5 @@
 import React from 'react';
+import { brandColors } from '../../constants/experienceColors';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme, clayStyle } from '../../contexts/ThemeContext';
 
@@ -13,15 +14,7 @@ const FONT_MAP = { sm: 11, md: 14, lg: 17 };
 
 // Generate consistent color from name
 function hashColor(name: string): string {
-  const palette = [
-    '#3155C6',
-    '#7040BB',
-    '#AC365E',
-    '#945016',
-    '#15704D',
-    '#087579',
-    '#24679E',
-  ];
+  const palette = [brandColors.red, brandColors.blue, brandColors.amber, brandColors.blue, brandColors.rose, brandColors.violet];
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
     hash = name.charCodeAt(i) + ((hash << 5) - hash);
@@ -69,7 +62,7 @@ export const Avatar = React.memo(function Avatar({
           style={[
             styles.statusDot,
             {
-              backgroundColor: online ? '#34D399' : colors.textTertiary,
+              backgroundColor: online ? colors.success : colors.textTertiary,
               borderColor: colors.background,
               width: size === 'sm' ? 8 : 10,
               height: size === 'sm' ? 8 : 10,

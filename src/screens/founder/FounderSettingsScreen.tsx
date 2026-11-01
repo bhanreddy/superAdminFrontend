@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useState } from 'react';
 import {
   View,
@@ -188,13 +189,13 @@ export default function FounderSettingsScreen() {
                   </Text>
                 </View>
                 {budgetLoading ? (
-                  <ActivityIndicator color="#7C6FFF" />
+                  <ActivityIndicator color={brandColors.violet} />
                 ) : (
                   <Switch
                     value={budgetLocked}
                     onValueChange={onBudgetToggle}
                     trackColor={{ false: '#333', true: '#7C6FFF88' }}
-                    thumbColor={budgetLocked ? '#7C6FFF' : '#888'}
+                    thumbColor={budgetLocked ? brandColors.violet : '#888'}
                   />
                 )}
               </View>
@@ -202,7 +203,7 @@ export default function FounderSettingsScreen() {
 
             <Text style={[styles.section, { color: colors.textSecondary }]}>Founders</Text>
             {foundersLoading ? (
-              <ActivityIndicator color="#7C6FFF" style={{ marginVertical: 16 }} />
+              <ActivityIndicator color={brandColors.violet} style={{ marginVertical: 16 }} />
             ) : (
               founders.map((f) => (
                 <GlassCard key={f.id} style={{ marginBottom: 10 }}>
@@ -219,7 +220,7 @@ export default function FounderSettingsScreen() {
                       onPress={() => toggleFounder(f)}
                       style={({ pressed }) => [...pressableWebStyles(pressed, { pressedOpacity: 0.85 })]}
                     >
-                      <Text style={{ color: f.is_active ? '#FF6B7A' : '#00D4AD', fontWeight: '800' }}>
+                      <Text style={{ color: f.is_active ? '#FF6B7A' : '#335F90', fontWeight: '800' }}>
                         {f.is_active ? 'Deactivate' : 'Activate'}
                       </Text>
                     </Pressable>

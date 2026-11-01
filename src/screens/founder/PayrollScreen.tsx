@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, {
   useCallback,
   useEffect,
@@ -68,11 +69,11 @@ import type {
 } from "../../api/payroll";
 
 type Tab = "PEOPLE" | "PAYROLL" | "DOCUMENTS";
-const PURPLE = "#8B5CF6";
+const PURPLE = brandColors.violet;
 const CYAN = "#22D3EE";
-const GREEN = "#10B981";
+const GREEN = brandColors.blue;
 const AMBER = "#F59E0B";
-const ROSE = "#F43F5E";
+const ROSE = brandColors.rose;
 const DOC_TYPES: {
   type: Exclude<HrDocumentType, "PAYSLIP">;
   label: string;
@@ -627,9 +628,9 @@ export default function PayrollScreen() {
               styles.autopilotStrip,
               {
                 backgroundColor: isDark
-                  ? "rgba(16,185,129,.09)"
+                  ? "rgba(51, 95, 144, .09)"
                   : "rgba(255,255,255,.72)",
-                borderColor: "rgba(16,185,129,.2)",
+                borderColor: "rgba(51, 95, 144, .2)",
               },
             ]}
           >

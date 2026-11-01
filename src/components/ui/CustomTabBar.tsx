@@ -31,7 +31,7 @@ const H_PADDING = 20;
 const TAB_BAR_HEIGHT = 74;
 const BAR_WIDTH = SCREEN_WIDTH - H_PADDING * 2;
 
-const ACCENTS = ['#818CF8', '#34D399', '#FCD34D', '#F472B6', '#22D3EE'];
+const ACCENTS = ['#818CF8', '#335F90', '#FCD34D', '#F472B6', '#22D3EE'];
 const getAccent = (i: number) => ACCENTS[i % ACCENTS.length];
 
 type IconKey =

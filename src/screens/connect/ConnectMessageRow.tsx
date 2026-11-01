@@ -1,5 +1,8 @@
+import { brandColors } from '../../constants/experienceColors';
 import React, { useMemo, useState } from 'react';
-import { View, Text, Pressable, Platform, StyleSheet } from 'react-native';
+import { View, Text, Pressable as NativePressable, Platform, StyleSheet } from 'react-native';
+import { MotionPressable as Pressable } from '../../components/ui/MotionPressable';
+import { borderRadius } from '../../constants/theme';
 import {
   MoreHorizontal,
   SmilePlus,
@@ -20,7 +23,7 @@ export const ConnectAvatar = React.memo(function ConnectAvatar({
   colors: ThemeColors;
   small?: boolean;
 }) {
-  const backgroundColor = ['#337C91', '#9B594E', '#6E5BA7', '#4D7861'][
+  const backgroundColor = [brandColors.blue, brandColors.rose, brandColors.violet, brandColors.blue][
     Array.from(name).reduce((sum, ch) => sum + ch.charCodeAt(0), 0) % 4
   ];
   return (
@@ -128,6 +131,7 @@ export const ConnectMessageBody = React.memo(function ConnectMessageBody({
 type RowProps = {
   message: Message;
   day?: string;
+  compact?: boolean;
   colors: ThemeColors;
   isDark: boolean;
   mobile: boolean;
@@ -140,6 +144,7 @@ type RowProps = {
 export const ConnectMessageRow = React.memo(function ConnectMessageRow({
   message: m,
   day,
+  compact = false,
   colors,
   isDark,
   mobile,
@@ -208,7 +213,7 @@ export const ConnectMessageRow = React.memo(function ConnectMessageRow({
           <View style={[styles.line, { backgroundColor: colors.border }]} />
         </View>
       )}
-      <Pressable
+      <NativePressable
         accessible={false}
         onHoverIn={() => setHovered(true)}
         onHoverOut={() => setHovered(false)}
@@ -219,12 +224,13 @@ export const ConnectMessageRow = React.memo(function ConnectMessageRow({
         style={[
           styles.message,
           mobile && styles.mobileMessage,
+          compact && { paddingTop: 3, paddingBottom: 5 },
           { backgroundColor: hovered ? colors.hover : 'transparent' },
         ]}
       >
-        <ConnectAvatar name={m.sender_name} colors={colors} />
+        {compact ? <View style={{ width: 36, minHeight: 24, justifyContent: 'center' }}><Text accessibilityLabel={timestamp} style={{ color: hovered ? colors.textTertiary : 'transparent', fontSize: 9 }}>{timestamp}</Text></View> : <ConnectAvatar name={m.sender_name} colors={colors} />}
         <View style={styles.content}>
-          <View style={styles.header}>
+          {!compact && <View style={styles.header}>
             <Text style={[styles.sender, { color: colors.textPrimary }]}>
               {m.sender_name}
             </Text>
@@ -232,7 +238,7 @@ export const ConnectMessageRow = React.memo(function ConnectMessageRow({
               {timestamp}
               {m.edited_at ? ' · edited' : ''}
             </Text>
-          </View>
+          </View>}
           <Text
             selectable
             style={[
@@ -286,7 +292,7 @@ export const ConnectMessageRow = React.memo(function ConnectMessageRow({
                     onPress={() => onReact(m, emoji, mine)}
                     style={[
                       styles.reaction,
-                      mobile && { minHeight: 36 },
+                      mobile && { minHeight: 44 },
                       {
                         borderColor: mine ? colors.primary : colors.border,
                         backgroundColor: mine
@@ -306,7 +312,7 @@ export const ConnectMessageRow = React.memo(function ConnectMessageRow({
                   accessibilityRole="button"
                   accessibilityLabel={`${m.reply_count} ${m.reply_count === 1 ? 'reply' : 'replies'}`}
                   onPress={() => onThread(m)}
-                  style={[styles.reply, mobile && { minHeight: 40 }]}
+                  style={[styles.reply, mobile && { minHeight: 44 }]}
                 >
                   <MessageSquare size={14} color={colors.primary} />
                   <Text
@@ -344,7 +350,7 @@ export const ConnectMessageRow = React.memo(function ConnectMessageRow({
             {icon('Message actions', MoreHorizontal, () => onActions(m))}
           </View>
         )}
-      </Pressable>
+      </NativePressable>
     </View>
   );
 });
@@ -353,18 +359,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
     paddingHorizontal: 24,
-    paddingVertical: 10,
+    paddingVertical: 12,
     paddingRight: 52,
   },
   mobileMessage: { paddingLeft: 16, paddingRight: 48, gap: 10 },
   avatar: {
     width: 36,
     height: 36,
-    borderRadius: 5,
+    borderRadius: borderRadius.sm,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  smallAvatar: { width: 22, height: 22, borderRadius: 4 },
+  smallAvatar: { width: 24, height: 24, borderRadius: borderRadius.xs },
   content: { flex: 1, minWidth: 0 },
   header: {
     flexDirection: 'row',
@@ -382,7 +388,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     padding: 12,
-    borderRadius: 8,
+    borderRadius: borderRadius.sm,
     marginTop: 8,
     maxWidth: 400,
   },
@@ -398,7 +404,7 @@ const styles = StyleSheet.create({
     minHeight: 28,
     paddingHorizontal: 8,
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: borderRadius.sm,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -415,16 +421,16 @@ const styles = StyleSheet.create({
     top: 3,
     flexDirection: 'row',
     borderWidth: 1,
-    borderRadius: 6,
+    borderRadius: borderRadius.sm,
   },
   action: {
     minWidth: 32,
     minHeight: 32,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 5,
+    borderRadius: borderRadius.sm,
   },
-  touchAction: { minWidth: 40, minHeight: 44 },
+  touchAction: { minWidth: 44, minHeight: 44 },
   dateDivider: {
     flexDirection: 'row',
     alignItems: 'center',

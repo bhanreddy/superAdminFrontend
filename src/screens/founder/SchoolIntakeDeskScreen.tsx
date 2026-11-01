@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -66,7 +67,7 @@ export default function SchoolIntakeDeskScreen() {
         <GlassCard variant="lightweight" style={styles.hero}>
           <View style={styles.heroRow}>
             <View style={[styles.icon, { backgroundColor: 'rgba(10,132,255,0.12)' }]}>
-              <ShieldCheck size={20} color="#0A84FF" />
+              <ShieldCheck size={20} color={brandColors.red} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.heroValue, { color: colors.textPrimary }]}>{waiting}</Text>

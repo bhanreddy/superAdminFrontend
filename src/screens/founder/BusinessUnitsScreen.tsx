@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   View,
@@ -245,7 +246,7 @@ export default function BusinessUnitsScreen() {
         </View>
 
         {loading ? (
-          <ActivityIndicator color="#7C6FFF" style={{ marginTop: 24 }} />
+          <ActivityIndicator color={brandColors.violet} style={{ marginTop: 24 }} />
         ) : (
           <ScrollView
             showsVerticalScrollIndicator={false}
@@ -277,8 +278,8 @@ export default function BusinessUnitsScreen() {
                       style={({ pressed }) => [styles.textBtn, ...pressableWebStyles(pressed, { pressedOpacity: 0.85 })]}
                     >
                       <View style={styles.callRow}>
-                        <Phone size={14} color="#00D4AD" />
-                        <Text style={{ color: '#00D4AD', fontWeight: '800' }}>Call</Text>
+                        <Phone size={14} color="#335F90" />
+                        <Text style={{ color: '#335F90', fontWeight: '800' }}>Call</Text>
                       </View>
                     </Pressable>
                   ) : null}
@@ -292,7 +293,7 @@ export default function BusinessUnitsScreen() {
                     onPress={() => toggleActive(u)}
                     style={({ pressed }) => [styles.textBtn, ...pressableWebStyles(pressed, { pressedOpacity: 0.85 })]}
                   >
-                    <Text style={{ color: u.is_active ? '#FF6B7A' : '#00D4AD', fontWeight: '800' }}>
+                    <Text style={{ color: u.is_active ? '#FF6B7A' : '#335F90', fontWeight: '800' }}>
                       {u.is_active ? 'Deactivate' : 'Activate'}
                     </Text>
                   </Pressable>
@@ -320,8 +321,8 @@ export default function BusinessUnitsScreen() {
             <View style={[styles.sheetHandle, { backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : colors.border }]} />
 
             <View style={styles.sheetHeaderGroup}>
-               <LinearGradient colors={isDark ? ['rgba(14,165,233,0.18)', 'rgba(0,212,173,0.06)'] : ['rgba(14,165,233,0.1)', 'transparent']} style={styles.sheetIconWrap}>
-                 <Building size={18} color="#0EA5E9" />
+               <LinearGradient colors={isDark ? ['rgba(14,165,233,0.18)', 'rgba(51, 95, 144, 0.06)'] : ['rgba(14,165,233,0.1)', 'transparent']} style={styles.sheetIconWrap}>
+                 <Building size={18} color={brandColors.blue} />
                </LinearGradient>
                <View style={{ flex: 1, marginLeft: 14 }}>
                  <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
@@ -374,7 +375,7 @@ export default function BusinessUnitsScreen() {
                         active && styles.planChipOn,
                         {
                           borderColor: active
-                            ? '#0EA5E9'
+                            ? brandColors.blue
                             : isDark
                               ? 'rgba(255,255,255,0.1)'
                               : colors.border,
@@ -393,7 +394,7 @@ export default function BusinessUnitsScreen() {
                         style={{
                           fontSize: 12,
                           fontWeight: '700',
-                          color: active ? '#0EA5E9' : colors.textSecondary,
+                          color: active ? brandColors.blue : colors.textSecondary,
                         }}
                       >
                         {p.label}
@@ -427,7 +428,7 @@ export default function BusinessUnitsScreen() {
                 ]}
               >
                 <LinearGradient
-                  colors={['#0D9488', '#0EA5E9']}
+                  colors={[brandColors.blue, brandColors.blue]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                   style={[styles.saveBtn, saving && { opacity: 0.6 }]}
@@ -510,7 +511,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
     maxHeight: '92%',
-    shadowColor: '#0EA5E9',
+    shadowColor: brandColors.blue,
     shadowOffset: { width: 0, height: -8 },
     shadowOpacity: 0.35,
     shadowRadius: 24,

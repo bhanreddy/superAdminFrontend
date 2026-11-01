@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   View,
@@ -43,7 +44,7 @@ const APP_LABELS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<FestivalPoster['status'], string> = {
-  live: '#00D4AD',
+  live: '#335F90',
   upcoming: '#FFB020',
   expired: '#8A8A98',
   disabled: '#FF6B7A',
@@ -221,7 +222,7 @@ export default function FestivalPostersScreen() {
         <SectionTitle title="All posters" />
 
         {loading ? (
-          <ActivityIndicator color="#7C6FFF" style={{ marginTop: 32 }} />
+          <ActivityIndicator color={brandColors.violet} style={{ marginTop: 32 }} />
         ) : rows.length === 0 ? (
           <GlassCard>
             <Text style={{ color: colors.textSecondary, textAlign: 'center', paddingVertical: 12 }}>
@@ -261,7 +262,7 @@ export default function FestivalPostersScreen() {
                     hitSlop={8}
                     style={({ pressed }) => pressableWebStyles(pressed, {})}
                   >
-                    <Power size={18} color={p.is_active ? '#00D4AD' : '#8A8A98'} strokeWidth={2.2} />
+                    <Power size={18} color={p.is_active ? '#335F90' : '#8A8A98'} strokeWidth={2.2} />
                   </Pressable>
                   <Pressable accessibilityLabel="Delete record" accessibilityRole="button"
                     onPress={safePressHandler(() => remove(p))}
@@ -279,7 +280,7 @@ export default function FestivalPostersScreen() {
 
       <Modal visible={formOpen} transparent animationType="fade" onRequestClose={() => setFormOpen(false)}>
         <View style={st.modalBackdrop}>
-          <View style={[st.modalCard, { backgroundColor: isDark ? '#17171F' : '#FFFFFF' }]}>
+          <View style={[st.modalCard, { backgroundColor: isDark ? experienceColors.dark.surface : brandColors.white }]}>
             <ScrollView showsVerticalScrollIndicator={false}>
               <Text style={[st.modalTitle, { color: colors.textPrimary }]}>New Festival Poster</Text>
 
@@ -349,12 +350,12 @@ export default function FestivalPostersScreen() {
                         st.chip,
                         {
                           backgroundColor: on ? 'rgba(124,111,255,0.18)' : 'transparent',
-                          borderColor: on ? '#7C6FFF' : isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)',
+                          borderColor: on ? brandColors.violet : isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)',
                         },
                         ...pressableWebStyles(pressed, {}),
                       ]}
                     >
-                      <Text style={{ color: on ? '#7C6FFF' : colors.textSecondary, fontSize: 13, fontWeight: '600' }}>
+                      <Text style={{ color: on ? brandColors.violet : colors.textSecondary, fontSize: 13, fontWeight: '600' }}>
                         {APP_LABELS[app]}
                       </Text>
                     </Pressable>

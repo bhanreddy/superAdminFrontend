@@ -215,12 +215,14 @@ function fixture(width = 390, platform = 'android', role = 'QA', config = {}) {
       role,
     },
     can_manage: !!config.canManage,
-    channels: [channel],
-    direct_messages: [],
+    channels: [channel, ...(config.extraChannels || [])],
+    direct_messages: config.directMessages || [],
     unread_notifications: 0,
     preferences: { mode: 'mentions', push_enabled: false },
   };
+  const memberships = [], downloads = [];
   const api = {
+    membership: async (id, userId) => { memberships.push({ id, userId }); context.channels = context.channels.map(c => c.id === id ? { ...c, joined: true } : c); },
     bootstrap: async () => {
       if (denied)
         throw {
@@ -234,8 +236,8 @@ function fixture(width = 390, platform = 'android', role = 'QA', config = {}) {
     history: async (_id, options = {}) => ({
       messages: options.parent
         ? [baseMessage(2, { parent_id: 'm1', body: 'Thread reply' })]
-        : Array.from({ length: config.messageCount || 1 }, (_, index) =>
-            baseMessage(index + 1, { reply_count: index === 0 ? 1 : 0 }),
+        : config.messages || Array.from({ length: config.messageCount || 1 }, (_, index) =>
+            baseMessage(index + 1, { reply_count: index === 0 ? 1 : 0, conversation_id: _id }),
           ),
       has_more: false,
       last_sequence: 2,
@@ -292,7 +294,7 @@ function fixture(width = 390, platform = 'android', role = 'QA', config = {}) {
       },
     ),
     StyleSheet: { create: (x) => x },
-    Platform: { OS: platform },
+    Platform: { OS: platform, select: options => options[platform] ?? options.default },
     AppState: {
       addEventListener: (_type, fn) => {
         events.foreground = fn;
@@ -312,7 +314,7 @@ function fixture(width = 390, platform = 'android', role = 'QA', config = {}) {
                   config.metrics.rows = (config.metrics.rows || 0) + 1;
                 if (component.name === 'ConnectMessageBody')
                   config.metrics.bodies = (config.metrics.bodies || 0) + 1;
-                return component(props);
+                return typeof component === 'function' ? component(props) : React.createElement(component, props);
               }, compare),
           },
         }
@@ -331,7 +333,7 @@ function fixture(width = 390, platform = 'android', role = 'QA', config = {}) {
     },
     [path.join(frontend, 'src/services/connect/files.ts')]: {
       pickConnectFile: async () => pickedForm,
-      downloadConnectFile: async () => {},
+      downloadConnectFile: async file => { downloads.push(file); },
     },
     [apiPath]: { ...core, connectApi: api },
     [realtimePath]: {
@@ -355,6 +357,7 @@ function fixture(width = 390, platform = 'android', role = 'QA', config = {}) {
     deny: (value) => (denied = value),
     pick: (form) => (pickedForm = form),
     uploads,
+    memberships, downloads,
   };
 }
 const flush = () => new Promise((r) => setImmediate(r));
@@ -638,7 +641,7 @@ test('Connect fills the app area and returning to the console restores its navig
     'react-native': {
       View: 'View',
       Pressable: 'Pressable',
-      Platform: { OS: 'android' },
+      Platform: { OS: 'android', select: options => options.android ?? options.default },
       StyleSheet: { create: (x) => x },
       useWindowDimensions: () => ({ width: 1280 }),
     },
@@ -987,7 +990,7 @@ test('mobile editor keeps its input mounted, grows within bounds, and exposes fo
     assert.equal(pressable(screen.root, 'Bold text'), undefined);
     act(() => pressable(screen.root, 'Formatting options').props.onPress());
     const bold = pressable(screen.root, 'Bold text');
-    assert.ok(flatten(bold.props.style({ pressed: false })).minHeight >= 44);
+    assert.ok(flatten(typeof bold.props.style === 'function' ? bold.props.style({ pressed: false }) : bold.props.style).minHeight >= 44);
     assert.ok(
       flatten(pressable(screen.root, 'Send message').props.style).height >= 44,
     );
@@ -1098,5 +1101,128 @@ test('web multiline input remeasures both growth and shrinkage without remountin
     if (screen) act(() => screen.unmount());
     if (previousDocument === undefined) delete global.document;
     else global.document = previousDocument;
+  }
+});
+
+test('conversation filtering stays local, unread filtering preserves the active message history and draft', async () => {
+  const f = fixture(1280, 'ios', 'QA', { extraChannels: [{ id: 'build', name: 'product-build', joined: true, unread_count: 0, visibility: 'public' }], metrics: {} });
+  let screen;
+  try {
+    await act(async () => { screen = create(React.createElement(f.Screen)); await flush(); });
+    const input = screen.root.findByProps({ accessibilityLabel: 'Message composer' });
+    act(() => input.props.onChangeText('Do not lose this draft'));
+    act(() => screen.root.findByProps({ accessibilityLabel: 'Filter conversations' }).props.onChangeText('build'));
+    assert.ok(pressable(screen.root, 'Open product-build'));
+    assert.equal(pressable(screen.root, 'Open general, 1 unread'), undefined);
+    assert.match(textOf(screen.root), /Message 1/);
+    act(() => pressable(screen.root, 'Clear conversation filter').props.onPress());
+    act(() => screen.root.findByProps({ accessibilityLabel: 'Unread conversations', accessibilityRole: 'tab' }).props.onPress());
+    assert.equal(pressable(screen.root, 'Open product-build'), undefined);
+    assert.ok(pressable(screen.root, 'Open general, 1 unread'));
+    assert.equal(screen.root.findByProps({ accessibilityLabel: 'Message composer' }), input);
+    assert.equal(input.props.value, 'Do not lose this draft');
+  } finally { if (screen) act(() => screen.unmount()); }
+});
+
+test('Ctrl K opens the quick switcher, filters authorized joined conversations, and Enter selects a result', async () => {
+  const previousDocument = global.document;
+  const handlers = new Map();
+  global.document = { visibilityState: 'visible', addEventListener: (type, fn) => handlers.set(type, fn), removeEventListener: (type, fn) => { if (handlers.get(type) === fn) handlers.delete(type); } };
+  const f = fixture(1280, 'web', 'QA', { extraChannels: [{ id: 'launch', name: 'product-launch', joined: true, unread_count: 0, visibility: 'public' }, { id: 'discover', name: 'discover-me', joined: false, visibility: 'public' }] });
+  let screen;
+  try {
+    await act(async () => { screen = create(React.createElement(f.Screen)); await flush(); });
+    let prevented = 0;
+    act(() => handlers.get('keydown')({ ctrlKey: true, key: 'k', preventDefault: () => prevented++ }));
+    assert.equal(prevented, 1);
+    assert.equal(pressable(screen.root, 'Join discover-me'), undefined);
+    const finder = screen.root.findByProps({ accessibilityLabel: 'Jump to conversation' });
+    act(() => finder.props.onChangeText('launch'));
+    assert.ok(pressable(screen.root, 'Go to product-launch'));
+    await act(async () => { finder.props.onSubmitEditing(); await flush(); });
+    assert.equal(screen.root.findByProps({ accessibilityLabel: 'Open product-launch' }).props.accessibilityState.selected, true);
+    assert.equal(screen.root.findAllByProps({ accessibilityLabel: 'Jump to conversation' }).length, 0);
+  } finally { if (screen) act(() => screen.unmount()); global.document = previousDocument; }
+  assert.equal(handlers.has('keydown'), false);
+});
+
+test('the channel browser joins an available channel for the current employee without exposing channel creation', async () => {
+  const f = fixture(1280, 'ios', 'QA', { extraChannels: [{ id: 'available', name: 'school-operations', joined: false, unread_count: 0, visibility: 'public', purpose: 'School launches' }] });
+  let screen;
+  try {
+    await act(async () => { screen = create(React.createElement(f.Screen)); await flush(); });
+    act(() => pressable(screen.root, 'Browse channels').props.onPress());
+    assert.equal(pressable(screen.root, 'Create a channel'), undefined);
+    assert.equal(pressable(screen.root, 'Open school-operations'), undefined);
+    await act(async () => { pressable(screen.root, 'Join school-operations').props.onPress(); await flush(); });
+    assert.deepEqual(f.memberships, [{ id: 'available', userId: 'employee-a' }]);
+    assert.equal(pressable(screen.root, 'Open school-operations').props.accessibilityState.selected, true);
+  } finally { if (screen) act(() => screen.unmount()); }
+});
+
+test('the Files tab keeps the composer mounted and its draft intact, downloads real attachments, and returns to the source message', async () => {
+  const file = { id: 'file-1', filename: 'release-notes.pdf', byte_size: 8000, mime: 'application/pdf' };
+  const f = fixture(1280, 'ios', 'QA', { messages: [baseMessage(1, { attachments: [file] }), baseMessage(2, { deleted_at: '2026-11-01T00:00:00Z', attachments: [{ ...file, id: 'removed-file', filename: 'removed.pdf' }] })] });
+  let screen;
+  try {
+    await act(async () => { screen = create(React.createElement(f.Screen)); await flush(); });
+    const input = screen.root.findByProps({ accessibilityLabel: 'Message composer' });
+    act(() => input.props.onChangeText('Draft before browsing files'));
+    act(() => screen.root.findByProps({ accessibilityLabel: 'Files', accessibilityRole: 'tab' }).props.onPress());
+    assert.match(textOf(screen.root), /Shared files/);
+    assert.equal(pressable(screen.root, 'View message for removed.pdf'), undefined);
+    assert.equal(screen.root.findByProps({ accessibilityLabel: 'Message composer' }), input);
+    assert.equal(input.props.value, 'Draft before browsing files');
+    const download = screen.root.findAllByType('Pressable').filter(node => node.props.accessibilityLabel === 'Download release-notes.pdf').pop();
+    await act(async () => { download.props.onPress(); await flush(); });
+    assert.deepEqual(f.downloads, [file]);
+    await act(async () => { pressable(screen.root, 'View message for release-notes.pdf').props.onPress(); await flush(); });
+    assert.equal(screen.root.findByProps({ accessibilityLabel: 'Messages', accessibilityRole: 'tab' }).props.accessibilityState.selected, true);
+    assert.equal(input.props.value, 'Draft before browsing files');
+  } finally { if (screen) act(() => screen.unmount()); }
+});
+
+test('opening a thread isolates its reply and attachment from the channel draft and restores them on return', async () => {
+  const f = fixture(1280);
+  const form = { fixture: 'channel-file' };
+  f.pick(form);
+  let screen;
+  try {
+    await act(async () => { screen = create(React.createElement(f.Screen)); await flush(); });
+    act(() => screen.root.findByProps({ accessibilityLabel: 'Message composer' }).props.onChangeText('Unsent channel update'));
+    await act(async () => { pressable(screen.root, 'Attach a file').props.onPress(); await flush(); });
+    assert.ok(pressable(screen.root, 'Remove file'));
+    await act(async () => { pressable(screen.root, '1 reply').props.onPress(); await flush(); });
+    const reply = screen.root.findByProps({ accessibilityLabel: 'Reply to thread' });
+    assert.equal(reply.props.value, '');
+    assert.equal(pressable(screen.root, 'Remove file'), undefined, 'channel files must not be attached to a thread reply');
+    act(() => reply.props.onChangeText('Separate thread reply'));
+    act(() => pressable(screen.root, 'Close thread').props.onPress());
+    assert.equal(screen.root.findByProps({ accessibilityLabel: 'Message composer' }).props.value, 'Unsent channel update');
+    assert.ok(pressable(screen.root, 'Remove file'));
+  } finally { if (screen) act(() => screen.unmount()); }
+});
+
+test('a channel send finishing behind an open thread does not restore a duplicate draft or file', async () => {
+  for (const fail of [false, true]) {
+    let finish;
+    const gate = new Promise(resolve => { finish = resolve; });
+    const f = fixture(1280, 'android', 'QA', { sendGate: gate });
+    f.fail(fail);
+    f.pick({ fixture: 'submitted-file' });
+    let screen;
+    try {
+      await act(async () => { screen = create(React.createElement(f.Screen)); await flush(); });
+      act(() => screen.root.findByProps({ accessibilityLabel: 'Message composer' }).props.onChangeText('Submitted channel update'));
+      await act(async () => { pressable(screen.root, 'Attach a file').props.onPress(); await flush(); });
+      await act(async () => { pressable(screen.root, 'Send message').props.onPress(); await flush(); });
+      await act(async () => { pressable(screen.root, '1 reply').props.onPress(); await flush(); });
+      await act(async () => { finish(); await flush(); });
+      act(() => pressable(screen.root, 'Close thread').props.onPress());
+      assert.equal(screen.root.findByProps({ accessibilityLabel: 'Message composer' }).props.value, '');
+      assert.equal(pressable(screen.root, 'Remove file'), undefined);
+      assert.equal(f.sent.length, 1);
+      if (fail) assert.ok(pressable(screen.root, 'Retry failed message'));
+    } finally { if (screen) act(() => screen.unmount()); }
   }
 });

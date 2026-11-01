@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../../src/constants/experienceColors';
 import type { Animated as NativeAnimated } from 'react-native';
 import React, { useState, useEffect, useRef } from 'react';
 import {
@@ -52,11 +53,11 @@ const TEMPLATE_EXAMPLE = [
 
 const COLUMN_GROUPS = [
   {
-    label: 'Required', color: '#EF4444', rgb: '239,68,68',
+    label: 'Required', color: brandColors.red, rgb: '239,68,68',
     columns: 'First Name, Admission Number, Admission Date, Class, Section, Gender, Academic Year'
   },
   {
-    label: 'Login', color: '#8B5CF6', rgb: '139,92,246',
+    label: 'Login', color: brandColors.violet, rgb: '139,92,246',
     columns: 'Email, Phone, Password'
   },
   {
@@ -64,7 +65,7 @@ const COLUMN_GROUPS = [
     columns: 'Last Name (optional), Middle Name, PEN Number, APAR Number, Village, Date of Birth, Status, Category, Religion, Blood Group'
   },
   {
-    label: 'Parent', color: '#10B981', rgb: '16,185,129',
+    label: 'Parent', color: brandColors.blue, rgb: '16,185,129',
     columns: 'Father First Name, Father Last Name, Father Phone, Father Occupation, Mother First Name, Mother Last Name, Mother Phone, Mother Occupation'
   },
 ];
@@ -132,9 +133,9 @@ function SchoolPicker({ schools, selectedId, onSelect, isDark }: SchoolPickerPro
 
   const triggerBg = isDark ? 'rgba(255,255,255,0.06)' : '#F4F5FC';
   const triggerBorder = open
-    ? '#7C6FFF'
+    ? brandColors.violet
     : (isDark ? 'rgba(124,111,255,0.28)' : 'rgba(124,111,255,0.28)');
-  const sheetBg = isDark ? '#1B1D2E' : '#FFFFFF';
+  const sheetBg = isDark ? experienceColors.dark.surface : brandColors.white;
   const sheetBorder = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)';
   const hoverBg = isDark ? 'rgba(124,111,255,0.1)' : 'rgba(124,111,255,0.07)';
 
@@ -153,13 +154,13 @@ function SchoolPicker({ schools, selectedId, onSelect, isDark }: SchoolPickerPro
       >
         <School2
           size={17}
-          color={selected ? '#7C6FFF' : (isDark ? 'rgba(255,255,255,0.28)' : 'rgba(0,0,0,0.25)')}
+          color={selected ? brandColors.violet : (isDark ? 'rgba(255,255,255,0.28)' : 'rgba(0,0,0,0.25)')}
         />
         <Text
           numberOfLines={1}
           style={[styles.pickerTriggerText, {
             color: selected
-              ? (isDark ? '#FFFFFF' : '#12142A')
+              ? (isDark ? brandColors.violetBright : brandColors.violet)
               : (isDark ? 'rgba(255,255,255,0.32)' : 'rgba(0,0,0,0.32)'),
           }]}
         >
@@ -212,16 +213,16 @@ function SchoolPicker({ schools, selectedId, onSelect, isDark }: SchoolPickerPro
                   >
                     <View style={[styles.sheetItemDot, {
                       backgroundColor: active
-                        ? '#7C6FFF'
+                        ? brandColors.violet
                         : (isDark ? 'rgba(255,255,255,0.14)' : 'rgba(0,0,0,0.12)'),
                     }]} />
                     <Text style={[styles.sheetItemText, {
-                      color: active ? '#7C6FFF' : (isDark ? 'rgba(255,255,255,0.88)' : '#12142A'),
+                      color: active ? brandColors.violet : (isDark ? 'rgba(255,255,255,0.88)' : '#12142A'),
                       fontWeight: active ? '700' : '400',
                     }]}>
                       {item.name}
                     </Text>
-                    {active && <CheckCircle2 size={15} color="#7C6FFF" />}
+                    {active && <CheckCircle2 size={15} color={brandColors.violet} />}
                   </Pressable>
                 );
               }}
@@ -432,7 +433,7 @@ export default function ImportStudentsScreen() {
         { opacity: heroAnim, transform: [{ translateY: heroAnim.interpolate({ inputRange: [0, 1], outputRange: [14, 0] }) }] },
       ]}>
         <LinearGradient
-          colors={isDark ? ['#261970', '#162460', '#0D0F1A'] : ['#7C6FFF', '#6080FF', '#9DBDFF']}
+          colors={isDark ? ['#261970', '#162460', '#0D0F1A'] : [brandColors.violet, '#6080FF', '#9DBDFF']}
           start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
           style={styles.heroBg}
         >
@@ -470,7 +471,7 @@ export default function ImportStudentsScreen() {
         <Animated.View style={entry(card1Anim)}>
           <View style={[styles.card, { backgroundColor: cardBg, borderColor: cardBorder }, cardShadow]}>
             <View style={styles.stepRow}>
-              <StepBadge step={1} color="#7C6FFF" />
+              <StepBadge step={1} color={brandColors.violet} />
               <View style={{ flex: 1 }}>
                 <Text style={[styles.stepMeta, { color: sub }]}>STEP 1</Text>
                 <Text style={[styles.stepTitle, { color: heading }]}>Select Target School</Text>
@@ -478,7 +479,7 @@ export default function ImportStudentsScreen() {
               <View style={[styles.stepIconCircle, {
                 backgroundColor: isDark ? 'rgba(124,111,255,0.12)' : 'rgba(124,111,255,0.09)',
               }]}>
-                <School2 size={16} color="#7C6FFF" />
+                <School2 size={16} color={brandColors.violet} />
               </View>
             </View>
 
@@ -494,7 +495,7 @@ export default function ImportStudentsScreen() {
                 backgroundColor: isDark ? 'rgba(124,111,255,0.1)' : 'rgba(124,111,255,0.07)',
                 borderColor: isDark ? 'rgba(124,111,255,0.28)' : 'rgba(124,111,255,0.22)',
               }]}>
-                <CheckCircle2 size={13} color="#7C6FFF" />
+                <CheckCircle2 size={13} color={brandColors.violet} />
                 <Text style={styles.confirmChipText}>
                   {schools.find(s => s.id === selectedSchoolId)?.name ?? 'School selected'}
                 </Text>
@@ -507,7 +508,7 @@ export default function ImportStudentsScreen() {
         <Animated.View style={entry(card2Anim)}>
           <View style={[styles.card, { backgroundColor: cardBg, borderColor: cardBorder }, cardShadow]}>
             <View style={styles.stepRow}>
-              <StepBadge step={2} color="#5B8CFF" />
+              <StepBadge step={2} color={brandColors.red} />
               <View style={{ flex: 1 }}>
                 <Text style={[styles.stepMeta, { color: sub }]}>STEP 2</Text>
                 <Text style={[styles.stepTitle, { color: heading }]}>Prepare & Upload File</Text>
@@ -515,7 +516,7 @@ export default function ImportStudentsScreen() {
               <View style={[styles.stepIconCircle, {
                 backgroundColor: isDark ? 'rgba(91,140,255,0.12)' : 'rgba(91,140,255,0.09)',
               }]}>
-                <Upload size={16} color="#5B8CFF" />
+                <Upload size={16} color={brandColors.red} />
               </View>
             </View>
 
@@ -532,7 +533,7 @@ export default function ImportStudentsScreen() {
                 },
               ]}
             >
-              <LinearGradient colors={['#5B8CFF', '#7C6FFF']} style={styles.templateIconBg}>
+              <LinearGradient colors={[brandColors.red, brandColors.violet]} style={styles.templateIconBg}>
                 <Download size={14} color="#FFFFFF" />
               </LinearGradient>
               <View style={{ flex: 1 }}>
@@ -555,10 +556,10 @@ export default function ImportStudentsScreen() {
                 styles.dropZone,
                 {
                   borderColor: file
-                    ? (isDark ? 'rgba(16,185,129,0.45)' : 'rgba(16,185,129,0.42)')
+                    ? (isDark ? 'rgba(51, 95, 144, 0.45)' : 'rgba(51, 95, 144, 0.42)')
                     : (isDark ? 'rgba(91,140,255,0.28)' : 'rgba(91,140,255,0.3)'),
                   backgroundColor: file
-                    ? (isDark ? 'rgba(16,185,129,0.055)' : 'rgba(16,185,129,0.04)')
+                    ? (isDark ? 'rgba(51, 95, 144, 0.055)' : 'rgba(51, 95, 144, 0.04)')
                     : (isDark ? 'rgba(91,140,255,0.04)' : 'rgba(91,140,255,0.03)'),
                   transform: [{ scale: pressed ? 0.985 : 1 }],
                   opacity: pressed ? 0.82 : 1,
@@ -567,17 +568,17 @@ export default function ImportStudentsScreen() {
             >
               {file ? (
                 <View style={styles.filePresent}>
-                  <LinearGradient colors={['#10B981', '#059669']} style={styles.fileIconBg}>
+                  <LinearGradient colors={[brandColors.blue, brandColors.blue]} style={styles.fileIconBg}>
                     <FileCheck size={24} color="#FFFFFF" />
                   </LinearGradient>
                   <Text style={[styles.fileName, { color: heading }]} numberOfLines={1}>{file.name}</Text>
                   <View style={[styles.fileSizePill, {
-                    backgroundColor: isDark ? 'rgba(16,185,129,0.16)' : 'rgba(16,185,129,0.1)',
+                    backgroundColor: isDark ? 'rgba(51, 95, 144, 0.16)' : 'rgba(51, 95, 144, 0.1)',
                   }]}>
                     <Text style={styles.fileSizeText}>{((file.size ?? 0) / 1024).toFixed(1)} KB</Text>
                   </View>
                   <Text style={[styles.changeFileTip, {
-                    color: isDark ? 'rgba(91,140,255,0.9)' : '#5B8CFF',
+                    color: isDark ? 'rgba(91,140,255,0.9)' : brandColors.red,
                   }]}>
                     Tap to change
                   </Text>
@@ -590,7 +591,7 @@ export default function ImportStudentsScreen() {
                       : ['rgba(91,140,255,0.13)', 'rgba(124,111,255,0.07)']}
                     style={styles.uploadIconBg}
                   >
-                    <Upload size={26} color={isDark ? '#8AABFF' : '#5B8CFF'} />
+                    <Upload size={26} color={isDark ? '#8AABFF' : brandColors.red} />
                   </LinearGradient>
                   <Text style={[styles.dropTitle, { color: heading }]}>Tap to browse files</Text>
                   <Text style={[styles.dropDesc, { color: sub }]}>Accepts .xlsx · .xls · .csv</Text>
@@ -629,7 +630,7 @@ export default function ImportStudentsScreen() {
               ].map(item => (
                 <View key={item.label} style={styles.checkRow}>
                   {item.done
-                    ? <CheckCircle2 size={16} color="#10B981" />
+                    ? <CheckCircle2 size={16} color={brandColors.blue} />
                     : <View style={[styles.checkEmpty, {
                       borderColor: isDark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.18)',
                     }]} />
@@ -657,7 +658,7 @@ export default function ImportStudentsScreen() {
               })}
             >
               <LinearGradient
-                colors={loading ? ['#555', '#444'] : ['#7C6FFF', '#5B8CFF']}
+                colors={loading ? ['#555', '#444'] : [brandColors.violet, brandColors.red]}
                 start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
                 style={styles.importBtn}
               >
@@ -682,7 +683,7 @@ export default function ImportStudentsScreen() {
               backgroundColor: cardBg,
               borderColor: importResult.errors.length > 0
                 ? (isDark ? 'rgba(245,166,35,0.35)' : 'rgba(245,166,35,0.4)')
-                : (isDark ? 'rgba(16,185,129,0.32)' : 'rgba(16,185,129,0.35)'),
+                : (isDark ? 'rgba(51, 95, 144, 0.32)' : 'rgba(51, 95, 144, 0.35)'),
             }, cardShadow]}>
 
               <LinearGradient
@@ -693,7 +694,7 @@ export default function ImportStudentsScreen() {
               >
                 {importResult.errors.length > 0
                   ? <AlertTriangle size={20} color="#F5A623" />
-                  : <CheckCircle2 size={20} color="#10B981" />}
+                  : <CheckCircle2 size={20} color={brandColors.blue} />}
                 <View style={{ flex: 1, marginLeft: 10 }}>
                   <Text style={[styles.resultTitle, { color: heading }]}>
                     {importResult.success === 0 && importResult.errors.length > 0 ? 'Import Failed' : 'Import Complete'}
@@ -711,9 +712,9 @@ export default function ImportStudentsScreen() {
               {/* Stats */}
               <View style={styles.statsRow}>
                 {[
-                  { n: importResult.success, color: '#10B981', rgb: '16,185,129', label: 'Imported' },
-                  { n: importResult.credentialsCreated, color: '#7C6FFF', rgb: '124,111,255', label: 'Logins' },
-                  { n: importResult.errors.length, color: '#EF4444', rgb: '239,68,68', label: 'Warnings' },
+                  { n: importResult.success, color: brandColors.blue, rgb: '16,185,129', label: 'Imported' },
+                  { n: importResult.credentialsCreated, color: brandColors.violet, rgb: '124,111,255', label: 'Logins' },
+                  { n: importResult.errors.length, color: brandColors.red, rgb: '239,68,68', label: 'Warnings' },
                   { n: importResult.success + importResult.errors.length, color: '#6B7280', rgb: '107,114,128', label: 'Total' },
                 ].map(stat => (
                   <View key={stat.label} style={[styles.statBox, {
@@ -735,7 +736,7 @@ export default function ImportStudentsScreen() {
                       backgroundColor: isDark ? 'rgba(239,68,68,0.07)' : 'rgba(239,68,68,0.05)',
                       borderColor: isDark ? 'rgba(239,68,68,0.2)' : 'rgba(239,68,68,0.14)',
                     }]}>
-                      <XCircle size={13} color="#EF4444" style={{ marginRight: 8, marginTop: 2, flexShrink: 0 }} />
+                      <XCircle size={13} color={brandColors.red} style={{ marginRight: 8, marginTop: 2, flexShrink: 0 }} />
                       <Text style={[styles.errText, {
                         color: isDark ? 'rgba(255,255,255,0.65)' : 'rgba(0,0,0,0.56)',
                       }]}>
@@ -811,7 +812,7 @@ const styles = StyleSheet.create({
     marginTop: 10, paddingVertical: 8, paddingHorizontal: 12,
     borderRadius: 10, borderWidth: 1
   },
-  confirmChipText: { fontSize: 12, color: '#7C6FFF', fontWeight: '600' },
+  confirmChipText: { fontSize: 12, color: brandColors.violet, fontWeight: '600' },
 
   // Template button
   templateBtn: {
@@ -839,7 +840,7 @@ const styles = StyleSheet.create({
   fileIconBg: { width: 56, height: 56, borderRadius: 18, alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
   fileName: { fontSize: 15, fontWeight: '700', textAlign: 'center', letterSpacing: -0.2, maxWidth: 260 },
   fileSizePill: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, marginTop: 6 },
-  fileSizeText: { fontSize: 11, color: '#10B981', fontWeight: '700' },
+  fileSizeText: { fontSize: 11, color: brandColors.blue, fontWeight: '700' },
   changeFileTip: { fontSize: 12, fontWeight: '600', marginTop: 10 },
   fileEmpty: { alignItems: 'center' },
   uploadIconBg: { width: 60, height: 60, borderRadius: 20, alignItems: 'center', justifyContent: 'center', marginBottom: 14 },
@@ -857,7 +858,7 @@ const styles = StyleSheet.create({
   importBtn: {
     height: 54, borderRadius: 16,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#7C6FFF', shadowOffset: { width: 0, height: 6 },
+    shadowColor: brandColors.violet, shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.4, shadowRadius: 14, elevation: 10
   },
   importBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '800', letterSpacing: 0.2 },

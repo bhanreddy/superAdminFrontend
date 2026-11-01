@@ -1,3 +1,4 @@
+import { MotionPressable } from './MotionPressable';
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
@@ -76,7 +77,7 @@ export const KebabMenu = React.memo(function KebabMenu({ items }: KebabMenuProps
 
   return (
     <View style={sty.root}>
-      <Pressable
+      <MotionPressable
         accessibilityRole="button"
         accessibilityLabel="More actions"
         accessibilityState={{ expanded: open }} aria-expanded={open}
@@ -94,7 +95,7 @@ export const KebabMenu = React.memo(function KebabMenu({ items }: KebabMenuProps
         hitSlop={8}
       >
         <MoreVertical size={16} color={colors.textSecondary} />
-      </Pressable>
+      </MotionPressable>
 
       <Modal
         visible={open}
@@ -124,7 +125,7 @@ export const KebabMenu = React.memo(function KebabMenu({ items }: KebabMenuProps
             ] as any}
           >
             {items.map((item, i) => (
-              <Pressable
+              <MotionPressable
                 key={i}
                 accessibilityRole="button"
                 accessibilityLabel={item.label}
@@ -152,7 +153,7 @@ export const KebabMenu = React.memo(function KebabMenu({ items }: KebabMenuProps
                 >
                   {item.label}
                 </Text>
-              </Pressable>
+              </MotionPressable>
             ))}
           </Animated.View>
         )}

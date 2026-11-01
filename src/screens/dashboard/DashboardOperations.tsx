@@ -1,4 +1,8 @@
+import { MotionPressable } from '../../components/ui/MotionPressable';
 import React from 'react';
+import { brandColors } from '../../constants/experienceColors';
+import { useTheme } from '../../contexts/ThemeContext';
+import { StatCard } from '../../components/ui/StatCard';
 import { Pressable, Text, View } from 'react-native';
 
 import {
@@ -42,7 +46,7 @@ export function ReviewQueue({
     value: string,
     route: string,
     index: number,
-    resource: Resource<any>,
+    resource: Resource<any>
   ) {
     return (
       <View
@@ -50,7 +54,7 @@ export function ReviewQueue({
         style={{ borderTopWidth: index ? 1 : 0, borderColor: p.line }}
       >
         <ResourceStatus label={label.toLowerCase()} resource={resource}>
-          <Pressable
+          <MotionPressable
             accessibilityRole="button"
             accessibilityLabel={`${label}, ${value}. ${detail}`}
             onPress={() => onNavigate(route)}
@@ -80,20 +84,20 @@ export function ReviewQueue({
                 {detail}
               </Text>
             </View>
-            <Text style={{ color: p.green, fontWeight: '700', fontSize: 17 }}>
+            <Text style={{ color: p.action, fontWeight: '700', fontSize: 17 }}>
               {value}
             </Text>
             <ChevronRight size={16} color={p.muted} />
-          </Pressable>
+          </MotionPressable>
         </ResourceStatus>
       </View>
     );
   }
   return (
-    <Panel style={{ flex: wide ? 1 : undefined }}>
+    <Panel tone="rose" style={{ flex: wide ? 1 : undefined }}>
       <SectionHeading
-        eyebrow="YOUR NEXT MOVES"
-        title="Needs a closer look"
+        eyebrow="ACTION CENTER"
+        title="Your attention, needed"
         action={
           <View
             style={{
@@ -105,7 +109,7 @@ export function ReviewQueue({
               justifyContent: 'center',
             }}
           >
-            <ArrowUpRight size={17} color={p.green} />
+            <ArrowUpRight size={17} color={p.action} />
           </View>
         }
       />
@@ -117,7 +121,7 @@ export function ReviewQueue({
           : '—',
         '/(app)/console/enquiries',
         0,
-        d.enquiries,
+        d.enquiries
       )}
       {canApprove
         ? queueRow(
@@ -126,7 +130,7 @@ export function ReviewQueue({
             d.expenses.data ? String(d.expenses.data.length) : '—',
             '/(app)/console/expense-approvals',
             1,
-            d.expenses,
+            d.expenses
           )
         : null}
       {canApprove
@@ -138,7 +142,7 @@ export function ReviewQueue({
               : '—',
             '/(app)/console/collection-approvals',
             2,
-            d.analytics,
+            d.analytics
           )
         : null}
       <View
@@ -152,7 +156,7 @@ export function ReviewQueue({
           marginTop: 8,
         }}
       >
-        <Circle size={10} color={p.green} />
+        <Circle size={10} color={p.action} />
         <Text
           style={{
             color: p.muted,
@@ -177,17 +181,14 @@ export function NetworkOverview({
   onNavigate: (route: string) => void;
 }) {
   const p = useDashboardPalette();
+  const { isDark } = useTheme();
   const active = resource.data?.active_schools;
   return (
     <ResourceStatus label="network overview" resource={resource}>
-      <View
-        style={[
-          st.network,
-          { borderColor: p.line, backgroundColor: p.surface },
-        ]}
-      >
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
         {[
           {
+            accent: isDark ? brandColors.blueBright : brandColors.blue,
             label: 'Partner schools',
             value: resource.data?.total_schools,
             detail: 'Across your network',
@@ -195,6 +196,7 @@ export function NetworkOverview({
             route: '/(app)/schools',
           },
           {
+            accent: isDark ? brandColors.amberBright : brandColors.amber,
             label: 'Active schools',
             value: active,
             detail: 'Currently enabled',
@@ -202,6 +204,7 @@ export function NetworkOverview({
             route: '/(app)/schools',
           },
           {
+            accent: isDark ? brandColors.redBright : brandColors.rose,
             label: 'Students',
             value: resource.data?.total_students,
             detail: 'Registered learners',
@@ -209,52 +212,31 @@ export function NetworkOverview({
             route: '/(app)/students',
           },
           {
+            accent: isDark ? brandColors.violetBright : brandColors.violet,
             label: 'Staff',
             value: resource.data?.total_staff,
             detail: 'Across partner schools',
             Icon: BookOpen,
             route: '/(app)/schools',
           },
-        ].map(({ label, value, detail, Icon, route }, i) => (
-          <Pressable
+        ].map(({ label, value, detail, Icon, route, accent }) => (
+          <View
             key={label}
-            accessibilityRole="button"
-            accessibilityLabel={`${label}: ${number(value).toLocaleString('en-IN')}. ${detail}`}
-            onPress={() => onNavigate(route)}
-            style={({ hovered }: any) => [
-              st.networkCell,
-              {
-                width: phone ? '50%' : '25%',
-                borderRightWidth: phone ? (i % 2 === 0 ? 1 : 0) : i < 3 ? 1 : 0,
-                borderTopWidth: phone && i > 1 ? 1 : 0,
-                borderColor: p.line,
-                backgroundColor: hovered ? p.inset : 'transparent',
-              },
-            ]}
+            style={{
+              flexBasis: phone ? '44%' : '21%',
+              flexGrow: 1,
+              minWidth: 0,
+            }}
           >
-            <View
-              style={{
-                flexDirection: 'row',
-                gap: 8,
-                alignItems: 'center',
-              }}
-            >
-              <Icon size={15} color={p.green} />
-              <Text style={{ color: p.muted, fontSize: 11 }}>{label}</Text>
-            </View>
-            <Text
-              style={{
-                color: p.ink,
-                fontSize: 31,
-                letterSpacing: -1,
-                fontWeight: '500',
-                marginVertical: 10,
-              }}
-            >
-              {number(value).toLocaleString('en-IN')}
-            </Text>
-            <Text style={{ color: p.muted, fontSize: 10 }}>{detail}</Text>
-          </Pressable>
+            <StatCard
+              title={label}
+              value={number(value).toLocaleString('en-IN')}
+              description={detail}
+              accentColor={accent}
+              icon={<Icon size={20} color={accent} />}
+              onPress={() => onNavigate(route)}
+            />
+          </View>
         ))}
       </View>
     </ResourceStatus>
@@ -273,8 +255,8 @@ export function DashboardLaunchpad({
 }) {
   const p = useDashboardPalette();
   return (
-    <Panel style={{ flex: wide ? 1 : undefined }}>
-      <SectionHeading eyebrow="A LITTLE LESS ADMIN" title="Straight to work" />
+    <Panel tone="lavender" style={{ flex: wide ? 1 : undefined }}>
+      <SectionHeading eyebrow="QUICK ACCESS" title="Make your next move" />
       <View style={{ gap: 3 }}>
         {[
           [
@@ -302,7 +284,7 @@ export function DashboardLaunchpad({
             Layers,
           ],
         ].map(([label, detail, route, Icon]: any, i) => (
-          <Pressable
+          <MotionPressable
             key={label}
             accessibilityRole="button"
             accessibilityLabel={label}
@@ -317,7 +299,7 @@ export function DashboardLaunchpad({
             ]}
           >
             <View style={[st.launchIcon, { backgroundColor: p.inset }]}>
-              <Icon size={18} color={p.green} />
+              <Icon size={18} color={p.action} />
             </View>
             <View style={{ flex: 1, gap: 5 }}>
               <Text
@@ -340,7 +322,7 @@ export function DashboardLaunchpad({
               </Text>
             </View>
             <ArrowUpRight size={15} color={p.muted} />
-          </Pressable>
+          </MotionPressable>
         ))}
       </View>
     </Panel>

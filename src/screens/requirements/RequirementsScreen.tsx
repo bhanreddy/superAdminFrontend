@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
@@ -59,16 +60,16 @@ interface SchoolItem {
 const STATUS_BADGE: Record<string, { label: string; color: string; bg: string }> = {
   OPEN: { label: 'Open Submitted', color: '#38BDF8', bg: 'rgba(56, 189, 248, 0.12)' },
   UNDER_REVIEW: { label: 'Under Review', color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.12)' },
-  IN_DEVELOPMENT: { label: 'In Dev / Building', color: '#6366F1', bg: 'rgba(99, 102, 241, 0.12)' },
-  DEPLOYED: { label: 'Deployed to Live', color: '#10B981', bg: 'rgba(16, 185, 129, 0.12)' },
-  REJECTED: { label: 'Not Feasible / Declined', color: '#EF4444', bg: 'rgba(239, 68, 68, 0.12)' },
+  IN_DEVELOPMENT: { label: 'In Dev / Building', color: brandColors.violet, bg: 'rgba(99, 102, 241, 0.12)' },
+  DEPLOYED: { label: 'Deployed to Live', color: brandColors.blue, bg: 'rgba(51, 95, 144, 0.12)' },
+  REJECTED: { label: 'Not Feasible / Declined', color: brandColors.red, bg: 'rgba(239, 68, 68, 0.12)' },
 };
 
 const PRIORITY_BADGE: Record<string, { label: string; color: string }> = {
-  LOW: { label: 'Low', color: '#10B981' },
-  MEDIUM: { label: 'Medium', color: '#0284C7' },
+  LOW: { label: 'Low', color: brandColors.blue },
+  MEDIUM: { label: 'Medium', color: brandColors.blue },
   HIGH: { label: 'High', color: '#F59E0B' },
-  CRITICAL: { label: 'Critical', color: '#EF4444' },
+  CRITICAL: { label: 'Critical', color: brandColors.red },
 };
 
 export default function RequirementsScreen() {
@@ -226,7 +227,7 @@ export default function RequirementsScreen() {
 
             {can(PERMISSIONS.REQUIREMENTS_CREATE) && (
               <Pressable accessibilityRole="button"
-                style={[styles.createBtn, { backgroundColor: '#0284C7' }]}
+                style={[styles.createBtn, { backgroundColor: brandColors.blue }]}
                 onPress={() => setShowCreateModal(true)}
               >
                 <PlusCircle size={16} color="#FFFFFF" />
@@ -352,7 +353,7 @@ export default function RequirementsScreen() {
           {/* Modal: Log New Requirement */}
           <Modal visible={showCreateModal} transparent animationType="fade">
             <View style={styles.modalOverlay}>
-              <View style={[styles.modalCard, { backgroundColor: isDark ? '#161b22' : '#FFFFFF', borderColor: colors.border }]}>
+              <View style={[styles.modalCard, { backgroundColor: isDark ? experienceColors.dark.surface : brandColors.white, borderColor: colors.border }]}>
                 <View style={styles.modalHeader}>
                   <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>Log School Requirement</Text>
                   <Pressable accessibilityLabel="Close dialog" accessibilityRole="button" onPress={() => setShowCreateModal(false)}>
@@ -443,7 +444,7 @@ export default function RequirementsScreen() {
                     <Text style={[styles.cancelBtnText, { color: colors.textSecondary }]}>Cancel</Text>
                   </Pressable>
                   <Pressable accessibilityRole="button"
-                    style={[styles.submitBtn, { backgroundColor: '#0284C7' }]}
+                    style={[styles.submitBtn, { backgroundColor: brandColors.blue }]}
                     onPress={handleCreateRequirement}
                     disabled={submitting}
                   >
@@ -461,7 +462,7 @@ export default function RequirementsScreen() {
           {/* Modal: Update Requirement Status */}
           <Modal visible={showUpdateModal} transparent animationType="fade">
             <View style={styles.modalOverlay}>
-              <View style={[styles.modalCard, { backgroundColor: isDark ? '#161b22' : '#FFFFFF', borderColor: colors.border }]}>
+              <View style={[styles.modalCard, { backgroundColor: isDark ? experienceColors.dark.surface : brandColors.white, borderColor: colors.border }]}>
                 <View style={styles.modalHeader}>
                   <View>
                     <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>Update Requirement</Text>
@@ -501,7 +502,7 @@ export default function RequirementsScreen() {
                         key={f}
                         style={[
                           styles.optionPill,
-                          updateFeasibility === f && { backgroundColor: '#6366F1', borderColor: '#6366F1' },
+                          updateFeasibility === f && { backgroundColor: brandColors.violet, borderColor: brandColors.violet },
                           updateFeasibility !== f && { borderColor: colors.border },
                         ]}
                         onPress={() => setUpdateFeasibility(f)}

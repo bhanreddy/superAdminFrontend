@@ -1,4 +1,7 @@
+import { MotionPressable } from '../../components/ui/MotionPressable';
 import React, { useMemo } from 'react';
+import { brandColors } from '../../constants/experienceColors';
+import { borderRadius } from '../../constants/theme';
 import { Pressable, Text, View } from 'react-native';
 
 import { Picker } from '@react-native-picker/picker';
@@ -39,12 +42,7 @@ export function FinancialPulse({
   const p = useDashboardPalette();
   const financial = resource.data;
   return (
-    <View
-      style={[
-        st.hero,
-        { backgroundColor: p.hero, flex: wide ? 1.7 : undefined },
-      ]}
-    >
+    <Panel tone="honey" style={{ flex: wide ? 1.7 : undefined }}>
       <View
         style={{
           flexDirection: 'row',
@@ -54,26 +52,26 @@ export function FinancialPulse({
           justifyContent: 'space-between',
         }}
       >
-        <Text style={[ds.eyebrow, { color: '#C9DDCA', marginBottom: 0 }]}>
-          FINANCIAL PULSE
+        <Text style={[ds.eyebrow, { color: p.muted, marginBottom: 0 }]}>
+          FINANCIAL OVERVIEW
         </Text>
-        <View style={[st.pill, { borderColor: '#567765' }]}>
+        <View style={[st.pill, { borderColor: p.line }]}>
           <View
             style={{
               width: 6,
               height: 6,
               borderRadius: 3,
-              backgroundColor: p.lime,
+              backgroundColor: p.action,
             }}
           />
           <Text
             style={{
-              color: '#DFEADB',
+              color: p.muted,
               fontSize: 10,
               fontWeight: '600',
             }}
           >
-            NEXSYRUS BOOKS
+            POSTED LEDGER
           </Text>
         </View>
       </View>
@@ -87,7 +85,7 @@ export function FinancialPulse({
         }}
       >
         {PERIODS.map((option) => (
-          <Pressable
+          <MotionPressable
             key={option.value}
             accessibilityRole="button"
             accessibilityState={{ selected: period === option.value }}
@@ -96,35 +94,35 @@ export function FinancialPulse({
             style={{
               minHeight: 44,
               paddingHorizontal: 11,
-              borderRadius: 8,
+              borderRadius: borderRadius.sm,
               justifyContent: 'center',
               backgroundColor:
-                period === option.value ? '#315C46' : 'transparent',
+                period === option.value ? p.inset : 'transparent',
             }}
           >
             <Text
               style={{
                 fontSize: 11,
                 fontWeight: '600',
-                color: period === option.value ? '#F5F9F0' : '#BFD2C0',
+                color: period === option.value ? p.action : p.muted,
               }}
             >
               {option.label}
             </Text>
-          </Pressable>
+          </MotionPressable>
         ))}
       </View>
-      <ResourceStatus resource={resource} label="financial summary" inverse>
-        <Text style={{ color: '#D2E2D0', fontSize: 13 }}>
+      <ResourceStatus resource={resource} label="financial summary">
+        <Text style={{ color: p.muted, fontSize: 13 }}>
           Posted revenue ·{' '}
           {PERIODS.find((o) => o.value === period)?.label.toLowerCase()}
         </Text>
         <Text
           accessibilityLabel={`Posted revenue ${money(financial?.revenue)}`}
           style={{
-            color: p.heroText,
+            color: p.ink,
             fontSize: phone ? 44 : 57,
-            fontWeight: '500',
+            fontWeight: '600',
             letterSpacing: -2,
             marginVertical: 12,
           }}
@@ -133,10 +131,16 @@ export function FinancialPulse({
         >
           {money(financial?.revenue)}
         </Text>
-        <Text style={{ color: '#C6D9C5', fontSize: 12, lineHeight: 19 }}>
+        <Text
+          style={{
+            color: p.muted,
+            fontSize: 12,
+            lineHeight: 19,
+          }}
+        >
           A view of your posted ledger. Billing receipts are shown separately.
         </Text>
-        <View style={[st.heroMetrics, { borderColor: '#466750' }]}>
+        <View style={[st.heroMetrics, { borderColor: p.line }]}>
           {[
             ['Expenses', money(financial?.expenses)],
             ['Net result', money(financial?.net_profit)],
@@ -151,10 +155,10 @@ export function FinancialPulse({
               key={label}
               style={{ flex: 1, minWidth: phone ? 105 : 120, gap: 9 }}
             >
-              <Text style={{ color: '#C6D9C5', fontSize: 11 }}>{label}</Text>
+              <Text style={{ color: p.muted, fontSize: 11 }}>{label}</Text>
               <Text
                 style={{
-                  color: label === 'Net result' ? p.lime : p.heroText,
+                  color: p.ink,
                   fontSize: 21,
                   fontWeight: '600',
                   letterSpacing: -0.5,
@@ -166,24 +170,24 @@ export function FinancialPulse({
           ))}
         </View>
       </ResourceStatus>
-      <Pressable
+      <MotionPressable
         accessibilityRole="button"
         accessibilityLabel="Open financial reports"
         onPress={() => onNavigate('/(app)/books?module=reports')}
-        style={[st.heroLink, { backgroundColor: p.lime }]}
+        style={[st.heroLink, { backgroundColor: p.actionFill }]}
       >
         <Text
           style={{
-            color: '#193B2C',
+            color: brandColors.white,
             fontSize: 12,
             fontWeight: '700',
           }}
         >
           Explore your books
         </Text>
-        <ArrowUpRight size={16} color="#193B2C" />
-      </Pressable>
-    </View>
+        <ArrowUpRight size={16} color={brandColors.white} />
+      </MotionPressable>
+    </Panel>
   );
 }
 export function SpendComposition({
@@ -198,7 +202,7 @@ export function SpendComposition({
   );
   const spendTotal = spend.reduce((n, r) => n + r.amount, 0);
   return (
-    <Panel style={{ flex: 1 }}>
+    <Panel tone="lavender" style={{ flex: 1 }}>
       <SectionHeading
         eyebrow="SPENDING IN FOCUS"
         title="Where this month goes"
@@ -234,7 +238,7 @@ export function SpendComposition({
                       height: 5,
                       borderRadius: 3,
                       width: `${(r.amount / spendTotal) * 100}%`,
-                      backgroundColor: p.green,
+                      backgroundColor: p.action,
                     }}
                   />
                 </View>
@@ -270,7 +274,7 @@ export function BillingContext({
   const p = useDashboardPalette();
   const financial = financialResource.data;
   return (
-    <Panel style={{ flex: 1 }}>
+    <Panel tone="crimson" style={{ flex: 1 }}>
       <SectionHeading
         eyebrow="FINANCE WITH CONTEXT"
         title="Receipts & business units"
@@ -324,7 +328,7 @@ export function BillingContext({
         </View>
       </ResourceStatus>
       {unit !== 'ALL' && financial ? (
-        <Text style={{ color: p.green, fontSize: 13, marginTop: 12 }}>
+        <Text style={{ color: p.action, fontSize: 13, marginTop: 12 }}>
           Selected unit collections:{' '}
           {money(financial.business_unit_collections)}
         </Text>

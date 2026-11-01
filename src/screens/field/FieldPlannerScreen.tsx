@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, TextInput, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -186,8 +187,8 @@ export default function FieldPlannerScreen() {
           <View style={styles.chips}>
             {TIMES.map((slot) => (
               <Pressable accessibilityRole="button" key={slot} onPress={() => setTime(slot)}
-                style={[styles.chip, { borderColor: time === slot ? '#0A84FF' : 'rgba(150,150,160,0.35)' }]}>
-                <Text style={{ color: time === slot ? '#0A84FF' : colors.textSecondary, fontWeight: '700', fontSize: 12 }}>{slot}</Text>
+                style={[styles.chip, { borderColor: time === slot ? brandColors.red : 'rgba(150,150,160,0.35)' }]}>
+                <Text style={{ color: time === slot ? brandColors.red : colors.textSecondary, fontWeight: '700', fontSize: 12 }}>{slot}</Text>
               </Pressable>
             ))}
           </View>
@@ -272,17 +273,17 @@ const styles = StyleSheet.create({
   label: { fontSize: 12, fontWeight: '600', marginTop: 10, marginBottom: 6 },
   searchRow: { flexDirection: 'row', gap: 8, marginTop: 10 },
   input: { flex: 1, borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 12, fontSize: 14 },
-  searchBtn: { width: 46, borderRadius: 12, backgroundColor: '#0A84FF', alignItems: 'center', justifyContent: 'center' },
+  searchBtn: { width: 46, borderRadius: 12, backgroundColor: brandColors.red, alignItems: 'center', justifyContent: 'center' },
   result: { flexDirection: 'row', alignItems: 'center', gap: 10, borderTopWidth: 1, paddingTop: 12, marginTop: 12 },
   name: { fontSize: 14.5, fontWeight: '700' },
   meta: { fontSize: 12, marginTop: 2, lineHeight: 16 },
-  addBtn: { width: 36, height: 36, borderRadius: 10, backgroundColor: '#30D158', alignItems: 'center', justifyContent: 'center' },
+  addBtn: { width: 36, height: 36, borderRadius: 10, backgroundColor: '#335F90', alignItems: 'center', justifyContent: 'center' },
   empty: { padding: 18, marginBottom: 12 },
   stop: { padding: 14, marginBottom: 10 },
   stopTop: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
   index: { fontSize: 16, fontWeight: '800', width: 18 },
   removeBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
-  saveBtn: { backgroundColor: '#0A84FF', padding: 14, borderRadius: 14, alignItems: 'center', marginTop: 14 },
-  primary: { backgroundColor: '#0A84FF', padding: 14, borderRadius: 14, alignItems: 'center', marginTop: 8 },
+  saveBtn: { backgroundColor: brandColors.red, padding: 14, borderRadius: 14, alignItems: 'center', marginTop: 14 },
+  primary: { backgroundColor: brandColors.red, padding: 14, borderRadius: 14, alignItems: 'center', marginTop: 8 },
   primaryText: { color: '#fff', fontWeight: '700' },
 });

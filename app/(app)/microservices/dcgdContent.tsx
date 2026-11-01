@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../../src/constants/experienceColors';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View,
@@ -42,9 +43,9 @@ import type { LucideIcon } from 'lucide-react-native';
 function AttachedBadges({ c, colors }: { c: DcgdContentRow; colors: any }) {
   const items: { label: string; Icon: LucideIcon; color: string }[] = [];
   if (c.link_url) items.push({ label: 'Link', Icon: Link, color: '#3B82F6' });
-  if (c.pdf_url) items.push({ label: 'PDF', Icon: FileText, color: '#EF4444' });
-  if (c.content_body) items.push({ label: 'Text', Icon: Type, color: '#8B5CF6' });
-  if (c.image_url) items.push({ label: 'Image', Icon: ImageIcon, color: '#10B981' });
+  if (c.pdf_url) items.push({ label: 'PDF', Icon: FileText, color: brandColors.red });
+  if (c.content_body) items.push({ label: 'Text', Icon: Type, color: brandColors.violet });
+  if (c.image_url) items.push({ label: 'Image', Icon: ImageIcon, color: brandColors.blue });
   if (items.length === 0) {
     return (
       <View style={styles.badgeRow}>
@@ -380,7 +381,7 @@ export default function DcgdContentManagerScreen() {
               {/* PDF URL */}
               <View style={styles.fieldGroup}>
                 <View style={styles.fieldLabel}>
-                  <FileText size={15} color="#EF4444" />
+                  <FileText size={15} color={brandColors.red} />
                   <Text style={[styles.label, { color: colors.textSecondary, marginBottom: 0, marginLeft: 6 }]}>
                     PDF / DOCUMENT URL
                   </Text>
@@ -399,7 +400,7 @@ export default function DcgdContentManagerScreen() {
               {/* Image URL */}
               <View style={styles.fieldGroup}>
                 <View style={styles.fieldLabel}>
-                  <ImageIcon size={15} color="#10B981" />
+                  <ImageIcon size={15} color={brandColors.blue} />
                   <Text style={[styles.label, { color: colors.textSecondary, marginBottom: 0, marginLeft: 6 }]}>
                     IMAGE URL
                   </Text>
@@ -418,7 +419,7 @@ export default function DcgdContentManagerScreen() {
               {/* Text content */}
               <View style={styles.fieldGroup}>
                 <View style={styles.fieldLabel}>
-                  <Type size={15} color="#8B5CF6" />
+                  <Type size={15} color={brandColors.violet} />
                   <Text style={[styles.label, { color: colors.textSecondary, marginBottom: 0, marginLeft: 6 }]}>
                     TEXT CONTENT
                   </Text>
@@ -449,7 +450,7 @@ export default function DcgdContentManagerScreen() {
               {/* Active toggle */}
               <View style={styles.switchRow}>
                 <Text style={{ color: colors.textPrimary, fontWeight: '700' }}>Active</Text>
-                <Switch value={formActive} onValueChange={setFormActive} />
+                <Switch value={formActive} onValueChange={setFormActive} trackColor={{ false: colors.border, true: colors.primaryFill }} thumbColor={brandColors.white} />
               </View>
 
               <Text style={[styles.hintText, { color: colors.textSecondary }]}>

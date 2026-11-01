@@ -1,3 +1,4 @@
+import { MotionPressable } from './MotionPressable';
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import {
   View,
@@ -109,7 +110,7 @@ export const Drawer = React.memo(function Drawer({
       pointerEvents={visible ? 'auto' : 'none'}
     >
       <Animated.View style={[styles.backdrop, { opacity: backdropOpacity }]}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Dismiss panel" style={StyleSheet.absoluteFill} onPress={onClose} />
+        <MotionPressable accessibilityRole="button" accessibilityLabel="Dismiss panel" style={StyleSheet.absoluteFill} onPress={onClose} />
       </Animated.View>
 
       <Animated.View
@@ -166,7 +167,7 @@ export const Drawer = React.memo(function Drawer({
                 {title}
               </Text>
             </View>
-            <Pressable
+            <MotionPressable
               accessibilityRole="button"
               accessibilityLabel="Close panel"
               onPress={onClose}
@@ -186,7 +187,7 @@ export const Drawer = React.memo(function Drawer({
               hitSlop={8}
             >
               <X size={18} color={colors.textSecondary} />
-            </Pressable>
+            </MotionPressable>
           </View>
         )}
 

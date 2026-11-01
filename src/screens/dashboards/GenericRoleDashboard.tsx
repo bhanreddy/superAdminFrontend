@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -83,8 +84,8 @@ export default function GenericRoleDashboard() {
         label: 'Schools',
         description: 'Open the schools available to your role and assignments.',
         route: '/(app)/schools/',
-        color: '#0A84FF',
-        icon: <School size={22} color="#0A84FF" />,
+        color: brandColors.red,
+        icon: <School size={22} color={brandColors.red} />,
       });
     }
     if (can(PERMISSIONS.CHECKLIST_READ)) {
@@ -93,8 +94,8 @@ export default function GenericRoleDashboard() {
         label: 'Onboarding Checklist',
         description: 'Review launch readiness for schools in your scope.',
         route: '/(app)/checklist',
-        color: '#30D158',
-        icon: <CheckSquare size={22} color="#30D158" />,
+        color: '#335F90',
+        icon: <CheckSquare size={22} color="#335F90" />,
       });
     }
     if (can(PERMISSIONS.REQUIREMENTS_READ)) {

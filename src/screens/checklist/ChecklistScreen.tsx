@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
@@ -53,8 +54,8 @@ const CATEGORY_NAMES: Record<string, string> = {
 const STATUS_ICONS: Record<string, { label: string; color: string; bg: string }> = {
   NOT_STARTED: { label: 'Not Started', color: '#6B7280', bg: 'rgba(107, 114, 128, 0.12)' },
   IN_PROGRESS: { label: 'In Progress', color: '#38BDF8', bg: 'rgba(56, 189, 248, 0.12)' },
-  COMPLETED: { label: 'Completed', color: '#10B981', bg: 'rgba(16, 185, 129, 0.12)' },
-  BLOCKED: { label: 'Blocked', color: '#EF4444', bg: 'rgba(239, 68, 68, 0.12)' },
+  COMPLETED: { label: 'Completed', color: brandColors.blue, bg: 'rgba(51, 95, 144, 0.12)' },
+  BLOCKED: { label: 'Blocked', color: brandColors.red, bg: 'rgba(239, 68, 68, 0.12)' },
   NOT_APPLICABLE: { label: 'N/A', color: '#9CA3AF', bg: 'rgba(156, 163, 175, 0.12)' },
 };
 
@@ -210,9 +211,9 @@ export default function ChecklistScreen() {
           <View style={styles.topHeader}>
             <View>
               <View style={styles.badgeRow}>
-                <View style={[styles.badge, { backgroundColor: 'rgba(16, 185, 129, 0.12)', borderColor: 'rgba(16, 185, 129, 0.3)' }]}>
-                  <CheckSquare size={14} color="#10B981" />
-                  <Text style={[styles.badgeText, { color: '#10B981' }]}>DEPLOYMENT OPERATIONAL READINESS</Text>
+                <View style={[styles.badge, { backgroundColor: 'rgba(51, 95, 144, 0.12)', borderColor: 'rgba(51, 95, 144, 0.3)' }]}>
+                  <CheckSquare size={14} color={brandColors.blue} />
+                  <Text style={[styles.badgeText, { color: brandColors.blue }]}>DEPLOYMENT OPERATIONAL READINESS</Text>
                 </View>
               </View>
               <Text style={[styles.pageTitle, { color: colors.textPrimary }]}>School Onboarding Milestones</Text>
@@ -261,7 +262,7 @@ export default function ChecklistScreen() {
                   {progress.completed} of {progress.total} deployment checkpoints completed
                 </Text>
               </View>
-              <Text style={[styles.progressPercentage, { color: progress.percentage >= 80 ? '#10B981' : '#F59E0B' }]}>
+              <Text style={[styles.progressPercentage, { color: progress.percentage >= 80 ? brandColors.blue : '#F59E0B' }]}>
                 {progress.percentage}%
               </Text>
             </View>
@@ -273,7 +274,7 @@ export default function ChecklistScreen() {
                   styles.fillBar,
                   {
                     width: `${progress.percentage}%`,
-                    backgroundColor: progress.percentage >= 80 ? '#10B981' : '#0284C7',
+                    backgroundColor: progress.percentage >= 80 ? brandColors.blue : brandColors.blue,
                   },
                 ]}
               />
@@ -352,7 +353,7 @@ export default function ChecklistScreen() {
                               )}
                               {isBlocked && item.blocker_reason && (
                                 <View style={styles.blockerAlert}>
-                                  <AlertTriangle size={13} color="#EF4444" />
+                                  <AlertTriangle size={13} color={brandColors.red} />
                                   <Text style={styles.blockerText}>Blocker: {item.blocker_reason}</Text>
                                 </View>
                               )}
@@ -383,7 +384,7 @@ export default function ChecklistScreen() {
           {/* Modal: Edit Item Status */}
           <Modal visible={showEditModal} transparent animationType="fade">
             <View style={styles.modalOverlay}>
-              <View style={[styles.modalCard, { backgroundColor: isDark ? '#161b22' : '#FFFFFF', borderColor: colors.border }]}>
+              <View style={[styles.modalCard, { backgroundColor: isDark ? experienceColors.dark.surface : brandColors.white, borderColor: colors.border }]}>
                 <View style={styles.modalHeader}>
                   <View style={{ flex: 1 }}>
                     <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>Update Milestone</Text>
@@ -418,9 +419,9 @@ export default function ChecklistScreen() {
 
                   {itemStatus === 'BLOCKED' && (
                     <>
-                      <Text style={[styles.formLabel, { color: '#EF4444' }]}>Reason for Blocker *</Text>
+                      <Text style={[styles.formLabel, { color: brandColors.red }]}>Reason for Blocker *</Text>
                       <TextInput
-                        style={[styles.textArea, { color: colors.textPrimary, borderColor: '#EF4444' }]}
+                        style={[styles.textArea, { color: colors.textPrimary, borderColor: brandColors.red }]}
                         placeholder="e.g. Principal has not provided biometric device IP address..."
                         placeholderTextColor={colors.textSecondary}
                         multiline
@@ -585,7 +586,7 @@ const styles = StyleSheet.create({
     gap: 6,
     marginTop: 6,
   },
-  blockerText: { fontSize: 11.5, color: '#EF4444', fontWeight: '600' },
+  blockerText: { fontSize: 11.5, color: brandColors.red, fontWeight: '600' },
   itemNotes: { fontSize: 11, marginTop: 4, fontStyle: 'italic' },
   editBtn: {
     paddingHorizontal: 10,

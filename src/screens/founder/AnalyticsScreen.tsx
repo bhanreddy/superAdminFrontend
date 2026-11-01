@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
@@ -117,7 +118,7 @@ export default function AnalyticsScreen() {
         showsVerticalScrollIndicator={false}
       >
         {loading ? (
-          <ActivityIndicator color="#7C6FFF" style={{ marginTop: 32 }} />
+          <ActivityIndicator color={brandColors.violet} style={{ marginTop: 32 }} />
         ) : (
           <>
             <SectionTitle title="Financial overview (this month)" />
@@ -152,10 +153,10 @@ export default function AnalyticsScreen() {
                   <Text style={[styles.td, { color: colors.textPrimary }]}>
                     {pick(r, ['total_leads', 'leads', 'lead_count', 'enquiries', 'count']).toLocaleString('en-IN')}
                   </Text>
-                  <Text style={[styles.td, { color: '#059669' }]}>
+                  <Text style={[styles.td, { color: brandColors.blue }]}>
                     {pick(r, ['closed_deals', 'deals', 'closed', 'deal_count']).toLocaleString('en-IN')}
                   </Text>
-                  <Text style={[styles.td, { color: '#00D4AD', flex: 1.1 }]} numberOfLines={1}>
+                  <Text style={[styles.td, { color: '#335F90', flex: 1.1 }]} numberOfLines={1}>
                     {founderDb.formatInr(pick(r, ['revenue', 'total_revenue', 'amount', 'value']), 0)}
                   </Text>
                 </View>
@@ -212,5 +213,5 @@ const styles = StyleSheet.create({
   rank: { width: 28, fontWeight: '800', fontSize: 14 },
   lbName: { fontSize: 15, fontWeight: '800' },
   lbSub: { fontSize: 11, marginTop: 2, fontWeight: '600' },
-  lbRev: { fontSize: 14, fontWeight: '800', color: '#00D4AD' },
+  lbRev: { fontSize: 14, fontWeight: '800', color: '#335F90' },
 });

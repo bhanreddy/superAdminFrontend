@@ -1,7 +1,9 @@
+import { MotionPressable } from '../../components/ui/MotionPressable';
 import React from 'react';
 import {
   brandColors,
   experienceColors,
+  type CardTone,
 } from '../../constants/experienceColors';
 import {
   ActivityIndicator,
@@ -13,20 +15,26 @@ import {
 } from 'react-native';
 import { ArrowUpRight, RefreshCw, AlertCircle } from 'lucide-react-native';
 import { useTheme } from '../../contexts/ThemeContext';
+import { Card } from '../../components/ui/Card';
+import { Skeleton } from '../../components/ui/Skeleton';
+import { borderRadius } from '../../constants/theme';
 import type { Resource } from './useDashboardData';
 
 export function useDashboardPalette() {
-  const { isDark } = useTheme();
+  const { isDark, colors } = useTheme();
   const palette = isDark ? experienceColors.dark : experienceColors.light;
   return {
     ...palette,
-    // Retain the existing chart API while using one interaction accent.
-    green: palette.action,
-    greenFill: palette.actionFill,
-    lime: isDark ? '#D5F080' : '#D5EF8B',
-    amber: isDark ? '#F4CD91' : '#8A571A',
-    amberBg: isDark ? '#382F22' : '#FCF1DF',
-    blue: isDark ? '#A8C8F0' : '#315D91',
+    canvas: colors?.background || palette.canvas,
+    surface: colors?.card || palette.surface,
+    inset: colors?.primaryMuted || palette.inset,
+    ink: colors?.textPrimary || palette.ink,
+    muted: colors?.textSecondary || palette.muted,
+    line: colors?.borderSubtle || palette.line,
+    highlight: brandColors.honey,
+    amber: isDark ? brandColors.amberBright : brandColors.amber,
+    amberBg: isDark ? '#3C3327' : brandColors.honeySoft,
+    blue: isDark ? brandColors.blueBright : brandColors.blue,
   };
 }
 export type DashboardPalette = ReturnType<typeof useDashboardPalette>;
@@ -56,7 +64,7 @@ export function DashButton({
     ? '#FFFFFF'
     : p.ink;
   return (
-    <Pressable
+    <MotionPressable
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ disabled: disabled || busy, busy }}
@@ -73,7 +81,7 @@ export function DashButton({
               ? '#FFFFFF25'
               : '#FFFFFF12'
             : primary
-            ? p.greenFill
+            ? p.actionFill
             : hovered
             ? p.inset
             : p.surface,
@@ -82,7 +90,7 @@ export function DashButton({
               ? brandColors.gold
               : '#FFFFFF45'
             : primary
-            ? p.greenFill
+            ? p.actionFill
             : p.line,
           opacity: disabled || busy ? 0.55 : pressed ? 0.75 : 1,
         },
@@ -99,19 +107,24 @@ export function DashButton({
         {label}
       </Text>
       {icon && !busy ? <ArrowUpRight size={16} color={foreground} /> : null}
-    </Pressable>
+    </MotionPressable>
   );
 }
 export function Panel({
   children,
   style,
+  tone,
 }: {
   children: React.ReactNode;
   style?: ViewStyle | ViewStyle[];
+  tone?: CardTone;
 }) {
   const p = useDashboardPalette();
   return (
-    <View
+    <Card
+      noPadding
+      tone={tone}
+      material="panel"
       style={[
         ds.panel,
         { backgroundColor: p.surface, borderColor: p.line },
@@ -119,7 +132,7 @@ export function Panel({
       ]}
     >
       {children}
-    </View>
+    </Card>
   );
 }
 export function SectionHeading({
@@ -169,8 +182,17 @@ export function ResourceStatus({
         aria-busy={true}
         style={ds.state}
       >
-        <ActivityIndicator color={inverse ? '#D5EF8B' : p.green} />
-        <Text style={{ color: inverse ? '#C6D9C5' : p.muted, fontSize: 13 }}>
+        <View style={{ width: '100%', gap: 14 }} accessible={false}>
+          <Skeleton width="42%" height={14} />
+          <Skeleton width="72%" height={34} />
+          <Skeleton width="92%" height={12} />
+        </View>
+        <Text
+          style={{
+            color: inverse ? brandColors.onNavyMuted : p.muted,
+            fontSize: 13,
+          }}
+        >
           Loading {label}…
         </Text>
       </View>
@@ -188,15 +210,15 @@ export function ResourceStatus({
         <Text style={[ds.body, { color: p.muted, textAlign: 'center' }]}>
           Check your connection and try again.
         </Text>
-        <Pressable
+        <MotionPressable
           accessibilityRole="button"
           accessibilityLabel={`Retry ${label}`}
           onPress={() => void resource.reload()}
           style={ds.button}
         >
-          <RefreshCw size={15} color={p.green} />
-          <Text style={{ color: p.green, fontWeight: '600' }}>Try again</Text>
-        </Pressable>
+          <RefreshCw size={15} color={p.action} />
+          <Text style={{ color: p.action, fontWeight: '600' }}>Try again</Text>
+        </MotionPressable>
       </View>
     );
   return <>{children}</>;
@@ -233,7 +255,12 @@ export function EmptyNote({
   );
 }
 export const ds = StyleSheet.create({
-  panel: { borderWidth: 1, borderRadius: 22, padding: 24, minWidth: 0 },
+  panel: {
+    borderWidth: 1,
+    borderRadius: borderRadius.xl,
+    padding: 24,
+    minWidth: 0,
+  },
   headingRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -255,7 +282,7 @@ export const ds = StyleSheet.create({
     minHeight: 44,
     paddingHorizontal: 15,
     paddingVertical: 11,
-    borderRadius: 10,
+    borderRadius: borderRadius.md,
     borderWidth: 1,
     borderColor: 'transparent',
     flexDirection: 'row',

@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View,
@@ -41,7 +42,7 @@ const STEPS = [
   { label: 'Send', icon: ClipboardCheck },
 ];
 
-const COLORS = ['#1A73E8', '#0A84FF', '#30D158', '#AF52DE', '#FF9F0A', '#1C1C1E'];
+const COLORS = [brandColors.red, brandColors.red, '#335F90', '#AF52DE', '#FF9F0A', '#1C1C1E'];
 
 type FormState = {
   name: string;
@@ -86,7 +87,7 @@ const EMPTY: FormState = {
   logo_url: '',
   android_package: '',
   ios_bundle_id: '',
-  primary_color: '#1A73E8',
+  primary_color: brandColors.red,
   notes: '',
   documents: [],
 };
@@ -112,7 +113,7 @@ function fromIntake(item: SchoolIntake): FormState {
     estimated_students: dossier.estimated_students ? String(dossier.estimated_students) : '',
     documents: dossier.documents || [],
     board: dossier.board || 'CBSE',
-    primary_color: dossier.primary_color || '#1A73E8',
+    primary_color: dossier.primary_color || brandColors.red,
   };
 }
 
@@ -428,7 +429,7 @@ function ReviewPanel({
   if (!preview) {
     return <Button title="Run checks" variant="secondary" onPress={onRefresh} />;
   }
-  const tone = preview.grade === 'BLOCKED' ? '#FF453A' : preview.grade === 'READY' ? '#30D158' : '#FF9F0A';
+  const tone = preview.grade === 'BLOCKED' ? '#FF453A' : preview.grade === 'READY' ? '#335F90' : '#FF9F0A';
   return (
     <View style={{ gap: 12 }}>
       <View style={styles.scoreRow}>

@@ -1,3 +1,5 @@
+import { MotionPressable } from './MotionPressable';
+import { borderRadius } from '../../constants/theme';
 import React, { useState, useMemo } from 'react';
 import {
   View,
@@ -253,7 +255,7 @@ export function DataTable<T extends Record<string, any>>({
                 onBlur={() => setSearchFocused(false)}
               />
               {search.length > 0 && (
-                <Pressable
+                <MotionPressable
                   accessibilityRole="button"
                   accessibilityLabel="Clear table search"
                   onPress={() => {
@@ -273,7 +275,7 @@ export function DataTable<T extends Record<string, any>>({
                   hitSlop={6}
                 >
                   <X size={11} color={colors.textTertiary} strokeWidth={2.5} />
-                </Pressable>
+                </MotionPressable>
               )}
             </View>
           )}
@@ -296,7 +298,7 @@ export function DataTable<T extends Record<string, any>>({
             {filtered.length} {filtered.length === 1 ? 'result' : 'results'}{' '}
             found
           </Text>
-          <Pressable
+          <MotionPressable
             accessibilityRole="button"
             accessibilityLabel="Clear table filter"
             onPress={() => {
@@ -315,7 +317,7 @@ export function DataTable<T extends Record<string, any>>({
             <Text style={[s.filterClear, { color: colors.textTertiary }]}>
               Clear
             </Text>
-          </Pressable>
+          </MotionPressable>
         </View>
       )}
 
@@ -336,7 +338,7 @@ export function DataTable<T extends Record<string, any>>({
             pageData.map((item, ri) => {
               const rowIndex = currentPage * pageSize + ri;
               return (
-                <Pressable
+                <MotionPressable
                   key={keyExtractor(item)}
                   accessibilityRole={onRowPress ? 'button' : undefined}
                   onPress={onRowPress ? () => onRowPress(item) : undefined}
@@ -379,7 +381,7 @@ export function DataTable<T extends Record<string, any>>({
                           },
                         ]}
                       >
-                        <Pressable
+                        <MotionPressable
                           accessibilityRole={col.sortable && !serverPagination ? 'button' : undefined}
                           accessibilityLabel={col.sortable && !serverPagination ? `Sort by ${col.title}${isActive ? `, ${sortDir === 'desc' ? 'descending' : 'ascending'}` : ''}` : undefined}
                           onPress={
@@ -440,7 +442,7 @@ export function DataTable<T extends Record<string, any>>({
                               )}
                             </View>
                           )}
-                        </Pressable>
+                        </MotionPressable>
                         <View style={s.cardValueCol}>
                           {col.render ? (
                             col.render(item, rowIndex)
@@ -461,7 +463,7 @@ export function DataTable<T extends Record<string, any>>({
                       </View>
                     );
                   })}
-                </Pressable>
+                </MotionPressable>
               );
             })
           )}
@@ -487,7 +489,7 @@ export function DataTable<T extends Record<string, any>>({
                 {columns.map((col) => {
                   const isActive = sortKey === col.key;
                   return (
-                    <Pressable
+                    <MotionPressable
                       key={col.key}
                       accessibilityRole={col.sortable && !serverPagination ? 'button' : undefined}
                       accessibilityLabel={col.sortable && !serverPagination ? `Sort by ${col.title}${isActive ? `, ${sortDir === 'desc' ? 'descending' : 'ascending'}` : ''}` : undefined}
@@ -560,7 +562,7 @@ export function DataTable<T extends Record<string, any>>({
                           style={{ opacity: 0.4 }}
                         />
                       )}
-                    </Pressable>
+                    </MotionPressable>
                   );
                 })}
               </View>
@@ -578,7 +580,7 @@ export function DataTable<T extends Record<string, any>>({
                 />
               ) : (
                 pageData.map((item, ri) => (
-                  <Pressable
+                  <MotionPressable
                     key={keyExtractor(item)}
                     accessibilityRole={onRowPress ? 'button' : undefined}
                     onPress={onRowPress ? () => onRowPress(item) : undefined}
@@ -634,7 +636,7 @@ export function DataTable<T extends Record<string, any>>({
                         )}
                       </View>
                     ))}
-                  </Pressable>
+                  </MotionPressable>
                 ))
               )}
             </View>
@@ -651,7 +653,7 @@ export function DataTable<T extends Record<string, any>>({
               : ''}
           </Text>
           {cursorPagination.hasMore ? (
-            <Pressable
+            <MotionPressable
               accessibilityRole="button"
               accessibilityLabel="Load more"
               onPress={cursorPagination.onNext}
@@ -661,7 +663,7 @@ export function DataTable<T extends Record<string, any>>({
               <Text style={{ color: colors.textPrimary, fontWeight: '700' }}>
                 {cursorPagination.loading ? 'Loading' : 'Load more'}
               </Text>
-            </Pressable>
+            </MotionPressable>
           ) : null}
         </View>
       ) : null}
@@ -696,7 +698,7 @@ export function DataTable<T extends Record<string, any>>({
                   disabled: currentPage === 0,
                 },
               ].map(({ label, icon: Icon, onPress, disabled }, i) => (
-                <Pressable
+                <MotionPressable
                   key={`l${i}`}
                   accessibilityRole="button"
                   accessibilityLabel={label}
@@ -722,7 +724,7 @@ export function DataTable<T extends Record<string, any>>({
                   ]}
                 >
                   <Icon size={14} color={colors.textSecondary} />
-                </Pressable>
+                </MotionPressable>
               ))}
               <View
                 style={[
@@ -752,7 +754,7 @@ export function DataTable<T extends Record<string, any>>({
                   disabled: currentPage >= totalPages - 1,
                 },
               ].map(({ label, icon: Icon, onPress, disabled }, i) => (
-                <Pressable
+                <MotionPressable
                   key={`r${i}`}
                   accessibilityRole="button"
                   accessibilityLabel={label}
@@ -778,7 +780,7 @@ export function DataTable<T extends Record<string, any>>({
                   ]}
                 >
                   <Icon size={14} color={colors.textSecondary} />
-                </Pressable>
+                </MotionPressable>
               ))}
             </View>
           </View>
@@ -789,7 +791,7 @@ export function DataTable<T extends Record<string, any>>({
 
 const s = StyleSheet.create({
   wrap: {
-    borderRadius: 16,
+    borderRadius: borderRadius.xl,
     borderWidth: 1,
     overflow: 'hidden',
   },

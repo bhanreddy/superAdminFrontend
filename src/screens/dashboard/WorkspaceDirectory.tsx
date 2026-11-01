@@ -1,7 +1,13 @@
+import { MotionPressable } from '../../components/ui/MotionPressable';
 import React, { useState } from 'react';
+import { Card } from '../../components/ui/Card';
+import { LinearGradient } from 'expo-linear-gradient';
+import { getCardTone, type CardTone } from '../../constants/experienceColors';
+import { borderRadius } from '../../constants/theme';
 import {
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -51,6 +57,27 @@ const CATEGORY_MODULES = {
   Administration: 'system',
 } as const;
 
+const MODULE_TONES: Record<keyof typeof workspaceModules, CardTone> = {
+  overview: 'crimson',
+  schools: 'blue',
+  finance: 'honey',
+  connect: 'crimson',
+  sales: 'honey',
+  team: 'rose',
+  content: 'lavender',
+  support: 'rose',
+  system: 'blue',
+};
+function workspaceTone(route: string): CardTone {
+  if (route.includes('checklist')) return 'honey';
+  if (route.includes('school-intake') || route.includes('expenses'))
+    return 'rose';
+  if (route.includes('import')) return 'lavender';
+  if (route.includes('media-qr')) return 'crimson';
+  if (route.includes('/crm')) return 'rose';
+  return MODULE_TONES[getWorkspaceModule(route)];
+}
+
 export function WorkspaceDirectory({
   entries: workspaces,
   phone,
@@ -75,7 +102,7 @@ export function WorkspaceDirectory({
         w.category === selectedCategory) &&
       `${w.title} ${w.detail} ${w.category}`
         .toLowerCase()
-        .includes(workspaceQuery.trim().toLowerCase())
+        .includes(workspaceQuery.trim().toLowerCase()),
   );
   const columns = contentWidth
     ? contentWidth >= 1240
@@ -104,38 +131,40 @@ export function WorkspaceDirectory({
       onLayout={(event) => {
         const nextWidth = event.nativeEvent.layout.width;
         setContentWidth((current) =>
-          Math.abs(current - nextWidth) > 1 ? nextWidth : current
+          Math.abs(current - nextWidth) > 1 ? nextWidth : current,
         );
       }}
     >
       <View style={[styles.toolbar, phone && { alignItems: 'stretch' }]}>
-        <View style={styles.introduction}>
-          <View style={[styles.directoryMark, { backgroundColor: p.inset }]}>
-            <LayoutGrid size={21} color={p.green} />
+        {!phone && (
+          <View style={styles.introduction}>
+            <View style={[styles.directoryMark, { backgroundColor: p.inset }]}>
+              <LayoutGrid size={21} color={p.action} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text
+                accessibilityRole="header"
+                style={[styles.directoryTitle, { color: p.ink }]}
+              >
+                Find your focus
+              </Text>
+              <Text style={[styles.directoryDetail, { color: p.muted }]}>
+                {workspaces.length} workspaces, organized for the way you work.
+              </Text>
+            </View>
           </View>
-          <View style={{ flex: 1 }}>
-            <Text
-              accessibilityRole="header"
-              style={[styles.directoryTitle, { color: p.ink }]}
-            >
-              Workspace directory
-            </Text>
-            <Text style={[styles.directoryDetail, { color: p.muted }]}>
-              {workspaces.length} workspaces, connected around your work.
-            </Text>
-          </View>
-        </View>
+        )}
         <View
           style={[
             styles.search,
             {
               backgroundColor: p.surface,
-              borderColor: searchFocused ? p.green : p.line,
+              borderColor: searchFocused ? p.action : p.line,
               width: phone ? '100%' : '44%',
             },
           ]}
         >
-          <Search size={17} color={searchFocused ? p.green : p.muted} />
+          <Search size={17} color={searchFocused ? p.action : p.muted} />
           <TextInput
             accessibilityLabel="Find a workspace"
             placeholder="Search workspaces…"
@@ -151,19 +180,24 @@ export function WorkspaceDirectory({
             ]}
           />
           {!!workspaceQuery && (
-            <Pressable
+            <MotionPressable
               accessibilityRole="button"
               accessibilityLabel="Clear workspace search"
               onPress={() => setWorkspaceQuery('')}
               style={styles.clear}
             >
               <X size={15} color={p.muted} />
-            </Pressable>
+            </MotionPressable>
           )}
         </View>
       </View>
 
-      <View style={styles.filters}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.filters}
+        style={{ flexGrow: 0 }}
+      >
         {['All workspaces', ...categories].map((category) => {
           const active = selectedCategory === category;
           const count =
@@ -178,7 +212,7 @@ export function WorkspaceDirectory({
                 ];
           const accent = isDark ? family.dark : family.light;
           return (
-            <Pressable
+            <MotionPressable
               key={category}
               accessibilityRole="button"
               accessibilityLabel={`Filter ${category}`}
@@ -188,11 +222,11 @@ export function WorkspaceDirectory({
                 styles.filter,
                 {
                   backgroundColor: active
-                    ? p.greenFill
+                    ? p.actionFill
                     : hovered
                     ? p.inset
                     : p.surface,
-                  borderColor: active ? p.greenFill : p.line,
+                  borderColor: active ? p.actionFill : p.line,
                   opacity: pressed ? 0.8 : 1,
                 },
               ]}
@@ -221,10 +255,10 @@ export function WorkspaceDirectory({
               >
                 {count}
               </Text>
-            </Pressable>
+            </MotionPressable>
           );
         })}
-      </View>
+      </ScrollView>
 
       {!!workspaceQuery.trim() && (
         <Text
@@ -238,13 +272,13 @@ export function WorkspaceDirectory({
       {shownWorkspaces.length ? (
         categories
           .filter((category) =>
-            shownWorkspaces.some((w) => w.category === category)
+            shownWorkspaces.some((w) => w.category === category),
           )
           .map((category) => {
             const family = workspaceModules[CATEGORY_MODULES[category]];
             const accent = isDark ? family.dark : family.light;
             const categoryEntries = shownWorkspaces.filter(
-              (w) => w.category === category
+              (w) => w.category === category,
             );
             return (
               <View key={category} style={styles.group}>
@@ -268,68 +302,91 @@ export function WorkspaceDirectory({
                 <View style={styles.grid}>
                   {categoryEntries.map((w) => {
                     const Icon = ICONS[w.icon];
-                    const module =
-                      workspaceModules[getWorkspaceModule(w.route)];
-                    const iconColor = isDark ? module.dark : module.light;
-                    const iconBackground = isDark ? module.night : module.tint;
+                    const tone = workspaceTone(w.route);
+                    const paint = getCardTone(tone, isDark);
                     return (
-                      <Pressable
+                      <Card
                         key={w.title}
-                        accessibilityRole="button"
+                        noPadding
+                        tone={tone}
+                        material="panel"
                         accessibilityLabel={`Open ${w.title}`}
                         onPress={() => onNavigate(w.route)}
-                        style={({ hovered, pressed }: any) => [
-                          styles.card,
-                          {
-                            width: cardWidth,
-                            backgroundColor: p.surface,
-                            borderColor: hovered ? p.green : p.line,
-                            opacity: pressed ? 0.8 : 1,
-                          },
-                          Platform.OS === 'web' &&
-                            ({
-                              boxShadow: hovered
-                                ? '0 10px 28px -12px rgba(20,36,58,0.19)'
-                                : '0 3px 12px rgba(20,36,58,0.035)',
-                              transition:
-                                'border-color 150ms ease, box-shadow 150ms ease',
-                              cursor: 'pointer',
-                            } as any),
-                        ]}
+                        style={[styles.card, { width: cardWidth }]}
                       >
-                        <View style={styles.cardTop}>
-                          <View
-                            style={[
-                              styles.icon,
-                              {
-                                backgroundColor: iconBackground,
-                              },
-                            ]}
-                          >
-                            <Icon
-                              size={23}
-                              color={iconColor}
-                              strokeWidth={1.7}
-                            />
+                        <LinearGradient
+                          colors={[paint.cover, paint.coverEnd]}
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 1, y: 1 }}
+                          style={styles.cover}
+                        >
+                          <View style={styles.coverTop}>
+                            <Text
+                              style={[
+                                styles.coverLabel,
+                                { color: paint.accent },
+                              ]}
+                            >
+                              {w.category.toUpperCase()}
+                            </Text>
+                            <ArrowUpRight size={18} color={paint.accent} />
                           </View>
+                          <Icon
+                            size={42}
+                            color={paint.accent}
+                            strokeWidth={1.5}
+                          />
+                          <View
+                            pointerEvents="none"
+                            style={[
+                              styles.coverRing,
+                              { borderColor: paint.accent },
+                            ]}
+                          />
+                          <View
+                            pointerEvents="none"
+                            style={[
+                              styles.coverTile,
+                              { borderColor: paint.accent },
+                            ]}
+                          />
+                        </LinearGradient>
+                        <View style={styles.cardBody}>
+                          <Text
+                            style={[styles.cardTitle, { color: paint.ink }]}
+                          >
+                            {w.title}
+                          </Text>
+                          <Text
+                            style={[styles.cardDetail, { color: paint.muted }]}
+                          >
+                            {w.detail}
+                          </Text>
                           <View
                             style={[
-                              styles.cardArrow,
-                              {
-                                backgroundColor: p.inset,
-                              },
+                              styles.cardFooter,
+                              { borderColor: paint.border },
                             ]}
                           >
-                            <ArrowUpRight size={15} color={p.green} />
+                            <Text
+                              style={[
+                                styles.openLabel,
+                                { color: paint.accent },
+                              ]}
+                            >
+                              Open workspace
+                            </Text>
+                            <View
+                              style={[
+                                styles.cardArrow,
+                                { backgroundColor: paint.surface },
+                              ]}
+                            >
+                              <ArrowUpRight size={16} color={paint.accent} />
+                            </View>
                           </View>
                         </View>
-                        <Text style={[styles.cardTitle, { color: p.ink }]}>
-                          {w.title}
-                        </Text>
-                        <Text style={[styles.cardDetail, { color: p.muted }]}>
-                          {w.detail}
-                        </Text>
-                      </Pressable>
+                      </Card>
                     );
                   })}
                 </View>
@@ -347,7 +404,7 @@ export function WorkspaceDirectory({
             title="No matching workspace."
             detail="Try schools, finance, content or another workspace name."
           />
-          <Pressable
+          <MotionPressable
             accessibilityRole="button"
             accessibilityLabel="Reset workspace filters"
             onPress={() => {
@@ -356,10 +413,10 @@ export function WorkspaceDirectory({
             }}
             style={[styles.reset, { backgroundColor: p.inset }]}
           >
-            <Text style={{ color: p.green, fontSize: 13, fontWeight: '600' }}>
+            <Text style={{ color: p.action, fontSize: 13, fontWeight: '600' }}>
               Clear filters
             </Text>
-          </Pressable>
+          </MotionPressable>
         </View>
       )}
     </View>
@@ -394,7 +451,7 @@ const styles = StyleSheet.create({
   search: {
     minHeight: 46,
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: borderRadius.md,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
@@ -402,21 +459,21 @@ const styles = StyleSheet.create({
     minWidth: 0,
     maxWidth: 420,
   },
-  searchInput: { flex: 1, minWidth: 0, fontSize: 14, paddingVertical: 13 },
+  searchInput: { flex: 1, minWidth: 0, fontSize: 16, paddingVertical: 13 },
   clear: {
-    minHeight: 36,
-    width: 28,
+    minHeight: 44,
+    width: 44,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  filters: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  filters: { flexDirection: 'row', gap: 8, paddingVertical: 2 },
   filter: {
-    minHeight: 38,
+    minHeight: 44,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: borderRadius.sm,
     paddingHorizontal: 12,
     paddingVertical: 9,
   },
@@ -433,10 +490,47 @@ const styles = StyleSheet.create({
   card: {
     minWidth: 0,
     borderWidth: 1,
-    borderRadius: 17,
-    padding: 21,
-    minHeight: 178,
+    borderRadius: borderRadius.xl,
+    padding: 0,
+    minHeight: 278,
+    overflow: 'hidden',
   },
+  cover: {
+    height: 118,
+    padding: 20,
+    justifyContent: 'space-between',
+    overflow: 'hidden',
+  },
+  coverTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    zIndex: 1,
+  },
+  coverLabel: { fontSize: 9, fontWeight: '700', letterSpacing: 1.2 },
+  coverRing: {
+    position: 'absolute',
+    width: 122,
+    height: 122,
+    borderWidth: 1,
+    borderRadius: 61,
+    right: 36,
+    bottom: -54,
+    opacity: 0.22,
+  },
+  coverTile: {
+    position: 'absolute',
+    width: 82,
+    height: 82,
+    borderWidth: 1,
+    borderRadius: 22,
+    right: -12,
+    top: 38,
+    transform: [{ rotate: '-22deg' }],
+    opacity: 0.25,
+  },
+  cardBody: { padding: 22, flexGrow: 1 },
+  openLabel: { fontSize: 12, fontWeight: '600' },
   cardTop: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -451,19 +545,28 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   cardArrow: {
-    width: 27,
-    height: 27,
-    borderRadius: 14,
+    width: 32,
+    height: 32,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
   cardTitle: {
-    fontSize: 16,
-    lineHeight: 22,
+    fontSize: 20,
+    lineHeight: 27,
     fontWeight: '600',
     letterSpacing: -0.2,
   },
-  cardDetail: { fontSize: 13, lineHeight: 20, marginTop: 6 },
+  cardDetail: { fontSize: 13, lineHeight: 20, marginTop: 6, flexGrow: 1 },
+  cardFooter: {
+    marginTop: 20,
+    paddingTop: 14,
+    borderTopWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
   empty: {
     borderWidth: 1,
     borderRadius: 14,

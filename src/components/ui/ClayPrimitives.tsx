@@ -1,9 +1,16 @@
 // Compatibility primitives for existing dashboards, using the shared workspace surfaces.
 import React from 'react';
+import { MotionPressable, type MotionPressableProps } from './MotionPressable';
+import { borderRadius as radii } from '../../constants/theme';
 import { View, ViewStyle, Pressable, Platform } from 'react-native';
 import { useTheme, clayStyle } from '../../contexts/ThemeContext';
 export const clayTokens = {
-  radius: { card: 16, button: 11, input: 11, pill: 999 },
+  radius: {
+    card: radii.xl,
+    button: radii.md,
+    input: radii.md,
+    pill: radii.full,
+  },
   highlight: '#FFFFFF16',
   edge: '#CAD3E1',
   text: '#182740',
@@ -20,7 +27,7 @@ type ClayViewProps = {
 export function ClayView({
   children,
   color,
-  radius = 16,
+  radius = radii.xl,
   style,
   flat,
 }: ClayViewProps) {
@@ -47,26 +54,28 @@ export function PressScale({
   children,
   onPress,
   style,
-  disabled,
-  accessibilityLabel,
-  accessibilityRole,
-}: any) {
-  if (!onPress) return <View style={style}>{children}</View>;
+  ...props
+}: MotionPressableProps) {
+  if (!onPress)
+    return (
+      <View
+        style={
+          typeof style === 'function'
+            ? style({ pressed: false, hovered: false, focused: false })
+            : style
+        }
+      >
+        {children}
+      </View>
+    );
   return (
-    <Pressable
+    <MotionPressable
+      {...props}
       onPress={onPress}
-      disabled={disabled}
-      accessibilityRole={accessibilityRole || 'button'}
-      accessibilityLabel={accessibilityLabel}
-      accessibilityState={{ disabled: Boolean(disabled) }}
-      style={({ pressed }: any) => [
-        style,
-        { opacity: disabled ? 0.5 : pressed ? 0.85 : 1 },
-        Platform.OS === 'web' &&
-          ({ cursor: disabled ? 'default' : 'pointer' } as any),
-      ]}
+      accessibilityRole={props.accessibilityRole || 'button'}
+      style={style}
     >
       {children}
-    </Pressable>
+    </MotionPressable>
   );
 }

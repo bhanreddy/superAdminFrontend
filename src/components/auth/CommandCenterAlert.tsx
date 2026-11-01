@@ -1,4 +1,5 @@
 import React from 'react';
+import { brandColors } from '../../constants/experienceColors';
 import { View, Text, StyleSheet, Pressable, Platform } from 'react-native';
 import {
   AlertCircle,
@@ -83,8 +84,8 @@ export const CommandCenterAlert: React.FC<CommandCenterAlertProps> = ({
       case 'success':
         return {
           icon: <CheckCircle2 size={18} color={COMMAND_CENTER.statusActive} />,
-          bgColor: 'rgba(48, 209, 88, 0.12)',
-          borderColor: 'rgba(48, 209, 88, 0.3)',
+          bgColor: 'rgba(51, 95, 144, 0.12)',
+          borderColor: 'rgba(51, 95, 144, 0.3)',
           textColor: COMMAND_CENTER.statusActive,
           defaultTitle: 'Credentials Verified',
         };
@@ -112,9 +113,9 @@ export const CommandCenterAlert: React.FC<CommandCenterAlertProps> = ({
   if (appearance === 'light') {
     const warning = ['warning', 'network', 'session_expired'].includes(type);
     const positive = ['success', 'info'].includes(type);
-    config.textColor = positive ? '#2B593D' : warning ? '#805316' : '#A33328';
-    config.bgColor = positive ? '#EDF4EA' : warning ? '#FCF3DF' : '#FCF0EC';
-    config.borderColor = positive ? '#C5D9BC' : warning ? '#E3CFA3' : '#E8C5BC';
+    config.textColor = positive ? '#192B46' : warning ? '#805316' : '#A33328';
+    config.bgColor = positive ? brandColors.blueSoft : warning ? '#FCF3DF' : '#FCF0EC';
+    config.borderColor = positive ? '#E8EEF6' : warning ? '#E3CFA3' : '#E8C5BC';
     config.icon = React.cloneElement(config.icon, { color: config.textColor });
   }
   const displayTitle =
@@ -143,7 +144,7 @@ export const CommandCenterAlert: React.FC<CommandCenterAlertProps> = ({
         <Text
           style={[
             styles.message,
-            appearance === 'light' && { color: '#5B6556' },
+            appearance === 'light' && { color: '#335F90' },
           ]}
         >
           {message}

@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../../src/constants/experienceColors';
 import React, { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, Platform, Alert, ScrollView, useWindowDimensions } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
@@ -470,7 +471,7 @@ export default function MedicalShopsListScreen() {
         </View>
       )}
 
-      <View style={[st.filterBar, { backgroundColor: isDark ? '#1E1E1E' : '#F1F5F9', borderColor: colors.border }]}>
+      <View style={[st.filterBar, { backgroundColor: isDark ? experienceColors.dark.surface : brandColors.paperDeep, borderColor: colors.border }]}>
         {(['all', 'pending', 'live', 'suspended']).map((filter) => {
           const active = statusFilter === filter;
           let label = filter.charAt(0).toUpperCase() + filter.slice(1);

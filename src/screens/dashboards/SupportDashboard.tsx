@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
@@ -57,12 +58,12 @@ const PRIORITY_BADGE: Record<
   string,
   { label: string; color: string; bg: string }
 > = {
-  LOW: { label: 'Low', color: '#10B981', bg: 'rgba(16, 185, 129, 0.12)' },
-  MEDIUM: { label: 'Medium', color: '#0284C7', bg: 'rgba(2, 132, 199, 0.12)' },
+  LOW: { label: 'Low', color: brandColors.blue, bg: 'rgba(51, 95, 144, 0.12)' },
+  MEDIUM: { label: 'Medium', color: brandColors.blue, bg: 'rgba(2, 132, 199, 0.12)' },
   HIGH: { label: 'High', color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.12)' },
   CRITICAL: {
     label: 'Critical',
-    color: '#EF4444',
+    color: brandColors.red,
     bg: 'rgba(239, 68, 68, 0.12)',
   },
 };
@@ -71,7 +72,7 @@ const STATUS_BADGE: Record<
   string,
   { label: string; color: string; bg: string }
 > = {
-  OPEN: { label: 'Open', color: '#EF4444', bg: 'rgba(239, 68, 68, 0.12)' },
+  OPEN: { label: 'Open', color: brandColors.red, bg: 'rgba(239, 68, 68, 0.12)' },
   IN_PROGRESS: {
     label: 'In Progress',
     color: '#F59E0B',
@@ -79,7 +80,7 @@ const STATUS_BADGE: Record<
   },
   WAITING_ON_CLIENT: {
     label: 'Waiting on School',
-    color: '#8B5CF6',
+    color: brandColors.violet,
     bg: 'rgba(139, 92, 246, 0.12)',
   },
   ESCALATED: {
@@ -94,8 +95,8 @@ const STATUS_BADGE: Record<
   },
   RESOLVED: {
     label: 'Resolved',
-    color: '#10B981',
-    bg: 'rgba(16, 185, 129, 0.12)',
+    color: brandColors.blue,
+    bg: 'rgba(51, 95, 144, 0.12)',
   },
   CLOSED: {
     label: 'Closed',
@@ -233,7 +234,7 @@ export default function SupportDashboard() {
               <Pressable accessibilityRole="button"
                 style={[
                   styles.quickActionButton,
-                  { backgroundColor: '#9333EA' },
+                  { backgroundColor: brandColors.violet },
                 ]}
                 onPress={() => router.push('/complaints' as any)}
               >
@@ -276,7 +277,7 @@ export default function SupportDashboard() {
             ]}
           >
             <View style={styles.statCell}>
-              <Text style={[styles.statValue, { color: '#EF4444' }]}>
+              <Text style={[styles.statValue, { color: brandColors.red }]}>
                 {openTickets.length}
               </Text>
               <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
@@ -295,7 +296,7 @@ export default function SupportDashboard() {
               <Text
                 style={[
                   styles.statValue,
-                  { color: criticalTickets.length > 0 ? '#EF4444' : '#10B981' },
+                  { color: criticalTickets.length > 0 ? brandColors.red : brandColors.blue },
                 ]}
               >
                 {criticalTickets.length}
@@ -305,7 +306,7 @@ export default function SupportDashboard() {
               </Text>
             </View>
             <View style={styles.statCell}>
-              <Text style={[styles.statValue, { color: '#10B981' }]}>
+              <Text style={[styles.statValue, { color: brandColors.blue }]}>
                 {resolvedTickets.length}
               </Text>
               <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
@@ -346,7 +347,7 @@ export default function SupportDashboard() {
               },
             ]}
           >
-            <CheckCircle2 size={36} color="#10B981" />
+            <CheckCircle2 size={36} color={brandColors.blue} />
             <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>
               Queue Clear!
             </Text>

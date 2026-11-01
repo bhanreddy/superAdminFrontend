@@ -185,7 +185,7 @@ const baseNative = {
   ActivityIndicator: 'ActivityIndicator',
   StyleSheet: { create: (x) => x },
   useWindowDimensions: () => ({ width: 390, height: 844 }),
-  Platform: { OS: 'web' },
+  Platform: { OS: 'web', select: options => options.web ?? options.default },
 };
 function workspaceFixture({
   approve = true,
@@ -256,6 +256,7 @@ function workspaceFixture({
         { Item: 'PickerItem' },
       ),
     },
+    'expo-linear-gradient': { LinearGradient: ({ children, ...props }) => React.createElement('LinearGradient', props, children) },
     'react-native-svg': {
       __esModule: true,
       default: 'Svg',
@@ -571,12 +572,12 @@ test('dashboard foreground and action colours meet normal-text contrast in both 
       [p.muted, p.canvas],
       [p.muted, p.surface],
       [p.muted, p.inset],
-      [p.green, p.surface],
-      [p.green, p.inset],
+      [p.action, p.surface],
+      [p.action, p.inset],
       [p.amber, p.amberBg],
       [p.heroText, p.hero],
-      ['#FFFFFF', p.greenFill],
-      ['#193B2C', p.lime],
+      ['#FFFFFF', p.actionFill],
+      ['#4F3B1F', p.highlight],
     ];
     for (const [fg, bg] of pairs)
       assert.ok(

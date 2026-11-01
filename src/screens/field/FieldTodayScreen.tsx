@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View,
@@ -341,9 +342,9 @@ export default function FieldTodayScreen() {
           <View
             style={[
               styles.toastBox,
-              toast.type === 'success' && { backgroundColor: '#10B981' },
+              toast.type === 'success' && { backgroundColor: brandColors.blue },
               toast.type === 'warn' && { backgroundColor: '#F59E0B' },
-              toast.type === 'info' && { backgroundColor: '#0A84FF' },
+              toast.type === 'info' && { backgroundColor: brandColors.red },
             ]}
           >
             <Sparkles size={16} color="#fff" />
@@ -391,7 +392,7 @@ export default function FieldTodayScreen() {
         )}
 
         {/* ── HERO MISSION CONTROL CARD ─────────────────────────────── */}
-        <GlassCard style={[styles.heroCard, { borderColor: isDayActive ? '#30D15844' : isDayCompleted ? '#0A84FF33' : colors.glassBorder }]}>
+        <GlassCard style={[styles.heroCard, { borderColor: isDayActive ? '#335F9044' : isDayCompleted ? '#0A84FF33' : colors.glassBorder }]}>
           {/* STATE 1: Day NOT Started */}
           {isDayNotStarted && (
             <View style={styles.heroContent}>
@@ -437,8 +438,8 @@ export default function FieldTodayScreen() {
           {isDayActive && (
             <View style={styles.heroContent}>
               <View style={styles.heroStatusRow}>
-                <View style={[styles.pulseBeacon, { backgroundColor: '#30D158' }]} />
-                <Text style={[styles.statusTitle, { color: '#30D158' }]}>MISSION IN PROGRESS</Text>
+                <View style={[styles.pulseBeacon, { backgroundColor: '#335F90' }]} />
+                <Text style={[styles.statusTitle, { color: '#335F90' }]}>MISSION IN PROGRESS</Text>
                 {startedTimeStr && (
                   <Text style={[styles.startedTimeText, { color: colors.textSecondary }]}>
                     · Started at {startedTimeStr}
@@ -492,8 +493,8 @@ export default function FieldTodayScreen() {
                     onPress={() => router.push('/(app)/field/visit/new' as any)}
                     style={[styles.ctaButton, styles.ctaOutline, { borderColor: colors.glassBorder }]}
                   >
-                    <PlusCircle size={16} color="#30D158" />
-                    <Text style={[styles.ctaOutlineText, { color: '#30D158' }]}>Add Unplanned</Text>
+                    <PlusCircle size={16} color="#335F90" />
+                    <Text style={[styles.ctaOutlineText, { color: '#335F90' }]}>Add Unplanned</Text>
                   </Pressable>
 
                   <Pressable accessibilityRole="button"
@@ -512,8 +513,8 @@ export default function FieldTodayScreen() {
           {isDayCompleted && (
             <View style={styles.heroContent}>
               <View style={styles.heroStatusRow}>
-                <CheckCircle2 size={16} color="#30D158" />
-                <Text style={[styles.statusTitle, { color: '#30D158' }]}>DAY COMPLETED</Text>
+                <CheckCircle2 size={16} color="#335F90" />
+                <Text style={[styles.statusTitle, { color: '#335F90' }]}>DAY COMPLETED</Text>
                 {endedTimeStr && (
                   <Text style={[styles.startedTimeText, { color: colors.textSecondary }]}>
                     · Ended at {endedTimeStr}
@@ -564,17 +565,17 @@ export default function FieldTodayScreen() {
               />
               <View style={styles.kpiDivider} />
               <KpiBox
-                icon={<CheckCircle2 size={16} color="#30D158" />}
+                icon={<CheckCircle2 size={16} color="#335F90" />}
                 label="Visited"
                 value={`${visitedCount}`}
-                color="#30D158"
+                color="#335F90"
               />
               <View style={styles.kpiDivider} />
               <KpiBox
-                icon={<Award size={16} color="#0A84FF" />}
+                icon={<Award size={16} color={brandColors.red} />}
                 label="Qualified"
                 value={String(qualifiedCount)}
-                color="#0A84FF"
+                color={brandColors.red}
               />
               <View style={styles.kpiDivider} />
               <KpiBox
@@ -607,7 +608,7 @@ export default function FieldTodayScreen() {
           <GlassCard style={[styles.nextStopCard, { borderColor: '#0A84FF55', backgroundColor: '#0A84FF0D' }]}>
             <View style={styles.nextStopHeader}>
               <View style={styles.spotlightTag}>
-                <Sparkles size={12} color="#0A84FF" />
+                <Sparkles size={12} color={brandColors.red} />
                 <Text style={styles.spotlightTagText}>NEXT UP</Text>
               </View>
               {nextStop.appointment_at && (
@@ -674,7 +675,7 @@ export default function FieldTodayScreen() {
                   onPress={() => Linking.openURL(`tel:${nextStop.contact_phone || nextStop.school_phone}`).catch(() => {})}
                   style={[styles.spotlightActionBtn, { borderColor: colors.glassBorder }]}
                 >
-                  <Phone size={16} color="#30D158" />
+                  <Phone size={16} color="#335F90" />
                 </Pressable>
               )}
             </View>
@@ -708,14 +709,14 @@ export default function FieldTodayScreen() {
                 <View
                   style={[
                     styles.stepBadge,
-                    isDone && { backgroundColor: '#30D15822', borderColor: '#30D158' },
+                    isDone && { backgroundColor: '#335F9022', borderColor: '#335F90' },
                     isInProgress && { backgroundColor: '#FF9F0A22', borderColor: '#FF9F0A' },
                     isPlanned && { backgroundColor: `${colors.primary}18`, borderColor: colors.primary },
                     isSkipped && { backgroundColor: 'rgba(150,150,150,0.15)', borderColor: 'rgba(150,150,150,0.4)' },
                   ]}
                 >
                   {isDone ? (
-                    <Check size={14} color="#30D158" strokeWidth={3} />
+                    <Check size={14} color="#335F90" strokeWidth={3} />
                   ) : (
                     <Text
                       style={[
@@ -745,7 +746,7 @@ export default function FieldTodayScreen() {
                     <View
                       style={[
                         styles.stopStatusBadge,
-                        isDone && { backgroundColor: '#30D1581F', borderColor: '#30D15855' },
+                        isDone && { backgroundColor: '#335F901F', borderColor: '#335F9055' },
                         isInProgress && { backgroundColor: '#FF9F0A1F', borderColor: '#FF9F0A55' },
                         isPlanned && { backgroundColor: `${colors.primary}18`, borderColor: `${colors.primary}44` },
                         isSkipped && { backgroundColor: 'rgba(150,150,150,0.15)', borderColor: 'rgba(150,150,150,0.3)' },
@@ -756,7 +757,7 @@ export default function FieldTodayScreen() {
                           styles.stopStatusText,
                           {
                             color: isDone
-                              ? '#30D158'
+                              ? '#335F90'
                               : isInProgress
                               ? '#FF9F0A'
                               : isPlanned
@@ -803,8 +804,8 @@ export default function FieldTodayScreen() {
                     )}
 
                     {v.unplanned && (
-                      <View style={[styles.priorityTag, { backgroundColor: '#30D1581A', borderColor: '#30D15844' }]}>
-                        <Text style={[styles.priorityText, { color: '#30D158' }]}>Unplanned</Text>
+                      <View style={[styles.priorityTag, { backgroundColor: '#335F901A', borderColor: '#335F9044' }]}>
+                        <Text style={[styles.priorityText, { color: '#335F90' }]}>Unplanned</Text>
                       </View>
                     )}
                   </View>
@@ -868,7 +869,7 @@ export default function FieldTodayScreen() {
                         onPress={() => Linking.openURL(`tel:${v.contact_phone || v.school_phone}`).catch(() => {})}
                         style={[styles.inlineIconBtn, { borderColor: colors.glassBorder }]}
                       >
-                        <Phone size={14} color="#30D158" />
+                        <Phone size={14} color="#335F90" />
                       </Pressable>
                     )}
 
@@ -900,7 +901,7 @@ export default function FieldTodayScreen() {
                     onPress={() => router.push(`/(app)/field/visit/${v.id}` as any)}
                     style={[styles.inlineGhostBtn, { borderColor: colors.glassBorder, flex: 1 }]}
                   >
-                    <CheckCircle2 size={14} color="#30D158" />
+                    <CheckCircle2 size={14} color="#335F90" />
                     <Text style={[styles.inlineGhostText, { color: colors.textPrimary }]}>View Visit Summary</Text>
                   </Pressable>
                 )}
@@ -960,11 +961,11 @@ export default function FieldTodayScreen() {
             {/* Achievements Summary in Modal */}
             <View style={[styles.modalStatsBox, { backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)' }]}>
               <View style={styles.modalStatItem}>
-                <Text style={[styles.modalStatValue, { color: '#30D158' }]}>{visitedCount}</Text>
+                <Text style={[styles.modalStatValue, { color: '#335F90' }]}>{visitedCount}</Text>
                 <Text style={[styles.modalStatLabel, { color: colors.textSecondary }]}>Schools Visited</Text>
               </View>
               <View style={styles.modalStatItem}>
-                <Text style={[styles.modalStatValue, { color: '#0A84FF' }]}>{demosCount}</Text>
+                <Text style={[styles.modalStatValue, { color: brandColors.red }]}>{demosCount}</Text>
                 <Text style={[styles.modalStatLabel, { color: colors.textSecondary }]}>Demos</Text>
               </View>
               <View style={styles.modalStatItem}>
@@ -1143,7 +1144,7 @@ export default function FieldTodayScreen() {
                 disabled={!remoteReason.trim()}
                 style={[
                   styles.modalBtn,
-                  { backgroundColor: '#0A84FF', opacity: remoteReason.trim() ? 1 : 0.5 },
+                  { backgroundColor: brandColors.red, opacity: remoteReason.trim() ? 1 : 0.5 },
                 ]}
               >
                 <Text style={[styles.modalBtnText, { color: '#fff' }]}>Submit & Check In</Text>
@@ -1311,10 +1312,10 @@ const styles = StyleSheet.create({
     borderRadius: 14,
   },
   ctaPrimary: {
-    backgroundColor: '#0A84FF',
+    backgroundColor: brandColors.red,
   },
   ctaSuccess: {
-    backgroundColor: '#10B981',
+    backgroundColor: brandColors.blue,
   },
   ctaOutline: {
     borderWidth: 1,
@@ -1378,7 +1379,7 @@ const styles = StyleSheet.create({
   progressFill: {
     height: 7,
     borderRadius: 4,
-    backgroundColor: '#0A84FF',
+    backgroundColor: brandColors.red,
   },
   progressLabelsRow: {
     flexDirection: 'row',
@@ -1412,7 +1413,7 @@ const styles = StyleSheet.create({
   spotlightTagText: {
     fontSize: 10.5,
     fontWeight: '800',
-    color: '#0A84FF',
+    color: brandColors.red,
     letterSpacing: 0.5,
   },
   timeTag: {
@@ -1458,7 +1459,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    backgroundColor: '#0A84FF',
+    backgroundColor: brandColors.red,
     paddingVertical: 11,
     paddingHorizontal: 16,
     borderRadius: 12,
@@ -1593,7 +1594,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    backgroundColor: '#0A84FF',
+    backgroundColor: brandColors.red,
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 10,

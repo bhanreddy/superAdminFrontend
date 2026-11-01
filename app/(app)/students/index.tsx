@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../../src/constants/experienceColors';
 import React, { useCallback, useEffect, useState, useMemo, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable, Platform,  Easing, ScrollView, useWindowDimensions } from 'react-native';
 import { Animated } from '../../../src/utils/accessibleAnimation';
@@ -285,7 +286,7 @@ export default function StudentsListScreen() {
             </Text>
           </View>
 
-          <View style={[st.filterBar, { backgroundColor: isDark ? '#1E1E1E' : '#F1F5F9', borderColor: colors.border }]}>
+          <View style={[st.filterBar, { backgroundColor: isDark ? experienceColors.dark.surface : brandColors.paperDeep, borderColor: colors.border }]}>
             {(['all', 'active', 'inactive'] as const).map((filter) => {
               const active = statusFilter === filter;
               let label = filter.charAt(0).toUpperCase() + filter.slice(1);

@@ -1,3 +1,4 @@
+import { MotionPressable } from './MotionPressable';
 import React, { useId, useState } from 'react';
 import {
   View,
@@ -10,7 +11,7 @@ import {
   Platform,
 } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
-import { darkTheme } from '../../constants/theme';
+import { darkTheme, borderRadius } from '../../constants/theme';
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -36,7 +37,7 @@ export const Input = React.memo(
       onBlur,
       ...props
     },
-    ref,
+    ref
   ) {
     const theme = useTheme();
     const colors = tone === 'dark' ? darkTheme.colors : theme.colors;
@@ -66,8 +67,8 @@ export const Input = React.memo(
               borderColor: error
                 ? colors.error
                 : focused
-                  ? colors.primary
-                  : colors.border,
+                ? colors.primary
+                : colors.border,
             },
             Platform.OS === 'web'
               ? ({
@@ -81,12 +82,18 @@ export const Input = React.memo(
             ref={ref}
             {...props}
             accessibilityLabel={props.accessibilityLabel || label}
-            accessibilityHint={[props.accessibilityHint, required ? 'Required' : '', error].filter(Boolean).join('. ') || undefined}
-            {...(Platform.OS === 'web' ? {
-              'aria-required': Boolean(required),
-              'aria-invalid': Boolean(error),
-              'aria-describedby': error ? errorId : undefined,
-            } : {})}
+            accessibilityHint={
+              [props.accessibilityHint, required ? 'Required' : '', error]
+                .filter(Boolean)
+                .join('. ') || undefined
+            }
+            {...(Platform.OS === 'web'
+              ? {
+                  'aria-required': Boolean(required),
+                  'aria-invalid': Boolean(error),
+                  'aria-describedby': error ? errorId : undefined,
+                }
+              : {})}
             style={[
               styles.input,
               props.multiline && styles.multiline,
@@ -111,7 +118,7 @@ export const Input = React.memo(
             }}
           />
           {secureTextEntry && (
-            <Pressable
+            <MotionPressable
               accessibilityRole="button"
               accessibilityLabel={visible ? 'Hide password' : 'Show password'}
               onPress={() => setVisible((value) => !value)}
@@ -126,7 +133,7 @@ export const Input = React.memo(
               >
                 {visible ? 'Hide' : 'Show'}
               </Text>
-            </Pressable>
+            </MotionPressable>
           )}
         </View>
         {error ? (
@@ -141,7 +148,7 @@ export const Input = React.memo(
         ) : null}
       </View>
     );
-  }),
+  })
 );
 const styles = StyleSheet.create({
   container: { marginBottom: 18, minWidth: 0 },
@@ -158,7 +165,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderRadius: 11,
+    borderRadius: borderRadius.md,
     paddingLeft: 14,
     paddingRight: 4,
   },

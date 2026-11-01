@@ -1,3 +1,4 @@
+import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
@@ -72,19 +73,19 @@ interface SupportAssignee {
 }
 
 const PRIORITY_BADGE: Record<string, { label: string; color: string; bg: string }> = {
-  LOW: { label: 'Low', color: '#10B981', bg: 'rgba(16, 185, 129, 0.12)' },
-  MEDIUM: { label: 'Medium', color: '#0284C7', bg: 'rgba(2, 132, 199, 0.12)' },
+  LOW: { label: 'Low', color: brandColors.blue, bg: 'rgba(51, 95, 144, 0.12)' },
+  MEDIUM: { label: 'Medium', color: brandColors.blue, bg: 'rgba(2, 132, 199, 0.12)' },
   HIGH: { label: 'High', color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.12)' },
-  CRITICAL: { label: 'Critical Incident', color: '#EF4444', bg: 'rgba(239, 68, 68, 0.12)' },
+  CRITICAL: { label: 'Critical Incident', color: brandColors.red, bg: 'rgba(239, 68, 68, 0.12)' },
 };
 
 const STATUS_BADGE: Record<string, { label: string; color: string; bg: string }> = {
-  OPEN: { label: 'Open Queued', color: '#EF4444', bg: 'rgba(239, 68, 68, 0.12)' },
+  OPEN: { label: 'Open Queued', color: brandColors.red, bg: 'rgba(239, 68, 68, 0.12)' },
   IN_PROGRESS: { label: 'In Investigation', color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.12)' },
-  WAITING_ON_CLIENT: { label: 'Waiting on School', color: '#8B5CF6', bg: 'rgba(139, 92, 246, 0.12)' },
+  WAITING_ON_CLIENT: { label: 'Waiting on School', color: brandColors.violet, bg: 'rgba(139, 92, 246, 0.12)' },
   ESCALATED: { label: 'Escalated', color: '#FF453A', bg: 'rgba(255, 69, 58, 0.12)' },
   REOPENED: { label: 'Reopened', color: '#FF9F0A', bg: 'rgba(255, 159, 10, 0.12)' },
-  RESOLVED: { label: 'Resolved', color: '#10B981', bg: 'rgba(16, 185, 129, 0.12)' },
+  RESOLVED: { label: 'Resolved', color: brandColors.blue, bg: 'rgba(51, 95, 144, 0.12)' },
   CLOSED: { label: 'Closed Archive', color: '#6B7280', bg: 'rgba(107, 114, 128, 0.12)' },
 };
 
@@ -303,7 +304,7 @@ export default function ComplaintsScreen() {
 
             {can(PERMISSIONS.COMPLAINTS_CREATE) && (
               <Pressable accessibilityRole="button"
-                style={[styles.createBtn, { backgroundColor: '#9333EA' }]}
+                style={[styles.createBtn, { backgroundColor: brandColors.violet }]}
                 onPress={() => setShowCreateModal(true)}
               >
                 <PlusCircle size={16} color="#FFFFFF" />
@@ -333,7 +334,7 @@ export default function ComplaintsScreen() {
                     key={st}
                     style={[
                       styles.filterPill,
-                      isSelected && { backgroundColor: '#9333EA', borderColor: '#9333EA' },
+                      isSelected && { backgroundColor: brandColors.violet, borderColor: brandColors.violet },
                       !isSelected && { borderColor: colors.border, backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)' },
                     ]}
                     onPress={() => setStatusFilter(st)}
@@ -355,7 +356,7 @@ export default function ComplaintsScreen() {
             </View>
           ) : filteredTickets.length === 0 ? (
             <View style={[styles.emptyBox, { borderColor: colors.border }]}>
-              <CheckCircle2 size={40} color="#10B981" />
+              <CheckCircle2 size={40} color={brandColors.blue} />
               <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>No Tickets in Queue</Text>
               <Text style={[styles.emptySub, { color: colors.textSecondary }]}>
                 No incidents or partner complaints match the selected filter.
@@ -418,7 +419,7 @@ export default function ComplaintsScreen() {
           {/* Modal: Open Support Ticket */}
           <Modal visible={showCreateModal} transparent animationType="fade">
             <View style={styles.modalOverlay}>
-              <View style={[styles.modalCard, { backgroundColor: isDark ? '#161b22' : '#FFFFFF', borderColor: colors.border }]}>
+              <View style={[styles.modalCard, { backgroundColor: isDark ? experienceColors.dark.surface : brandColors.white, borderColor: colors.border }]}>
                 <View style={styles.modalHeader}>
                   <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>Open Support Ticket</Text>
                   <Pressable accessibilityLabel="Close dialog" accessibilityRole="button" onPress={() => setShowCreateModal(false)}>
@@ -434,7 +435,7 @@ export default function ComplaintsScreen() {
                         key={s.id}
                         style={[
                           styles.schoolPill,
-                          ticketSchoolId === s.id && { backgroundColor: '#9333EA', borderColor: '#9333EA' },
+                          ticketSchoolId === s.id && { backgroundColor: brandColors.violet, borderColor: brandColors.violet },
                           ticketSchoolId !== s.id && { borderColor: colors.border },
                         ]}
                         onPress={() => setTicketSchoolId(s.id)}
@@ -462,7 +463,7 @@ export default function ComplaintsScreen() {
                         key={c}
                         style={[
                           styles.optionPill,
-                          ticketCategory === c && { backgroundColor: '#9333EA', borderColor: '#9333EA' },
+                          ticketCategory === c && { backgroundColor: brandColors.violet, borderColor: brandColors.violet },
                           ticketCategory !== c && { borderColor: colors.border },
                         ]}
                         onPress={() => setTicketCategory(c)}
@@ -479,7 +480,7 @@ export default function ComplaintsScreen() {
                         key={p}
                         style={[
                           styles.optionPill,
-                          ticketPriority === p && { backgroundColor: '#EF4444', borderColor: '#EF4444' },
+                          ticketPriority === p && { backgroundColor: brandColors.red, borderColor: brandColors.red },
                           ticketPriority !== p && { borderColor: colors.border },
                         ]}
                         onPress={() => setTicketPriority(p)}
@@ -509,7 +510,7 @@ export default function ComplaintsScreen() {
                     <Text style={[styles.cancelBtnText, { color: colors.textSecondary }]}>Cancel</Text>
                   </Pressable>
                   <Pressable accessibilityRole="button"
-                    style={[styles.submitBtn, { backgroundColor: '#9333EA' }]}
+                    style={[styles.submitBtn, { backgroundColor: brandColors.violet }]}
                     onPress={handleCreateTicket}
                     disabled={creating}
                   >
@@ -527,7 +528,7 @@ export default function ComplaintsScreen() {
           {/* Modal: Ticket Details & Activity Thread */}
           <Modal visible={showDetailModal} transparent animationType="fade">
             <View style={styles.modalOverlay}>
-              <View style={[styles.modalCard, { backgroundColor: isDark ? '#161b22' : '#FFFFFF', borderColor: colors.border, maxWidth: 620 }]}>
+              <View style={[styles.modalCard, { backgroundColor: isDark ? experienceColors.dark.surface : brandColors.white, borderColor: colors.border, maxWidth: 620 }]}>
                 <View style={styles.modalHeader}>
                   <View style={{ flex: 1 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
@@ -669,9 +670,9 @@ export default function ComplaintsScreen() {
 
                       {targetStatus === 'RESOLVED' && (
                         <>
-                          <Text style={[styles.formLabel, { color: '#10B981', marginTop: 12 }]}>Resolution Summary *</Text>
+                          <Text style={[styles.formLabel, { color: brandColors.blue, marginTop: 12 }]}>Resolution Summary *</Text>
                           <TextInput
-                            style={[styles.textArea, { color: colors.textPrimary, borderColor: '#10B981' }]}
+                            style={[styles.textArea, { color: colors.textPrimary, borderColor: brandColors.blue }]}
                             placeholder="Explain what was fixed, firmware updated, or settings corrected..."
                             placeholderTextColor={colors.textSecondary}
                             multiline
