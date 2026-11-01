@@ -1,0 +1,86 @@
+diff --git a/node_modules/react-native-reanimated/lib/module/reanimated2/layoutReanimation/web/componentUtils.js b/node_modules/react-native-reanimated/lib/module/reanimated2/layoutReanimation/web/componentUtils.js
+index 3dfa011..92339ff 100644
+--- a/node_modules/react-native-reanimated/lib/module/reanimated2/layoutReanimation/web/componentUtils.js
++++ b/node_modules/react-native-reanimated/lib/module/reanimated2/layoutReanimation/web/componentUtils.js
+@@ -1,5 +1,7 @@
+ 'use strict';
+ 
++import { StyleSheet } from 'react-native';
++
+ import { Animations, TransitionType, WebEasings } from './config';
+ import { convertTransformToString } from './animationParser';
+ import { TransitionGenerator } from './createAnimation';
+@@ -59,23 +61,18 @@ function getReversedFromConfig(config) {
+   return !!config.reversed;
+ }
+ export function extractTransformFromStyle(style) {
+-  if (!style) {
++  // RN styles may contain optional entries, nested arrays, and registered styles.
++  // Resolve them with RN's own precedence rules before reading a transform.
++  const flattenedStyle = StyleSheet.flatten(style);
++  if (!flattenedStyle) {
+     return;
+   }
+-  if (typeof style.transform === 'string') {
++  if (typeof flattenedStyle.transform === 'string') {
+     throw new Error('[Reanimated] String transform is currently unsupported.');
+   }
+-  if (!Array.isArray(style)) {
+-    return style.transform;
+-  }
+-
+-  // Only last transform should be considered
+-  for (let i = style.length - 1; i >= 0; --i) {
+-    if (style[i].transform) {
+-      return style[i].transform;
+-    }
+-  }
++  return flattenedStyle.transform;
+ }
++
+ export function getProcessedConfig(animationName, animationType, config, initialAnimationName) {
+   return {
+     animationName: animationName,
+diff --git a/node_modules/react-native-reanimated/src/reanimated2/layoutReanimation/web/componentUtils.ts b/node_modules/react-native-reanimated/src/reanimated2/layoutReanimation/web/componentUtils.ts
+index bcbebf3..8351b3f 100644
+--- a/node_modules/react-native-reanimated/src/reanimated2/layoutReanimation/web/componentUtils.ts
++++ b/node_modules/react-native-reanimated/src/reanimated2/layoutReanimation/web/componentUtils.ts
+@@ -1,5 +1,7 @@
+ 'use strict';
+ 
++import { StyleSheet } from 'react-native';
++
+ import type { TransformsStyle } from 'react-native';
+ import { Animations, TransitionType, WebEasings } from './config';
+ import type {
+@@ -94,24 +96,16 @@ function getReversedFromConfig(config: CustomConfig) {
+ }
+ 
+ export function extractTransformFromStyle(style: StyleProps) {
+-  if (!style) {
++  // RN styles may contain optional entries, nested arrays, and registered styles.
++  // Resolve them with RN's own precedence rules before reading a transform.
++  const flattenedStyle = StyleSheet.flatten(style);
++  if (!flattenedStyle) {
+     return;
+   }
+-
+-  if (typeof style.transform === 'string') {
++  if (typeof flattenedStyle.transform === 'string') {
+     throw new Error('[Reanimated] String transform is currently unsupported.');
+   }
+-
+-  if (!Array.isArray(style)) {
+-    return style.transform;
+-  }
+-
+-  // Only last transform should be considered
+-  for (let i = style.length - 1; i >= 0; --i) {
+-    if (style[i].transform) {
+-      return style[i].transform;
+-    }
+-  }
++  return flattenedStyle.transform;
+ }
+ 
+ export function getProcessedConfig(
