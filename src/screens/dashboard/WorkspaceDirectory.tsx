@@ -3,10 +3,9 @@ import React, { useState } from 'react';
 import { Card } from '../../components/ui/Card';
 import { LinearGradient } from 'expo-linear-gradient';
 import { getCardTone, type CardTone } from '../../constants/experienceColors';
-import { borderRadius } from '../../constants/theme';
+import { borderRadius, theme } from '../../constants/theme';
 import {
   Platform,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -31,11 +30,10 @@ import {
 } from 'lucide-react-native';
 import { EmptyNote, useDashboardPalette } from './DashboardPrimitives';
 import { useTheme } from '../../contexts/ThemeContext';
-import {
-  getWorkspaceModule,
-  workspaceModules,
-} from '../../constants/workspaceDesign';
 import { dashboardWorkspaces } from './dashboardWorkspaces';
+
+const CARD_GAP = theme.spacing.sm;
+const MIN_CARD_WIDTH = 240;
 
 const ICONS = {
   school: School,
@@ -49,34 +47,17 @@ const ICONS = {
   chart: BarChart3,
   message: MessageCircle,
 };
-const CATEGORY_MODULES = {
-  Operations: 'schools',
-  Finance: 'finance',
-  Growth: 'sales',
-  'People & content': 'content',
-  Administration: 'system',
-} as const;
-
-const MODULE_TONES: Record<keyof typeof workspaceModules, CardTone> = {
-  overview: 'crimson',
-  schools: 'blue',
-  finance: 'honey',
-  connect: 'crimson',
-  sales: 'honey',
-  team: 'rose',
-  content: 'lavender',
-  support: 'rose',
-  system: 'blue',
-};
-function workspaceTone(route: string): CardTone {
-  if (route.includes('checklist')) return 'honey';
-  if (route.includes('school-intake') || route.includes('expenses'))
-    return 'rose';
-  if (route.includes('import')) return 'lavender';
-  if (route.includes('media-qr')) return 'crimson';
-  if (route.includes('/crm')) return 'rose';
-  return MODULE_TONES[getWorkspaceModule(route)];
-}
+// One colour per category makes the directory learnable across cards and filters.
+const CATEGORY_TONES = {
+  Operations: 'blue',
+  Finance: 'honey',
+  Growth: 'crimson',
+  'People & content': 'lavender',
+  Administration: 'slate',
+} as const satisfies Record<
+  (typeof dashboardWorkspaces)[number]['category'],
+  CardTone
+>;
 
 export function WorkspaceDirectory({
   entries: workspaces,
@@ -105,24 +86,24 @@ export function WorkspaceDirectory({
         .includes(workspaceQuery.trim().toLowerCase()),
   );
   const columns = contentWidth
-    ? contentWidth >= 1240
-      ? 4
-      : contentWidth >= 900
-      ? 3
-      : contentWidth >= 590
-      ? 2
-      : 1
+    ? Math.max(
+        1,
+        Math.min(
+          5,
+          Math.floor((contentWidth + CARD_GAP) / (MIN_CARD_WIDTH + CARD_GAP)),
+        ),
+      )
     : phone
     ? 1
     : wide
-    ? 3
+    ? 4
     : 2;
   const cardWidth = contentWidth
-    ? (contentWidth - (columns - 1) * 16) / columns
+    ? (contentWidth - (columns - 1) * CARD_GAP) / columns
     : phone
     ? '100%'
     : wide
-    ? '31.8%'
+    ? '23%'
     : '48%';
 
   return (
@@ -204,13 +185,13 @@ export function WorkspaceDirectory({
             category === 'All workspaces'
               ? workspaces.length
               : workspaces.filter((w) => w.category === category).length;
-          const family =
+          const accent =
             category === 'All workspaces'
-              ? workspaceModules.overview
-              : workspaceModules[
-                  CATEGORY_MODULES[category as keyof typeof CATEGORY_MODULES]
-                ];
-          const accent = isDark ? family.dark : family.light;
+              ? p.action
+              : getCardTone(
+                  CATEGORY_TONES[category as keyof typeof CATEGORY_TONES],
+                  isDark,
+                ).accent;
           return (
             <MotionPressable
               key={category}
@@ -275,8 +256,8 @@ export function WorkspaceDirectory({
             shownWorkspaces.some((w) => w.category === category),
           )
           .map((category) => {
-            const family = workspaceModules[CATEGORY_MODULES[category]];
-            const accent = isDark ? family.dark : family.light;
+            const tone = CATEGORY_TONES[category];
+            const paint = getCardTone(tone, isDark);
             const categoryEntries = shownWorkspaces.filter(
               (w) => w.category === category,
             );
@@ -284,7 +265,7 @@ export function WorkspaceDirectory({
               <View key={category} style={styles.group}>
                 <View style={styles.groupHeader}>
                   <View
-                    style={[styles.groupDot, { backgroundColor: accent }]}
+                    style={[styles.groupDot, { backgroundColor: paint.accent }]}
                   />
                   <Text
                     accessibilityRole="header"
@@ -292,7 +273,12 @@ export function WorkspaceDirectory({
                   >
                     {category}
                   </Text>
-                  <Text style={[styles.groupCount, { color: p.muted }]}>
+                  <Text
+                    style={[
+                      styles.groupCount,
+                      { color: paint.accent, backgroundColor: paint.surface },
+                    ]}
+                  >
                     {categoryEntries.length}
                   </Text>
                   <View
@@ -302,90 +288,66 @@ export function WorkspaceDirectory({
                 <View style={styles.grid}>
                   {categoryEntries.map((w) => {
                     const Icon = ICONS[w.icon];
-                    const tone = workspaceTone(w.route);
-                    const paint = getCardTone(tone, isDark);
                     return (
                       <Card
                         key={w.title}
                         noPadding
                         tone={tone}
-                        material="panel"
+                        material="neutral"
                         accessibilityLabel={`Open ${w.title}`}
                         onPress={() => onNavigate(w.route)}
                         style={[styles.card, { width: cardWidth }]}
                       >
                         <LinearGradient
-                          colors={[paint.cover, paint.coverEnd]}
+                          pointerEvents="none"
+                          colors={[p.surface, paint.panel]}
                           start={{ x: 0, y: 0 }}
                           end={{ x: 1, y: 1 }}
-                          style={styles.cover}
-                        >
-                          <View style={styles.coverTop}>
-                            <Text
-                              style={[
-                                styles.coverLabel,
-                                { color: paint.accent },
-                              ]}
-                            >
-                              {w.category.toUpperCase()}
-                            </Text>
-                            <ArrowUpRight size={18} color={paint.accent} />
+                          style={StyleSheet.absoluteFill}
+                        />
+                        <View
+                          pointerEvents="none"
+                          style={[
+                            styles.accentEdge,
+                            { backgroundColor: paint.accent },
+                          ]}
+                        />
+                        <View style={styles.cardTop}>
+                          <View
+                            style={[
+                              styles.icon,
+                              { backgroundColor: paint.accent },
+                            ]}
+                          >
+                            <Icon
+                              size={22}
+                              color={paint.panel}
+                              strokeWidth={1.8}
+                            />
                           </View>
-                          <Icon
-                            size={42}
-                            color={paint.accent}
-                            strokeWidth={1.5}
-                          />
-                          <View
-                            pointerEvents="none"
-                            style={[
-                              styles.coverRing,
-                              { borderColor: paint.accent },
-                            ]}
-                          />
-                          <View
-                            pointerEvents="none"
-                            style={[
-                              styles.coverTile,
-                              { borderColor: paint.accent },
-                            ]}
-                          />
-                        </LinearGradient>
-                        <View style={styles.cardBody}>
                           <Text
-                            style={[styles.cardTitle, { color: paint.ink }]}
+                            style={[styles.cardTitle, { color: p.ink }]}
                           >
                             {w.title}
                           </Text>
-                          <Text
-                            style={[styles.cardDetail, { color: paint.muted }]}
-                          >
-                            {w.detail}
-                          </Text>
                           <View
                             style={[
-                              styles.cardFooter,
-                              { borderColor: paint.border },
+                              styles.cardArrow,
+                              { backgroundColor: paint.surface },
                             ]}
                           >
-                            <Text
-                              style={[
-                                styles.openLabel,
-                                { color: paint.accent },
-                              ]}
-                            >
-                              Open workspace
-                            </Text>
-                            <View
-                              style={[
-                                styles.cardArrow,
-                                { backgroundColor: paint.surface },
-                              ]}
-                            >
-                              <ArrowUpRight size={16} color={paint.accent} />
-                            </View>
+                            <ArrowUpRight
+                              size={15}
+                              color={paint.accent}
+                              strokeWidth={2}
+                            />
                           </View>
                         </View>
+                        <Text
+                          style={[styles.cardDetail, { color: p.muted }]}
+                        >
+                          {w.detail}
+                        </Text>
                       </Card>
                     );
                   })}
@@ -424,7 +386,7 @@ export function WorkspaceDirectory({
 }
 
 const styles = StyleSheet.create({
-  directory: { gap: 24, width: '100%' },
+  directory: { gap: theme.spacing.md, width: '100%' },
   toolbar: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -480,93 +442,68 @@ const styles = StyleSheet.create({
   filterText: { fontSize: 12, fontWeight: '500' },
   filterCount: { fontSize: 11, opacity: 0.85, marginLeft: 2 },
   filterDot: { width: 5, height: 5, borderRadius: 3 },
-  group: { gap: 14, marginTop: 2 },
+  group: { gap: CARD_GAP, marginTop: theme.spacing.xs },
   groupHeader: { flexDirection: 'row', alignItems: 'center', gap: 9 },
   groupDot: { width: 7, height: 7, borderRadius: 3 },
   groupTitle: { fontSize: 14, fontWeight: '600' },
-  groupCount: { fontSize: 11 },
+  groupCount: {
+    fontSize: 11,
+    fontWeight: '600',
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: borderRadius.xs,
+    overflow: 'hidden',
+  },
   groupRule: { flex: 1, height: 1, marginLeft: 6 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: CARD_GAP },
   card: {
     minWidth: 0,
     borderWidth: 1,
-    borderRadius: borderRadius.xl,
-    padding: 0,
-    minHeight: 278,
+    borderRadius: borderRadius.lg,
+    padding: theme.spacing.md,
+    minHeight: 112,
     overflow: 'hidden',
   },
-  cover: {
-    height: 118,
-    padding: 20,
-    justifyContent: 'space-between',
-    overflow: 'hidden',
-  },
-  coverTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    zIndex: 1,
-  },
-  coverLabel: { fontSize: 9, fontWeight: '700', letterSpacing: 1.2 },
-  coverRing: {
+  accentEdge: {
     position: 'absolute',
-    width: 122,
-    height: 122,
-    borderWidth: 1,
-    borderRadius: 61,
-    right: 36,
-    bottom: -54,
-    opacity: 0.22,
+    left: 0,
+    top: theme.spacing.md,
+    bottom: theme.spacing.md,
+    width: 3,
+    borderTopRightRadius: borderRadius.xs,
+    borderBottomRightRadius: borderRadius.xs,
   },
-  coverTile: {
-    position: 'absolute',
-    width: 82,
-    height: 82,
-    borderWidth: 1,
-    borderRadius: 22,
-    right: -12,
-    top: 38,
-    transform: [{ rotate: '-22deg' }],
-    opacity: 0.25,
-  },
-  cardBody: { padding: 22, flexGrow: 1 },
-  openLabel: { fontSize: 12, fontWeight: '600' },
   cardTop: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 17,
+    gap: CARD_GAP,
   },
   icon: {
-    width: 46,
-    height: 46,
-    borderRadius: 13,
+    width: 40,
+    height: 40,
+    flexShrink: 0,
+    borderRadius: borderRadius.sm,
     alignItems: 'center',
     justifyContent: 'center',
   },
   cardArrow: {
-    width: 32,
-    height: 32,
-    borderRadius: 12,
+    width: 26,
+    height: 26,
+    flexShrink: 0,
+    borderRadius: borderRadius.full,
     alignItems: 'center',
     justifyContent: 'center',
   },
   cardTitle: {
-    fontSize: 20,
-    lineHeight: 27,
+    flex: 1,
+    minWidth: 0,
+    fontSize: 15,
+    lineHeight: 20,
     fontWeight: '600',
     letterSpacing: -0.2,
   },
-  cardDetail: { fontSize: 13, lineHeight: 20, marginTop: 6, flexGrow: 1 },
-  cardFooter: {
-    marginTop: 20,
-    paddingTop: 14,
-    borderTopWidth: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 8,
-  },
+  cardDetail: { fontSize: 12, lineHeight: 18, marginTop: theme.spacing.xs * 2 },
   empty: {
     borderWidth: 1,
     borderRadius: 14,

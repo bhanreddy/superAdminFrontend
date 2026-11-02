@@ -3,7 +3,7 @@ import { brandColors as b } from './experienceColors';
 /** Functional colour families. Status colours remain independent of screen colour. */
 export const workspaceModules = {
   overview: {
-    label: 'Overview',
+    label: 'Dashboard',
     light: b.red,
     dark: b.redBright,
     fill: b.red,

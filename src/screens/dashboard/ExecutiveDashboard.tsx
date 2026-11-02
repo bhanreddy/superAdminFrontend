@@ -68,7 +68,7 @@ function ExecutiveWorkspace({ scope }: { scope: string }) {
   const { can, currentAdmin, founder, user, roleLabel } = useAuth();
   const { canApproveReject } = useFounderAuth();
   const { selectedCluster } = useCluster();
-  const [tab, setTab] = useState<'Overview' | 'Workspaces'>('Overview');
+  const [tab, setTab] = useState<'Workspaces' | 'Overview'>('Workspaces');
   const [period, setPeriod] = useState<FinancePeriod>('THIS_MONTH');
   const [unit, setUnit] = useState('ALL');
   const canReadSchools =
@@ -114,7 +114,8 @@ function ExecutiveWorkspace({ scope }: { scope: string }) {
     <ScrollView
       style={{ flex: 1, backgroundColor: p.canvas }}
       contentContainerStyle={{
-        padding: width < 600 ? 18 : 32,
+        padding:
+          tab === 'Workspaces' ? (width < 600 ? 16 : 24) : width < 600 ? 18 : 32,
         paddingBottom: 48,
       }}
       showsVerticalScrollIndicator={false}
@@ -127,18 +128,23 @@ function ExecutiveWorkspace({ scope }: { scope: string }) {
       }
     >
       <View
-        style={{ maxWidth: 1480, width: '100%', alignSelf: 'center', gap: 28 }}
+        style={{
+          maxWidth: 1480,
+          width: '100%',
+          alignSelf: 'center',
+          gap: tab === 'Workspaces' ? 20 : 28,
+        }}
         onLayout={(event) => setContentWidth(event.nativeEvent.layout.width)}
       >
-        <MotionSection style={{ gap: 24 }}>
+        <MotionSection style={{ gap: tab === 'Workspaces' ? 16 : 24 }}>
           <View
             style={{
               flexDirection: phone ? 'column' : 'row',
               alignItems: phone ? 'stretch' : 'center',
               justifyContent: 'space-between',
-              gap: 24,
-              padding: phone ? 24 : 32,
-              minHeight: phone ? (tab === 'Overview' ? 248 : 164) : 184,
+              gap: tab === 'Workspaces' ? 16 : 24,
+              padding: tab === 'Workspaces' ? (phone ? 16 : 20) : phone ? 24 : 32,
+              minHeight: tab === 'Workspaces' ? 112 : phone ? 248 : 184,
               borderRadius: borderRadius.xl,
               backgroundColor: p.hero,
               overflow: 'hidden',
@@ -180,7 +186,7 @@ function ExecutiveWorkspace({ scope }: { scope: string }) {
                   flexDirection: 'row',
                   alignItems: 'center',
                   gap: 8,
-                  marginBottom: 12,
+                  marginBottom: tab === 'Workspaces' ? 8 : 12,
                 }}
               >
                 <View
@@ -204,8 +210,9 @@ function ExecutiveWorkspace({ scope }: { scope: string }) {
                 accessibilityRole="header"
                 style={{
                   color: brandColors.paper,
-                  fontSize: phone ? 30 : 39,
-                  lineHeight: phone ? 38 : 48,
+                  fontSize:
+                    tab === 'Workspaces' ? (phone ? 26 : 28) : phone ? 30 : 39,
+                  lineHeight: tab === 'Workspaces' ? 36 : phone ? 38 : 48,
                   fontWeight: '600',
                   letterSpacing: -1.3,
                 }}
@@ -221,7 +228,7 @@ function ExecutiveWorkspace({ scope }: { scope: string }) {
                   color: brandColors.paper,
                   fontSize: 14,
                   lineHeight: 22,
-                  marginTop: 8,
+                  marginTop: tab === 'Workspaces' ? 4 : 8,
                 }}
               >
                 {tab === 'Overview'
@@ -281,7 +288,7 @@ function ExecutiveWorkspace({ scope }: { scope: string }) {
               gap: 16,
               borderBottomWidth: 1,
               borderColor: p.line,
-              paddingBottom: 16,
+              paddingBottom: tab === 'Workspaces' ? 12 : 16,
             }}
           >
             <View
@@ -294,7 +301,7 @@ function ExecutiveWorkspace({ scope }: { scope: string }) {
                 gap: 4,
               }}
             >
-              {(['Overview', 'Workspaces'] as const).map((t) => {
+              {(['Workspaces', 'Overview'] as const).map((t) => {
                 const selected = tab === t;
                 const Icon = t === 'Overview' ? BarChart3 : LayoutGrid;
                 return (

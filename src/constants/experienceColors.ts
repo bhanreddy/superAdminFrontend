@@ -177,6 +177,28 @@ export const cardTones = {
       border: '#58466E',
     },
   },
+  slate: {
+    light: {
+      surface: '#E9EDF3',
+      panel: '#F5F7FA',
+      cover: '#C1CEDF',
+      coverEnd: '#E0E7F0',
+      ink: brandColors.ink,
+      muted: '#526175',
+      accent: '#3B506C',
+      border: '#CCD5E1',
+    },
+    dark: {
+      surface: '#2D3541',
+      panel: '#272D36',
+      cover: '#3D4E65',
+      coverEnd: '#303D50',
+      ink: '#F0F4FA',
+      muted: '#C0CBD9',
+      accent: '#BECFE5',
+      border: '#4A596E',
+    },
+  },
 } as const;
 export type CardTone = keyof typeof cardTones;
 export function getCardTone(tone: CardTone, isDark: boolean) {

@@ -300,6 +300,7 @@ test('finance failure preserves the school portfolio and shows no replacement re
   act(() => {
     screen = create(React.createElement(f.Screen));
   });
+  act(() => pressable(screen.root, 'Overview').props.onPress());
   assert.match(textOf(screen.root), /financial summary is unavailable/);
   assert.match(textOf(screen.root), /River School/);
   assert.doesNotMatch(textOf(screen.root), /1,20,000/);
@@ -311,6 +312,7 @@ test('portfolio navigation preserves a school’s cluster context', () => {
   act(() => {
     screen = create(React.createElement(f.Screen));
   });
+  act(() => pressable(screen.root, 'Overview').props.onPress());
   act(() =>
     pressable(screen.root, 'Open River School, RIV, Live').props.onPress(),
   );
@@ -320,7 +322,7 @@ test('portfolio navigation preserves a school’s cluster context', () => {
   });
   act(() => screen.unmount());
 });
-test('workspace directory searches real destinations and respects denied capabilities', () => {
+test('dashboard opens Workspaces first, keeps Overview accessible, and respects denied capabilities', () => {
   const f = workspaceFixture({
     denied: ['users.read.team', 'users.manage', 'schools.create'],
     approve: false,
@@ -329,6 +331,14 @@ test('workspace directory searches real destinations and respects denied capabil
   act(() => {
     screen = create(React.createElement(f.Screen));
   });
+  const tabs = screen.root.findAllByType('Pressable').filter(
+    (node) => node.props.accessibilityRole === 'tab',
+  );
+  assert.deepEqual(tabs.map((node) => node.props.accessibilityLabel), ['Workspaces', 'Overview']);
+  assert.equal(tabs[0].props.accessibilityState.selected, true);
+  assert.equal(tabs[1].props.accessibilityState.selected, false);
+  assert.ok(pressable(screen.root, 'Open Schools'));
+  act(() => pressable(screen.root, 'Overview').props.onPress());
   assert.equal(pressable(screen.root, 'Add school'), undefined);
   assert.doesNotMatch(textOf(screen.root), /Expense approvals/);
   act(() => pressable(screen.root, 'Browse all workspaces').props.onPress());

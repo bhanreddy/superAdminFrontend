@@ -10,7 +10,7 @@ interface CardProps extends ViewProps {
   onPress?: () => void;
   noPadding?: boolean;
   tone?: CardTone;
-  material?: 'soft' | 'panel';
+  material?: 'soft' | 'panel' | 'neutral';
 }
 export const Card = React.memo(function Card({
   children,
@@ -24,7 +24,7 @@ export const Card = React.memo(function Card({
 }: CardProps) {
   const { colors, clayShadows, isDark } = useTheme();
   const paint = tone ? getCardTone(tone, isDark) : undefined;
-  const materialStyle = paint && {
+  const materialStyle = paint && material !== 'neutral' && {
     backgroundColor: material === 'panel' ? paint.panel : paint.surface,
     borderColor: paint.border,
   };
@@ -38,7 +38,7 @@ export const Card = React.memo(function Card({
         lift
         accessibilityRole="button"
         onPress={onPress}
-        style={({ hovered, pressed }: any) => [
+        style={({ hovered, pressed, focused }: any) => [
           styles.card,
           surface,
           clayStyle(clayShadows.subtle),
@@ -51,7 +51,7 @@ export const Card = React.memo(function Card({
             } as any),
           style,
           materialStyle,
-          hovered && { borderColor: paint?.accent || colors.primary },
+          (hovered || focused) && { borderColor: paint?.accent || colors.primary },
         ]}
         {...props}
       >
