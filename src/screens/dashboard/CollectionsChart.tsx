@@ -2,6 +2,7 @@ import { MotionPressable } from '../../components/ui/MotionPressable';
 import React, { useMemo, useState } from 'react';
 import { Platform, Pressable, Text, View } from 'react-native';
 import Svg, { Line, Path, Circle } from 'react-native-svg';
+import { borderRadius } from '../../constants/theme';
 import { collectionTrend, money, type AnalyticsRow } from './dashboardModel';
 import {
   ds,
@@ -17,7 +18,7 @@ export function CollectionsChart({
   income: AnalyticsRow[];
   expenses: AnalyticsRow[];
 }) {
-  const p = useDashboardPalette();
+  const p = useDashboardPalette('honey');
   const [range, setRange] = useState(6),
     [table, setTable] = useState(false);
   const points = useMemo(
@@ -66,7 +67,7 @@ export function CollectionsChart({
                 style={{
                   minWidth: 44,
                   minHeight: 44,
-                  borderRadius: 9,
+                  borderRadius: borderRadius.sm,
                   alignItems: 'center',
                   justifyContent: 'center',
                   backgroundColor: range === n ? p.inset : 'transparent',

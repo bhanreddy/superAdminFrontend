@@ -1,7 +1,6 @@
 import { MotionPressable } from '../../components/ui/MotionPressable';
 import React, { useState } from 'react';
 import { Card } from '../../components/ui/Card';
-import { LinearGradient } from 'expo-linear-gradient';
 import { getCardTone, type CardTone } from '../../constants/experienceColors';
 import { borderRadius, theme } from '../../constants/theme';
 import {
@@ -298,20 +297,6 @@ export function WorkspaceDirectory({
                         onPress={() => onNavigate(w.route)}
                         style={[styles.card, { width: cardWidth }]}
                       >
-                        <LinearGradient
-                          pointerEvents="none"
-                          colors={[p.surface, paint.panel]}
-                          start={{ x: 0, y: 0 }}
-                          end={{ x: 1, y: 1 }}
-                          style={StyleSheet.absoluteFill}
-                        />
-                        <View
-                          pointerEvents="none"
-                          style={[
-                            styles.accentEdge,
-                            { backgroundColor: paint.accent },
-                          ]}
-                        />
                         <View style={styles.cardTop}>
                           <View
                             style={[
@@ -463,15 +448,6 @@ const styles = StyleSheet.create({
     padding: theme.spacing.md,
     minHeight: 112,
     overflow: 'hidden',
-  },
-  accentEdge: {
-    position: 'absolute',
-    left: 0,
-    top: theme.spacing.md,
-    bottom: theme.spacing.md,
-    width: 3,
-    borderTopRightRadius: borderRadius.xs,
-    borderBottomRightRadius: borderRadius.xs,
   },
   cardTop: {
     flexDirection: 'row',

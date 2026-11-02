@@ -3,6 +3,7 @@ import React from 'react';
 import {
   brandColors,
   experienceColors,
+  getCardTone,
   type CardTone,
 } from '../../constants/experienceColors';
 import {
@@ -17,17 +18,20 @@ import { ArrowUpRight, RefreshCw, AlertCircle } from 'lucide-react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Card } from '../../components/ui/Card';
 import { Skeleton } from '../../components/ui/Skeleton';
-import { borderRadius } from '../../constants/theme';
+import { borderRadius, theme } from '../../constants/theme';
 import type { Resource } from './useDashboardData';
 
-export function useDashboardPalette() {
+export function useDashboardPalette(tone?: CardTone) {
   const { isDark, colors } = useTheme();
   const palette = isDark ? experienceColors.dark : experienceColors.light;
+  const paint = tone ? getCardTone(tone, isDark) : undefined;
   return {
     ...palette,
     canvas: colors?.background || palette.canvas,
     surface: colors?.card || palette.surface,
-    inset: colors?.primaryMuted || palette.inset,
+    inset: paint?.surface || colors?.primaryMuted || palette.inset,
+    action: paint?.accent || palette.action,
+    actionFill: tone ? getCardTone(tone, false).accent : palette.actionFill,
     ink: colors?.textPrimary || palette.ink,
     muted: colors?.textSecondary || palette.muted,
     line: colors?.borderSubtle || palette.line,
@@ -124,7 +128,7 @@ export function Panel({
     <Card
       noPadding
       tone={tone}
-      material="panel"
+      material="neutral"
       style={[
         ds.panel,
         { backgroundColor: p.surface, borderColor: p.line },
@@ -257,8 +261,8 @@ export function EmptyNote({
 export const ds = StyleSheet.create({
   panel: {
     borderWidth: 1,
-    borderRadius: borderRadius.xl,
-    padding: 24,
+    borderRadius: borderRadius.lg,
+    padding: theme.spacing.md,
     minWidth: 0,
   },
   headingRow: {
@@ -267,7 +271,7 @@ export const ds = StyleSheet.create({
     gap: 12,
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 22,
+    marginBottom: theme.spacing.md,
   },
   eyebrow: {
     fontSize: 10,
@@ -276,7 +280,12 @@ export const ds = StyleSheet.create({
     textTransform: 'uppercase',
     marginBottom: 8,
   },
-  sectionTitle: { fontSize: 21, fontWeight: '600', letterSpacing: -0.6 },
+  sectionTitle: {
+    fontSize: 18,
+    lineHeight: 24,
+    fontWeight: '600',
+    letterSpacing: -0.4,
+  },
   body: { fontSize: 13, lineHeight: 21 },
   button: {
     minHeight: 44,

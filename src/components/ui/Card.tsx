@@ -1,16 +1,18 @@
 import { MotionPressable } from './MotionPressable';
 import React from 'react';
+import { LinearGradient } from 'expo-linear-gradient';
 import { getCardTone, type CardTone } from '../../constants/experienceColors';
 import { View, StyleSheet, ViewProps, Pressable, Platform } from 'react-native';
 import { useTheme, clayStyle } from '../../contexts/ThemeContext';
-import { borderRadius } from '../../constants/theme';
+import { borderRadius, theme } from '../../constants/theme';
+export type CardMaterial = 'soft' | 'panel' | 'neutral';
 interface CardProps extends ViewProps {
   children: React.ReactNode;
   variant?: 'default' | 'outlined' | 'elevated' | 'interactive';
   onPress?: () => void;
   noPadding?: boolean;
   tone?: CardTone;
-  material?: 'soft' | 'panel' | 'neutral';
+  material?: CardMaterial;
 }
 export const Card = React.memo(function Card({
   children,
@@ -32,6 +34,26 @@ export const Card = React.memo(function Card({
     backgroundColor: colors.card,
     borderColor: colors.borderSubtle || colors.border,
   };
+  const content = (
+    <>
+      {paint && material === 'neutral' && (
+        <>
+          <LinearGradient
+            pointerEvents="none"
+            colors={[colors.card, paint.panel]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={StyleSheet.absoluteFill}
+          />
+          <View
+            pointerEvents="none"
+            style={[styles.accentEdge, { backgroundColor: paint.accent }]}
+          />
+        </>
+      )}
+      {children}
+    </>
+  );
   if (onPress)
     return (
       <MotionPressable
@@ -40,6 +62,7 @@ export const Card = React.memo(function Card({
         onPress={onPress}
         style={({ hovered, pressed, focused }: any) => [
           styles.card,
+          material === 'neutral' && styles.neutral,
           surface,
           clayStyle(clayShadows.subtle),
           !noPadding && styles.padding,
@@ -55,13 +78,14 @@ export const Card = React.memo(function Card({
         ]}
         {...props}
       >
-        {children}
+        {content}
       </MotionPressable>
     );
   return (
     <View
       style={[
         styles.card,
+        material === 'neutral' && styles.neutral,
         surface,
         clayStyle(
           variant === 'elevated'
@@ -76,11 +100,21 @@ export const Card = React.memo(function Card({
       ]}
       {...props}
     >
-      {children}
+      {content}
     </View>
   );
 });
 const styles = StyleSheet.create({
   card: { borderRadius: borderRadius.xl, borderWidth: 1, minWidth: 0 },
+  neutral: { borderRadius: borderRadius.lg, overflow: 'hidden' },
+  accentEdge: {
+    position: 'absolute',
+    left: 0,
+    top: theme.spacing.md,
+    bottom: theme.spacing.md,
+    width: 3,
+    borderTopRightRadius: borderRadius.xs,
+    borderBottomRightRadius: borderRadius.xs,
+  },
   padding: { padding: 20 },
 });

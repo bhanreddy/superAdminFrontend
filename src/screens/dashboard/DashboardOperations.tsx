@@ -1,6 +1,6 @@
 import { MotionPressable } from '../../components/ui/MotionPressable';
 import React from 'react';
-import { brandColors } from '../../constants/experienceColors';
+import { getCardTone } from '../../constants/experienceColors';
 import { useTheme } from '../../contexts/ThemeContext';
 import { StatCard } from '../../components/ui/StatCard';
 import { Pressable, Text, View } from 'react-native';
@@ -39,7 +39,7 @@ export function ReviewQueue({
   wide: boolean;
   onNavigate: (route: string) => void;
 }) {
-  const p = useDashboardPalette();
+  const p = useDashboardPalette('slate');
   function queueRow(
     label: string,
     detail: string,
@@ -94,7 +94,7 @@ export function ReviewQueue({
     );
   }
   return (
-    <Panel tone="rose" style={{ flex: wide ? 1 : undefined }}>
+    <Panel tone="slate" style={{ flex: wide ? 1 : undefined }}>
       <SectionHeading
         eyebrow="ACTION CENTER"
         title="Your attention, needed"
@@ -180,15 +180,14 @@ export function NetworkOverview({
   phone: boolean;
   onNavigate: (route: string) => void;
 }) {
-  const p = useDashboardPalette();
   const { isDark } = useTheme();
+  const paint = getCardTone('blue', isDark);
   const active = resource.data?.active_schools;
   return (
     <ResourceStatus label="network overview" resource={resource}>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
         {[
           {
-            accent: isDark ? brandColors.blueBright : brandColors.blue,
             label: 'Partner schools',
             value: resource.data?.total_schools,
             detail: 'Across your network',
@@ -196,7 +195,6 @@ export function NetworkOverview({
             route: '/(app)/schools',
           },
           {
-            accent: isDark ? brandColors.amberBright : brandColors.amber,
             label: 'Active schools',
             value: active,
             detail: 'Currently enabled',
@@ -204,7 +202,6 @@ export function NetworkOverview({
             route: '/(app)/schools',
           },
           {
-            accent: isDark ? brandColors.redBright : brandColors.rose,
             label: 'Students',
             value: resource.data?.total_students,
             detail: 'Registered learners',
@@ -212,14 +209,13 @@ export function NetworkOverview({
             route: '/(app)/students',
           },
           {
-            accent: isDark ? brandColors.violetBright : brandColors.violet,
             label: 'Staff',
             value: resource.data?.total_staff,
             detail: 'Across partner schools',
             Icon: BookOpen,
             route: '/(app)/schools',
           },
-        ].map(({ label, value, detail, Icon, route, accent }) => (
+        ].map(({ label, value, detail, Icon, route }) => (
           <View
             key={label}
             style={{
@@ -232,8 +228,9 @@ export function NetworkOverview({
               title={label}
               value={number(value).toLocaleString('en-IN')}
               description={detail}
-              accentColor={accent}
-              icon={<Icon size={20} color={accent} />}
+              tone="blue"
+              material="neutral"
+              icon={<Icon size={22} color={paint.panel} />}
               onPress={() => onNavigate(route)}
             />
           </View>
@@ -253,9 +250,10 @@ export function DashboardLaunchpad({
   onNavigate: (route: string) => void;
   onBrowse: () => void;
 }) {
-  const p = useDashboardPalette();
+  const p = useDashboardPalette('slate');
+  const { isDark } = useTheme();
   return (
-    <Panel tone="lavender" style={{ flex: wide ? 1 : undefined }}>
+    <Panel tone="slate" style={{ flex: wide ? 1 : undefined }}>
       <SectionHeading eyebrow="QUICK ACCESS" title="Make your next move" />
       <View style={{ gap: 3 }}>
         {[
@@ -264,66 +262,73 @@ export function DashboardLaunchpad({
             'Keep receipts and spending together',
             '/(app)/console/expenses',
             Receipt,
+            'honey',
           ],
           [
             'Open CRM',
             'Move a relationship forward',
             '/(app)/console/crm',
             Target,
+            'crimson',
           ],
           [
             'Talk to your team',
             'Pick up the conversation in Connect',
             '/(app)/connect',
             MessageCircle,
+            'lavender',
           ],
           [
             'Browse all workspaces',
             `${workspaceCount} places to make progress`,
             '',
             Layers,
+            'slate',
           ],
-        ].map(([label, detail, route, Icon]: any, i) => (
-          <MotionPressable
-            key={label}
-            accessibilityRole="button"
-            accessibilityLabel={label}
-            onPress={() => (route ? onNavigate(route) : onBrowse())}
-            style={({ hovered }: any) => [
-              st.launchRow,
-              {
-                borderColor: p.line,
-                borderTopWidth: i ? 1 : 0,
-                backgroundColor: hovered ? p.inset : 'transparent',
-              },
-            ]}
-          >
-            <View style={[st.launchIcon, { backgroundColor: p.inset }]}>
-              <Icon size={18} color={p.action} />
-            </View>
-            <View style={{ flex: 1, gap: 5 }}>
-              <Text
-                style={{
-                  color: p.ink,
-                  fontWeight: '600',
-                  fontSize: 13,
-                }}
-              >
-                {label}
-              </Text>
-              <Text
-                style={{
-                  color: p.muted,
-                  fontSize: 11,
-                  lineHeight: 17,
-                }}
-              >
-                {detail}
-              </Text>
-            </View>
-            <ArrowUpRight size={15} color={p.muted} />
-          </MotionPressable>
-        ))}
+        ].map(([label, detail, route, Icon, tone]: any, i) => {
+          const paint = getCardTone(tone, isDark);
+          return (
+            <MotionPressable
+              key={label}
+              accessibilityRole="button"
+              accessibilityLabel={label}
+              onPress={() => (route ? onNavigate(route) : onBrowse())}
+              style={({ hovered }: any) => [
+                st.launchRow,
+                {
+                  borderColor: p.line,
+                  borderTopWidth: i ? 1 : 0,
+                  backgroundColor: hovered ? p.inset : 'transparent',
+                },
+              ]}
+            >
+              <View style={[st.launchIcon, { backgroundColor: paint.accent }]}>
+                <Icon size={20} color={paint.panel} />
+              </View>
+              <View style={{ flex: 1, gap: 5 }}>
+                <Text
+                  style={{
+                    color: p.ink,
+                    fontWeight: '600',
+                    fontSize: 13,
+                  }}
+                >
+                  {label}
+                </Text>
+                <Text
+                  style={{
+                    color: p.muted,
+                    fontSize: 11,
+                    lineHeight: 17,
+                  }}
+                >
+                  {detail}
+                </Text>
+              </View>
+              <ArrowUpRight size={15} color={paint.accent} />
+            </MotionPressable>
+          );
+        })}
       </View>
     </Panel>
   );

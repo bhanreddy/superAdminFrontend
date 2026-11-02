@@ -39,7 +39,7 @@ export function FinancialPulse({
   wide: boolean;
   onNavigate: (route: string) => void;
 }) {
-  const p = useDashboardPalette();
+  const p = useDashboardPalette('honey');
   const financial = resource.data;
   return (
     <Panel tone="honey" style={{ flex: wide ? 1.7 : undefined }}>
@@ -121,7 +121,7 @@ export function FinancialPulse({
           accessibilityLabel={`Posted revenue ${money(financial?.revenue)}`}
           style={{
             color: p.ink,
-            fontSize: phone ? 44 : 57,
+            fontSize: phone ? 36 : 44,
             fontWeight: '600',
             letterSpacing: -2,
             marginVertical: 12,
@@ -195,14 +195,14 @@ export function SpendComposition({
 }: {
   resource: DashboardData['analytics'];
 }) {
-  const p = useDashboardPalette();
+  const p = useDashboardPalette('honey');
   const spend = useMemo(
     () => spendComposition(resource.data?.expenseV2Rows || []),
     [resource.data],
   );
   const spendTotal = spend.reduce((n, r) => n + r.amount, 0);
   return (
-    <Panel tone="lavender" style={{ flex: 1 }}>
+    <Panel tone="honey" style={{ flex: 1 }}>
       <SectionHeading
         eyebrow="SPENDING IN FOCUS"
         title="Where this month goes"
@@ -271,10 +271,10 @@ export function BillingContext({
   unit: string;
   onUnitChange: (unit: string) => void;
 }) {
-  const p = useDashboardPalette();
+  const p = useDashboardPalette('honey');
   const financial = financialResource.data;
   return (
-    <Panel tone="crimson" style={{ flex: 1 }}>
+    <Panel tone="honey" style={{ flex: 1 }}>
       <SectionHeading
         eyebrow="FINANCE WITH CONTEXT"
         title="Receipts & business units"
@@ -305,7 +305,7 @@ export function BillingContext({
           style={{
             borderWidth: 1,
             borderColor: p.line,
-            borderRadius: 10,
+            borderRadius: borderRadius.md,
             overflow: 'hidden',
           }}
         >

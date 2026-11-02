@@ -41,6 +41,9 @@ function loader(mocks = {}) {
     function requireModule(id) {
       if (Object.hasOwn(mocks, id)) return mocks[id];
       if (id === 'react-native-reanimated') return motionMock(mocks['react-native']);
+      if (id === 'expo-linear-gradient') return {
+        LinearGradient: ({ children, ...props }) => require('react').createElement('LinearGradient', props, children),
+      };
       if (!id.startsWith('.')) return localRequire(id);
       const base = path.resolve(path.dirname(filename), id);
       const resolved = [base, `${base}.ts`, `${base}.tsx`, `${base}.js`, `${base}/index.js`].find((p) => fs.existsSync(p) && fs.statSync(p).isFile());

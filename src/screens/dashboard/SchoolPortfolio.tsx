@@ -2,6 +2,7 @@ import { MotionPressable } from '../../components/ui/MotionPressable';
 import React, { useMemo, useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { borderRadius } from '../../constants/theme';
 
 import { ChevronRight, Search } from 'lucide-react-native';
 import {
@@ -25,7 +26,7 @@ export function SchoolPortfolio({
   phone: boolean;
   onNavigate: (route: string) => void;
 }) {
-  const p = useDashboardPalette(),
+  const p = useDashboardPalette('blue'),
     router = useRouter();
   const [query, setQuery] = useState(''),
     [schoolFilter, setSchoolFilter] = useState('All');
@@ -107,7 +108,7 @@ export function SchoolPortfolio({
               style={{
                 minHeight: 44,
                 paddingHorizontal: 12,
-                borderRadius: 8,
+                borderRadius: borderRadius.sm,
                 backgroundColor:
                   schoolFilter === status ? p.inset : 'transparent',
                 justifyContent: 'center',

@@ -23,6 +23,7 @@ import { borderRadius } from '../../constants/theme';
 import { brandColors } from '../../constants/experienceColors';
 import { MotionPressable } from '../../components/ui/MotionPressable';
 import { MotionSection } from '../../components/ui/MotionSection';
+import { Card } from '../../components/ui/Card';
 import {
   FinancialPulse,
   SpendComposition,
@@ -109,13 +110,31 @@ function ExecutiveWorkspace({ scope }: { scope: string }) {
       : date.getHours() < 17
       ? 'Good afternoon'
       : 'Good evening';
+  const actions = (
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+      <DashButton
+        label="Refresh"
+        inverse={!phone}
+        icon={false}
+        busy={d.refreshing}
+        onPress={() => void d.refresh()}
+      />
+      {can(PERMISSIONS.SCHOOLS_CREATE) && (
+        <DashButton
+          label="Add school"
+          inverse={!phone}
+          primary
+          onPress={() => go('/(app)/schools/add')}
+        />
+      )}
+    </View>
+  );
 
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: p.canvas }}
       contentContainerStyle={{
-        padding:
-          tab === 'Workspaces' ? (width < 600 ? 16 : 24) : width < 600 ? 18 : 32,
+        padding: width < 600 ? 16 : 24,
         paddingBottom: 48,
       }}
       showsVerticalScrollIndicator={false}
@@ -132,20 +151,20 @@ function ExecutiveWorkspace({ scope }: { scope: string }) {
           maxWidth: 1480,
           width: '100%',
           alignSelf: 'center',
-          gap: tab === 'Workspaces' ? 20 : 28,
+          gap: 20,
         }}
         onLayout={(event) => setContentWidth(event.nativeEvent.layout.width)}
       >
-        <MotionSection style={{ gap: tab === 'Workspaces' ? 16 : 24 }}>
+        <MotionSection style={{ gap: 16 }}>
           <View
             style={{
               flexDirection: phone ? 'column' : 'row',
               alignItems: phone ? 'stretch' : 'center',
               justifyContent: 'space-between',
-              gap: tab === 'Workspaces' ? 16 : 24,
-              padding: tab === 'Workspaces' ? (phone ? 16 : 20) : phone ? 24 : 32,
-              minHeight: tab === 'Workspaces' ? 112 : phone ? 248 : 184,
-              borderRadius: borderRadius.xl,
+              gap: 16,
+              padding: phone ? 16 : 20,
+              minHeight: 112,
+              borderRadius: borderRadius.lg,
               backgroundColor: p.hero,
               overflow: 'hidden',
               position: 'relative',
@@ -186,7 +205,7 @@ function ExecutiveWorkspace({ scope }: { scope: string }) {
                   flexDirection: 'row',
                   alignItems: 'center',
                   gap: 8,
-                  marginBottom: tab === 'Workspaces' ? 8 : 12,
+                  marginBottom: 8,
                 }}
               >
                 <View
@@ -210,9 +229,8 @@ function ExecutiveWorkspace({ scope }: { scope: string }) {
                 accessibilityRole="header"
                 style={{
                   color: brandColors.paper,
-                  fontSize:
-                    tab === 'Workspaces' ? (phone ? 26 : 28) : phone ? 30 : 39,
-                  lineHeight: tab === 'Workspaces' ? 36 : phone ? 38 : 48,
+                  fontSize: phone ? 26 : 28,
+                  lineHeight: 36,
                   fontWeight: '600',
                   letterSpacing: -1.3,
                 }}
@@ -228,7 +246,8 @@ function ExecutiveWorkspace({ scope }: { scope: string }) {
                   color: brandColors.paper,
                   fontSize: 14,
                   lineHeight: 22,
-                  marginTop: tab === 'Workspaces' ? 4 : 8,
+                  minHeight: phone ? 44 : 22,
+                  marginTop: 4,
                 }}
               >
                 {tab === 'Overview'
@@ -238,7 +257,7 @@ function ExecutiveWorkspace({ scope }: { scope: string }) {
                   : 'The right tools. Less searching. More moving forward.'}
               </Text>
             </View>
-            {(!phone || tab === 'Overview') && (
+            {!phone && (
               <View
                 style={{
                   gap: 14,
@@ -258,25 +277,7 @@ function ExecutiveWorkspace({ scope }: { scope: string }) {
                     })}
                   </Text>
                 </View>
-                <View
-                  style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}
-                >
-                  <DashButton
-                    label="Refresh"
-                    inverse
-                    icon={false}
-                    busy={d.refreshing}
-                    onPress={() => void d.refresh()}
-                  />
-                  {can(PERMISSIONS.SCHOOLS_CREATE) && (
-                    <DashButton
-                      label="Add school"
-                      inverse
-                      primary
-                      onPress={() => go('/(app)/schools/add')}
-                    />
-                  )}
-                </View>
+                {actions}
               </View>
             )}
           </View>
@@ -288,7 +289,7 @@ function ExecutiveWorkspace({ scope }: { scope: string }) {
               gap: 16,
               borderBottomWidth: 1,
               borderColor: p.line,
-              paddingBottom: tab === 'Workspaces' ? 12 : 16,
+              paddingBottom: 12,
             }}
           >
             <View
@@ -381,6 +382,7 @@ function ExecutiveWorkspace({ scope }: { scope: string }) {
               </View>
             )}
           </View>
+          {phone && actions}
         </MotionSection>
 
         {sourceErrors > 0 && tab === 'Overview' && (
@@ -401,7 +403,7 @@ function ExecutiveWorkspace({ scope }: { scope: string }) {
         )}
 
         {tab === 'Overview' ? (
-          <View key="overview" style={{ gap: 24 }}>
+          <View key="overview" style={{ gap: 20 }}>
             <MotionSection index={1}>
               <NetworkOverview
                 resource={d.stats}
@@ -436,7 +438,7 @@ function ExecutiveWorkspace({ scope }: { scope: string }) {
               index={3}
               style={{ flexDirection: wide ? 'row' : 'column', gap: 20 }}
             >
-              <Panel tone="blue" style={{ flex: wide ? 1.7 : undefined }}>
+              <Panel tone="honey" style={{ flex: wide ? 1.7 : undefined }}>
                 <ResourceStatus
                   label="collection history"
                   resource={d.analytics}
@@ -471,21 +473,18 @@ function ExecutiveWorkspace({ scope }: { scope: string }) {
                 onUnitChange={setUnit}
               />
             </View>
-            <MotionPressable
-              accessibilityRole="button"
+            <Card
+              tone="slate"
+              material="neutral"
               accessibilityLabel="Explore all workspaces"
               onPress={() => setTab('Workspaces')}
-              style={({ hovered }) => ({
+              style={{
                 flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 gap: 16,
-                padding: 24,
-                borderWidth: 1,
-                borderColor: p.line,
-                borderRadius: borderRadius.xl,
-                backgroundColor: hovered ? p.inset : p.surface,
-              })}
+                padding: 16,
+              }}
             >
               <View style={{ flex: 1, gap: 6 }}>
                 <Text style={{ color: p.ink, fontSize: 17, fontWeight: '600' }}>
@@ -497,7 +496,7 @@ function ExecutiveWorkspace({ scope }: { scope: string }) {
                 </Text>
               </View>
               <ArrowRight size={22} color={p.action} />
-            </MotionPressable>
+            </Card>
           </View>
         ) : (
           <MotionSection key="workspaces" index={1}>

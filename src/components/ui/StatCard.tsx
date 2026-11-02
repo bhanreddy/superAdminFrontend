@@ -4,8 +4,8 @@ import { View, Text, StyleSheet, Pressable, Platform } from 'react-native';
 import { ArrowUpRight, TrendingUp, TrendingDown } from 'lucide-react-native';
 import { MetricValue } from './MetricValue';
 import { useTheme } from '../../contexts/ThemeContext';
-import { Card } from './Card';
-import { borderRadius } from '../../constants/theme';
+import { Card, type CardMaterial } from './Card';
+import { borderRadius, theme } from '../../constants/theme';
 import {
   brandColors,
   getCardTone,
@@ -20,6 +20,7 @@ interface StatCardProps {
   onPress?: () => void;
   description?: string;
   tone?: CardTone;
+  material?: CardMaterial;
 }
 export const StatCard = React.memo(function StatCard({
   title,
@@ -30,6 +31,7 @@ export const StatCard = React.memo(function StatCard({
   onPress,
   description,
   tone,
+  material = 'soft',
 }: StatCardProps) {
   const { colors, isDark } = useTheme();
   const inferredTone: CardTone =
@@ -47,13 +49,28 @@ export const StatCard = React.memo(function StatCard({
   const resolvedTone = tone || inferredTone;
   const paint = getCardTone(resolvedTone, isDark);
   const accent = paint.accent;
+  const neutral = material === 'neutral';
+  const ink = neutral ? colors.textPrimary : paint.ink;
+  const muted = neutral ? colors.textSecondary : paint.muted;
   const content = (
     <>
-      <View style={styles.header}>
-        <View style={[styles.icon, { backgroundColor: `${accent}14` }]}>
+      <View style={[styles.header, neutral && styles.neutralHeader]}>
+        <View
+          style={[
+            styles.icon,
+            neutral && styles.neutralIcon,
+            { backgroundColor: neutral ? accent : `${accent}14` },
+          ]}
+        >
           {icon}
         </View>
-        {!trend && onPress ? <ArrowUpRight size={18} color={accent} /> : null}
+        {!trend && onPress ? (
+          neutral ? (
+            <View style={[styles.arrow, { backgroundColor: paint.surface }]}>
+              <ArrowUpRight size={15} color={accent} strokeWidth={2} />
+            </View>
+          ) : <ArrowUpRight size={18} color={accent} />
+        ) : null}
         {trend && (
           <View
             style={[
@@ -84,14 +101,14 @@ export const StatCard = React.memo(function StatCard({
         )}
       </View>
       <MetricValue
-        style={[styles.value, { color: paint.ink }]}
+        style={[styles.value, { color: ink }]}
         value={
           typeof value === 'number' ? value.toLocaleString('en-IN') : value
         }
       />
-      <Text style={[styles.title, { color: paint.muted }]}>{title}</Text>
+      <Text style={[styles.title, { color: muted }]}>{title}</Text>
       {description ? (
-        <Text style={[styles.description, { color: paint.muted }]}>
+        <Text style={[styles.description, { color: muted }]}>
           {description}
         </Text>
       ) : null}
@@ -99,6 +116,7 @@ export const StatCard = React.memo(function StatCard({
   );
   const cardStyle = [
     styles.card,
+    neutral && styles.neutralCard,
     {
       backgroundColor: colors.card,
       borderColor: colors.borderSubtle || colors.border,
@@ -108,6 +126,7 @@ export const StatCard = React.memo(function StatCard({
     <Card
       noPadding
       tone={resolvedTone}
+      material={material}
       onPress={onPress}
       accessibilityLabel={`${title}: ${value}`}
       style={cardStyle}
@@ -132,6 +151,21 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 16,
     flexWrap: 'wrap',
+  },
+  neutralCard: {
+    padding: theme.spacing.md,
+    minHeight: 164,
+    borderRadius: borderRadius.lg,
+  },
+  neutralHeader: { marginBottom: 12 },
+  neutralIcon: { width: 40, height: 40, borderRadius: borderRadius.sm },
+  arrow: {
+    width: 26,
+    height: 26,
+    flexShrink: 0,
+    borderRadius: borderRadius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   icon: {
     width: 46,
