@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../../../src/constants/layout';
 import { navigateBack } from '../../../../src/utils/navigation';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
@@ -341,9 +342,9 @@ const createStyles = (LIGHT: ReturnType<typeof palette>) => StyleSheet.create({
     marginBottom: 4,
   },
   backButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
+    width: 44,
+    height: 44,
+    borderRadius: workspaceUi.controlRadius,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: LIGHT.surface,
@@ -368,8 +369,8 @@ const createStyles = (LIGHT: ReturnType<typeof palette>) => StyleSheet.create({
     backgroundColor: LIGHT.surface,
     borderWidth: 1,
     borderColor: LIGHT.border,
-    borderRadius: 22,
-    padding: 18,
+    borderRadius: workspaceUi.cardRadius,
+    padding: workspaceUi.cardPadding,
     gap: 14,
     shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 8 },
@@ -391,8 +392,8 @@ const createStyles = (LIGHT: ReturnType<typeof palette>) => StyleSheet.create({
     justifyContent: 'center',
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '800',
+    fontSize: workspaceUi.sectionTitle.fontSize,
+    fontWeight: workspaceUi.sectionTitle.fontWeight,
     color: LIGHT.text,
   },
   sectionSubtitle: {
@@ -452,12 +453,12 @@ const createStyles = (LIGHT: ReturnType<typeof palette>) => StyleSheet.create({
     minHeight: 46,
     borderWidth: 1,
     borderColor: LIGHT.border,
-    borderRadius: 14,
+    borderRadius: workspaceUi.controlRadius,
     paddingHorizontal: 14,
     paddingVertical: 11,
     backgroundColor: LIGHT.surface,
     color: LIGHT.text,
-    fontSize: 14,
+    fontSize: 16,
   },
   reasonInput: {
     minHeight: 96,
@@ -467,7 +468,7 @@ const createStyles = (LIGHT: ReturnType<typeof palette>) => StyleSheet.create({
   saveButton: {
     minWidth: 92,
     minHeight: 46,
-    borderRadius: 14,
+    borderRadius: workspaceUi.controlRadius,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 16,

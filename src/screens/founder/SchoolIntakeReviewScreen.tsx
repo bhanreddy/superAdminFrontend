@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../constants/layout';
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -110,7 +111,7 @@ export default function SchoolIntakeReviewScreen() {
   const dossier = item.dossier || {};
   const report = item.intelligence;
   const canAct = item.status === 'SUBMITTED' || item.status === 'FAILED';
-  const tone = report?.grade === 'BLOCKED' ? '#FF453A' : report?.grade === 'READY' ? '#335F90' : '#FF9F0A';
+  const tone = report?.grade === 'BLOCKED' ? colors.error : report?.grade === 'READY' ? '#335F90' : colors.warning;
 
   return (
     <ConsoleAmbientBackground>
@@ -141,7 +142,7 @@ export default function SchoolIntakeReviewScreen() {
           ))}
           {(item.provision_steps || []).map((step) => (
             <View key={step.id} style={styles.step}>
-              <CheckCircle2 size={14} color={step.status === 'done' ? '#335F90' : '#FF9F0A'} />
+              <CheckCircle2 size={14} color={step.status === 'done' ? '#335F90' : colors.warning} />
               <Text style={{ color: colors.textPrimary, flex: 1, fontSize: 13 }}>{step.detail || step.id}</Text>
             </View>
           ))}
@@ -156,14 +157,14 @@ export default function SchoolIntakeReviewScreen() {
           <GlassCard variant="lightweight" style={styles.card}>
             {(report?.blockers || []).map((flag) => (
               <View key={flag.message} style={styles.step}>
-                <CircleAlert size={14} color="#FF453A" />
-                <Text style={{ color: '#FF453A', flex: 1, fontSize: 13 }}>{flag.message}</Text>
+                <CircleAlert size={14} color={colors.error} />
+                <Text style={{ color: colors.error, flex: 1, fontSize: 13 }}>{flag.message}</Text>
               </View>
             ))}
             {(report?.warnings || []).map((flag) => (
               <View key={flag.message} style={styles.step}>
-                <CircleAlert size={14} color="#FF9F0A" />
-                <Text style={{ color: '#FF9F0A', flex: 1, fontSize: 13 }}>{flag.message}</Text>
+                <CircleAlert size={14} color={colors.warning} />
+                <Text style={{ color: colors.warning, flex: 1, fontSize: 13 }}>{flag.message}</Text>
               </View>
             ))}
           </GlassCard>
@@ -247,7 +248,7 @@ export default function SchoolIntakeReviewScreen() {
 
 const styles = StyleSheet.create({
   content: { padding: 16, gap: 12 },
-  card: { padding: 16, gap: 8 },
+  card: { padding: workspaceUi.cardPadding, gap: 8 },
   top: { flexDirection: 'row', gap: 12 },
   score: { fontSize: 34, fontWeight: '800', letterSpacing: -1, width: 64 },
   pill: { alignSelf: 'flex-start', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },

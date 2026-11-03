@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../constants/layout';
 import { brandColors, experienceColors } from '../../constants/experienceColors';
 import type { Animated as NativeAnimated } from 'react-native';
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
@@ -555,7 +556,7 @@ function PayModeSelector({
           >
             {sel && (
               <LinearGradient
-                colors={isDark ? ['rgba(51, 95, 144, 0.10)', 'transparent'] : ['rgba(51, 95, 144, 0.05)', 'transparent']}
+                colors={isDark ? [colors.infoDim, 'transparent'] : [colors.infoDim, 'transparent']}
                 style={StyleSheet.absoluteFill}
               />
             )}
@@ -1326,7 +1327,7 @@ export default function CollectionsScreen({ approvalsOnly = false, embedded = fa
               modalCentered && styles.modalCentered,
               {
                 backgroundColor: isDark ? '#12151F' : colors.surface,
-                borderTopColor: isDark ? 'rgba(14,165,233,0.14)' : colors.border,
+                borderTopColor: isDark ? colors.infoDim : colors.border,
                 padding: modalPad,
                 paddingBottom: Platform.OS === 'ios' && !modalCentered ? 40 : modalPad + 12,
               },
@@ -1347,7 +1348,7 @@ export default function CollectionsScreen({ approvalsOnly = false, embedded = fa
 
             <View style={[styles.sheetHeaderGroup, { marginBottom: isXS ? 18 : 24 }]}>
               <LinearGradient
-                colors={isDark ? ['rgba(14,165,233,0.18)', 'rgba(51, 95, 144, 0.06)'] : ['rgba(14,165,233,0.1)', 'transparent']}
+                colors={isDark ? [colors.infoDim, colors.infoDim] : [colors.infoDim, 'transparent']}
                 style={styles.sheetIconWrap}
               >
                 <Wallet size={18} color={a('cyan', isDark)} strokeWidth={2} />
@@ -1403,7 +1404,7 @@ export default function CollectionsScreen({ approvalsOnly = false, embedded = fa
                         <View style={[styles.unitIconCircle, active && { backgroundColor: 'transparent' }]}>
                           {active && (
                             <LinearGradient
-                              colors={isDark ? ['rgba(14,165,233,0.25)', 'transparent'] : ['rgba(14,165,233,0.15)', 'transparent']}
+                              colors={isDark ? [colors.infoDim, 'transparent'] : [colors.infoDim, 'transparent']}
                               style={StyleSheet.absoluteFillObject}
                             />
                           )}
@@ -1544,7 +1545,7 @@ export default function CollectionsScreen({ approvalsOnly = false, embedded = fa
                 ]}
               >
                 <LinearGradient
-                  colors={['#FB7185', '#E11D48']}
+                  colors={[colors.error, colors.error]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                   style={[styles.saveBtn, !rejectReason.trim() && { opacity: 0.45 }]}
@@ -1585,7 +1586,7 @@ const styles = StyleSheet.create({
   },
   summaryCard: {
     flex: 1.3,
-    borderRadius: 16,
+    borderRadius: workspaceUi.cardRadius,
     padding: 14,
     gap: 4,
     borderWidth: 1,
@@ -1685,7 +1686,7 @@ const styles = StyleSheet.create({
 
   // Filter panel
   filterPanel: {
-    borderRadius: 22,
+    borderRadius: workspaceUi.cardRadius,
     borderWidth: 1,
     paddingHorizontal: 14,
     paddingTop: 14,
@@ -1705,9 +1706,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 10,
     right: 10,
-    width: 28,
-    height: 28,
-    borderRadius: 8,
+    width: 44,
+    height: 44,
+    borderRadius: workspaceUi.controlRadius,
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 10,
@@ -1795,7 +1796,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.2)',
   },
-  heroTitle: { color: '#fff', fontSize: 16, fontWeight: '800', letterSpacing: 0.1 },
+  heroTitle: { color: '#fff', fontSize: workspaceUi.pageTitle.fontSize, fontWeight: workspaceUi.pageTitle.fontWeight, letterSpacing: 0.1 },
   heroSub: { color: 'rgba(255,255,255,0.62)', fontSize: 12, fontWeight: '600', marginTop: 3 },
   heroChevron: {
     width: 38,
@@ -1918,7 +1919,7 @@ const styles = StyleSheet.create({
 
   // Card
   card: {
-    borderRadius: 18,
+    borderRadius: workspaceUi.cardRadius,
     borderWidth: 1,
     flexDirection: 'row',
     overflow: 'hidden',
@@ -2021,7 +2022,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 6,
     paddingVertical: 9,
-    borderRadius: 11,
+    borderRadius: workspaceUi.controlRadius,
     borderWidth: 1,
   },
   actionBtnTxt: {
@@ -2047,7 +2048,7 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 400,
     alignSelf: 'center',
-    borderRadius: 24,
+    borderRadius: workspaceUi.cardRadius,
     borderWidth: 1,
     paddingHorizontal: 22,
     paddingTop: 28,
@@ -2197,7 +2198,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   modalTitle: {
-    fontWeight: '800',
+    fontWeight: workspaceUi.sectionTitle.fontWeight,
     letterSpacing: -0.3,
   },
   modalSub: {
@@ -2221,7 +2222,7 @@ const styles = StyleSheet.create({
     gap: 8,
     padding: 10,
     paddingRight: 16,
-    borderRadius: 16,
+    borderRadius: workspaceUi.cardRadius,
     borderWidth: 1,
     position: 'relative',
     overflow: 'hidden',
@@ -2285,7 +2286,7 @@ const styles = StyleSheet.create({
   cancelBtn: {
     paddingVertical: 15,
     paddingHorizontal: 20,
-    borderRadius: 14,
+    borderRadius: workspaceUi.controlRadius,
     borderWidth: 1,
   },
   cancelTxt: {
@@ -2294,7 +2295,7 @@ const styles = StyleSheet.create({
   },
   saveBtn: {
     paddingVertical: 15,
-    borderRadius: 14,
+    borderRadius: workspaceUi.controlRadius,
     alignItems: 'center',
   },
   saveTxt: {

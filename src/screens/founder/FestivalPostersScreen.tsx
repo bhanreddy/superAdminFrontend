@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../constants/layout';
 import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
@@ -269,7 +270,7 @@ export default function FestivalPostersScreen() {
                     hitSlop={8}
                     style={({ pressed }) => pressableWebStyles(pressed, {})}
                   >
-                    <Trash2 size={18} color="#FF6B7A" strokeWidth={2} />
+                    <Trash2 size={18} color={colors.error} strokeWidth={2} />
                   </Pressable>
                 </View>
               </View>
@@ -349,7 +350,7 @@ export default function FestivalPostersScreen() {
                       style={({ pressed }) => [
                         st.chip,
                         {
-                          backgroundColor: on ? 'rgba(124,111,255,0.18)' : 'transparent',
+                          backgroundColor: on ? colors.infoDim : 'transparent',
                           borderColor: on ? brandColors.violet : isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)',
                         },
                         ...pressableWebStyles(pressed, {}),
@@ -408,10 +409,10 @@ const st = StyleSheet.create({
     width: '100%',
     maxWidth: 480,
     maxHeight: '88%',
-    borderRadius: 20,
-    padding: 20,
+    borderRadius: workspaceUi.cardRadius,
+    padding: workspaceUi.cardPadding,
   },
-  modalTitle: { fontSize: 18, fontWeight: '800', marginBottom: 14 },
+  modalTitle: { fontSize: workspaceUi.sectionTitle.fontSize, fontWeight: workspaceUi.sectionTitle.fontWeight, marginBottom: 14 },
   pickArea: {
     borderWidth: 1.5,
     borderStyle: 'dashed',
@@ -427,16 +428,16 @@ const st = StyleSheet.create({
   label: { fontSize: 12, fontWeight: '700', marginBottom: 6, marginTop: 8, letterSpacing: 0.3 },
   input: {
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: workspaceUi.controlRadius,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    fontSize: 14,
+    fontSize: 16,
   },
   dateRow: { flexDirection: 'row' },
   chipRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
   chip: {
     borderWidth: 1.5,
-    borderRadius: 20,
+    borderRadius: workspaceUi.chipRadius,
     paddingHorizontal: 14,
     paddingVertical: 7,
   },

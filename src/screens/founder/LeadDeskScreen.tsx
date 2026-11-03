@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../constants/layout';
 import React, { useCallback, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -292,6 +293,6 @@ const styles = StyleSheet.create({
   title: { fontSize: 18, fontWeight: '700' },
   section: { fontSize: 16, fontWeight: '700', marginTop: 22, marginBottom: 8, marginHorizontal: 20 },
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginHorizontal: 16, marginTop: 12 },
-  chip: { borderWidth: 1, borderRadius: 14, paddingHorizontal: 12, minHeight: 44, justifyContent: 'center' },
+  chip: { borderWidth: 1, borderRadius: workspaceUi.chipRadius, paddingHorizontal: 12, minHeight: 44, justifyContent: 'center' },
   row: { marginHorizontal: 16, marginBottom: 8, borderWidth: 1, borderRadius: 16, padding: 14, gap: 4 },
 });

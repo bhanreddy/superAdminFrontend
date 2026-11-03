@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../../src/constants/layout';
 import { StatCard as WorkspaceStatCard } from '../../../src/components/ui/StatCard';
 import React, { useCallback, useEffect, useState, useMemo, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable, Platform,  Easing, ScrollView, useWindowDimensions, Alert } from 'react-native';
@@ -290,8 +291,8 @@ export default function SchoolsListScreen() {
             style={[
               st.clusterAlert,
               {
-                backgroundColor: isDark ? 'rgba(239, 68, 68, 0.08)' : 'rgba(239, 68, 68, 0.06)',
-                borderColor: isDark ? 'rgba(239, 68, 68, 0.28)' : 'rgba(239, 68, 68, 0.22)',
+                backgroundColor: isDark ? colors.errorDim : colors.errorDim,
+                borderColor: isDark ? colors.errorDim : colors.errorDim,
               },
             ]}
           >
@@ -594,9 +595,9 @@ const st = StyleSheet.create({
     fontWeight: '600',
   },
   iconButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
+    width: 44,
+    height: 44,
+    borderRadius: workspaceUi.controlRadius,
     alignItems: 'center',
     justifyContent: 'center',
   },

@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../constants/layout';
 import React, { useCallback, useEffect, useState } from 'react';
 import { AccessibilityInfo, FlatList, Image, Platform, Pressable, Share, StyleSheet, Text, TextInput, View } from 'react-native';
 import { ScreenHeader } from '../../components/ui/ScreenHeader';
@@ -192,9 +193,9 @@ export default function TrackingLinksScreen() {
 
 const styles = StyleSheet.create({
   title: { fontSize: 18, fontWeight: '700' },
-  input: { borderWidth: 1, borderRadius: 14, minHeight: 44, paddingHorizontal: 12, marginTop: 8 },
+  input: { borderWidth: 1, borderRadius: workspaceUi.controlRadius, minHeight: 44, paddingHorizontal: 12, marginTop: 8 },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 },
-  chip: { borderWidth: 1, borderRadius: 14, paddingHorizontal: 12, justifyContent: 'center' },
+  chip: { borderWidth: 1, borderRadius: workspaceUi.chipRadius, paddingHorizontal: 12, justifyContent: 'center' },
   primary: { minHeight: 48, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginTop: 12 },
   primaryText: { color: '#fff', fontWeight: '700' },
   qr: { width: 180, height: 180, marginTop: 12, backgroundColor: '#fff' },

@@ -1,3 +1,8 @@
+import type { ThemeColors } from '../../constants/theme';
+import { workspaceUi } from '../../constants/layout';
+import { ScreenHeader } from '../../components/ui/ScreenHeader';
+import { Button } from '../../components/ui/Button';
+import { Card } from '../../components/ui/Card';
 import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
@@ -54,59 +59,34 @@ interface TicketItem {
   created_at: string;
 }
 
-const PRIORITY_BADGE: Record<
-  string,
-  { label: string; color: string; bg: string }
-> = {
-  LOW: { label: 'Low', color: brandColors.blue, bg: 'rgba(51, 95, 144, 0.12)' },
-  MEDIUM: { label: 'Medium', color: brandColors.blue, bg: 'rgba(2, 132, 199, 0.12)' },
-  HIGH: { label: 'High', color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.12)' },
-  CRITICAL: {
-    label: 'Critical',
-    color: brandColors.red,
-    bg: 'rgba(239, 68, 68, 0.12)',
-  },
-};
 
-const STATUS_BADGE: Record<
-  string,
-  { label: string; color: string; bg: string }
-> = {
-  OPEN: { label: 'Open', color: brandColors.red, bg: 'rgba(239, 68, 68, 0.12)' },
-  IN_PROGRESS: {
-    label: 'In Progress',
-    color: '#F59E0B',
-    bg: 'rgba(245, 158, 11, 0.12)',
-  },
-  WAITING_ON_CLIENT: {
-    label: 'Waiting on School',
-    color: brandColors.violet,
-    bg: 'rgba(139, 92, 246, 0.12)',
-  },
-  ESCALATED: {
-    label: 'Escalated',
-    color: '#FF453A',
-    bg: 'rgba(255, 69, 58, 0.12)',
-  },
-  REOPENED: {
-    label: 'Reopened',
-    color: '#FF9F0A',
-    bg: 'rgba(255, 159, 10, 0.12)',
-  },
-  RESOLVED: {
-    label: 'Resolved',
-    color: brandColors.blue,
-    bg: 'rgba(51, 95, 144, 0.12)',
-  },
-  CLOSED: {
-    label: 'Closed',
-    color: '#6B7280',
-    bg: 'rgba(107, 114, 128, 0.12)',
-  },
-};
+
+
 
 export default function SupportDashboard() {
   const { colors, isDark, clayShadows } = useTheme();
+  const PRIORITY_BADGE: Record<
+  string,
+  { label: string; color: string; bg: string }
+> = {
+    LOW: { label: 'Low', color: colors.success, bg: colors.successDim },
+    MEDIUM: { label: 'Medium', color: colors.info, bg: colors.infoDim },
+    HIGH: { label: 'High', color: colors.warning, bg: colors.warningDim },
+    CRITICAL: { label: 'Critical', color: colors.error, bg: colors.errorDim }
+  };
+  const STATUS_BADGE: Record<
+  string,
+  { label: string; color: string; bg: string }
+> = {
+    OPEN: { label: 'Open', color: colors.info, bg: colors.infoDim },
+    IN_PROGRESS: { label: 'In Progress', color: colors.info, bg: colors.infoDim },
+    WAITING_ON_CLIENT: { label: 'Waiting on School', color: colors.warning, bg: colors.warningDim },
+    ESCALATED: { label: 'Escalated', color: colors.error, bg: colors.errorDim },
+    REOPENED: { label: 'Reopened', color: colors.warning, bg: colors.warningDim },
+    RESOLVED: { label: 'Resolved', color: colors.success, bg: colors.successDim },
+    CLOSED: { label: 'Closed', color: colors.info, bg: colors.infoDim }
+  };
+  const styles = React.useMemo(() => createStyles(colors), [colors]);
   const { user, employeeId, role, roleLabel, assignedSchools } = useAuth();
   const router = useRouter();
 
@@ -170,109 +150,22 @@ export default function SupportDashboard() {
         }
       >
         {/* Header Card */}
-        <LinearGradient
-          colors={isDark ? ['#1e1430', '#0a0815'] : ['#f5f0ff', '#ede4ff']}
-          style={[
-            styles.headerCard,
-            {
-              borderColor: isDark
-                ? 'rgba(168, 85, 247, 0.25)'
-                : 'rgba(147, 51, 234, 0.25)',
-            },
-          ]}
-        >
-          <View style={styles.headerTop}>
-            <View style={{ flex: 1 }}>
-              <View style={styles.roleBadgeRow}>
-                <View
-                  style={[
-                    styles.rolePill,
-                    {
-                      backgroundColor: 'rgba(168, 85, 247, 0.15)',
-                      borderColor: 'rgba(168, 85, 247, 0.35)',
-                    },
-                  ]}
-                >
-                  <LifeBuoy size={13} color="#A855F7" />
-                  <Text style={[styles.rolePillText, { color: '#A855F7' }]}>
-                    {roleLabel.toUpperCase()}
-                  </Text>
-                </View>
-                <View
-                  style={[
-                    styles.empPill,
-                    {
-                      backgroundColor: isDark
-                        ? 'rgba(255,255,255,0.06)'
-                        : 'rgba(0,0,0,0.06)',
-                    },
-                  ]}
-                >
-                  <Text
-                    style={[styles.empText, { color: colors.textSecondary }]}
-                  >
-                    {employeeId || 'SUP-TICKET'}
-                  </Text>
-                </View>
-              </View>
-
-              <Text
-                style={[styles.welcomeTitle, { color: colors.textPrimary }]}
-              >
-                {isManager ? 'Support Desk Control Room' : 'My Support Tickets'}
-              </Text>
-              <Text
-                style={[styles.welcomeSub, { color: colors.textSecondary }]}
-              >
-                {isManager
-                  ? 'Monitor SLA compliance, school incident resolution velocity, and critical production tickets.'
-                  : 'Manage client issue tickets, investigate bug reports, and record school resolution notes.'}
-              </Text>
-            </View>
-
-            <View style={styles.headerActionCol}>
-              <Pressable accessibilityRole="button"
-                style={[
-                  styles.quickActionButton,
-                  { backgroundColor: brandColors.violet },
-                ]}
-                onPress={() => router.push('/complaints' as any)}
-              >
-                <PlusCircle size={16} color="#FFFFFF" />
-                <Text style={styles.quickActionText}>Open Ticket Desk</Text>
-              </Pressable>
-              <Pressable accessibilityRole="button"
-                style={[
-                  styles.secondaryActionButton,
-                  {
-                    borderColor: isDark
-                      ? 'rgba(255,255,255,0.15)'
-                      : 'rgba(0,0,0,0.15)',
-                  },
-                ]}
-                onPress={() => router.push('/schools' as any)}
-              >
-                <School size={15} color={colors.textPrimary} />
-                <Text
-                  style={[
-                    styles.secondaryActionText,
-                    { color: colors.textPrimary },
-                  ]}
-                >
-                  Partner Schools
-                </Text>
-              </Pressable>
-            </View>
-          </View>
-
-          {/* Quick Metrics Bar */}
-          <View
+        <View>
+          <ScreenHeader
+            eyebrow={[roleLabel, employeeId].filter(Boolean).join(' · ')}
+            title={isManager ? 'Support Desk Control Room' : 'My Support Tickets'}
+            subtitle={isManager ? 'Review school incidents, critical tickets, and team resolution progress.' : 'Investigate school issues and keep resolution notes up to date.'}
+            rightAction={<View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+              <Button title="Open Ticket Desk" onPress={() => router.push('/complaints' as any)} />
+              <Button title="Partner Schools" variant="outline" onPress={() => router.push('/schools' as any)} />
+            </View>}
+          />
+          <Card style={{ marginBottom: 20 }}>
+            <View
             style={[
               styles.statsRow,
               {
-                borderTopColor: isDark
-                  ? 'rgba(255,255,255,0.08)'
-                  : 'rgba(0,0,0,0.08)',
+                borderTopColor: colors.borderSubtle,
               },
             ]}
           >
@@ -285,7 +178,7 @@ export default function SupportDashboard() {
               </Text>
             </View>
             <View style={styles.statCell}>
-              <Text style={[styles.statValue, { color: '#F59E0B' }]}>
+              <Text style={[styles.statValue, { color: colors.warning }]}>
                 {inProgressTickets.length}
               </Text>
               <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
@@ -314,7 +207,8 @@ export default function SupportDashboard() {
               </Text>
             </View>
           </View>
-        </LinearGradient>
+          </Card>
+        </View>
 
         {/* Section: Active Complaint Tickets */}
         <View style={styles.sectionHeader}>
@@ -339,7 +233,7 @@ export default function SupportDashboard() {
             </Text>
           </View>
         ) : tickets.length === 0 ? (
-          <View
+          <Card noPadding
             style={[
               styles.emptyCard,
               {
@@ -355,7 +249,7 @@ export default function SupportDashboard() {
               There are no unresolved support tickets assigned to your queue at
               this moment. Great job!
             </Text>
-          </View>
+          </Card>
         ) : (
           <View style={styles.ticketsList}>
             {tickets.map((t) => {
@@ -364,11 +258,10 @@ export default function SupportDashboard() {
               const sBadge = STATUS_BADGE[t.status] || STATUS_BADGE.OPEN;
 
               return (
-                <Pressable accessibilityRole="button"
+                <Card noPadding accessibilityRole="button"
                   key={t.id}
                   style={[
                     styles.ticketCard,
-                    clayStyle(clayShadows.clay),
                     {
                       backgroundColor: isDark
                         ? 'rgba(22, 27, 34, 0.85)'
@@ -460,14 +353,14 @@ export default function SupportDashboard() {
                       <ChevronRight size={14} color={colors.primary} />
                     </View>
                   </View>
-                </Pressable>
+                </Card>
               );
             })}
           </View>
         )}
 
         {/* Section: Support SLA & Escalation Protocols */}
-        <View
+        <Card noPadding
           style={[
             styles.guideCard,
             {
@@ -486,7 +379,7 @@ export default function SupportDashboard() {
               marginBottom: 8,
             }}
           >
-            <Sparkles size={18} color="#A855F7" />
+            <Sparkles size={18} color={colors.info} />
             <Text style={[styles.guideTitle, { color: colors.textPrimary }]}>
               Support Escalation & SLA Protocol
             </Text>
@@ -499,82 +392,21 @@ export default function SupportDashboard() {
             patch or schema change, link the ticket to an Implementation
             requirement or escalate to Founder.
           </Text>
-        </View>
+        </Card>
       </ScrollView>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   root: { flex: 1 },
   content: { padding: 0 },
-  headerCard: {
-    borderRadius: 20,
-    borderWidth: 1,
-    padding: 24,
-    marginBottom: 24,
-    overflow: 'hidden',
-  },
-  headerTop: {
-    flexDirection: Platform.OS === 'web' ? 'row' : 'column',
-    justifyContent: 'space-between',
-    alignItems: Platform.OS === 'web' ? 'center' : 'flex-start',
-    gap: 16,
-    marginBottom: 20,
-  },
-  roleBadgeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 10,
-  },
-  rolePill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
-  rolePillText: { fontSize: 11, fontWeight: '700', letterSpacing: 0.5 },
-  empPill: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
-  empText: { fontSize: 11, fontWeight: '600' },
-  welcomeTitle: {
-    fontSize: 24,
-    fontWeight: '800',
-    letterSpacing: -0.5,
-    marginBottom: 4,
-  },
-  welcomeSub: { fontSize: 13, lineHeight: 18, maxWidth: 580 },
-  headerActionCol: { flexDirection: 'row', gap: 10, flexWrap: 'wrap' },
-  quickActionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 12,
-  },
-  quickActionText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
-  secondaryActionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
-  secondaryActionText: { fontSize: 13, fontWeight: '600' },
   statsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    paddingTop: 16,
-    borderTopWidth: 1,
-    gap: 16,
+    gap: 12,
   },
-  statCell: { flex: 1, minWidth: 120 },
+  statCell: { flex: 1, minWidth: 100 },
   statValue: { fontSize: 22, fontWeight: '800', marginBottom: 2 },
   statLabel: {
     fontSize: 13,
@@ -588,13 +420,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
-  sectionTitle: { fontSize: 17, fontWeight: '700' },
+  sectionTitle: { fontSize: workspaceUi.sectionTitle.fontSize, fontWeight: workspaceUi.sectionTitle.fontWeight },
   sectionActionText: { fontSize: 13, fontWeight: '600' },
   loadingBox: { padding: 40, alignItems: 'center', gap: 12 },
   loadingText: { fontSize: 13 },
   emptyCard: {
-    padding: 32,
-    borderRadius: 18,
+    padding: workspaceUi.cardPadding,
+    borderRadius: workspaceUi.cardRadius,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
@@ -610,9 +442,9 @@ const styles = StyleSheet.create({
   },
   ticketsList: { gap: 12, marginBottom: 24 },
   ticketCard: {
-    borderRadius: 16,
+    borderRadius: workspaceUi.cardRadius,
     borderWidth: 1,
-    padding: 16,
+    padding: workspaceUi.cardPadding,
   },
   ticketTopRow: {
     flexDirection: 'row',
@@ -647,9 +479,9 @@ const styles = StyleSheet.create({
   schoolCodeText: { fontSize: 12 },
   actionLink: { fontSize: 12, fontWeight: '600' },
   guideCard: {
-    borderRadius: 16,
+    borderRadius: workspaceUi.cardRadius,
     borderWidth: 1,
-    padding: 18,
+    padding: workspaceUi.cardPadding,
   },
   guideTitle: { fontSize: 14, fontWeight: '700' },
   guideText: { fontSize: 12.5, lineHeight: 20 },

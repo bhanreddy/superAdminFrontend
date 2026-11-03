@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../constants/layout';
 import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -284,7 +285,7 @@ export default function SchoolIntakeComposerScreen() {
             <>
               {reviewNote ? (
                 <GlassCard variant="lightweight" style={styles.noteCard}>
-                  <Text style={[styles.noteTitle, { color: '#64D2FF' }]}>Founder asked for changes</Text>
+                  <Text style={[styles.noteTitle, { color: colors.info }]}>Founder asked for changes</Text>
                   <Text style={[styles.noteBody, { color: colors.textPrimary }]}>{reviewNote}</Text>
                 </GlassCard>
               ) : null}
@@ -518,18 +519,18 @@ const Queue = React.memo(function Queue({
 const styles = StyleSheet.create({
   content: { padding: 16, gap: 14 },
   segment: { flexDirection: 'row', borderRadius: 16, padding: 4, gap: 4, backgroundColor: 'rgba(127,127,127,0.12)' },
-  segmentBtn: { flex: 1, minHeight: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  segmentBtn: { flex: 1, minHeight: 44, borderRadius: workspaceUi.controlRadius, alignItems: 'center', justifyContent: 'center' },
   rail: { flexDirection: 'row', justifyContent: 'space-between' },
   railItem: { alignItems: 'center', gap: 6, flex: 1 },
   railDot: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  formCard: { padding: 16, gap: 4 },
-  queueCard: { padding: 16 },
-  noteCard: { padding: 16, gap: 6 },
+  formCard: { padding: workspaceUi.cardPadding, gap: 4 },
+  queueCard: { padding: workspaceUi.cardPadding },
+  noteCard: { padding: workspaceUi.cardPadding, gap: 6 },
   noteTitle: { fontSize: 12, fontWeight: '800', letterSpacing: 0.4 },
   noteBody: { fontSize: 14, lineHeight: 20 },
   fieldLabel: { fontSize: 12, fontWeight: '700', marginTop: 8, marginBottom: 8 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: { minHeight: 36, paddingHorizontal: 12, borderRadius: 12, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  chip: { minHeight: 36, paddingHorizontal: 12, borderRadius: workspaceUi.chipRadius, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   swatch: { width: 36, height: 36, borderRadius: 18, borderWidth: 2 },
   row: { flexDirection: 'row', gap: 10 },
   half: { flex: 1 },

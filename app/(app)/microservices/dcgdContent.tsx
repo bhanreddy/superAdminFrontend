@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../../src/constants/layout';
 import { brandColors, experienceColors } from '../../../src/constants/experienceColors';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -362,7 +363,7 @@ export default function DcgdContentManagerScreen() {
               {/* Link URL */}
               <View style={styles.fieldGroup}>
                 <View style={styles.fieldLabel}>
-                  <Link size={15} color="#3B82F6" />
+                  <Link size={15} color={colors.info} />
                   <Text style={[styles.label, { color: colors.textSecondary, marginBottom: 0, marginLeft: 6 }]}>
                     LINK / URL
                   </Text>
@@ -497,17 +498,17 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 14,
   },
-  sectionTitle: { fontSize: 18, fontWeight: '800' },
+  sectionTitle: { fontSize: workspaceUi.sectionTitle.fontSize, fontWeight: workspaceUi.sectionTitle.fontWeight },
   addBtn: {
     borderWidth: 2,
-    borderRadius: 12,
+    borderRadius: workspaceUi.controlRadius,
     paddingHorizontal: 14,
     paddingVertical: 8,
   },
   emptyCard: {
-    borderRadius: 16,
+    borderRadius: workspaceUi.cardRadius,
     borderWidth: 1,
-    padding: 28,
+    padding: workspaceUi.cardPadding,
     alignItems: 'center',
   },
   emptyIcon: { fontSize: 36, marginBottom: 10 },
@@ -544,7 +545,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: workspaceUi.controlRadius,
     paddingHorizontal: 12,
     paddingVertical: Platform.OS === 'ios' ? 12 : 10,
     fontSize: 16,
@@ -568,14 +569,14 @@ const styles = StyleSheet.create({
   },
   primaryBtn: {
     marginTop: 8,
-    borderRadius: 12,
+    borderRadius: workspaceUi.controlRadius,
     paddingVertical: 14,
     alignItems: 'center',
   },
   primaryBtnText: { color: '#fff', fontWeight: '800', fontSize: 16 },
   secondaryBtn: {
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: workspaceUi.controlRadius,
     paddingVertical: 14,
     paddingHorizontal: 18,
     alignItems: 'center',
@@ -588,10 +589,10 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   modalCard: {
-    borderRadius: 18,
-    padding: 18,
+    borderRadius: workspaceUi.cardRadius,
+    padding: workspaceUi.cardPadding,
     maxHeight: '90%',
   },
-  modalTitle: { fontSize: 20, fontWeight: '800', marginBottom: 12 },
+  modalTitle: { fontSize: workspaceUi.sectionTitle.fontSize, fontWeight: workspaceUi.sectionTitle.fontWeight, marginBottom: 12 },
   modalActions: { flexDirection: 'row', gap: 12, marginTop: 16 },
 });

@@ -125,7 +125,7 @@ test('late response for a previous school cannot overwrite the currently selecte
     getSchoolChecklist: (id) => id === 101 ? new Promise((resolve) => { resolveA = resolve; }) : Promise.resolve(payload(202, 'School B task')),
   };
   const Screen = uiLoader({
-    'expo-router': { useLocalSearchParams: () => ({ schoolId }) },
+    'expo-router': { useLocalSearchParams: () => ({ schoolId }), useRouter: () => ({ push() {}, replace() {}, back() {}, canGoBack: () => false }) },
     [path.join(frontend, 'src/services/apiService.ts')]: { superAdminApi: api },
   })(path.join(frontend, 'src/screens/checklist/ChecklistScreen.tsx')).default;
   try {

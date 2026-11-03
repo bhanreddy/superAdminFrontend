@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../constants/layout';
 import { MotionPressable } from '../../components/ui/MotionPressable';
 import React, { useState } from 'react';
 import { Card } from '../../components/ui/Card';
@@ -30,6 +31,7 @@ import {
 import { EmptyNote, useDashboardPalette } from './DashboardPrimitives';
 import { useTheme } from '../../contexts/ThemeContext';
 import { dashboardWorkspaces } from './dashboardWorkspaces';
+import { workspaceTones } from '../../constants/workspaceDesign';
 
 const CARD_GAP = theme.spacing.sm;
 const MIN_CARD_WIDTH = 240;
@@ -48,11 +50,11 @@ const ICONS = {
 };
 // One colour per category makes the directory learnable across cards and filters.
 const CATEGORY_TONES = {
-  Operations: 'blue',
-  Finance: 'honey',
-  Growth: 'crimson',
-  'People & content': 'lavender',
-  Administration: 'slate',
+  Operations: workspaceTones.schools,
+  Finance: workspaceTones.finance,
+  Growth: workspaceTones.sales,
+  'People & content': workspaceTones.content,
+  Administration: workspaceTones.system,
 } as const satisfies Record<
   (typeof dashboardWorkspaces)[number]['category'],
   CardTone
@@ -444,7 +446,7 @@ const styles = StyleSheet.create({
   card: {
     minWidth: 0,
     borderWidth: 1,
-    borderRadius: borderRadius.lg,
+    borderRadius: workspaceUi.cardRadius,
     padding: theme.spacing.md,
     minHeight: 112,
     overflow: 'hidden',

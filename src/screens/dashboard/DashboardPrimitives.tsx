@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../constants/layout';
 import { MotionPressable } from '../../components/ui/MotionPressable';
 import React from 'react';
 import {
@@ -261,7 +262,7 @@ export function EmptyNote({
 export const ds = StyleSheet.create({
   panel: {
     borderWidth: 1,
-    borderRadius: borderRadius.lg,
+    borderRadius: workspaceUi.cardRadius,
     padding: theme.spacing.md,
     minWidth: 0,
   },
@@ -281,9 +282,9 @@ export const ds = StyleSheet.create({
     marginBottom: 8,
   },
   sectionTitle: {
-    fontSize: 18,
-    lineHeight: 24,
-    fontWeight: '600',
+    fontSize: workspaceUi.sectionTitle.fontSize,
+    lineHeight: workspaceUi.sectionTitle.lineHeight,
+    fontWeight: workspaceUi.sectionTitle.fontWeight,
     letterSpacing: -0.4,
   },
   body: { fontSize: 13, lineHeight: 21 },

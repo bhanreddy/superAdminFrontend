@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../../src/constants/layout';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, Pressable, TextInput, Switch, Platform,
@@ -275,7 +276,7 @@ const st = StyleSheet.create({
   switchRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 8 },
   switchLabel: { fontSize: 14, fontWeight: '500' },
   programsHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4, marginBottom: 8 },
-  sectionTitle: { fontSize: 17, fontWeight: '700', letterSpacing: -0.35 },
+  sectionTitle: { fontSize: workspaceUi.sectionTitle.fontSize, fontWeight: workspaceUi.sectionTitle.fontWeight, letterSpacing: -0.35 },
   countChip: {
     minWidth: 36,
     paddingHorizontal: 10,

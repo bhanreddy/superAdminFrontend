@@ -1,3 +1,5 @@
+import { Button } from '../../components/ui/Button';
+import { workspaceUi } from '../../constants/layout';
 import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, {
   useCallback,
@@ -235,35 +237,14 @@ function PrimaryButton({
   compact?: boolean;
 }) {
   return (
-    <Pressable accessibilityRole="button"
-      disabled={disabled}
+    <Button
+      title={label}
       onPress={onPress}
-      style={({ pressed, hovered }: any) => [
-        styles.primaryButton,
-        compact && styles.primaryButtonCompact,
-        {
-          opacity: disabled ? 0.45 : pressed ? 0.8 : 1,
-          transform: [{ translateY: hovered && !disabled ? -1 : 0 }],
-        },
-        Platform.OS === "web" &&
-          ({ cursor: disabled ? "default" : "pointer" } as any),
-      ]}
-    >
-      <LinearGradient
-        colors={["#9B6CFF", "#6D3DEB"]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={[StyleSheet.absoluteFill, { borderRadius: compact ? 12 : 15 }]}
-      />
-      {disabled ? (
-        <ActivityIndicator size="small" color="#fff" />
-      ) : (
-        <Icon size={compact ? 15 : 17} color="#fff" />
-      )}
-      <Text style={[styles.primaryButtonText, compact && { fontSize: 12 }]}>
-        {label}
-      </Text>
-    </Pressable>
+      disabled={disabled}
+      loading={disabled}
+      size={compact ? 'sm' : 'md'}
+      leftIcon={<Icon size={compact ? 15 : 17} color="#FFFFFF" />}
+    />
   );
 }
 
@@ -578,8 +559,8 @@ export default function PayrollScreen() {
             styles.hero,
             {
               borderColor: isDark
-                ? "rgba(168,139,250,.25)"
-                : "rgba(109,40,217,.12)",
+                ? colors.infoDim
+                : colors.infoDim,
             },
           ]}
         >
@@ -628,9 +609,9 @@ export default function PayrollScreen() {
               styles.autopilotStrip,
               {
                 backgroundColor: isDark
-                  ? "rgba(51, 95, 144, .09)"
+                  ? colors.infoDim
                   : "rgba(255,255,255,.72)",
-                borderColor: "rgba(51, 95, 144, .2)",
+                borderColor: colors.infoDim,
               },
             ]}
           >
@@ -668,7 +649,7 @@ export default function PayrollScreen() {
               {
                 backgroundColor: isDark
                   ? "rgba(255,255,255,.04)"
-                  : "rgba(109,40,217,.05)",
+                  : colors.infoDim,
                 borderColor: colors.border,
               },
             ]}
@@ -1911,7 +1892,7 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     paddingHorizontal: 28,
   },
-  hero: { borderWidth: 1, borderRadius: 28, padding: 26, overflow: "hidden" },
+  hero: { borderWidth: 1, borderRadius: workspaceUi.cardRadius, padding: workspaceUi.cardPadding, overflow: "hidden" },
   heroOrbA: {
     position: "absolute",
     width: 250,
@@ -1952,9 +1933,9 @@ const styles = StyleSheet.create({
     letterSpacing: 1.1,
   },
   heroTitle: {
-    fontSize: 38,
-    lineHeight: 43,
-    fontWeight: "800",
+    fontSize: workspaceUi.pageTitle.fontSize,
+    lineHeight: workspaceUi.pageTitle.lineHeight,
+    fontWeight: workspaceUi.pageTitle.fontWeight,
     letterSpacing: -1.25,
     maxWidth: 710,
   },
@@ -1962,7 +1943,7 @@ const styles = StyleSheet.create({
   primaryButton: {
     height: 48,
     paddingHorizontal: 18,
-    borderRadius: 15,
+    borderRadius: workspaceUi.controlRadius,
     overflow: "hidden",
     flexDirection: "row",
     alignItems: "center",
@@ -2001,8 +1982,8 @@ const styles = StyleSheet.create({
   metricCard: {
     flex: 1,
     minWidth: 170,
-    padding: 17,
-    borderRadius: 20,
+    padding: workspaceUi.cardPadding,
+    borderRadius: workspaceUi.cardRadius,
     borderWidth: 1,
   },
   metricCardCompact: { minWidth: "46%" as any },
@@ -2037,7 +2018,7 @@ const styles = StyleSheet.create({
   tab: {
     minHeight: 37,
     paddingHorizontal: 17,
-    borderRadius: 11,
+    borderRadius: workspaceUi.chipRadius,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -2063,7 +2044,7 @@ const styles = StyleSheet.create({
     gap: 9,
     paddingHorizontal: 13,
   },
-  searchInput: { flex: 1, fontSize: 13, borderWidth: 0 },
+  searchInput: { flex: 1, fontSize: 16, borderWidth: 0 },
   periodActions: { flexDirection: "row", alignItems: "center", gap: 10 },
   periodPicker: {
     height: 40,
@@ -2073,8 +2054,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   arrowButton: {
-    width: 37,
-    height: 38,
+    width: 44,
+    height: 44,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -2087,7 +2068,7 @@ const styles = StyleSheet.create({
   listGap: { gap: 10 },
   rowCard: {
     borderWidth: 1,
-    borderRadius: 20,
+    borderRadius: workspaceUi.cardRadius,
     padding: 15,
     flexDirection: "row",
     alignItems: "center",
@@ -2143,16 +2124,16 @@ const styles = StyleSheet.create({
   },
   salaryValue: { fontSize: 16, fontWeight: "800", marginTop: 4 },
   outlineButton: {
-    height: 39,
+    height: 44,
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: workspaceUi.controlRadius,
     paddingHorizontal: 13,
     flexDirection: "row",
     alignItems: "center",
     gap: 7,
   },
   outlineButtonText: { color: PURPLE, fontSize: 11, fontWeight: "800" },
-  payCard: { borderWidth: 1, borderRadius: 20, overflow: "hidden" },
+  payCard: { borderWidth: 1, borderRadius: workspaceUi.cardRadius, overflow: "hidden" },
   payHead: {
     flexDirection: "row",
     alignItems: "center",
@@ -2188,8 +2169,8 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   textButton: {
-    height: 34,
-    borderRadius: 10,
+    height: 44,
+    borderRadius: workspaceUi.controlRadius,
     paddingHorizontal: 11,
     flexDirection: "row",
     alignItems: "center",
@@ -2199,7 +2180,7 @@ const styles = StyleSheet.create({
   textButtonLabel: { fontSize: 10, color: PURPLE, fontWeight: "800" },
   documentCard: {
     borderWidth: 1,
-    borderRadius: 18,
+    borderRadius: workspaceUi.cardRadius,
     padding: 14,
     flexDirection: "row",
     alignItems: "center",
@@ -2245,7 +2226,7 @@ const styles = StyleSheet.create({
   },
   errorCard: {
     borderWidth: 1,
-    borderRadius: 17,
+    borderRadius: workspaceUi.cardRadius,
     padding: 15,
     flexDirection: "row",
     alignItems: "center",
@@ -2263,7 +2244,7 @@ const styles = StyleSheet.create({
   modalCard: {
     maxHeight: "92%",
     borderWidth: 1,
-    borderRadius: 25,
+    borderRadius: workspaceUi.cardRadius,
     overflow: "hidden",
   },
   documentModal: {
@@ -2279,12 +2260,12 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "flex-start",
   },
-  modalTitle: { fontSize: 21, fontWeight: "800", letterSpacing: -0.4 },
+  modalTitle: { fontSize: workspaceUi.sectionTitle.fontSize, fontWeight: workspaceUi.sectionTitle.fontWeight, letterSpacing: -0.4 },
   modalSub: { fontSize: 11, marginTop: 5 },
   closeButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 12,
+    width: 44,
+    height: 44,
+    borderRadius: workspaceUi.controlRadius,
     backgroundColor: "rgba(128,128,145,.1)",
     alignItems: "center",
     justifyContent: "center",
@@ -2359,16 +2340,16 @@ const styles = StyleSheet.create({
   },
   employeeActions: { flexDirection: "row", alignItems: "center", gap: 7 },
   iconButton: {
-    width: 39,
-    height: 39,
+    width: 44,
+    height: 44,
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: workspaceUi.controlRadius,
     alignItems: "center",
     justifyContent: "center",
   },
   signatureCard: {
     borderWidth: 1,
-    borderRadius: 18,
+    borderRadius: workspaceUi.cardRadius,
     padding: 14,
     flexDirection: "row",
     alignItems: "center",

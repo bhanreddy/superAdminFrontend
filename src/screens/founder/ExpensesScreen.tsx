@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../constants/layout';
 import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -1065,7 +1066,7 @@ const s = StyleSheet.create({
     flexWrap: "wrap",
     gap: 12,
   },
-  listPanel: { borderWidth: 1, borderRadius: 18, overflow: "hidden" },
+  listPanel: { borderWidth: 1, borderRadius: workspaceUi.cardRadius, overflow: "hidden" },
   tab: {
     flexDirection: "row",
     alignItems: "center",
@@ -1073,7 +1074,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 13,
     paddingVertical: 10,
     borderWidth: 1,
-    borderRadius: 9,
+    borderRadius: workspaceUi.chipRadius,
   },
   tableHead: {
     flexDirection: "row",

@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../../src/constants/layout';
 import { brandColors, experienceColors } from '../../../src/constants/experienceColors';
 import { navigateBack } from '../../../src/utils/navigation';
 import React, { useState, useRef, useEffect } from 'react';
@@ -182,7 +183,7 @@ const FloatInput = ({
           secureTextEntry={secure && !shown}
           autoCorrect={false}
           placeholder={focused ? placeholder : ''}
-          placeholderTextColor={isDark ? C.textD : '#94A3B8'}
+          placeholderTextColor={isDark ? C.textD : colors.textSecondary}
           selectionColor={isDark ? C.gold : colors.primary}
         />
         {secure ? (
@@ -194,7 +195,7 @@ const FloatInput = ({
           </Pressable>
         ) : success ? (
           <View style={fi.iconRight}>
-            <View style={[fi.checkBadge, { backgroundColor: isDark ? C.greenFaint : colors.success + '1A', borderColor: isDark ? 'rgba(51, 95, 144, 0.3)' : colors.success }]}>
+            <View style={[fi.checkBadge, { backgroundColor: isDark ? C.greenFaint : colors.success + '1A', borderColor: isDark ? colors.infoDim : colors.success }]}>
               <Check size={10} color={C.green} strokeWidth={3} />
             </View>
           </View>
@@ -216,7 +217,7 @@ const fi = StyleSheet.create({
   floatLabel: { position: 'absolute', left: 44, fontWeight: '600' },
   iconLeft: { marginRight: 12 },
   iconRight: { marginLeft: 8 },
-  input: { flex: 1, fontSize: 15, fontWeight: '600', height: '100%', paddingTop: 4 },
+  input: { flex: 1, fontSize: 16, fontWeight: '600', height: '100%', paddingTop: 4 },
   glowLine: { position: 'absolute', bottom: -1, left: 16, right: 16, height: 1.5, borderRadius: 1 },
   checkBadge: { width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
 });
@@ -272,7 +273,7 @@ const ConfirmSheet = ({ visible, onHide, onConfirm, data, loading, error }: any)
         <Animated.View style={[cs.sheet, { transform: [{ translateY: slide }], backgroundColor: isDark ? C.layer2 : colors.surface, borderTopColor: isDark ? C.borderGold : colors.border }]}>
           <View style={[cs.handle, { backgroundColor: isDark ? C.layer3 : colors.border }]} />
           <View style={cs.header}>
-            <View style={[cs.iconBox, { backgroundColor: isDark ? 'rgba(212,175,55,0.1)' : colors.primary + '1A' }]}>
+            <View style={[cs.iconBox, { backgroundColor: isDark ? colors.warningDim : colors.primary + '1A' }]}>
               <Fingerprint size={28} color={isDark ? C.gold : colors.primary} />
             </View>
             <View style={cs.titleRow}>
@@ -557,7 +558,7 @@ const s = StyleSheet.create({
   scroll: { flex: 1 },
   content: { padding: 24, paddingTop: Platform.OS === 'ios' ? 60 : 40 },
   nav: { flexDirection: 'row', alignItems: 'center', marginBottom: 24, gap: 12 },
-  backBtn: { width: 42, height: 42, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
+  backBtn: { width: 44, height: 44, borderRadius: workspaceUi.controlRadius, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
   themeToggle: { width: 42, height: 42, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
   navTitleBox: { flex: 1 },
   navTitle: { fontSize: 20, fontWeight: '700', letterSpacing: -0.5 },
@@ -567,14 +568,14 @@ const s = StyleSheet.create({
   badge: { width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
   formRoot: { marginTop: 8 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', marginVertical: 20 },
-  sectionTitle: { fontSize: 10, fontWeight: '800', letterSpacing: 1.5, marginHorizontal: 12 },
+  sectionTitle: { fontSize: workspaceUi.sectionTitle.fontSize, fontWeight: workspaceUi.sectionTitle.fontWeight, letterSpacing: 1.5, marginHorizontal: 12 },
   sectionLine: { flex: 1, height: 1, backgroundColor: 'rgba(212,175,55,0.1)' },
   reqs: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginVertical: 16 },
   errBox: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 12, backgroundColor: 'rgba(239,68,68,0.1)', borderRadius: 12, borderWidth: 1, borderColor: 'rgba(239,68,68,0.2)', marginTop: 16 },
   errText: { color: C.red, fontSize: 13, fontWeight: '500' },
   footNote: { fontSize: 12, textAlign: 'center', opacity: 0.6, marginTop: 32, lineHeight: 18 },
   footer: { padding: 20, paddingBottom: 110, borderTopWidth: 1 },
-  submitBtn: { height: 56, borderRadius: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
+  submitBtn: { height: 56, borderRadius: workspaceUi.controlRadius, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
   btnDisabled: { opacity: 0.5 },
   submitText: { fontSize: 16, fontWeight: '700', letterSpacing: 0.3 },
   ambientGlow: { position: 'absolute', top: -100, right: -100, width: 300, height: 300, borderRadius: 150, backgroundColor: 'rgba(212,175,55,0.05)' },

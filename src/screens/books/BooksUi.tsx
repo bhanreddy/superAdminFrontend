@@ -1,7 +1,9 @@
+import { workspaceUi } from '../../constants/layout';
 import { brandColors, type CardTone } from '../../constants/experienceColors';
 import { borderRadius } from '../../constants/theme';
 import { MotionPressable } from '../../components/ui/MotionPressable';
-import { Card } from '../../components/ui/Card';
+import { Card, type CardMaterial } from '../../components/ui/Card';
+import { Input } from '../../components/ui/Input';
 import { MotionSection } from '../../components/ui/MotionSection';
 import React, { createContext, useContext, useState } from 'react';
 import {
@@ -74,12 +76,12 @@ export function Panel({
   children,
   style,
   tone,
-  material = 'panel',
+  material = 'neutral',
 }: {
   children: React.ReactNode;
   style?: object;
   tone?: CardTone;
-  material?: 'soft' | 'panel';
+  material?: CardMaterial;
 }) {
   const { colors } = useTheme();
   return (
@@ -136,24 +138,14 @@ export function Field({
   const layout = useFieldLayout();
   return (
     <View style={layout}>
-      <Text style={[ui.label, { color: colors.textSecondary }]}>{label}</Text>
-      <TextInput
-        accessibilityLabel={label}
+      <Input
+        label={label}
         value={String(value ?? '')}
         onChangeText={onChange}
         placeholder={placeholder}
         placeholderTextColor={colors.textTertiary}
         multiline={multiline}
-        style={[
-          ui.input,
-          {
-            color: colors.textPrimary,
-            borderColor: colors.border,
-            backgroundColor: colors.background,
-            minHeight: multiline ? 96 : 44,
-            textAlignVertical: multiline ? 'top' : 'center',
-          },
-        ]}
+        containerStyle={{ marginBottom: 0 }}
       />
     </View>
   );
@@ -659,8 +651,8 @@ export const ui = StyleSheet.create({
   },
   panel: {
     borderWidth: 1,
-    borderRadius: borderRadius.xl,
-    padding: 22,
+    borderRadius: workspaceUi.cardRadius,
+    padding: workspaceUi.cardPadding,
     gap: 16,
     flexShrink: 0,
     minWidth: 0,
@@ -671,10 +663,10 @@ export const ui = StyleSheet.create({
     minWidth: 0,
     lineHeight: 20,
     borderWidth: 1,
-    borderRadius: borderRadius.md,
+    borderRadius: workspaceUi.controlRadius,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    fontSize: 14,
+    fontSize: 16,
   },
   title: { fontSize: 19, fontWeight: '700' },
   tableHead: {

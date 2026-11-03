@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../../src/constants/layout';
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -73,7 +74,7 @@ export default function AddMedicalShopScreen() {
       setAssignedCluster(cluster);
     } catch (err: any) {
       setClusterError(
-        err.response?.data?.error || 
+        err.response?.data?.error ||
         'All clusters are at medical capacity. Go to Cluster Management to add a new cluster.'
       );
     } finally {
@@ -384,10 +385,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   card: {
-    borderRadius: 20,
+    borderRadius: workspaceUi.cardRadius,
     borderWidth: 1,
-    padding: 16,
-    paddingBottom: 4, 
+    padding: workspaceUi.cardPadding,
+    paddingBottom: 4,
   },
   row: {
     flexDirection: 'row',

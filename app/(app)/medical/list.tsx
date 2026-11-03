@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../../src/constants/layout';
 import { brandColors, experienceColors } from '../../../src/constants/experienceColors';
 import React, { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, Platform, Alert, ScrollView, useWindowDimensions } from 'react-native';
@@ -463,7 +464,7 @@ export default function MedicalShopsListScreen() {
       />
 
       {clusterUnreachable && !loading && (
-        <View style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', borderColor: 'rgba(239, 68, 68, 0.3)', borderWidth: 1, padding: 12, borderRadius: 12, marginHorizontal: 16, marginBottom: 16, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+        <View style={{ backgroundColor: colors.errorDim, borderColor: colors.errorDim, borderWidth: 1, padding: 12, borderRadius: 12, marginHorizontal: 16, marginBottom: 16, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
           <Text style={{ fontSize: 18 }}>⚠️</Text>
           <Text style={{ color: colors.error, fontSize: 13, flex: 1 }}>
             Warning: One or more clusters are unreachable. Partial data is being shown.
@@ -517,8 +518,8 @@ export default function MedicalShopsListScreen() {
           <View style={st.drawerContent}>
             {/* Shop Identity Card */}
             <View style={[st.shopCard, {
-              backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(99,102,241,0.04)',
-              borderColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(99,102,241,0.12)',
+              backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : colors.infoDim,
+              borderColor: isDark ? 'rgba(255,255,255,0.06)' : colors.infoDim,
             }]}>
               <View style={[st.shopIconLarge, { backgroundColor: `${colors.primary}18` }]}>
                 <Store size={24} color={colors.primary} />
@@ -837,7 +838,7 @@ const st = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 24,
     paddingHorizontal: 16,
-    borderRadius: 16,
+    borderRadius: workspaceUi.cardRadius,
     borderWidth: 1,
   },
   shopIconLarge: {
@@ -875,8 +876,8 @@ const st = StyleSheet.create({
   },
 
   sectionTitle: {
-    fontSize: 11,
-    fontWeight: '700',
+    fontSize: workspaceUi.sectionTitle.fontSize,
+    fontWeight: workspaceUi.sectionTitle.fontWeight,
     letterSpacing: 0.8,
     alignSelf: 'stretch',
   },
@@ -898,9 +899,9 @@ const st = StyleSheet.create({
     fontWeight: '600',
   },
   iconButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
+    width: 44,
+    height: 44,
+    borderRadius: workspaceUi.controlRadius,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -935,7 +936,7 @@ const st = StyleSheet.create({
     alignSelf: 'flex-start',
     paddingVertical: 6,
     paddingHorizontal: 10,
-    borderRadius: 8,
+    borderRadius: workspaceUi.controlRadius,
     marginBottom: 4,
   },
   backBtnText: { fontSize: 13, fontWeight: '500' },
@@ -948,9 +949,9 @@ const st = StyleSheet.create({
   },
   editSectionLabel: { fontSize: 15, fontWeight: '600' },
   editCard: {
-    borderRadius: 16,
+    borderRadius: workspaceUi.cardRadius,
     borderWidth: 1,
-    padding: 16,
+    padding: workspaceUi.cardPadding,
     paddingBottom: 4,
   },
   editRow: {

@@ -5,6 +5,7 @@ import { ArrowUpRight, TrendingUp, TrendingDown } from 'lucide-react-native';
 import { MetricValue } from './MetricValue';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Card, type CardMaterial } from './Card';
+import { workspaceTones } from '../../constants/workspaceDesign';
 import { borderRadius, theme } from '../../constants/theme';
 import {
   brandColors,
@@ -31,9 +32,9 @@ export const StatCard = React.memo(function StatCard({
   onPress,
   description,
   tone,
-  material = 'soft',
+  material = 'neutral',
 }: StatCardProps) {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, workspaceModule = 'overview' } = useTheme();
   const inferredTone: CardTone =
     accentColor === brandColors.blue || accentColor === brandColors.blueBright
       ? 'blue'
@@ -46,7 +47,7 @@ export const StatCard = React.memo(function StatCard({
       : accentColor === brandColors.rose
       ? 'rose'
       : 'crimson';
-  const resolvedTone = tone || inferredTone;
+  const resolvedTone = tone || (accentColor ? inferredTone : workspaceTones[workspaceModule]);
   const paint = getCardTone(resolvedTone, isDark);
   const accent = paint.accent;
   const neutral = material === 'neutral';
@@ -62,7 +63,9 @@ export const StatCard = React.memo(function StatCard({
             { backgroundColor: neutral ? accent : `${accent}14` },
           ]}
         >
-          {icon}
+          {neutral && React.isValidElement<{ color?: string }>(icon)
+            ? React.cloneElement(icon, { color: paint.panel })
+            : icon}
         </View>
         {!trend && onPress ? (
           neutral ? (

@@ -88,8 +88,8 @@ export default function SprintCommandCenterScreen() {
         subtitle: definition?.roles.tech.subtitle || 'Cross-functional technical strike force',
         icon: '🛠️',
         color: isDark ? brandColors.blueBright : brandColors.blue,
-        bg: isDark ? 'rgba(56, 189, 248, 0.12)' : 'rgba(3, 105, 161, 0.08)',
-        border: isDark ? 'rgba(56, 189, 248, 0.3)' : 'rgba(3, 105, 161, 0.25)',
+        bg: isDark ? colors.infoDim : colors.infoDim,
+        border: isDark ? colors.infoDim : colors.infoDim,
       },
       curr: {
         name: definition?.roles.curr.name || 'Member 2 — Curriculum Research Lead',
@@ -97,8 +97,8 @@ export default function SprintCommandCenterScreen() {
         subtitle: definition?.roles.curr.subtitle || 'Academic architecture, validation, evidence',
         icon: '📚',
         color: isDark ? brandColors.violetBright : brandColors.violet,
-        bg: isDark ? 'rgba(129, 140, 248, 0.12)' : 'rgba(99, 102, 241, 0.08)',
-        border: isDark ? 'rgba(129, 140, 248, 0.3)' : 'rgba(99, 102, 241, 0.25)',
+        bg: isDark ? colors.infoDim : colors.infoDim,
+        border: isDark ? colors.infoDim : colors.infoDim,
       },
       sales: {
         name: definition?.roles.sales.name || 'Member 3 — Sales Strategy & Field Lead',
@@ -106,8 +106,8 @@ export default function SprintCommandCenterScreen() {
         subtitle: definition?.roles.sales.subtitle || 'Pipeline, positioning, demos, commercial execution',
         icon: '📈',
         color: isDark ? brandColors.blueBright : brandColors.blue,
-        bg: isDark ? 'rgba(51, 95, 144, 0.12)' : 'rgba(51, 95, 144, 0.08)',
-        border: isDark ? 'rgba(51, 95, 144, 0.3)' : 'rgba(51, 95, 144, 0.25)',
+        bg: isDark ? colors.infoDim : colors.infoDim,
+        border: isDark ? colors.infoDim : colors.infoDim,
       },
       scale: {
         name: definition?.roles.scale.name || 'Member 4 — Sales Scale & Hiring Lead',
@@ -115,8 +115,8 @@ export default function SprintCommandCenterScreen() {
         subtitle: definition?.roles.scale.subtitle || 'Brochure, hiring, training, enablement, operations',
         icon: '🚀',
         color: isDark ? brandColors.amberBright : brandColors.amber,
-        bg: isDark ? 'rgba(251, 191, 36, 0.12)' : 'rgba(180, 83, 9, 0.08)',
-        border: isDark ? 'rgba(251, 191, 36, 0.3)' : 'rgba(180, 83, 9, 0.25)',
+        bg: isDark ? colors.warningDim : 'rgba(180, 83, 9, 0.08)',
+        border: isDark ? colors.warningDim : 'rgba(180, 83, 9, 0.25)',
       },
     };
   }, [definition, isDark]);
@@ -343,14 +343,14 @@ export default function SprintCommandCenterScreen() {
               styles.topBar,
               {
                 backgroundColor: isDark ? 'rgba(45, 12, 18, 0.88)' : 'rgba(255, 247, 247, 0.96)',
-                borderColor: isDark ? 'rgba(239, 68, 68, 0.42)' : 'rgba(220, 38, 38, 0.25)',
+                borderColor: isDark ? 'rgba(239, 68, 68, 0.42)' : colors.errorDim,
               },
               clayStyle(clayShadows.clay),
             ]}
           >
             <View style={styles.brand}>
               <View style={styles.brandTitleRow}>
-                <View style={[styles.zapBadge, { backgroundColor: isDark ? 'rgba(239, 68, 68, 0.18)' : 'rgba(220, 38, 38, 0.1)' }]}>
+                <View style={[styles.zapBadge, { backgroundColor: isDark ? colors.errorDim : colors.errorDim }]}>
                   <Zap size={16} color={colors.error} />
                 </View>
                 <Text style={[styles.brandH1, { color: colors.textPrimary }]}>NexSyrus RED ALERT</Text>
@@ -358,8 +358,8 @@ export default function SprintCommandCenterScreen() {
                   style={[
                     styles.deadlineTag,
                     {
-                      backgroundColor: isDark ? 'rgba(255, 69, 58, 0.15)' : 'rgba(255, 59, 48, 0.1)',
-                      borderColor: isDark ? 'rgba(255, 69, 58, 0.35)' : 'rgba(255, 59, 48, 0.25)',
+                      backgroundColor: isDark ? colors.errorDim : colors.errorDim,
+                      borderColor: isDark ? 'rgba(255, 69, 58, 0.35)' : colors.errorDim,
                     },
                   ]}
                 >
@@ -458,8 +458,8 @@ export default function SprintCommandCenterScreen() {
                 style={[
                   styles.btn,
                   {
-                    backgroundColor: isDark ? 'rgba(255, 69, 58, 0.1)' : 'rgba(255, 59, 48, 0.08)',
-                    borderColor: isDark ? 'rgba(255, 69, 58, 0.3)' : 'rgba(255, 59, 48, 0.25)',
+                    backgroundColor: isDark ? colors.errorDim : colors.errorDim,
+                    borderColor: isDark ? colors.errorDim : colors.errorDim,
                   },
                 ]}
                 onPress={handleResetSprint}
@@ -984,7 +984,7 @@ export default function SprintCommandCenterScreen() {
                         color: colors.textPrimary,
                       },
                       Boolean(editBlockerReason) && {
-                        backgroundColor: isDark ? 'rgba(255, 69, 58, 0.08)' : 'rgba(255, 59, 48, 0.05)',
+                        backgroundColor: isDark ? colors.errorDim : colors.errorDim,
                       },
                     ]}
                     placeholder="e.g. Waiting for OpenAPI contract approval from Tech Lead..."

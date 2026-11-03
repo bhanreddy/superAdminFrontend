@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../constants/layout';
 import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
@@ -234,7 +235,7 @@ export default function FieldRouteScreen() {
                   {isInProgress || isDone ? (
                     <Pressable accessibilityRole="button"
                       onPress={() => router.push(`/(app)/field/visit/${v.id}` as any)}
-                      style={[styles.checkBtn, isDone ? { backgroundColor: '#335F90' } : { backgroundColor: '#FF9F0A' }]}
+                      style={[styles.checkBtn, isDone ? { backgroundColor: '#335F90' } : { backgroundColor: colors.warning }]}
                     >
                       <CheckCircle2 size={15} color="#fff" />
                       <Text style={styles.checkText}>{isDone ? 'Review Visit' : 'Open Workspace'}</Text>
@@ -323,7 +324,7 @@ export default function FieldRouteScreen() {
 const styles = StyleSheet.create({
   title: { fontSize: 24, fontWeight: '800' },
   sub: { fontSize: 12.5, marginTop: 2, marginBottom: 14 },
-  card: { padding: 16, marginBottom: 12, borderRadius: 16 },
+  card: { padding: workspaceUi.cardPadding, marginBottom: 12, borderRadius: workspaceUi.cardRadius },
   topRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
   name: { fontSize: 16, fontWeight: '700' },
   meta: { fontSize: 12, marginTop: 3 },
@@ -342,15 +343,15 @@ const styles = StyleSheet.create({
     backgroundColor: brandColors.red,
     paddingHorizontal: 16,
     paddingVertical: 10,
-    borderRadius: 12,
+    borderRadius: workspaceUi.controlRadius,
     flex: 1,
     justifyContent: 'center',
   },
   checkText: { color: '#fff', fontWeight: '700', fontSize: 13 },
   iconBtn: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
+    width: 44,
+    height: 44,
+    borderRadius: workspaceUi.controlRadius,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',

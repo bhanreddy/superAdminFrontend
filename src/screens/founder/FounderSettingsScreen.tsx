@@ -220,7 +220,7 @@ export default function FounderSettingsScreen() {
                       onPress={() => toggleFounder(f)}
                       style={({ pressed }) => [...pressableWebStyles(pressed, { pressedOpacity: 0.85 })]}
                     >
-                      <Text style={{ color: f.is_active ? '#FF6B7A' : '#335F90', fontWeight: '800' }}>
+                      <Text style={{ color: f.is_active ? colors.error : '#335F90', fontWeight: '800' }}>
                         {f.is_active ? 'Deactivate' : 'Activate'}
                       </Text>
                     </Pressable>

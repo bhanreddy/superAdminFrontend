@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../constants/layout';
 import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, RefreshControl } from 'react-native';
@@ -66,7 +67,7 @@ export default function SchoolIntakeDeskScreen() {
       >
         <GlassCard variant="lightweight" style={styles.hero}>
           <View style={styles.heroRow}>
-            <View style={[styles.icon, { backgroundColor: 'rgba(10,132,255,0.12)' }]}>
+            <View style={[styles.icon, { backgroundColor: colors.infoDim }]}>
               <ShieldCheck size={20} color={brandColors.red} />
             </View>
             <View style={{ flex: 1 }}>
@@ -139,13 +140,13 @@ export default function SchoolIntakeDeskScreen() {
 
 const styles = StyleSheet.create({
   content: { padding: 16, gap: 12 },
-  hero: { padding: 16 },
+  hero: { padding: workspaceUi.cardPadding },
   heroRow: { flexDirection: 'row', gap: 12, alignItems: 'center' },
   icon: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   heroValue: { fontSize: 28, fontWeight: '800', letterSpacing: -0.6 },
   filters: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   filter: { minHeight: 36, paddingHorizontal: 14, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  card: { padding: 16, gap: 8 },
+  card: { padding: workspaceUi.cardPadding, gap: 8 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   name: { fontSize: 16, fontWeight: '800' },
   pill: { alignSelf: 'flex-start', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },

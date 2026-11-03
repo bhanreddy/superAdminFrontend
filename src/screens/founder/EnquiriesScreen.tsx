@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../constants/layout';
 import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
@@ -442,11 +443,11 @@ function LegacyEnquiryBrowser() {
           {isDark && (
              <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.elevated }]} pointerEvents="none" />
           )}
-          <View style={[styles.modalSheet, { backgroundColor: isDark ? '#12151F' : colors.surface, borderTopColor: isDark ? 'rgba(14,165,233,0.14)' : colors.border }]}>
+          <View style={[styles.modalSheet, { backgroundColor: isDark ? '#12151F' : colors.surface, borderTopColor: isDark ? colors.infoDim : colors.border }]}>
             <View style={[styles.sheetHandle, { backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : colors.border }]} />
 
             <View style={styles.sheetHeaderGroup}>
-               <LinearGradient colors={isDark ? ['rgba(14,165,233,0.18)', 'rgba(51, 95, 144, 0.06)'] : ['rgba(14,165,233,0.1)', 'transparent']} style={styles.sheetIconWrap}>
+               <LinearGradient colors={isDark ? [colors.infoDim, colors.infoDim] : [colors.infoDim, 'transparent']} style={styles.sheetIconWrap}>
                  <MessageCircle size={18} color={brandColors.blue} strokeWidth={2} />
                </LinearGradient>
                <View style={{ flex: 1, marginLeft: 14 }}>
@@ -471,12 +472,12 @@ function LegacyEnquiryBrowser() {
                      style={({ pressed }) => [
                        styles.unitCard,
                        !assignId && styles.unitCardActive,
-                       !isDark && { borderColor: !assignId ? brandColors.blue : colors.border, backgroundColor: !assignId ? 'rgba(14,165,233,0.06)' : colors.surface },
+                       !isDark && { borderColor: !assignId ? brandColors.blue : colors.border, backgroundColor: !assignId ? colors.infoDim : colors.surface },
                        ...pressableWebStyles(pressed, { pressedOpacity: 0.7 })
                      ]}
                    >
                      <View style={[styles.unitIconCircle, !assignId && { backgroundColor: 'transparent' }]}>
-                       {!assignId && <LinearGradient colors={isDark ? ['rgba(14,165,233,0.25)', 'transparent'] : ['rgba(14,165,233,0.15)', 'transparent']} style={StyleSheet.absoluteFillObject} />}
+                       {!assignId && <LinearGradient colors={isDark ? [colors.infoDim, 'transparent'] : [colors.infoDim, 'transparent']} style={StyleSheet.absoluteFillObject} />}
                        <UserRound size={13} color={!assignId ? (isDark ? brandColors.blueBright : brandColors.blue) : colors.textSecondary} />
                      </View>
                      <Text style={[styles.unitLabel, { color: !assignId ? (isDark ? brandColors.blueBright : brandColors.blue) : colors.textPrimary }]}>Unassigned</Text>
@@ -491,12 +492,12 @@ function LegacyEnquiryBrowser() {
                          style={({ pressed }) => [
                            styles.unitCard,
                            active && styles.unitCardActive,
-                           !isDark && { borderColor: active ? brandColors.blue : colors.border, backgroundColor: active ? 'rgba(14,165,233,0.06)' : colors.surface },
+                           !isDark && { borderColor: active ? brandColors.blue : colors.border, backgroundColor: active ? colors.infoDim : colors.surface },
                            ...pressableWebStyles(pressed, { pressedOpacity: 0.7 })
                          ]}
                        >
                          <View style={[styles.unitIconCircle, active && { backgroundColor: 'transparent' }]}>
-                           {active && <LinearGradient colors={isDark ? ['rgba(14,165,233,0.25)', 'transparent'] : ['rgba(14,165,233,0.15)', 'transparent']} style={StyleSheet.absoluteFillObject} />}
+                           {active && <LinearGradient colors={isDark ? [colors.infoDim, 'transparent'] : [colors.infoDim, 'transparent']} style={StyleSheet.absoluteFillObject} />}
                            <UserRound size={13} color={active ? (isDark ? brandColors.blueBright : brandColors.blue) : colors.textSecondary} />
                          </View>
                          <Text style={[styles.unitLabel, { color: active ? (isDark ? brandColors.blueBright : brandColors.blue) : colors.textPrimary }]}>{f.full_name || f.email || f.id}</Text>
@@ -512,7 +513,7 @@ function LegacyEnquiryBrowser() {
               <View style={styles.statusGrid}>
                  {(['NEW', 'CONTACTED', 'QUALIFIED', 'CLOSED', 'REJECTED'] as EnquiryStatus[]).map((s) => {
                    const active = statusPick === s;
-                   const sColor = s === 'QUALIFIED' ? '#335F90' : s === 'CLOSED' ? '#38BDF8' : s === 'REJECTED' ? '#FF6B7A' : '#A78BFA';
+                   const sColor = s === 'QUALIFIED' ? '#335F90' : s === 'CLOSED' ? colors.info : s === 'REJECTED' ? colors.error : '#A78BFA';
                    return (
                      <Pressable accessibilityRole="button"
                        key={s}
@@ -520,7 +521,7 @@ function LegacyEnquiryBrowser() {
                        style={({ pressed }) => [
                          styles.statusChip,
                          active
-                            ? { backgroundColor: `rgba(${sColor === '#335F90' ? '0,212,173' : sColor === '#38BDF8' ? '56,189,248' : sColor === '#FF6B7A' ? '255,107,122' : '167,139,250'},0.15)`, borderColor: sColor }
+                            ? { backgroundColor: `rgba(${sColor === '#335F90' ? '0,212,173' : sColor === colors.info ? '56,189,248' : sColor === colors.error ? '255,107,122' : '167,139,250'},0.15)`, borderColor: sColor }
                             : { backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : colors.glassBackground, borderColor: isDark ? 'rgba(255,255,255,0.08)' : colors.border },
                          ...pressableWebStyles(pressed, { pressedOpacity: 0.75 })
                        ]}
@@ -542,7 +543,7 @@ function LegacyEnquiryBrowser() {
               </View>
 
               {/* ACCEPT / ONBOARD */}
-              <View style={[styles.onboardBlock, { borderColor: isDark ? 'rgba(51, 95, 144, 0.22)' : colors.border, backgroundColor: isDark ? 'rgba(51, 95, 144, 0.05)' : colors.glassBackground }]}>
+              <View style={[styles.onboardBlock, { borderColor: isDark ? colors.infoDim : colors.border, backgroundColor: isDark ? colors.infoDim : colors.glassBackground }]}>
                 <View style={styles.onboardHeader}>
                   <Rocket size={15} color="#335F90" />
                   <Text style={[styles.onboardTitle, { color: colors.textPrimary }]}>Accept & onboard</Text>
@@ -560,7 +561,7 @@ function LegacyEnquiryBrowser() {
                         style={({ pressed }) => [
                           styles.verticalChip,
                           active
-                            ? { backgroundColor: 'rgba(51, 95, 144, 0.15)', borderColor: '#335F90' }
+                            ? { backgroundColor: colors.infoDim, borderColor: '#335F90' }
                             : { backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : colors.surface, borderColor: isDark ? 'rgba(255,255,255,0.08)' : colors.border },
                           ...pressableWebStyles(pressed, { pressedOpacity: 0.8 }),
                         ]}
@@ -592,7 +593,7 @@ function LegacyEnquiryBrowser() {
                     ...pressableWebStyles(pressed, { disabled: saving, pressedOpacity: 0.8 }),
                   ]}
                 >
-                  <Text style={[styles.rejectTxt, { color: '#FF6B7A' }]}>Reject lead</Text>
+                  <Text style={[styles.rejectTxt, { color: colors.error }]}>Reject lead</Text>
                 </Pressable>
               </View>
 
@@ -642,7 +643,7 @@ const styles = StyleSheet.create({
 
   // Stat strip
   statStrip: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 14 },
-  statCard: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12, paddingHorizontal: 14, borderRadius: 16, borderWidth: 1, minWidth: 130 },
+  statCard: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12, paddingHorizontal: 14, borderRadius: workspaceUi.cardRadius, borderWidth: 1, minWidth: 130 },
   statIcon: { width: 30, height: 30, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   statValue: { fontSize: 19, fontWeight: '800', letterSpacing: -0.5 },
   statLabel: { fontSize: 10.5, fontWeight: '600', marginTop: 1 },
@@ -650,19 +651,19 @@ const styles = StyleSheet.create({
   // Toolbar
   toolbar: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 4 },
   searchBox: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, height: 44, paddingHorizontal: 14, borderRadius: 14, borderWidth: 1 },
-  searchInput: { flex: 1, fontSize: 14, fontWeight: '500', paddingVertical: 0 },
-  filterBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 44, paddingHorizontal: 14, borderRadius: 14, borderWidth: 1 },
+  searchInput: { flex: 1, fontSize: 16, fontWeight: '500', paddingVertical: 0 },
+  filterBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, height: 44, paddingHorizontal: 14, borderRadius: workspaceUi.controlRadius, borderWidth: 1 },
   filterBtnTxt: { fontSize: 13, fontWeight: '700' },
   filterCount: { minWidth: 16, height: 16, borderRadius: 8, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
   filterCountTxt: { color: '#fff', fontSize: 10, fontWeight: '800' },
 
   // Advanced filter panel
-  advPanel: { marginTop: 10, borderRadius: 16, borderWidth: 1, paddingHorizontal: 14, paddingBottom: 10 },
+  advPanel: { marginTop: 10, borderRadius: workspaceUi.cardRadius, borderWidth: 1, paddingHorizontal: 14, paddingBottom: 10 },
   advLabel: { fontSize: 10.5, fontWeight: '800', letterSpacing: 0.6, textTransform: 'uppercase', marginTop: 10, marginBottom: 2 },
 
   // Lead grid + card
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 14, marginTop: 16 },
-  card: { borderRadius: 20, borderWidth: 1, padding: 15, paddingLeft: 18, overflow: 'hidden' },
+  card: { borderRadius: workspaceUi.cardRadius, borderWidth: 1, padding: 15, paddingLeft: 18, overflow: 'hidden' },
   cardAccent: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, borderTopLeftRadius: 20, borderBottomLeftRadius: 20 },
   cardRow: { flexDirection: 'row', alignItems: 'center', gap: 13 },
   avatar: { width: 46, height: 46, borderRadius: 15, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
@@ -720,7 +721,7 @@ const styles = StyleSheet.create({
   sheetHeaderGroup: { flexDirection: 'row', alignItems: 'center', marginBottom: 24 },
   sheetIconWrap: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   sheetClose: { width: 34, height: 34, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.06)', alignItems: 'center', justifyContent: 'center' },
-  modalTitle: { fontSize: 21, fontWeight: '800', letterSpacing: -0.3 },
+  modalTitle: { fontSize: workspaceUi.sectionTitle.fontSize, fontWeight: workspaceUi.sectionTitle.fontWeight, letterSpacing: -0.3 },
   sub: { fontSize: 12, marginTop: 2, marginBottom: 0 },
 
   fieldLabel: {
@@ -740,7 +741,7 @@ const styles = StyleSheet.create({
     gap: 8,
     padding: 10,
     paddingRight: 16,
-    borderRadius: 16,
+    borderRadius: workspaceUi.cardRadius,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
     backgroundColor: 'rgba(255,255,255,0.03)',
@@ -807,13 +808,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 14,
-    borderRadius: 14,
+    borderRadius: workspaceUi.controlRadius,
   },
   acceptTxt: { color: '#fff', fontWeight: '800', fontSize: 14 },
   rejectBtn: {
     marginTop: 10,
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: workspaceUi.controlRadius,
     borderWidth: 1,
     alignItems: 'center',
   },
@@ -826,11 +827,11 @@ const styles = StyleSheet.create({
   cancelBtn: {
     paddingVertical: 15,
     paddingHorizontal: 20,
-    borderRadius: 14,
+    borderRadius: workspaceUi.controlRadius,
     borderWidth: 1,
   },
   cancelTxt: { fontWeight: '700', fontSize: 14 },
-  saveBtn: { paddingVertical: 15, borderRadius: 14, alignItems: 'center' },
+  saveBtn: { paddingVertical: 15, borderRadius: workspaceUi.controlRadius, alignItems: 'center' },
   saveTxt: { color: '#fff', fontWeight: '800', fontSize: 15 },
 });
 

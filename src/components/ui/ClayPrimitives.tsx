@@ -4,9 +4,10 @@ import { MotionPressable, type MotionPressableProps } from './MotionPressable';
 import { borderRadius as radii } from '../../constants/theme';
 import { View, ViewStyle, Pressable, Platform } from 'react-native';
 import { useTheme, clayStyle } from '../../contexts/ThemeContext';
+import { Card } from './Card';
 export const clayTokens = {
   radius: {
-    card: radii.xl,
+    card: radii.lg,
     button: radii.md,
     input: radii.md,
     pill: radii.full,
@@ -27,13 +28,16 @@ type ClayViewProps = {
 export function ClayView({
   children,
   color,
-  radius = radii.xl,
+  radius = radii.lg,
   style,
   flat,
 }: ClayViewProps) {
   const { colors, clayShadows } = useTheme();
   return (
-    <View
+    <Card
+      noPadding
+      variant={flat ? 'outlined' : 'default'}
+      material={color && color !== colors.card ? 'soft' : 'neutral'}
       style={[
         {
           backgroundColor: color || colors.card,
@@ -42,12 +46,11 @@ export function ClayView({
           borderColor: colors.borderSubtle || colors.border,
           overflow: 'hidden',
         },
-        !flat && clayStyle(clayShadows.subtle),
         style,
       ]}
     >
       {children}
-    </View>
+    </Card>
   );
 }
 export function PressScale({

@@ -1,3 +1,7 @@
+import type { ThemeColors } from '../../constants/theme';
+import { workspaceUi } from '../../constants/layout';
+import { ScreenHeader } from '../../components/ui/ScreenHeader';
+import { Button } from '../../components/ui/Button';
 import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
@@ -44,15 +48,17 @@ interface SchoolItem {
   is_active?: boolean;
 }
 
-const STATUS_BADGE: Record<string, { label: string; color: string; bg: string }> = {
-  pending_build: { label: 'Waiting for Data / Build', color: '#FF9F0A', bg: 'rgba(255, 159, 10, 0.12)' },
-  apk_delivered: { label: 'Build Ready / APK Delivered', color: '#335F90', bg: 'rgba(51, 95, 144, 0.12)' },
-  live: { label: 'Live in Production', color: brandColors.red, bg: 'rgba(10, 132, 255, 0.12)' },
-  suspended: { label: 'Suspended', color: '#FF453A', bg: 'rgba(255, 69, 58, 0.12)' },
-};
+
 
 export default function SalesExecutiveDashboard() {
   const { colors, isDark } = useTheme();
+  const STATUS_BADGE: Record<string, { label: string; color: string; bg: string }> = {
+    pending_build: { label: 'Waiting for Data / Build', color: colors.warning, bg: colors.warningDim },
+    apk_delivered: { label: 'Build Ready / APK Delivered', color: colors.info, bg: colors.infoDim },
+    live: { label: 'Live in Production', color: colors.success, bg: colors.successDim },
+    suspended: { label: 'Suspended', color: colors.error, bg: colors.errorDim }
+  };
+  const styles = React.useMemo(() => createStyles(colors), [colors]);
   const { user, employeeId } = useAuth();
   const router = useRouter();
 
@@ -100,44 +106,17 @@ export default function SalesExecutiveDashboard() {
         }
       >
         {/* Hero Header */}
-        <View style={styles.heroSection}>
-          <View>
-            <View style={styles.badgeRow}>
-              <View style={styles.roleTag}>
-                <Sparkles size={12} color="#64D2FF" />
-                <Text style={styles.roleTagText}>Sales Executive Console</Text>
-              </View>
-              {employeeId && (
-                <View style={styles.empBadge}>
-                  <Text style={styles.empBadgeText}>{employeeId}</Text>
-                </View>
-              )}
-            </View>
-            <Text style={[styles.heroTitle, { color: colors.textPrimary }]}>
-              My Assigned Schools
-            </Text>
-            <Text style={[styles.heroSubtitle, { color: colors.textSecondary }]}>
-              Upload a school dossier. The founder reviews it, then the school is created and assigned back to you.
-            </Text>
-          </View>
-
-          <Pressable accessibilityRole="button"
-            onPress={() => router.push('/(app)/schools/add' as any)}
-            style={({ pressed, hovered }: any) => [
-              styles.newSchoolBtn,
-              hovered && { opacity: 0.9 },
-              pressed && { transform: [{ scale: 0.98 }] },
-            ]}
-          >
-            <PlusCircle size={18} color="#FFFFFF" />
-            <Text style={styles.newSchoolBtnText}>Onboard a school</Text>
-          </Pressable>
-        </View>
+        <ScreenHeader
+          eyebrow={['Sales Executive', employeeId].filter(Boolean).join(' · ')}
+          title="My Assigned Schools"
+          subtitle="Upload school dossiers and track review, onboarding, and follow-up."
+          rightAction={<Button title="Onboard a school" onPress={() => router.push('/(app)/schools/add' as any)} />}
+        />
 
         {/* Quick Action Cards */}
         <View style={styles.quickGrid}>
           <GlassCard style={styles.quickCard}>
-            <View style={[styles.quickIcon, { backgroundColor: 'rgba(10, 132, 255, 0.12)' }]}>
+            <View style={[styles.quickIcon, { backgroundColor: colors.infoDim }]}>
               <School size={20} color={brandColors.red} />
             </View>
             <Text style={[styles.quickVal, { color: colors.textPrimary }]}>{schools.length}</Text>
@@ -145,7 +124,7 @@ export default function SalesExecutiveDashboard() {
           </GlassCard>
 
           <GlassCard style={styles.quickCard}>
-            <View style={[styles.quickIcon, { backgroundColor: 'rgba(51, 95, 144, 0.12)' }]}>
+            <View style={[styles.quickIcon, { backgroundColor: colors.infoDim }]}>
               <CheckCircle2 size={20} color="#335F90" />
             </View>
             <Text style={[styles.quickVal, { color: colors.textPrimary }]}>
@@ -155,8 +134,8 @@ export default function SalesExecutiveDashboard() {
           </GlassCard>
 
           <GlassCard style={styles.quickCard}>
-            <View style={[styles.quickIcon, { backgroundColor: 'rgba(255, 159, 10, 0.12)' }]}>
-              <Clock size={20} color="#FF9F0A" />
+            <View style={[styles.quickIcon, { backgroundColor: colors.warningDim }]}>
+              <Clock size={20} color={colors.warning} />
             </View>
             <Text style={[styles.quickVal, { color: colors.textPrimary }]}>
               {schools.filter((s) => s.onboarding_status === 'pending_build').length}
@@ -282,16 +261,16 @@ export default function SalesExecutiveDashboard() {
                     onPress={() => router.push(`/(app)/students` as any)}
                     style={({ pressed }: any) => [styles.actionBtn, pressed && { opacity: 0.8 }]}
                   >
-                    <UploadCloud size={14} color="#64D2FF" />
-                    <Text style={[styles.actionBtnText, { color: '#64D2FF' }]}>Upload Excel</Text>
+                    <UploadCloud size={14} color={colors.info} />
+                    <Text style={[styles.actionBtnText, { color: colors.info }]}>Upload Excel</Text>
                   </Pressable>
 
                   <Pressable accessibilityRole="button"
                     onPress={() => router.push(`/(app)/requirements` as any)}
                     style={({ pressed }: any) => [styles.actionBtn, pressed && { opacity: 0.8 }]}
                   >
-                    <FileText size={14} color="#FF9F0A" />
-                    <Text style={[styles.actionBtnText, { color: '#FF9F0A' }]}>Requirements</Text>
+                    <FileText size={14} color={colors.warning} />
+                    <Text style={[styles.actionBtnText, { color: colors.warning }]}>Requirements</Text>
                   </Pressable>
                 </View>
               </GlassCard>
@@ -303,77 +282,7 @@ export default function SalesExecutiveDashboard() {
   );
 }
 
-const styles = StyleSheet.create({
-  heroSection: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    flexWrap: 'wrap',
-    gap: 16,
-    marginBottom: 24,
-    marginTop: 8,
-  },
-  badgeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 8,
-  },
-  roleTag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: 8,
-    backgroundColor: 'rgba(100, 210, 255, 0.12)',
-    borderWidth: 1,
-    borderColor: 'rgba(100, 210, 255, 0.25)',
-  },
-  roleTagText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#64D2FF',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  empBadge: {
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-  },
-  empBadgeText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: 'rgba(245, 245, 247, 0.7)',
-  },
-  heroTitle: {
-    fontSize: 26,
-    fontWeight: '800',
-    letterSpacing: -0.5,
-  },
-  heroSubtitle: {
-    fontSize: 13,
-    marginTop: 4,
-    maxWidth: 560,
-    lineHeight: 18,
-  },
-  newSchoolBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: brandColors.red,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    ...(Platform.OS === 'web' ? { cursor: 'pointer' } : {}),
-  } as any,
-  newSchoolBtnText: {
-    color: '#FFFFFF',
-    fontWeight: '700',
-    fontSize: 13.5,
-  },
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
 
   quickGrid: {
     flexDirection: 'row',
@@ -395,10 +304,10 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(10,132,255,0.12)',
+    backgroundColor: colors.infoDim,
   },
   intakeCountText: {
-    color: brandColors.red,
+    color: colors.primary,
     fontWeight: '800',
     fontSize: 16,
   },
@@ -410,7 +319,7 @@ const styles = StyleSheet.create({
   quickCard: {
     flex: 1,
     minWidth: 140,
-    padding: 16,
+    padding: workspaceUi.cardPadding,
   },
   quickIcon: {
     width: 36,
@@ -438,8 +347,8 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   sectionTitle: {
-    fontSize: 17,
-    fontWeight: '700',
+    fontSize: workspaceUi.sectionTitle.fontSize,
+    fontWeight: workspaceUi.sectionTitle.fontWeight,
   },
   sectionCount: {
     fontSize: 12,
@@ -448,7 +357,7 @@ const styles = StyleSheet.create({
 
   emptyCard: {
     alignItems: 'center',
-    padding: 40,
+    padding: workspaceUi.cardPadding,
     gap: 12,
   },
   emptyTitle: {
@@ -465,7 +374,7 @@ const styles = StyleSheet.create({
 
   schoolCard: {
     marginBottom: 12,
-    padding: 18,
+    padding: workspaceUi.cardPadding,
   },
   schoolRow: {
     flexDirection: 'row',
@@ -485,7 +394,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: 'rgba(10, 132, 255, 0.1)',
+    backgroundColor: colors.infoDim,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
@@ -510,7 +419,7 @@ const styles = StyleSheet.create({
   codeText: {
     fontSize: 10,
     fontWeight: '700',
-    color: brandColors.red,
+    color: colors.primary,
   },
   schoolAddr: {
     fontSize: 12,

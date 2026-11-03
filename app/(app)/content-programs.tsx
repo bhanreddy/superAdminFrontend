@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../src/constants/layout';
 import { navigateBack } from '../../src/utils/navigation';
 import React, { useState, useEffect, useMemo } from 'react';
 import {
@@ -315,8 +316,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 0,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: workspaceUi.sectionTitle.fontSize,
+    fontWeight: workspaceUi.sectionTitle.fontWeight,
     marginBottom: 16,
   },
   label: {
@@ -339,11 +340,11 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: workspaceUi.controlRadius,
     paddingHorizontal: 12,
     paddingVertical: 10,
     marginBottom: 16,
-    fontSize: 15,
+    fontSize: 16,
   },
   textArea: {
     height: 80,
@@ -355,7 +356,7 @@ const styles = StyleSheet.create({
   },
   submitBtn: {
     padding: 16,
-    borderRadius: 12,
+    borderRadius: workspaceUi.controlRadius,
     alignItems: 'center',
     marginTop: 20,
     marginBottom: 40,

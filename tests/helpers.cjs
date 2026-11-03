@@ -144,7 +144,8 @@ const native = {
   View: 'View', Text: 'Text', ScrollView: 'ScrollView', Pressable: 'Pressable', TextInput: 'TextInput',
   ActivityIndicator: 'ActivityIndicator', Modal: ({ visible, children }) => visible ? React.createElement('Modal', null, children) : null,
   Linking: { openURL: async () => {} },
-  Platform: { OS: 'ios' }, Alert: { alert: () => {} }, StyleSheet: { create: (styles) => styles },
+  useWindowDimensions: () => ({ width: 390, height: 844, fontScale: 1 }),
+  Platform: { OS: 'ios', select: (values) => values.ios ?? values.default }, Alert: { alert: () => {} }, StyleSheet: { create: (styles) => styles },
 };
 function uiLoader(overrides = {}) {
   const colors = { primary: '#1765B2', textPrimary: '#111111', textSecondary: '#555555', border: '#DDDDDD', background: '#F5F7FA' };
@@ -159,6 +160,9 @@ function uiLoader(overrides = {}) {
     [path.join(frontend, 'src/components/auth/RouteGuard.tsx')]: { RouteGuard: ({ children }) => children },
     ...overrides,
   };
+  // Partial native mocks extend the shared runtime boundary. Omitting Platform
+  // in one screen test must not remove it from imported design tokens.
+  if (overrides['react-native']) mocks['react-native'] = { ...native, ...overrides['react-native'] };
   for (const key of Object.keys(mocks)) if (mocks[key] === null) delete mocks[key];
   return loader(mocks);
 }

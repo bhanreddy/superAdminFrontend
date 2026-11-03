@@ -1,3 +1,6 @@
+import { ScreenHeader } from '../../components/ui/ScreenHeader';
+import { Button } from '../../components/ui/Button';
+import { workspaceUi } from '../../constants/layout';
 import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -208,20 +211,10 @@ export default function ChecklistScreen() {
       <View style={[styles.root, { backgroundColor: colors.background }]}>
         <ScrollView contentContainerStyle={[styles.content, { paddingBottom: bottomTabPad }]}>
           {/* Header */}
-          <View style={styles.topHeader}>
-            <View>
-              <View style={styles.badgeRow}>
-                <View style={[styles.badge, { backgroundColor: 'rgba(51, 95, 144, 0.12)', borderColor: 'rgba(51, 95, 144, 0.3)' }]}>
-                  <CheckSquare size={14} color={brandColors.blue} />
-                  <Text style={[styles.badgeText, { color: brandColors.blue }]}>DEPLOYMENT OPERATIONAL READINESS</Text>
-                </View>
-              </View>
-              <Text style={[styles.pageTitle, { color: colors.textPrimary }]}>School Onboarding Milestones</Text>
-              <Text style={[styles.pageSub, { color: colors.textSecondary }]}>
-                Standard Operating Procedure (SOP) rollout verification from contract signature to live production cutover.
-              </Text>
-            </View>
-          </View>
+          <ScreenHeader
+            title="School Onboarding Milestones"
+            subtitle="Review school setup, data readiness, and launch milestones."
+          />
 
           {/* School Selector Pills */}
           <View style={[styles.selectorBar, { borderColor: colors.border, backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : '#FFFFFF' }]}>
@@ -262,7 +255,7 @@ export default function ChecklistScreen() {
                   {progress.completed} of {progress.total} deployment checkpoints completed
                 </Text>
               </View>
-              <Text style={[styles.progressPercentage, { color: progress.percentage >= 80 ? brandColors.blue : '#F59E0B' }]}>
+              <Text style={[styles.progressPercentage, { color: progress.percentage >= 80 ? brandColors.blue : colors.warning }]}>
                 {progress.percentage}%
               </Text>
             </View>
@@ -339,7 +332,7 @@ export default function ChecklistScreen() {
                             style={[
                               styles.checkRow,
                               { borderColor: isBlocked ? 'rgba(239, 68, 68, 0.4)' : colors.border },
-                              isBlocked && { backgroundColor: 'rgba(239, 68, 68, 0.05)' },
+                              isBlocked && { backgroundColor: colors.errorDim },
                             ]}
                           >
                             <View style={[styles.statusTag, { backgroundColor: sBadge.bg }]}>
@@ -491,7 +484,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   badgeText: { fontSize: 11, fontWeight: '700', letterSpacing: 0.5 },
-  pageTitle: { fontSize: 24, fontWeight: '800', letterSpacing: -0.5, marginBottom: 4 },
+  pageTitle: { fontSize: workspaceUi.pageTitle.fontSize, fontWeight: workspaceUi.pageTitle.fontWeight, letterSpacing: -0.5, marginBottom: 4 },
   pageSub: { fontSize: 13, lineHeight: 18, maxWidth: 580 },
   selectorBar: {
     borderRadius: 14,
@@ -512,9 +505,9 @@ const styles = StyleSheet.create({
   },
   schoolPillText: { fontSize: 12, fontWeight: '600' },
   progressCard: {
-    borderRadius: 16,
+    borderRadius: workspaceUi.cardRadius,
     borderWidth: 1,
-    padding: 20,
+    padding: workspaceUi.cardPadding,
     marginBottom: 24,
   },
   progressHeader: {
@@ -553,7 +546,7 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingHorizontal: 18,
     paddingVertical: 10,
-    borderRadius: 10,
+    borderRadius: workspaceUi.controlRadius,
     marginTop: 6,
   },
   initBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
@@ -591,7 +584,7 @@ const styles = StyleSheet.create({
   editBtn: {
     paddingHorizontal: 10,
     paddingVertical: 5,
-    borderRadius: 6,
+    borderRadius: workspaceUi.controlRadius,
     borderWidth: 1,
   },
   editBtnText: { fontSize: 11.5, fontWeight: '700' },
@@ -607,7 +600,7 @@ const styles = StyleSheet.create({
   modalCard: {
     width: '100%',
     maxWidth: 500,
-    borderRadius: 20,
+    borderRadius: workspaceUi.cardRadius,
     borderWidth: 1,
     overflow: 'hidden',
   },
@@ -619,7 +612,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.08)',
   },
-  modalTitle: { fontSize: 18, fontWeight: '800' },
+  modalTitle: { fontSize: workspaceUi.sectionTitle.fontSize, fontWeight: workspaceUi.sectionTitle.fontWeight },
   modalSub: { fontSize: 12, marginTop: 2 },
   modalForm: { padding: 20 },
   formLabel: { fontSize: 12, fontWeight: '700', marginBottom: 6, marginTop: 12 },
@@ -650,14 +643,14 @@ const styles = StyleSheet.create({
   cancelBtn: {
     paddingHorizontal: 16,
     paddingVertical: 10,
-    borderRadius: 10,
+    borderRadius: workspaceUi.controlRadius,
     borderWidth: 1,
   },
   cancelBtnText: { fontSize: 13, fontWeight: '600' },
   submitBtn: {
     paddingHorizontal: 20,
     paddingVertical: 10,
-    borderRadius: 10,
+    borderRadius: workspaceUi.controlRadius,
   },
   submitBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
 });

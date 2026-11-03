@@ -1,4 +1,4 @@
-import { brandColors as b } from './experienceColors';
+import { brandColors as b, type CardTone } from './experienceColors';
 
 /** Functional colour families. Status colours remain independent of screen colour. */
 export const workspaceModules = {
@@ -28,27 +28,27 @@ export const workspaceModules = {
   },
   connect: {
     label: 'Collaboration',
+    light: b.violet,
+    dark: b.violetBright,
+    fill: b.violet,
+    tint: b.violetSoft,
+    night: '#352D42',
+  },
+  sales: {
+    label: 'Sales & growth',
     light: b.red,
     dark: b.redBright,
     fill: b.red,
     tint: b.redSoft,
     night: b.redNight,
   },
-  sales: {
-    label: 'Sales & growth',
-    light: b.amber,
-    dark: b.amberBright,
-    fill: b.amber,
-    tint: b.honeySoft,
-    night: '#3C3327',
-  },
   team: {
     label: 'People & teams',
-    light: b.rose,
-    dark: b.redBright,
-    fill: b.rose,
-    tint: b.roseSoft,
-    night: b.redNight,
+    light: b.violet,
+    dark: b.violetBright,
+    fill: b.violet,
+    tint: b.violetSoft,
+    night: '#352D42',
   },
   content: {
     label: 'Content studio',
@@ -78,6 +78,28 @@ export const workspaceModules = {
 
 export type WorkspaceModule = keyof typeof workspaceModules;
 
+/** One category colour from the dashboard through its destination pages. */
+export const workspaceTones = {
+  overview: 'crimson',
+  schools: 'blue',
+  finance: 'honey',
+  connect: 'lavender',
+  sales: 'crimson',
+  team: 'lavender',
+  content: 'lavender',
+  support: 'blue',
+  system: 'slate',
+} as const satisfies Record<WorkspaceModule, CardTone>;
+
+export function getRoleWorkspaceModule(role?: string | null): WorkspaceModule {
+  if (role?.startsWith('SALES')) return 'sales';
+  if (role?.startsWith('IMPLEMENTATION')) return 'schools';
+  if (role?.startsWith('SUPPORT') || role === 'TECHNICAL_SUPPORT') return 'support';
+  if (role === 'CA' || role === 'CA_LEAD' || role === 'ACCOUNTS_MANAGER') return 'finance';
+  if (role === 'FOUNDER' || role === 'SUPER_ADMIN') return 'overview';
+  return 'system';
+}
+
 export function normalizeWorkspacePath(path: string): string {
   return (
     '/' +
@@ -92,7 +114,7 @@ export function normalizeWorkspacePath(path: string): string {
 export function getWorkspaceModule(path: string): WorkspaceModule {
   const parts = normalizeWorkspacePath(path).split('/').filter(Boolean);
   const section = parts[0] === 'console' ? parts[1] : parts[0];
-  if (['connect', 'messenger'].includes(section)) return 'connect';
+  if (section === 'connect') return 'connect';
   if (
     [
       'books',
@@ -106,7 +128,7 @@ export function getWorkspaceModule(path: string): WorkspaceModule {
     ].includes(section)
   )
     return 'finance';
-  if (['users', 'admins'].includes(section)) return 'team';
+  if (section === 'users') return 'team';
   if (
     [
       'sales',
@@ -118,7 +140,7 @@ export function getWorkspaceModule(path: string): WorkspaceModule {
       'tracking-links',
       'enquiries',
       'field-feedback',
-      'sprint',
+      'analytics',
     ].includes(section)
   )
     return 'sales';
@@ -130,11 +152,11 @@ export function getWorkspaceModule(path: string): WorkspaceModule {
       'school-intake',
       'school-import',
       'import-history',
-      'tenant-assignments',
+      'sprint',
     ].includes(section)
   )
     return 'schools';
-  if (['complaints', 'requirements'].includes(section)) return 'support';
+  if (['complaints', 'requirements', 'messenger'].includes(section)) return 'support';
   if (
     [
       'manage-content',
@@ -143,6 +165,7 @@ export function getWorkspaceModule(path: string): WorkspaceModule {
       'media-qr',
       'dcgd',
       'dcgdContent',
+      'microservices',
     ].includes(section)
   )
     return 'content';
@@ -153,7 +176,8 @@ export function getWorkspaceModule(path: string): WorkspaceModule {
       'backups',
       'audit-logs',
       'notifications',
-      'microservices',
+      'tenant-assignments',
+      'admins',
       'medical',
     ].includes(section)
   )

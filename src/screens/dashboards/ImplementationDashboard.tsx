@@ -1,3 +1,8 @@
+import type { ThemeColors } from '../../constants/theme';
+import { workspaceUi } from '../../constants/layout';
+import { ScreenHeader } from '../../components/ui/ScreenHeader';
+import { Button } from '../../components/ui/Button';
+import { Card } from '../../components/ui/Card';
 import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
@@ -45,6 +50,7 @@ interface SchoolItem {
 
 export default function ImplementationDashboard() {
   const { colors, isDark, clayShadows } = useTheme();
+  const styles = React.useMemo(() => createStyles(colors), [colors]);
   const { user, employeeId, role, roleLabel, assignedSchools } = useAuth();
   const router = useRouter();
 
@@ -104,116 +110,27 @@ export default function ImplementationDashboard() {
         }
       >
         {/* Top Header Card */}
-        <LinearGradient
-          colors={isDark ? ['#0d1d33', '#060d17'] : ['#e9f3ff', '#d9ecff']}
-          style={[
-            styles.headerCard,
-            {
-              borderColor: isDark
-                ? 'rgba(56, 189, 248, 0.25)'
-                : 'rgba(2, 132, 199, 0.25)',
-            },
-          ]}
-        >
-          <View style={styles.headerTop}>
-            <View style={{ flex: 1 }}>
-              <View style={styles.roleBadgeRow}>
-                <View
-                  style={[
-                    styles.rolePill,
-                    {
-                      backgroundColor: 'rgba(56, 189, 248, 0.15)',
-                      borderColor: 'rgba(56, 189, 248, 0.35)',
-                    },
-                  ]}
-                >
-                  <Layers size={13} color="#38BDF8" />
-                  <Text style={[styles.rolePillText, { color: '#38BDF8' }]}>
-                    {roleLabel.toUpperCase()}
-                  </Text>
-                </View>
-                <View
-                  style={[
-                    styles.empPill,
-                    {
-                      backgroundColor: isDark
-                        ? 'rgba(255,255,255,0.06)'
-                        : 'rgba(0,0,0,0.06)',
-                    },
-                  ]}
-                >
-                  <Text
-                    style={[styles.empText, { color: colors.textSecondary }]}
-                  >
-                    {employeeId || 'IE-DEPLOY'}
-                  </Text>
-                </View>
-              </View>
-
-              <Text
-                style={[styles.welcomeTitle, { color: colors.textPrimary }]}
-              >
-                {isManager
-                  ? 'Implementation Operations Desk'
-                  : 'My Assigned Deployments'}
-              </Text>
-              <Text
-                style={[styles.welcomeSub, { color: colors.textSecondary }]}
-              >
-                {isManager
-                  ? 'Track onboarding velocity, data import completion, and rollout checklists across all clusters.'
-                  : `Managing implementation milestones for ${totalAssigned} assigned partner institution${totalAssigned === 1 ? '' : 's'}.`}
-              </Text>
-            </View>
-
-            <View style={styles.headerActionCol}>
-              <Pressable accessibilityRole="button"
-                style={[
-                  styles.quickActionButton,
-                  { backgroundColor: brandColors.blue },
-                ]}
-                onPress={() => router.push('/checklist' as any)}
-              >
-                <CheckSquare size={16} color="#FFFFFF" />
-                <Text style={styles.quickActionText}>Open Checklists</Text>
-              </Pressable>
-              <Pressable accessibilityRole="button"
-                style={[
-                  styles.secondaryActionButton,
-                  {
-                    borderColor: isDark
-                      ? 'rgba(255,255,255,0.15)'
-                      : 'rgba(0,0,0,0.15)',
-                  },
-                ]}
-                onPress={() => router.push('/schools' as any)}
-              >
-                <School size={15} color={colors.textPrimary} />
-                <Text
-                  style={[
-                    styles.secondaryActionText,
-                    { color: colors.textPrimary },
-                  ]}
-                >
-                  View All Schools
-                </Text>
-              </Pressable>
-            </View>
-          </View>
-
-          {/* Quick Metrics Bar */}
-          <View
+        <View>
+          <ScreenHeader
+            eyebrow={[roleLabel, employeeId].filter(Boolean).join(' · ')}
+            title={isManager ? 'Implementation Operations Desk' : 'My Assigned Deployments'}
+            subtitle={isManager ? 'Track onboarding, data imports, and rollout checklists across your schools.' : `Implementation milestones for ${totalAssigned} assigned partner institution${totalAssigned === 1 ? '' : 's'}.`}
+            rightAction={<View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+              <Button title="Open Checklists" onPress={() => router.push('/checklist' as any)} />
+              <Button title="View All Schools" variant="outline" onPress={() => router.push('/schools' as any)} />
+            </View>}
+          />
+          <Card style={{ marginBottom: 20 }}>
+            <View
             style={[
               styles.statsRow,
               {
-                borderTopColor: isDark
-                  ? 'rgba(255,255,255,0.08)'
-                  : 'rgba(0,0,0,0.08)',
+                borderTopColor: colors.borderSubtle,
               },
             ]}
           >
             <View style={styles.statCell}>
-              <Text style={[styles.statValue, { color: '#38BDF8' }]}>
+              <Text style={[styles.statValue, { color: colors.info }]}>
                 {totalAssigned}
               </Text>
               <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
@@ -221,7 +138,7 @@ export default function ImplementationDashboard() {
               </Text>
             </View>
             <View style={styles.statCell}>
-              <Text style={[styles.statValue, { color: '#F59E0B' }]}>
+              <Text style={[styles.statValue, { color: colors.warning }]}>
                 {inProgressCount}
               </Text>
               <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
@@ -243,7 +160,8 @@ export default function ImplementationDashboard() {
               </Text>
             </View>
           </View>
-        </LinearGradient>
+          </Card>
+        </View>
 
         {/* Section: Implementation Checklist Quick Access */}
         <View style={styles.sectionHeader}>
@@ -269,7 +187,7 @@ export default function ImplementationDashboard() {
             </Text>
           </View>
         ) : schools.length === 0 ? (
-          <View
+          <Card noPadding
             style={[
               styles.emptyCard,
               {
@@ -285,17 +203,16 @@ export default function ImplementationDashboard() {
               You currently have no schools linked to your implementation
               portfolio. Contact your manager or Founder to assign schools.
             </Text>
-          </View>
+          </Card>
         ) : (
           <View style={styles.schoolsGrid}>
             {schools.map((s) => {
               const isLive = s.onboarding_status === 'live';
               return (
-                <View
+                <Card noPadding
                   key={s.id}
                   style={[
                     styles.schoolCard,
-                    clayStyle(clayShadows.clay),
                     {
                       backgroundColor: isDark
                         ? 'rgba(22, 27, 34, 0.85)'
@@ -334,18 +251,18 @@ export default function ImplementationDashboard() {
                         styles.badgePill,
                         {
                           backgroundColor: isLive
-                            ? 'rgba(51, 95, 144, 0.12)'
-                            : 'rgba(245, 158, 11, 0.12)',
+                            ? colors.infoDim
+                            : colors.warningDim,
                           borderColor: isLive
-                            ? 'rgba(51, 95, 144, 0.3)'
-                            : 'rgba(245, 158, 11, 0.3)',
+                            ? colors.infoDim
+                            : colors.warningDim,
                         },
                       ]}
                     >
                       <Text
                         style={[
                           styles.badgeText,
-                          { color: isLive ? brandColors.blue : '#F59E0B' },
+                          { color: isLive ? brandColors.blue : colors.warning },
                         ]}
                       >
                         {isLive ? 'LIVE' : 'ONBOARDING'}
@@ -361,7 +278,7 @@ export default function ImplementationDashboard() {
                         styles.cardBtn,
                         {
                           backgroundColor: isDark
-                            ? 'rgba(56, 189, 248, 0.12)'
+                            ? colors.infoDim
                             : '#e0f2fe',
                         },
                       ]}
@@ -380,7 +297,7 @@ export default function ImplementationDashboard() {
                         styles.cardBtn,
                         {
                           backgroundColor: isDark
-                            ? 'rgba(99, 102, 241, 0.12)'
+                            ? colors.infoDim
                             : '#e0e7ff',
                         },
                       ]}
@@ -414,14 +331,14 @@ export default function ImplementationDashboard() {
                       </Text>
                     </Pressable>
                   </View>
-                </View>
+                </Card>
               );
             })}
           </View>
         )}
 
         {/* Section: Implementation Guidelines & Support */}
-        <View
+        <Card noPadding
           style={[
             styles.guideCard,
             {
@@ -440,7 +357,7 @@ export default function ImplementationDashboard() {
               marginBottom: 8,
             }}
           >
-            <Sparkles size={18} color="#38BDF8" />
+            <Sparkles size={18} color={colors.info} />
             <Text style={[styles.guideTitle, { color: colors.textPrimary }]}>
               Implementation SOP & Data Readiness Rules
             </Text>
@@ -453,82 +370,21 @@ export default function ImplementationDashboard() {
             reaches 100% and APK is tested, request Final Sign-Off for
             production switch.
           </Text>
-        </View>
+        </Card>
       </ScrollView>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   root: { flex: 1 },
   content: { padding: 0 },
-  headerCard: {
-    borderRadius: 20,
-    borderWidth: 1,
-    padding: 24,
-    marginBottom: 24,
-    overflow: 'hidden',
-  },
-  headerTop: {
-    flexDirection: Platform.OS === 'web' ? 'row' : 'column',
-    justifyContent: 'space-between',
-    alignItems: Platform.OS === 'web' ? 'center' : 'flex-start',
-    gap: 16,
-    marginBottom: 20,
-  },
-  roleBadgeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 10,
-  },
-  rolePill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
-  rolePillText: { fontSize: 11, fontWeight: '700', letterSpacing: 0.5 },
-  empPill: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
-  empText: { fontSize: 11, fontWeight: '600' },
-  welcomeTitle: {
-    fontSize: 24,
-    fontWeight: '800',
-    letterSpacing: -0.5,
-    marginBottom: 4,
-  },
-  welcomeSub: { fontSize: 13, lineHeight: 18, maxWidth: 580 },
-  headerActionCol: { flexDirection: 'row', gap: 10, flexWrap: 'wrap' },
-  quickActionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 12,
-  },
-  quickActionText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
-  secondaryActionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
-  secondaryActionText: { fontSize: 13, fontWeight: '600' },
   statsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    paddingTop: 16,
-    borderTopWidth: 1,
-    gap: 16,
+    gap: 12,
   },
-  statCell: { flex: 1, minWidth: 120 },
+  statCell: { flex: 1, minWidth: 100 },
   statValue: { fontSize: 22, fontWeight: '800', marginBottom: 2 },
   statLabel: {
     fontSize: 13,
@@ -542,13 +398,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
-  sectionTitle: { fontSize: 17, fontWeight: '700' },
+  sectionTitle: { fontSize: workspaceUi.sectionTitle.fontSize, fontWeight: workspaceUi.sectionTitle.fontWeight },
   sectionActionText: { fontSize: 13, fontWeight: '600' },
   loadingBox: { padding: 40, alignItems: 'center', gap: 12 },
   loadingText: { fontSize: 13 },
   emptyCard: {
-    padding: 32,
-    borderRadius: 18,
+    padding: workspaceUi.cardPadding,
+    borderRadius: workspaceUi.cardRadius,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
@@ -572,9 +428,9 @@ const styles = StyleSheet.create({
     width: Platform.OS === 'web' ? '48.5%' : '100%',
     minWidth: 280,
     flexGrow: 1,
-    borderRadius: 18,
+    borderRadius: workspaceUi.cardRadius,
     borderWidth: 1,
-    padding: 16,
+    padding: workspaceUi.cardPadding,
   },
   schoolCardTop: {
     flexDirection: 'row',
@@ -585,7 +441,7 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 12,
-    backgroundColor: 'rgba(56, 189, 248, 0.12)',
+    backgroundColor: colors.infoDim,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -617,13 +473,13 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingVertical: 8,
     paddingHorizontal: 10,
-    borderRadius: 10,
+    borderRadius: workspaceUi.controlRadius,
   },
   cardBtnText: { fontSize: 12, fontWeight: '700' },
   guideCard: {
-    borderRadius: 16,
+    borderRadius: workspaceUi.cardRadius,
     borderWidth: 1,
-    padding: 18,
+    padding: workspaceUi.cardPadding,
   },
   guideTitle: { fontSize: 14, fontWeight: '700' },
   guideText: { fontSize: 12.5, lineHeight: 20 },

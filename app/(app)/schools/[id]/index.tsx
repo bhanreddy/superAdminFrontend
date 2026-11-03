@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../../../src/constants/layout';
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   View,
@@ -168,7 +169,7 @@ function StatCard({ icon: Icon, label, value, color, index, colors }: {
 }
 
 const statStyles = StyleSheet.create({
-  card: { flex: 1, alignItems: 'center', padding: 14, borderRadius: 16, borderWidth: 1, gap: 6 },
+  card: { flex: 1, alignItems: 'center', padding: 14, borderRadius: workspaceUi.cardRadius, borderWidth: 1, gap: 6 },
   iconWrap: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   value: { fontSize: 22, fontWeight: '800', letterSpacing: -0.5 },
   label: { fontSize: 11, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5 },
@@ -274,7 +275,7 @@ const fieldStyles = StyleSheet.create({
   wrapper: { marginBottom: 14 },
   label: { fontSize: 12, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 7 },
   inputRow: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, minHeight: 48 },
-  input: { flex: 1, fontSize: 14, fontWeight: '500' },
+  input: { flex: 1, fontSize: 16, fontWeight: '500' },
   eyeBtn: { padding: 4 },
   hint: { fontSize: 11, fontWeight: '500', marginTop: 5, opacity: 0.7 },
 });
@@ -795,7 +796,7 @@ const styles = StyleSheet.create({
   heroMeta: { fontSize: 12, fontWeight: '600', marginTop: 2, opacity: 0.7 },
   heroRight: { alignItems: 'flex-end', gap: 8 },
   iconBtn: {
-    width: 34, height: 34, borderRadius: 10, alignItems: 'center', justifyContent: 'center', borderWidth: 1,
+    width: 44, height: 44, borderRadius: workspaceUi.controlRadius, alignItems: 'center', justifyContent: 'center', borderWidth: 1,
   },
   badgeWrap: {},
 
@@ -810,7 +811,7 @@ const styles = StyleSheet.create({
 
   // Cards
   card: {
-    borderRadius: 20, borderWidth: 1, padding: 20, marginBottom: 14,
+    borderRadius: workspaceUi.cardRadius, borderWidth: 1, padding: workspaceUi.cardPadding, marginBottom: 14,
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 8, elevation: 2,
   },
   dangerCard: { backgroundColor: 'transparent' },

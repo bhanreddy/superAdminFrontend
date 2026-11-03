@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../constants/layout';
 import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import {
@@ -521,7 +522,7 @@ export default function FieldVisitDetailScreen() {
               style={[
                 styles.stagePill,
                 {
-                  borderColor: i === stage ? colors.primary : 'rgba(150,150,160,0.25)',
+                  borderColor: i === stage ? colors.primary : colors.infoDim,
                   backgroundColor: i === stage ? `${colors.primary}22` : 'transparent',
                 },
               ]}
@@ -551,7 +552,7 @@ export default function FieldVisitDetailScreen() {
                   key={s}
                   label={s}
                   selected={severity === s}
-                  color="#FF9F0A"
+                  color={colors.warning}
                   onPress={() => setSeverity(s)}
                 />
               ))}
@@ -595,7 +596,7 @@ export default function FieldVisitDetailScreen() {
             </Text>
             <View style={styles.chips}>
               {CONTACT_ROLES.slice(0, 6).map((r) => (
-                <CHIP key={r} label={r} selected={false} color="#64D2FF" onPress={() => {}} />
+                <CHIP key={r} label={r} selected={false} color={colors.info} onPress={() => {}} />
               ))}
             </View>
           </GlassCard>
@@ -735,8 +736,8 @@ const styles = StyleSheet.create({
   stagePill: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, borderWidth: 1, marginRight: 8 },
 
   schoolHeaderCard: {
-    padding: 16,
-    borderRadius: 18,
+    padding: workspaceUi.cardPadding,
+    borderRadius: workspaceUi.cardRadius,
     marginBottom: 10,
   },
   schoolBadgeRow: {
@@ -759,7 +760,7 @@ const styles = StyleSheet.create({
   },
   quickIconBtn: {
     padding: 9,
-    borderRadius: 10,
+    borderRadius: workspaceUi.controlRadius,
     borderWidth: 1,
   },
   researchBox: {
@@ -797,7 +798,7 @@ const styles = StyleSheet.create({
     backgroundColor: brandColors.red,
     paddingHorizontal: 14,
     paddingVertical: 9,
-    borderRadius: 10,
+    borderRadius: workspaceUi.controlRadius,
   },
   checkInNowText: {
     color: '#fff',
@@ -805,12 +806,12 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
 
-  card: { padding: 16, marginBottom: 12, borderRadius: 16 },
+  card: { padding: workspaceUi.cardPadding, marginBottom: 12, borderRadius: workspaceUi.cardRadius },
   h: { fontSize: 15, fontWeight: '700', marginBottom: 8 },
   label: { fontSize: 12, fontWeight: '600', marginTop: 10, marginBottom: 6 },
   hint: { fontSize: 11.5, fontStyle: 'italic', marginBottom: 4 },
   chips: { flexDirection: 'row', flexWrap: 'wrap' },
-  input: { borderWidth: 1, borderRadius: 10, padding: 12, fontSize: 13.5, marginTop: 4 },
+  input: { borderWidth: 1, borderRadius: workspaceUi.controlRadius, padding: 12, fontSize: 16, marginTop: 4 },
   notes: { minHeight: 90, textAlignVertical: 'top' },
   meta: { fontSize: 12.5, lineHeight: 18 },
   event: { flexDirection: 'row', gap: 10, marginTop: 10 },

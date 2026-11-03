@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../../src/constants/layout';
 import { navigateBack } from '../../../src/utils/navigation';
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, Switch, StatusBar, ActivityIndicator } from 'react-native';
@@ -387,8 +388,8 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   clusterCard: {
-    padding: 18,
-    borderRadius: 16,
+    padding: workspaceUi.cardPadding,
+    borderRadius: workspaceUi.cardRadius,
     borderWidth: 1,
     marginBottom: 20,
   },

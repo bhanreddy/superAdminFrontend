@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../../../src/constants/layout';
 import { brandColors, experienceColors } from '../../../../src/constants/experienceColors';
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Alert, Pressable, Platform } from 'react-native';
@@ -242,8 +243,8 @@ const styles = StyleSheet.create({
   },
   card: {
     borderWidth: 1,
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: workspaceUi.cardRadius,
+    padding: workspaceUi.cardPadding,
     marginBottom: 16,
   },
   cardTitle: {

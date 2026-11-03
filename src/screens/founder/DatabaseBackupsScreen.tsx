@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../constants/layout';
 import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useState, useEffect, useCallback } from 'react';
 import {
@@ -261,7 +262,7 @@ export function DatabaseBackupsScreen() {
       </View>
 
       {loadError ? (
-        <View style={[styles.failureAlert, { backgroundColor: 'rgba(239,68,68,0.08)', borderColor: brandColors.red }]}>
+        <View style={[styles.failureAlert, { backgroundColor: colors.errorDim, borderColor: brandColors.red }]}>
           <AlertTriangle size={20} color={brandColors.red} style={{ marginTop: 2 }} />
           <View style={{ flex: 1, gap: 4 }}>
             <Text style={[styles.failureTitle, { color: brandColors.red }]}>Unable to load backup metadata</Text>
@@ -271,7 +272,7 @@ export function DatabaseBackupsScreen() {
       ) : null}
 
       {stats?.staleBackup?.isStale ? (
-        <View style={[styles.failureAlert, { backgroundColor: 'rgba(217,119,6,0.10)', borderColor: brandColors.amber }]}>
+        <View style={[styles.failureAlert, { backgroundColor: colors.warningDim, borderColor: brandColors.amber }]}>
           <AlertTriangle size={20} color={brandColors.amber} style={{ marginTop: 2 }} />
           <View style={{ flex: 1, gap: 4 }}>
             <Text style={[styles.failureTitle, { color: brandColors.amber }]}>Backup freshness alert</Text>
@@ -280,7 +281,7 @@ export function DatabaseBackupsScreen() {
         </View>
       ) : null}
 
-      <View style={[styles.failureAlert, { backgroundColor: 'rgba(99,102,241,0.08)', borderColor: colors.primary }]}>
+      <View style={[styles.failureAlert, { backgroundColor: colors.infoDim, borderColor: colors.primary }]}>
         <ShieldCheck size={20} color={colors.primary} style={{ marginTop: 2 }} />
         <View style={{ flex: 1, gap: 4 }}>
           <Text style={[styles.failureTitle, { color: colors.primary }]}>PostgreSQL backup scope</Text>
@@ -305,7 +306,7 @@ export function DatabaseBackupsScreen() {
             value={stats?.lastSuccessfulBackup ? `${stats.lastSuccessfulBackup.age_hours}h ago` : 'None'}
             subtitle={stats?.lastSuccessfulBackup ? formatDate(stats.lastSuccessfulBackup.completed_at) : 'No successful backups yet'}
             icon={<CheckCircle2 size={20} color={brandColors.blue} />}
-            gradient={['rgba(51, 95, 144, 0.12)', 'rgba(51, 95, 144, 0.06)']}
+            gradient={[colors.infoDim, colors.infoDim]}
           />
 
           <StatCard
@@ -313,7 +314,7 @@ export function DatabaseBackupsScreen() {
             value={stats?.currentStatus?.status ? stats.currentStatus.status.replace('_', ' ') : 'Idle'}
             subtitle={stats?.currentStatus?.backup_id || 'No backup jobs recorded'}
             icon={<Activity size={20} color={brandColors.violet} />}
-            gradient={['rgba(99,102,241,0.12)', 'rgba(79,70,229,0.06)']}
+            gradient={[colors.infoDim, colors.infoDim]}
           />
 
           <StatCard
@@ -321,15 +322,15 @@ export function DatabaseBackupsScreen() {
             value="02:00 IST"
             subtitle={stats?.nextScheduledBackup || 'Daily Cloud Scheduler trigger'}
             icon={<Clock size={20} color={brandColors.violet} />}
-            gradient={['rgba(99,102,241,0.12)', 'rgba(79,70,229,0.06)']}
+            gradient={[colors.infoDim, colors.infoDim]}
           />
 
           <StatCard
             label="30-Day Health"
             value={stats?.thirtyDayStats.successRatePercent == null ? '—' : `${stats.thirtyDayStats.successRatePercent}%`}
             subtitle={`${stats?.thirtyDayStats.successfulRuns ?? 0} successful / ${stats?.thirtyDayStats.failedRuns ?? 0} failed`}
-            icon={<ShieldCheck size={20} color="#3B82F6" />}
-            gradient={['rgba(59,130,246,0.12)', 'rgba(37,99,235,0.06)']}
+            icon={<ShieldCheck size={20} color={colors.info} />}
+            gradient={[colors.infoDim, colors.infoDim]}
           />
 
           {/* Card 4: Total Storage Used */}
@@ -338,7 +339,7 @@ export function DatabaseBackupsScreen() {
             value={formatBytes(stats?.thirtyDayStats.totalStorageBytes)}
             subtitle={`Avg duration: ${stats?.thirtyDayStats.averageDurationSeconds ?? 0}s`}
             icon={<Database size={20} color={brandColors.violet} />}
-            gradient={['rgba(139,92,246,0.12)', 'rgba(124,58,237,0.06)']}
+            gradient={[colors.infoDim, colors.infoDim]}
           />
         </View>
       )}
@@ -391,7 +392,7 @@ export function DatabaseBackupsScreen() {
 
       {/* ── Recent Failures Alert (if any) ────────────────────────────────── */}
       {stats?.recentFailures && stats.recentFailures.length > 0 && (
-        <View style={[styles.failureAlert, { backgroundColor: 'rgba(239,68,68,0.08)', borderColor: brandColors.red }]}>
+        <View style={[styles.failureAlert, { backgroundColor: colors.errorDim, borderColor: brandColors.red }]}>
           <AlertTriangle size={20} color={brandColors.red} style={{ marginTop: 2 }} />
           <View style={{ flex: 1, gap: 4 }}>
             <Text style={[styles.failureTitle, { color: brandColors.red }]}>
@@ -505,7 +506,7 @@ export function DatabaseBackupsScreen() {
                 <View style={{ flex: 1.2 }}>
                   <GlassBadge
                     text={job.status.toUpperCase()}
-                    color={isSuccess ? brandColors.blue : isFailed ? brandColors.red : '#F59E0B'}
+                    color={isSuccess ? brandColors.blue : isFailed ? brandColors.red : colors.warning}
                   />
                 </View>
 
@@ -696,7 +697,7 @@ export function DatabaseBackupsScreen() {
 
                 {/* Failure message if failed */}
                 {selectedJob.error_message && (
-                  <View style={[styles.failureBlock, { borderColor: brandColors.red, backgroundColor: 'rgba(239,68,68,0.1)' }]}>
+                  <View style={[styles.failureBlock, { borderColor: brandColors.red, backgroundColor: colors.errorDim }]}>
                     <Text style={{ fontWeight: '700', color: brandColors.red, marginBottom: 4 }}>
                       EXECUTION ERROR
                     </Text>
@@ -772,7 +773,7 @@ export function DatabaseBackupsScreen() {
               </View>
 
               {triggerSuccessMsg ? (
-                <View style={[styles.warningBox, { backgroundColor: 'rgba(51, 95, 144, 0.1)', borderColor: brandColors.blue }]}>
+                <View style={[styles.warningBox, { backgroundColor: colors.infoDim, borderColor: brandColors.blue }]}>
                   <Text style={{ color: brandColors.blue, fontWeight: '600' }}>{triggerSuccessMsg}</Text>
                 </View>
               ) : null}
@@ -824,8 +825,8 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   pageTitle: {
-    fontSize: 26,
-    fontWeight: '800',
+    fontSize: workspaceUi.pageTitle.fontSize,
+    fontWeight: workspaceUi.pageTitle.fontWeight,
     letterSpacing: -0.5,
   },
   pageSubtitle: {
@@ -852,7 +853,7 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    borderRadius: 14,
+    borderRadius: workspaceUi.controlRadius,
     borderWidth: 1,
     backgroundColor: 'transparent',
   },
@@ -866,7 +867,7 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingHorizontal: 18,
     paddingVertical: 11,
-    borderRadius: 14,
+    borderRadius: workspaceUi.controlRadius,
     overflow: 'hidden',
   },
   runManualBtnText: {
@@ -887,8 +888,8 @@ const styles = StyleSheet.create({
   statCard: {
     flex: 1,
     minWidth: 220,
-    padding: 20,
-    borderRadius: 20,
+    padding: workspaceUi.cardPadding,
+    borderRadius: workspaceUi.cardRadius,
     overflow: 'hidden',
   },
   statCardInner: {
@@ -921,8 +922,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   timelineCard: {
-    padding: 20,
-    borderRadius: 20,
+    padding: workspaceUi.cardPadding,
+    borderRadius: workspaceUi.cardRadius,
     gap: 14,
   },
   timelineHeader: {
@@ -1011,7 +1012,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   tableCard: {
-    borderRadius: 20,
+    borderRadius: workspaceUi.cardRadius,
     overflow: 'hidden',
     padding: 0,
   },
@@ -1057,7 +1058,7 @@ const styles = StyleSheet.create({
   actionBtn: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 10,
+    borderRadius: workspaceUi.controlRadius,
     borderWidth: 1,
     backgroundColor: 'transparent',
   },
@@ -1077,7 +1078,7 @@ const styles = StyleSheet.create({
   },
   pageBtn: {
     padding: 8,
-    borderRadius: 8,
+    borderRadius: workspaceUi.controlRadius,
     borderWidth: 1,
   },
   modalBackdrop: {
@@ -1090,14 +1091,14 @@ const styles = StyleSheet.create({
   detailsModalCard: {
     width: '100%',
     maxWidth: 680,
-    padding: 24,
-    borderRadius: 24,
+    padding: workspaceUi.cardPadding,
+    borderRadius: workspaceUi.cardRadius,
   },
   triggerModalCard: {
     width: '100%',
     maxWidth: 520,
-    padding: 24,
-    borderRadius: 24,
+    padding: workspaceUi.cardPadding,
+    borderRadius: workspaceUi.cardRadius,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -1106,8 +1107,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   modalTitle: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: workspaceUi.sectionTitle.fontSize,
+    fontWeight: workspaceUi.sectionTitle.fontWeight,
     letterSpacing: -0.3,
   },
   modalSubtitle: {
@@ -1117,7 +1118,7 @@ const styles = StyleSheet.create({
   },
   modalCloseBtn: {
     padding: 6,
-    borderRadius: 10,
+    borderRadius: workspaceUi.controlRadius,
   },
   detailGrid: {
     flexDirection: 'row',
@@ -1198,7 +1199,7 @@ const styles = StyleSheet.create({
   cancelBtn: {
     paddingHorizontal: 16,
     paddingVertical: 10,
-    borderRadius: 14,
+    borderRadius: workspaceUi.controlRadius,
     borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',

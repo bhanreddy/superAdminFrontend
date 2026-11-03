@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../constants/layout';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   FlatList,
@@ -576,7 +577,7 @@ const styles = StyleSheet.create({
   section: { fontSize: 18, fontWeight: '700', marginBottom: 8 },
   label: { marginTop: 8, marginBottom: 4 },
   chips: { gap: 8, paddingVertical: 4 },
-  chip: { borderWidth: StyleSheet.hairlineWidth, borderRadius: 14, paddingHorizontal: 12, paddingVertical: 10, minHeight: 44, justifyContent: 'center' },
+  chip: { borderWidth: StyleSheet.hairlineWidth, borderRadius: workspaceUi.chipRadius, paddingHorizontal: 12, paddingVertical: 10, minHeight: 44, justifyContent: 'center' },
   row: { borderWidth: StyleSheet.hairlineWidth, borderRadius: 16, padding: 14, marginTop: 8 },
   rowTitle: { fontSize: 16, fontWeight: '700' },
   multiline: { minHeight: 96, textAlignVertical: 'top' },

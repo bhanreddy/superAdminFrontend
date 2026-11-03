@@ -1,3 +1,6 @@
+import { ScreenHeader } from '../../components/ui/ScreenHeader';
+import { Button } from '../../components/ui/Button';
+import { workspaceUi } from '../../constants/layout';
 import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
@@ -72,25 +75,27 @@ interface SupportAssignee {
   assigned_school_ids?: number[];
 }
 
-const PRIORITY_BADGE: Record<string, { label: string; color: string; bg: string }> = {
-  LOW: { label: 'Low', color: brandColors.blue, bg: 'rgba(51, 95, 144, 0.12)' },
-  MEDIUM: { label: 'Medium', color: brandColors.blue, bg: 'rgba(2, 132, 199, 0.12)' },
-  HIGH: { label: 'High', color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.12)' },
-  CRITICAL: { label: 'Critical Incident', color: brandColors.red, bg: 'rgba(239, 68, 68, 0.12)' },
-};
 
-const STATUS_BADGE: Record<string, { label: string; color: string; bg: string }> = {
-  OPEN: { label: 'Open Queued', color: brandColors.red, bg: 'rgba(239, 68, 68, 0.12)' },
-  IN_PROGRESS: { label: 'In Investigation', color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.12)' },
-  WAITING_ON_CLIENT: { label: 'Waiting on School', color: brandColors.violet, bg: 'rgba(139, 92, 246, 0.12)' },
-  ESCALATED: { label: 'Escalated', color: '#FF453A', bg: 'rgba(255, 69, 58, 0.12)' },
-  REOPENED: { label: 'Reopened', color: '#FF9F0A', bg: 'rgba(255, 159, 10, 0.12)' },
-  RESOLVED: { label: 'Resolved', color: brandColors.blue, bg: 'rgba(51, 95, 144, 0.12)' },
-  CLOSED: { label: 'Closed Archive', color: '#6B7280', bg: 'rgba(107, 114, 128, 0.12)' },
-};
+
+
 
 export default function ComplaintsScreen() {
   const { colors, isDark, clayShadows } = useTheme();
+  const PRIORITY_BADGE: Record<string, { label: string; color: string; bg: string }> = {
+    LOW: { label: 'Low', color: colors.success, bg: colors.successDim },
+    MEDIUM: { label: 'Medium', color: colors.info, bg: colors.infoDim },
+    HIGH: { label: 'High', color: colors.warning, bg: colors.warningDim },
+    CRITICAL: { label: 'Critical Incident', color: colors.error, bg: colors.errorDim }
+  };
+  const STATUS_BADGE: Record<string, { label: string; color: string; bg: string }> = {
+    OPEN: { label: 'Open Queued', color: colors.info, bg: colors.infoDim },
+    IN_PROGRESS: { label: 'In Investigation', color: colors.info, bg: colors.infoDim },
+    WAITING_ON_CLIENT: { label: 'Waiting on School', color: colors.warning, bg: colors.warningDim },
+    ESCALATED: { label: 'Escalated', color: colors.error, bg: colors.errorDim },
+    REOPENED: { label: 'Reopened', color: colors.warning, bg: colors.warningDim },
+    RESOLVED: { label: 'Resolved', color: colors.success, bg: colors.successDim },
+    CLOSED: { label: 'Closed Archive', color: colors.info, bg: colors.infoDim }
+  };
   const { user, role, can } = useAuth();
   const params = useLocalSearchParams<{ ticketId?: string }>();
 
@@ -288,30 +293,11 @@ export default function ComplaintsScreen() {
       <View style={[styles.root, { backgroundColor: colors.background }]}>
         <ScrollView contentContainerStyle={[styles.content, { paddingBottom: bottomTabPad }]}>
           {/* Header */}
-          <View style={styles.topHeader}>
-            <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 300, minWidth: 0 }}>
-              <View style={styles.badgeRow}>
-                <View style={[styles.badge, { backgroundColor: 'rgba(168, 85, 247, 0.12)', borderColor: 'rgba(168, 85, 247, 0.3)' }]}>
-                  <LifeBuoy size={14} color="#A855F7" />
-                  <Text style={[styles.badgeText, { color: '#A855F7' }]}>INCIDENT & SUPPORT DESK</Text>
-                </View>
-              </View>
-              <Text style={[styles.pageTitle, { color: colors.textPrimary }]}>Complaints & Support Tickets</Text>
-              <Text style={[styles.pageSub, { color: colors.textSecondary }]}>
-                Resolve school operational inquiries, software bug escalations, and hardware syncing failures with SLA enforcement.
-              </Text>
-            </View>
-
-            {can(PERMISSIONS.COMPLAINTS_CREATE) && (
-              <Pressable accessibilityRole="button"
-                style={[styles.createBtn, { backgroundColor: brandColors.violet }]}
-                onPress={() => setShowCreateModal(true)}
-              >
-                <PlusCircle size={16} color="#FFFFFF" />
-                <Text style={styles.createBtnText}>Open Support Ticket</Text>
-              </Pressable>
-            )}
-          </View>
+          <ScreenHeader
+            title="Complaints & Support Tickets"
+            subtitle="Track school issues, assignments, and resolution progress."
+            rightAction={can(PERMISSIONS.COMPLAINTS_CREATE) && <Button title="Open Support Ticket" onPress={() => setShowCreateModal(true)} />}
+          />
 
           {/* Filters */}
           <View style={[styles.filterBar, { borderColor: colors.border, backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : '#FFFFFF' }]}>
@@ -383,7 +369,7 @@ export default function ComplaintsScreen() {
                   >
                     <View style={styles.ticketTopRow}>
                       <View style={styles.ticketIdRow}>
-                        <Text style={[styles.ticketNum, { color: '#A855F7' }]}>{t.ticket_number}</Text>
+                        <Text style={[styles.ticketNum, { color: colors.info }]}>{t.ticket_number}</Text>
                         <View style={[styles.badgePill, { backgroundColor: pBadge.bg, borderColor: pBadge.color + '40' }]}>
                           <Text style={[styles.pillText, { color: pBadge.color }]}>{pBadge.label}</Text>
                         </View>
@@ -533,8 +519,8 @@ export default function ComplaintsScreen() {
                   <View style={{ flex: 1 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                       <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>{activeTicket?.ticket_number}</Text>
-                      <View style={[styles.badgePill, { backgroundColor: 'rgba(168, 85, 247, 0.15)' }]}>
-                        <Text style={[styles.pillText, { color: '#A855F7' }]}>{activeTicket?.category}</Text>
+                      <View style={[styles.badgePill, { backgroundColor: colors.infoDim }]}>
+                        <Text style={[styles.pillText, { color: colors.info }]}>{activeTicket?.category}</Text>
                       </View>
                     </View>
                     <Text style={[styles.modalSub, { color: colors.textSecondary }]}>
@@ -739,7 +725,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   badgeText: { fontSize: 11, fontWeight: '700', letterSpacing: 0.5 },
-  pageTitle: { fontSize: 24, fontWeight: '800', letterSpacing: -0.5, marginBottom: 4 },
+  pageTitle: { fontSize: workspaceUi.pageTitle.fontSize, fontWeight: workspaceUi.pageTitle.fontWeight, letterSpacing: -0.5, marginBottom: 4 },
   pageSub: { fontSize: 13, lineHeight: 18, maxWidth: 580 },
   createBtn: {
     flexDirection: 'row',
@@ -747,7 +733,7 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingHorizontal: 16,
     paddingVertical: 10,
-    borderRadius: 12,
+    borderRadius: workspaceUi.controlRadius,
   },
   createBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
   filterBar: {
@@ -766,7 +752,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     height: 40,
   },
-  searchInput: { flex: 1, fontSize: 13 },
+  searchInput: { flex: 1, fontSize: 16 },
   filterPills: { flexDirection: 'row', gap: 8 },
   filterPill: {
     paddingHorizontal: 12,
@@ -796,9 +782,9 @@ const styles = StyleSheet.create({
     width: Platform.OS === 'web' ? '48.5%' : '100%',
     minWidth: 300,
     flexGrow: 1,
-    borderRadius: 18,
+    borderRadius: workspaceUi.cardRadius,
     borderWidth: 1,
-    padding: 18,
+    padding: workspaceUi.cardPadding,
   },
   ticketTopRow: {
     flexDirection: 'row',
@@ -846,7 +832,7 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 540,
     maxHeight: '90%',
-    borderRadius: 20,
+    borderRadius: workspaceUi.cardRadius,
     borderWidth: 1,
     overflow: 'hidden',
   },
@@ -858,16 +844,16 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.08)',
   },
-  modalTitle: { fontSize: 18, fontWeight: '800' },
+  modalTitle: { fontSize: workspaceUi.sectionTitle.fontSize, fontWeight: workspaceUi.sectionTitle.fontWeight },
   modalSub: { fontSize: 12, marginTop: 2 },
   modalForm: { padding: 20 },
   formLabel: { fontSize: 12, fontWeight: '700', marginBottom: 6, marginTop: 12 },
   formInput: {
     height: 42,
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: workspaceUi.controlRadius,
     paddingHorizontal: 12,
-    fontSize: 13,
+    fontSize: 16,
   },
   textArea: {
     height: 80,
@@ -903,14 +889,14 @@ const styles = StyleSheet.create({
   cancelBtn: {
     paddingHorizontal: 16,
     paddingVertical: 10,
-    borderRadius: 10,
+    borderRadius: workspaceUi.controlRadius,
     borderWidth: 1,
   },
   cancelBtnText: { fontSize: 13, fontWeight: '600' },
   submitBtn: {
     paddingHorizontal: 20,
     paddingVertical: 10,
-    borderRadius: 10,
+    borderRadius: workspaceUi.controlRadius,
   },
   submitBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
 
@@ -943,9 +929,9 @@ const styles = StyleSheet.create({
     fontSize: 12.5,
   },
   sendNoteBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 8,
+    width: 44,
+    height: 44,
+    borderRadius: workspaceUi.controlRadius,
     alignItems: 'center',
     justifyContent: 'center',
   },

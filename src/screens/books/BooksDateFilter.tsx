@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../constants/layout';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Pressable, useWindowDimensions } from 'react-native';
 import { CalendarDays } from 'lucide-react-native';
@@ -61,7 +62,7 @@ export default function BooksDateFilter({ value, fiscalStart, today, onChange }:
 }
 const st = StyleSheet.create({
   toolbar: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 10, borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 9, flexShrink: 0 },
-  changeButton: { minHeight: 38, paddingHorizontal: 12, paddingVertical: 9, borderWidth: 1, borderRadius: 8, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  changeButton: { minHeight: 44, paddingHorizontal: 12, paddingVertical: 9, borderWidth: 1, borderRadius: workspaceUi.controlRadius, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   summary: { flexDirection: 'row', alignItems: 'center', gap: 10, flexShrink: 1 },
   icon: { width: 34, height: 34, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
 });

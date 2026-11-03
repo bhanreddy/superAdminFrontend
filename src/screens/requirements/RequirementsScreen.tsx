@@ -1,3 +1,6 @@
+import { ScreenHeader } from '../../components/ui/ScreenHeader';
+import { Button } from '../../components/ui/Button';
+import { workspaceUi } from '../../constants/layout';
 import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
@@ -57,23 +60,25 @@ interface SchoolItem {
   code: string;
 }
 
-const STATUS_BADGE: Record<string, { label: string; color: string; bg: string }> = {
-  OPEN: { label: 'Open Submitted', color: '#38BDF8', bg: 'rgba(56, 189, 248, 0.12)' },
-  UNDER_REVIEW: { label: 'Under Review', color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.12)' },
-  IN_DEVELOPMENT: { label: 'In Dev / Building', color: brandColors.violet, bg: 'rgba(99, 102, 241, 0.12)' },
-  DEPLOYED: { label: 'Deployed to Live', color: brandColors.blue, bg: 'rgba(51, 95, 144, 0.12)' },
-  REJECTED: { label: 'Not Feasible / Declined', color: brandColors.red, bg: 'rgba(239, 68, 68, 0.12)' },
-};
 
-const PRIORITY_BADGE: Record<string, { label: string; color: string }> = {
-  LOW: { label: 'Low', color: brandColors.blue },
-  MEDIUM: { label: 'Medium', color: brandColors.blue },
-  HIGH: { label: 'High', color: '#F59E0B' },
-  CRITICAL: { label: 'Critical', color: brandColors.red },
-};
+
+
 
 export default function RequirementsScreen() {
   const { colors, isDark, clayShadows } = useTheme();
+  const STATUS_BADGE: Record<string, { label: string; color: string; bg: string }> = {
+    OPEN: { label: 'Open Submitted', color: colors.info, bg: colors.infoDim },
+    UNDER_REVIEW: { label: 'Under Review', color: colors.warning, bg: colors.warningDim },
+    IN_DEVELOPMENT: { label: 'In Dev / Building', color: colors.info, bg: colors.infoDim },
+    DEPLOYED: { label: 'Deployed to Live', color: colors.success, bg: colors.successDim },
+    REJECTED: { label: 'Not Feasible / Declined', color: colors.error, bg: colors.errorDim }
+  };
+  const PRIORITY_BADGE: Record<string, { label: string; color: string }> = {
+    LOW: { label: 'Low', color: colors.success },
+    MEDIUM: { label: 'Medium', color: colors.info },
+    HIGH: { label: 'High', color: colors.warning },
+    CRITICAL: { label: 'Critical', color: colors.error }
+  };
   const { user, role, can } = useAuth();
 
   const [requirements, setRequirements] = useState<RequirementItem[]>([]);
@@ -211,30 +216,11 @@ export default function RequirementsScreen() {
       <View style={[styles.root, { backgroundColor: colors.background }]}>
         <ScrollView contentContainerStyle={[styles.content, { paddingBottom: bottomTabPad }]}>
           {/* Header */}
-          <View style={styles.topHeader}>
-            <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 300, minWidth: 0 }}>
-              <View style={styles.badgeRow}>
-                <View style={[styles.badge, { backgroundColor: 'rgba(56, 189, 248, 0.12)', borderColor: 'rgba(56, 189, 248, 0.3)' }]}>
-                  <FileText size={14} color="#38BDF8" />
-                  <Text style={[styles.badgeText, { color: '#38BDF8' }]}>SPECIFICATION REGISTRY</Text>
-                </View>
-              </View>
-              <Text style={[styles.pageTitle, { color: colors.textPrimary }]}>School Requirements & Feature Demands</Text>
-              <Text style={[styles.pageSub, { color: colors.textSecondary }]}>
-                Track custom branding, payment gateways, timetable formulas, and custom modules demanded by partner schools.
-              </Text>
-            </View>
-
-            {can(PERMISSIONS.REQUIREMENTS_CREATE) && (
-              <Pressable accessibilityRole="button"
-                style={[styles.createBtn, { backgroundColor: brandColors.blue }]}
-                onPress={() => setShowCreateModal(true)}
-              >
-                <PlusCircle size={16} color="#FFFFFF" />
-                <Text style={styles.createBtnText}>Log New Requirement</Text>
-              </Pressable>
-            )}
-          </View>
+          <ScreenHeader
+            title="School Requirements & Feature Demands"
+            subtitle="Track school requests, reviews, and delivery progress."
+            rightAction={can(PERMISSIONS.REQUIREMENTS_CREATE) && <Button title="Log New Requirement" onPress={() => setShowCreateModal(true)} />}
+          />
 
           {/* Filters */}
           <View style={[styles.filterBar, { borderColor: colors.border, backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : '#FFFFFF' }]}>
@@ -575,7 +561,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   badgeText: { fontSize: 11, fontWeight: '700', letterSpacing: 0.5 },
-  pageTitle: { fontSize: 24, fontWeight: '800', letterSpacing: -0.5, marginBottom: 4 },
+  pageTitle: { fontSize: workspaceUi.pageTitle.fontSize, fontWeight: workspaceUi.pageTitle.fontWeight, letterSpacing: -0.5, marginBottom: 4 },
   pageSub: { fontSize: 13, lineHeight: 18, maxWidth: 580 },
   createBtn: {
     flexDirection: 'row',
@@ -583,7 +569,7 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingHorizontal: 16,
     paddingVertical: 10,
-    borderRadius: 12,
+    borderRadius: workspaceUi.controlRadius,
   },
   createBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
   filterBar: {
@@ -602,7 +588,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     height: 40,
   },
-  searchInput: { flex: 1, fontSize: 13 },
+  searchInput: { flex: 1, fontSize: 16 },
   filterPills: { flexDirection: 'row', gap: 8 },
   filterPill: {
     paddingHorizontal: 12,
@@ -632,9 +618,9 @@ const styles = StyleSheet.create({
     width: Platform.OS === 'web' ? '48.5%' : '100%',
     minWidth: 300,
     flexGrow: 1,
-    borderRadius: 18,
+    borderRadius: workspaceUi.cardRadius,
     borderWidth: 1,
-    padding: 18,
+    padding: workspaceUi.cardPadding,
   },
   reqCardTop: {
     flexDirection: 'row',
@@ -681,7 +667,7 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 10,
     paddingVertical: 5,
-    borderRadius: 8,
+    borderRadius: workspaceUi.controlRadius,
     borderWidth: 1,
   },
   updateBtnText: { fontSize: 12, fontWeight: '700' },
@@ -698,7 +684,7 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 520,
     maxHeight: '90%',
-    borderRadius: 20,
+    borderRadius: workspaceUi.cardRadius,
     borderWidth: 1,
     overflow: 'hidden',
   },
@@ -710,16 +696,16 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.08)',
   },
-  modalTitle: { fontSize: 18, fontWeight: '800' },
+  modalTitle: { fontSize: workspaceUi.sectionTitle.fontSize, fontWeight: workspaceUi.sectionTitle.fontWeight },
   modalSub: { fontSize: 12, marginTop: 2 },
   modalForm: { padding: 20 },
   formLabel: { fontSize: 12, fontWeight: '700', marginBottom: 6, marginTop: 12 },
   formInput: {
     height: 42,
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: workspaceUi.controlRadius,
     paddingHorizontal: 12,
-    fontSize: 13,
+    fontSize: 16,
   },
   textArea: {
     height: 90,
@@ -755,14 +741,14 @@ const styles = StyleSheet.create({
   cancelBtn: {
     paddingHorizontal: 16,
     paddingVertical: 10,
-    borderRadius: 10,
+    borderRadius: workspaceUi.controlRadius,
     borderWidth: 1,
   },
   cancelBtnText: { fontSize: 13, fontWeight: '600' },
   submitBtn: {
     paddingHorizontal: 20,
     paddingVertical: 10,
-    borderRadius: 10,
+    borderRadius: workspaceUi.controlRadius,
   },
   submitBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
 });

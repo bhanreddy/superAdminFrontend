@@ -791,7 +791,7 @@ export function DataTable<T extends Record<string, any>>({
 
 const s = StyleSheet.create({
   wrap: {
-    borderRadius: borderRadius.xl,
+    borderRadius: borderRadius.lg,
     borderWidth: 1,
     overflow: 'hidden',
   },
@@ -799,8 +799,8 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 22,
-    paddingVertical: 18,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
     gap: 14,
   },
   toolbarPhone: {
@@ -812,7 +812,7 @@ const s = StyleSheet.create({
   searchBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 14,
+    borderRadius: borderRadius.md,
     paddingHorizontal: 16,
     flex: 1,
     maxWidth: 400,

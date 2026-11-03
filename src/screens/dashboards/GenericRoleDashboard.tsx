@@ -1,3 +1,8 @@
+import type { ThemeColors } from '../../constants/theme';
+import { Card } from '../../components/ui/Card';
+import { getCardTone } from '../../constants/experienceColors';
+import { workspaceUi } from '../../constants/layout';
+import { ScreenHeader } from '../../components/ui/ScreenHeader';
 import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -40,7 +45,9 @@ type DashboardAction = {
  * server, so adding a role never falls through to Founder-only UI.
  */
 export default function GenericRoleDashboard() {
-  const { colors, clayShadows } = useTheme();
+  const { colors, clayShadows, isDark } = useTheme();
+  const paint = getCardTone('blue', isDark);
+  const styles = React.useMemo(() => createStyles(colors), [colors]);
   const { user, employeeId, roleLabel, assignedSchools, can } = useAuth();
   const router = useRouter();
   const [schoolCount, setSchoolCount] = useState<number | null>(null);
@@ -104,8 +111,8 @@ export default function GenericRoleDashboard() {
         label: 'Requirements',
         description: 'Review and track school requirements.',
         route: '/(app)/requirements',
-        color: '#AF52DE',
-        icon: <FileText size={22} color="#AF52DE" />,
+        color: colors.info,
+        icon: <FileText size={22} color={colors.info} />,
       });
     }
     if (can(PERMISSIONS.COMPLAINTS_READ)) {
@@ -114,8 +121,8 @@ export default function GenericRoleDashboard() {
         label: 'Complaints & Support',
         description: 'View tickets permitted for your portfolio.',
         route: '/(app)/complaints',
-        color: '#FF9F0A',
-        icon: <AlertCircle size={22} color="#FF9F0A" />,
+        color: colors.warning,
+        icon: <AlertCircle size={22} color={colors.warning} />,
       });
     }
     if (can(PERMISSIONS.STUDENTS_IMPORT)) {
@@ -124,13 +131,13 @@ export default function GenericRoleDashboard() {
         label: 'Data Imports',
         description: 'Upload and validate school data.',
         route: '/(app)/students/',
-        color: '#64D2FF',
-        icon: <UploadCloud size={22} color="#64D2FF" />,
+        color: colors.info,
+        icon: <UploadCloud size={22} color={colors.info} />,
       });
     }
 
     return available;
-  }, [can, canReadSchools]);
+  }, [can, canReadSchools, colors]);
 
   const displayName =
     user?.user_metadata?.full_name ||
@@ -152,49 +159,14 @@ export default function GenericRoleDashboard() {
         />
       }
     >
-      <View
-        style={[
-          styles.hero,
-          clayStyle(clayShadows.clayElevated),
-          {
-            backgroundColor: colors.surface,
-            borderColor: colors.clayBorderColor,
-          },
-        ]}
-      >
-        <View
-          style={[styles.heroIcon, { backgroundColor: `${colors.primary}18` }]}
-        >
-          <ShieldCheck size={26} color={colors.primary} />
-        </View>
-        <View style={styles.heroCopy}>
-          <Text style={[styles.eyebrow, { color: colors.primary }]}>
-            {roleLabel}
-          </Text>
-          <Text style={[styles.title, { color: colors.textPrimary }]}>
-            Welcome, {displayName}
-          </Text>
-          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-            Your workspace reflects your current role, individual overrides, and
-            assigned school portfolio.
-          </Text>
-        </View>
-        {employeeId ? (
-          <View
-            style={[
-              styles.employeeBadge,
-              { backgroundColor: `${colors.primary}12` },
-            ]}
-          >
-            <Text style={[styles.employeeText, { color: colors.primary }]}>
-              {employeeId}
-            </Text>
-          </View>
-        ) : null}
-      </View>
+      <ScreenHeader
+        eyebrow={[roleLabel, employeeId].filter(Boolean).join(' · ')}
+        title={`Welcome, ${displayName}`}
+        subtitle="Your schools, assignments, and available tools in one place."
+      />
 
       <View style={styles.metricsRow}>
-        <View
+        <Card noPadding
           style={[
             styles.metricCard,
             {
@@ -216,8 +188,8 @@ export default function GenericRoleDashboard() {
               {schoolCount}
             </Text>
           )}
-        </View>
-        <View
+        </Card>
+        <Card noPadding
           style={[
             styles.metricCard,
             {
@@ -232,7 +204,7 @@ export default function GenericRoleDashboard() {
           <Text style={[styles.metricValue, { color: colors.textPrimary }]}>
             {assignedSchools.length}
           </Text>
-        </View>
+        </Card>
       </View>
 
       <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
@@ -241,25 +213,20 @@ export default function GenericRoleDashboard() {
       {actions.length ? (
         <View style={styles.actionGrid}>
           {actions.map((action) => (
-            <Pressable accessibilityRole="button"
+            <Card noPadding tone="blue"
               key={action.key}
               onPress={() => router.push(action.route as any)}
-              style={({ pressed }) => [
-                styles.actionCard,
-                {
-                  backgroundColor: colors.surface,
-                  borderColor: colors.clayBorderColor,
-                },
-                pressed && styles.pressed,
-              ]}
+              style={styles.actionCard}
             >
               <View
                 style={[
                   styles.actionIcon,
-                  { backgroundColor: `${action.color}18` },
+                  { backgroundColor: paint.accent },
                 ]}
               >
-                {action.icon}
+                {React.isValidElement<{ color?: string }>(action.icon)
+                  ? React.cloneElement(action.icon, { color: paint.panel })
+                  : action.icon}
               </View>
               <View style={styles.actionCopy}>
                 <Text
@@ -277,11 +244,11 @@ export default function GenericRoleDashboard() {
                 </Text>
               </View>
               <ChevronRight size={18} color={colors.textTertiary} />
-            </Pressable>
+            </Card>
           ))}
         </View>
       ) : (
-        <View
+        <Card noPadding
           style={[
             styles.emptyCard,
             {
@@ -298,63 +265,33 @@ export default function GenericRoleDashboard() {
             Ask your manager or a Founder to review your role and permission
             overrides.
           </Text>
-        </View>
+        </Card>
       )}
     </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   root: { flex: 1, backgroundColor: 'transparent' },
   content: { padding: 0, gap: 20 },
-  hero: {
-    borderWidth: 1,
-    borderRadius: 16,
-    padding: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-  },
-  heroIcon: {
-    width: 52,
-    height: 52,
-    borderRadius: 17,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  heroCopy: { flex: 1, gap: 4 },
-  eyebrow: {
-    fontSize: 12,
-    fontWeight: '800',
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-  },
-  title: { fontSize: 25, fontWeight: '800' },
-  subtitle: { fontSize: 14, lineHeight: 20, maxWidth: 720 },
-  employeeBadge: {
-    paddingHorizontal: 11,
-    paddingVertical: 7,
-    borderRadius: 10,
-  },
-  employeeText: { fontSize: 12, fontWeight: '800' },
   metricsRow: { flexDirection: 'row', gap: 14, flexWrap: 'wrap' },
   metricCard: {
     minWidth: 180,
     flexGrow: 1,
     borderWidth: 1,
-    borderRadius: 18,
-    padding: 18,
+    borderRadius: workspaceUi.cardRadius,
+    padding: workspaceUi.cardPadding,
     gap: 7,
   },
   metricLabel: { fontSize: 13, fontWeight: '600' },
   metricValue: { fontSize: 30, fontWeight: '800' },
   metricLoader: { alignSelf: 'flex-start', marginVertical: 8 },
-  sectionTitle: { fontSize: 19, fontWeight: '800', marginTop: 4 },
+  sectionTitle: { fontSize: workspaceUi.sectionTitle.fontSize, fontWeight: workspaceUi.sectionTitle.fontWeight, marginTop: 4 },
   actionGrid: { gap: 12 },
   actionCard: {
     borderWidth: 1,
-    borderRadius: 18,
-    padding: 16,
+    borderRadius: workspaceUi.cardRadius,
+    padding: workspaceUi.cardPadding,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
@@ -372,8 +309,8 @@ const styles = StyleSheet.create({
   pressed: { opacity: 0.78, transform: [{ scale: 0.995 }] },
   emptyCard: {
     borderWidth: 1,
-    borderRadius: 18,
-    padding: 28,
+    borderRadius: workspaceUi.cardRadius,
+    padding: workspaceUi.cardPadding,
     alignItems: 'center',
     gap: 8,
   },

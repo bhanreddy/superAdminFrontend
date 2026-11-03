@@ -1,4 +1,5 @@
-import { brandColors, experienceColors } from '../../constants/experienceColors';
+import { workspaceTones } from '../../constants/workspaceDesign';
+import { brandColors, experienceColors, getCardTone } from '../../constants/experienceColors';
 import { borderRadius as radii } from '../../constants/theme';
 import React, { useEffect, useRef } from 'react';
 import {
@@ -19,6 +20,9 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react-native';
 import { useTheme, clayStyle } from '../../contexts/ThemeContext';
+import { Card } from '../../components/ui/Card';
+import { Button } from '../../components/ui/Button';
+import { workspaceUi } from '../../constants/layout';
 import {
   ClayView,
   PressScale,
@@ -157,23 +161,14 @@ export const GlassCard = React.memo(function GlassCard({
   noPad?: boolean;
   variant?: 'regular' | 'lightweight';
 }) {
-  const { colors, clayShadows } = useTheme();
   return (
-    <View
-      style={[
-        {
-          borderWidth: 1,
-          borderRadius: radii.xl,
-          borderColor: colors.borderSubtle || colors.border,
-          backgroundColor:
-            variant === 'lightweight' ? colors.glassLightweight : colors.card,
-        },
-        clayStyle(clayShadows.subtle),
-        style,
-      ]}
+    <Card
+      noPadding
+      variant={variant === 'lightweight' ? 'outlined' : 'default'}
+      style={style}
     >
-      <View style={noPad ? undefined : { padding: 20 }}>{children}</View>
-    </View>
+      <View style={noPad ? undefined : { padding: workspaceUi.cardPadding }}>{children}</View>
+    </Card>
   );
 });
 
@@ -291,7 +286,8 @@ export const KpiTile = React.memo(function KpiTile({
   width?: number;
   accessibilityLabel?: string;
 }) {
-  const { colors, isDark } = useTheme();
+  const { colors, isDark, workspaceModule = 'overview' } = useTheme();
+  const paint = getCardTone(workspaceTones[workspaceModule], isDark);
   const { width: screenWidth } = useWindowDimensions();
   const isDesktop = screenWidth >= 1024;
   const isTablet = screenWidth >= 768 && screenWidth < 1024;
@@ -325,24 +321,9 @@ export const KpiTile = React.memo(function KpiTile({
         <ClayView
           isDark={isDark}
           color={colors.card}
-          radius={radii.xl}
+          radius={radii.lg}
           style={{ padding: 18, flex: 1, overflow: 'hidden' }}
         >
-          {/* Top colored edge accent */}
-          <LinearGradient
-            colors={[gradient[0], gradient[1]]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: 4,
-              opacity: isDark ? 0.8 : 0.6,
-            }}
-          />
-
           {/* Top row: icon + sparkline */}
           <View
             style={{
@@ -355,20 +336,18 @@ export const KpiTile = React.memo(function KpiTile({
               <View
                 style={[
                   {
-                    width: 36,
-                    height: 36,
+                    width: 40,
+                    height: 40,
                     borderRadius: 12,
                     alignItems: 'center',
                     justifyContent: 'center',
-                    backgroundColor: isDark
-                      ? gradient[0] + '33'
-                      : gradient[0] + '22',
+                    backgroundColor: paint.accent,
                   },
                 ]}
               >
                 {React.cloneElement(
                   icon as React.ReactElement<{ color?: string }>,
-                  { color: colors.primary },
+                  { color: paint.panel },
                 )}
               </View>
             )}
@@ -408,12 +387,12 @@ export const KpiTile = React.memo(function KpiTile({
                   backgroundColor:
                     changeDir === 'up'
                       ? isDark
-                        ? 'rgba(51, 95, 144, 0.15)'
-                        : 'rgba(51, 95, 144, 0.1)'
+                        ? colors.infoDim
+                        : colors.infoDim
                       : changeDir === 'down'
                         ? isDark
-                          ? 'rgba(255,107,122,0.15)'
-                          : 'rgba(255,107,122,0.1)'
+                          ? colors.errorDim
+                          : colors.errorDim
                         : isDark
                           ? 'rgba(255,255,255,0.08)'
                           : 'rgba(0,0,0,0.05)',
@@ -448,7 +427,7 @@ export const KpiTile = React.memo(function KpiTile({
                       changeDir === 'up'
                         ? colors.success
                         : changeDir === 'down'
-                          ? '#FF6B7A'
+                          ? colors.error
                           : colors.textSecondary,
                   }}
                 >
@@ -515,7 +494,7 @@ export const FinancialSummaryBanner = React.memo(
     const isHealthy = netProfit >= 0;
     const grad: [string, string] = isHealthy
       ? ['#335F90', brandColors.blue]
-      : ['#FF6B7A', '#DC2626'];
+      : [colors.error, colors.error];
 
     return (
       <Animated.View
@@ -739,46 +718,14 @@ export const PrimaryGradientButton = React.memo(function PrimaryGradientButton({
   disabled?: boolean;
   variant?: 'primary' | 'success' | 'danger';
 }) {
-  const { clayShadows, colors } = useTheme();
-  const g =
-    variant === 'success'
-      ? founderGradients.success
-      : variant === 'danger'
-        ? founderGradients.danger
-        : ([
-            colors.primaryFill || colors.primary,
-            colors.primaryFill || colors.primary,
-          ] as const);
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityState={{ disabled: Boolean(disabled) }}
-      onPress={safePressHandler(onPress)}
+    <Button
+      title={label}
+      onPress={onPress}
       disabled={disabled}
-      style={({ pressed, hovered }: any) => [
-        {
-          opacity: disabled ? 0.45 : 1,
-          transform: [{ scale: pressed ? 0.96 : 1 }],
-        },
-        clayStyle(clayShadows.clay),
-        Platform.OS === 'web'
-          ? ({
-              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-              cursor: disabled ? 'not-allowed' : 'pointer',
-            } as any)
-          : {},
-        ...pressableWebStyles(pressed, { disabled, pressedOpacity: 0.9 }),
-      ]}
-    >
-      <LinearGradient
-        colors={g as [string, string]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={styles.ctaBtn}
-      >
-        <Text style={styles.ctaBtnText}>{label}</Text>
-      </LinearGradient>
-    </Pressable>
+      variant={variant === 'danger' ? 'danger' : 'primary'}
+      style={variant === 'success' ? { backgroundColor: brandColors.blue } : undefined}
+    />
   );
 });
 
@@ -808,8 +755,8 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   kpiCard: {
-    borderRadius: 22,
-    padding: 18,
+    borderRadius: workspaceUi.cardRadius,
+    padding: workspaceUi.cardPadding,
     minHeight: 130,
     overflow: 'hidden',
     borderWidth: 1,
@@ -956,8 +903,8 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '800',
+    fontSize: workspaceUi.sectionTitle.fontSize,
+    fontWeight: workspaceUi.sectionTitle.fontWeight,
     letterSpacing: -0.3,
   },
   chipsRow: {
@@ -970,13 +917,13 @@ const styles = StyleSheet.create({
   chip: {
     paddingHorizontal: 16,
     paddingVertical: 9,
-    borderRadius: 22,
+    borderRadius: workspaceUi.chipRadius,
     borderWidth: 1,
   },
   ctaBtn: {
     paddingVertical: 14,
     paddingHorizontal: 28,
-    borderRadius: 22,
+    borderRadius: workspaceUi.controlRadius,
     alignItems: 'center',
   },
   ctaBtnText: {

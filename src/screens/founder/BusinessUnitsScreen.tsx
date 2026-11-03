@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../constants/layout';
 import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
@@ -293,7 +294,7 @@ export default function BusinessUnitsScreen() {
                     onPress={() => toggleActive(u)}
                     style={({ pressed }) => [styles.textBtn, ...pressableWebStyles(pressed, { pressedOpacity: 0.85 })]}
                   >
-                    <Text style={{ color: u.is_active ? '#FF6B7A' : '#335F90', fontWeight: '800' }}>
+                    <Text style={{ color: u.is_active ? colors.error : '#335F90', fontWeight: '800' }}>
                       {u.is_active ? 'Deactivate' : 'Activate'}
                     </Text>
                   </Pressable>
@@ -317,11 +318,11 @@ export default function BusinessUnitsScreen() {
           {isDark && (
              <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.elevated }]} pointerEvents="none" />
           )}
-          <View style={[styles.modalSheet, { backgroundColor: isDark ? '#12151F' : colors.surface, borderTopColor: isDark ? 'rgba(14,165,233,0.14)' : colors.border }]}>
+          <View style={[styles.modalSheet, { backgroundColor: isDark ? '#12151F' : colors.surface, borderTopColor: isDark ? colors.infoDim : colors.border }]}>
             <View style={[styles.sheetHandle, { backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : colors.border }]} />
 
             <View style={styles.sheetHeaderGroup}>
-               <LinearGradient colors={isDark ? ['rgba(14,165,233,0.18)', 'rgba(51, 95, 144, 0.06)'] : ['rgba(14,165,233,0.1)', 'transparent']} style={styles.sheetIconWrap}>
+               <LinearGradient colors={isDark ? [colors.infoDim, colors.infoDim] : [colors.infoDim, 'transparent']} style={styles.sheetIconWrap}>
                  <Building size={18} color={brandColors.blue} />
                </LinearGradient>
                <View style={{ flex: 1, marginLeft: 14 }}>
@@ -381,8 +382,8 @@ export default function BusinessUnitsScreen() {
                               : colors.border,
                           backgroundColor: active
                             ? isDark
-                              ? 'rgba(14,165,233,0.18)'
-                              : 'rgba(14,165,233,0.12)'
+                              ? colors.infoDim
+                              : colors.infoDim
                             : isDark
                               ? 'rgba(255,255,255,0.04)'
                               : colors.glassBackground,
@@ -527,7 +528,7 @@ const styles = StyleSheet.create({
   sheetHeaderGroup: { flexDirection: 'row', alignItems: 'center', marginBottom: 24 },
   sheetIconWrap: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   sheetClose: { width: 34, height: 34, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.06)', alignItems: 'center', justifyContent: 'center' },
-  modalTitle: { fontSize: 21, fontWeight: '800', letterSpacing: -0.3 },
+  modalTitle: { fontSize: workspaceUi.sectionTitle.fontSize, fontWeight: workspaceUi.sectionTitle.fontWeight, letterSpacing: -0.3 },
   modalSub: { fontSize: 12, marginTop: 2 },
 
   modalActions: {
@@ -538,10 +539,10 @@ const styles = StyleSheet.create({
   cancelBtn: {
     paddingVertical: 15,
     paddingHorizontal: 20,
-    borderRadius: 14,
+    borderRadius: workspaceUi.controlRadius,
     borderWidth: 1,
   },
   cancelTxt: { fontWeight: '700', fontSize: 14 },
-  saveBtn: { paddingVertical: 15, borderRadius: 14, alignItems: 'center' },
+  saveBtn: { paddingVertical: 15, borderRadius: workspaceUi.controlRadius, alignItems: 'center' },
   saveTxt: { color: '#fff', fontWeight: '800', fontSize: 15 },
 });

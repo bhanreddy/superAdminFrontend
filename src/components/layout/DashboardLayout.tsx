@@ -15,7 +15,8 @@ import { useAuth } from '../../hooks/useAuth';
 import { isFounderOrSuperAdmin } from '../../constants/rbac';
 import { useTheme, WorkspaceThemeProvider } from '../../contexts/ThemeContext';
 import Animated, { FadeInLeft } from 'react-native-reanimated';
-import { animation } from '../../constants/theme';
+import { animation, workspaceUi } from '../../constants/theme';
+import { getRoleWorkspaceModule } from '../../constants/workspaceDesign';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -139,17 +140,14 @@ const DashboardShell = React.memo(function DashboardShell({
           style={[
             styles.scroller,
             {
-              paddingTop: isConnect || isExecutive ? 0 : isMobile ? 16 : 28,
+              maxWidth: isConnect || isExecutive ? undefined : 1480,
+              width: '100%',
+              alignSelf: 'center',
+              paddingTop: isConnect || isExecutive ? 0 : isMobile ? workspaceUi.phoneGutter : workspaceUi.pageGutter,
               paddingHorizontal:
                 isConnect || isExecutive
                   ? 0
-                  : isCompactMobile
-                  ? 12
-                  : isMobile
-                  ? 16
-                  : screenWidth < 1200
-                  ? 24
-                  : 36,
+                  : isMobile ? workspaceUi.phoneGutter : workspaceUi.pageGutter,
               paddingBottom: isConnect || isExecutive ? 0 : 48,
               ...(isConnect ? { overflow: 'hidden' as const } : {}),
             },
@@ -197,8 +195,12 @@ export const DashboardLayout = React.memo(function DashboardLayout({
   children,
 }: DashboardLayoutProps) {
   const pathname = usePathname() || '/';
+  const { role } = useAuth();
+  const homeModule = pathname === '/' || pathname === '/console'
+    ? getRoleWorkspaceModule(role)
+    : undefined;
   return (
-    <WorkspaceThemeProvider path={pathname}>
+    <WorkspaceThemeProvider path={pathname} module={homeModule}>
       <DashboardShell>{children}</DashboardShell>
     </WorkspaceThemeProvider>
   );

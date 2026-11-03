@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../../src/constants/layout';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View,
@@ -385,7 +386,7 @@ const st = StyleSheet.create({
   filterDot: { width: 6, height: 6, borderRadius: 3 },
   filterText: { fontSize: 13, fontWeight: '600', flex: 1 },
   compactEmptyWrap: { paddingVertical: 32 },
-  adminCard: { marginBottom: 12, borderRadius: 16 },
+  adminCard: { marginBottom: 12, borderRadius: workspaceUi.cardRadius },
   cardInner: { padding: 16 },
   cardTopRow: { flexDirection: 'row', alignItems: 'flex-start' },
   cardMain: { flex: 1, minWidth: 0, marginLeft: 12 },

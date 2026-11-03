@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../constants/layout';
 import React, { useCallback, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -97,7 +98,7 @@ export default function SchoolProspectsScreen() {
 const styles = StyleSheet.create({
   toolbar: { gap: 8, marginBottom: 12 },
   search: { minHeight: 44, borderWidth: StyleSheet.hairlineWidth, borderRadius: 14, paddingHorizontal: 14 },
-  chip: { alignSelf: 'flex-start', justifyContent: 'center', paddingHorizontal: 14, borderWidth: StyleSheet.hairlineWidth, borderRadius: 14 },
+  chip: { alignSelf: 'flex-start', justifyContent: 'center', paddingHorizontal: 14, borderWidth: StyleSheet.hairlineWidth, borderRadius: workspaceUi.chipRadius },
   row: { borderWidth: StyleSheet.hairlineWidth, borderRadius: 16, padding: 14, gap: 4 },
   name: { fontSize: 16, fontWeight: '700' },
   meta: { fontSize: 13 },

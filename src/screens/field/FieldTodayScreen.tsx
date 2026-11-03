@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../constants/layout';
 import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -343,7 +344,7 @@ export default function FieldTodayScreen() {
             style={[
               styles.toastBox,
               toast.type === 'success' && { backgroundColor: brandColors.blue },
-              toast.type === 'warn' && { backgroundColor: '#F59E0B' },
+              toast.type === 'warn' && { backgroundColor: brandColors.amber },
               toast.type === 'info' && { backgroundColor: brandColors.red },
             ]}
           >
@@ -382,7 +383,7 @@ export default function FieldTodayScreen() {
         {/* Offline / Sync Banner */}
         {(offline || pending > 0) && (
           <GlassCard style={[styles.banner, { borderColor: '#FF9F0A55', backgroundColor: '#FF9F0A11' }]}>
-            <WifiOff size={16} color="#FF9F0A" />
+            <WifiOff size={16} color={colors.warning} />
             <Text style={[styles.bannerText, { color: colors.textPrimary, flexShrink: 1 }]}>
               {offline
                 ? 'Offline Mode — Changes saved on device and will sync automatically.'
@@ -397,8 +398,8 @@ export default function FieldTodayScreen() {
           {isDayNotStarted && (
             <View style={styles.heroContent}>
               <View style={styles.heroStatusRow}>
-                <View style={[styles.statusDot, { backgroundColor: '#FF9F0A' }]} />
-                <Text style={[styles.statusTitle, { color: '#FF9F0A' }]}>DAY NOT STARTED</Text>
+                <View style={[styles.statusDot, { backgroundColor: colors.warning }]} />
+                <Text style={[styles.statusTitle, { color: colors.warning }]}>DAY NOT STARTED</Text>
               </View>
               <Text style={[styles.heroHeading, { color: colors.textPrimary }]}>
                 Ready to launch today's field run?
@@ -501,8 +502,8 @@ export default function FieldTodayScreen() {
                     onPress={() => setEndDayModalOpen(true)}
                     style={[styles.ctaButton, styles.ctaDangerOutline, { borderColor: 'rgba(255, 69, 58, 0.4)' }]}
                   >
-                    <StopCircle size={16} color="#FF453A" />
-                    <Text style={[styles.ctaOutlineText, { color: '#FF453A' }]}>End My Day</Text>
+                    <StopCircle size={16} color={colors.error} />
+                    <Text style={[styles.ctaOutlineText, { color: colors.error }]}>End My Day</Text>
                   </Pressable>
                 </View>
               </View>
@@ -579,10 +580,10 @@ export default function FieldTodayScreen() {
               />
               <View style={styles.kpiDivider} />
               <KpiBox
-                icon={<Car size={16} color="#64D2FF" />}
+                icon={<Car size={16} color={colors.info} />}
                 label="KM"
                 value={String(distanceKm)}
-                color="#64D2FF"
+                color={colors.info}
               />
             </View>
 
@@ -613,7 +614,7 @@ export default function FieldTodayScreen() {
               </View>
               {nextStop.appointment_at && (
                 <View style={styles.timeTag}>
-                  <Clock size={12} color="#FF9F0A" />
+                  <Clock size={12} color={colors.warning} />
                   <Text style={styles.timeTagText}>
                     {new Date(nextStop.appointment_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
                   </Text>
@@ -710,9 +711,9 @@ export default function FieldTodayScreen() {
                   style={[
                     styles.stepBadge,
                     isDone && { backgroundColor: '#335F9022', borderColor: '#335F90' },
-                    isInProgress && { backgroundColor: '#FF9F0A22', borderColor: '#FF9F0A' },
+                    isInProgress && { backgroundColor: '#FF9F0A22', borderColor: colors.warning },
                     isPlanned && { backgroundColor: `${colors.primary}18`, borderColor: colors.primary },
-                    isSkipped && { backgroundColor: 'rgba(150,150,150,0.15)', borderColor: 'rgba(150,150,150,0.4)' },
+                    isSkipped && { backgroundColor: colors.infoDim, borderColor: 'rgba(150,150,150,0.4)' },
                   ]}
                 >
                   {isDone ? (
@@ -723,7 +724,7 @@ export default function FieldTodayScreen() {
                         styles.stepNumber,
                         {
                           color: isInProgress
-                            ? '#FF9F0A'
+                            ? colors.warning
                             : isPlanned
                             ? colors.primary
                             : colors.textSecondary,
@@ -749,7 +750,7 @@ export default function FieldTodayScreen() {
                         isDone && { backgroundColor: '#335F901F', borderColor: '#335F9055' },
                         isInProgress && { backgroundColor: '#FF9F0A1F', borderColor: '#FF9F0A55' },
                         isPlanned && { backgroundColor: `${colors.primary}18`, borderColor: `${colors.primary}44` },
-                        isSkipped && { backgroundColor: 'rgba(150,150,150,0.15)', borderColor: 'rgba(150,150,150,0.3)' },
+                        isSkipped && { backgroundColor: colors.infoDim, borderColor: colors.infoDim },
                       ]}
                     >
                       <Text
@@ -759,7 +760,7 @@ export default function FieldTodayScreen() {
                             color: isDone
                               ? '#335F90'
                               : isInProgress
-                              ? '#FF9F0A'
+                              ? colors.warning
                               : isPlanned
                               ? colors.primary
                               : colors.textSecondary,
@@ -949,8 +950,8 @@ export default function FieldTodayScreen() {
         <View style={styles.modalBackdrop}>
           <GlassCard style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <View style={[styles.modalIconWrap, { backgroundColor: 'rgba(255, 69, 58, 0.15)' }]}>
-                <StopCircle size={24} color="#FF453A" />
+              <View style={[styles.modalIconWrap, { backgroundColor: colors.errorDim }]}>
+                <StopCircle size={24} color={colors.error} />
               </View>
               <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>End Field Day?</Text>
               <Text style={[styles.modalSub, { color: colors.textSecondary }]}>
@@ -969,7 +970,7 @@ export default function FieldTodayScreen() {
                 <Text style={[styles.modalStatLabel, { color: colors.textSecondary }]}>Demos</Text>
               </View>
               <View style={styles.modalStatItem}>
-                <Text style={[styles.modalStatValue, { color: '#64D2FF' }]}>{distanceKm} km</Text>
+                <Text style={[styles.modalStatValue, { color: colors.info }]}>{distanceKm} km</Text>
                 <Text style={[styles.modalStatLabel, { color: colors.textSecondary }]}>Distance</Text>
               </View>
             </View>
@@ -1083,8 +1084,8 @@ export default function FieldTodayScreen() {
         <View style={styles.modalBackdrop}>
           <GlassCard style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <View style={[styles.modalIconWrap, { backgroundColor: 'rgba(255, 159, 10, 0.15)' }]}>
-                <ShieldAlert size={24} color="#FF9F0A" />
+              <View style={[styles.modalIconWrap, { backgroundColor: colors.warningDim }]}>
+                <ShieldAlert size={24} color={colors.warning} />
               </View>
               <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>Remote Check-In</Text>
               <Text style={[styles.modalSub, { color: colors.textSecondary }]}>
@@ -1209,7 +1210,7 @@ const styles = StyleSheet.create({
   },
   iconButton: {
     padding: 10,
-    borderRadius: 12,
+    borderRadius: workspaceUi.controlRadius,
     borderWidth: 1,
   },
 
@@ -1248,8 +1249,8 @@ const styles = StyleSheet.create({
   },
 
   heroCard: {
-    padding: 20,
-    borderRadius: 20,
+    padding: workspaceUi.cardPadding,
+    borderRadius: workspaceUi.cardRadius,
     marginBottom: 16,
     overflow: 'hidden',
   },
@@ -1309,7 +1310,7 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingVertical: 13,
     paddingHorizontal: 16,
-    borderRadius: 14,
+    borderRadius: workspaceUi.controlRadius,
   },
   ctaPrimary: {
     backgroundColor: brandColors.red,
@@ -1338,8 +1339,8 @@ const styles = StyleSheet.create({
   },
 
   kpiCard: {
-    padding: 16,
-    borderRadius: 16,
+    padding: workspaceUi.cardPadding,
+    borderRadius: workspaceUi.cardRadius,
     marginBottom: 16,
   },
   kpiRow: {
@@ -1391,8 +1392,8 @@ const styles = StyleSheet.create({
   },
 
   nextStopCard: {
-    padding: 18,
-    borderRadius: 16,
+    padding: workspaceUi.cardPadding,
+    borderRadius: workspaceUi.cardRadius,
     marginBottom: 18,
   },
   nextStopHeader: {
@@ -1462,7 +1463,7 @@ const styles = StyleSheet.create({
     backgroundColor: brandColors.red,
     paddingVertical: 11,
     paddingHorizontal: 16,
-    borderRadius: 12,
+    borderRadius: workspaceUi.controlRadius,
     flex: 2,
   },
   spotlightCheckInText: {
@@ -1477,7 +1478,7 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingVertical: 10,
     paddingHorizontal: 12,
-    borderRadius: 12,
+    borderRadius: workspaceUi.controlRadius,
     borderWidth: 1,
   },
   spotlightActionText: {
@@ -1493,14 +1494,14 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   sectionTitle: {
-    fontSize: 17,
-    fontWeight: '800',
+    fontSize: workspaceUi.sectionTitle.fontSize,
+    fontWeight: workspaceUi.sectionTitle.fontWeight,
     letterSpacing: -0.3,
   },
 
   journeyCard: {
     padding: 14,
-    borderRadius: 16,
+    borderRadius: workspaceUi.cardRadius,
     marginBottom: 10,
   },
   cardMainRow: {
@@ -1597,7 +1598,7 @@ const styles = StyleSheet.create({
     backgroundColor: brandColors.red,
     paddingVertical: 8,
     paddingHorizontal: 14,
-    borderRadius: 10,
+    borderRadius: workspaceUi.controlRadius,
   },
   inlineCheckInText: {
     color: '#fff',
@@ -1612,7 +1613,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF9F0A',
     paddingVertical: 8,
     paddingHorizontal: 14,
-    borderRadius: 10,
+    borderRadius: workspaceUi.controlRadius,
     flex: 1,
   },
   inlineGhostBtn: {
@@ -1622,7 +1623,7 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingVertical: 8,
     paddingHorizontal: 12,
-    borderRadius: 10,
+    borderRadius: workspaceUi.controlRadius,
     borderWidth: 1,
   },
   inlineGhostText: {
@@ -1631,7 +1632,7 @@ const styles = StyleSheet.create({
   },
   inlineIconBtn: {
     padding: 8,
-    borderRadius: 10,
+    borderRadius: workspaceUi.controlRadius,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
@@ -1643,9 +1644,9 @@ const styles = StyleSheet.create({
 
   emptyCard: {
     alignItems: 'center',
-    padding: 32,
+    padding: workspaceUi.cardPadding,
     gap: 8,
-    borderRadius: 18,
+    borderRadius: workspaceUi.cardRadius,
     marginTop: 10,
   },
   emptyTitle: {
@@ -1687,8 +1688,8 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   modalTitle: {
-    fontSize: 18,
-    fontWeight: '800',
+    fontSize: workspaceUi.sectionTitle.fontSize,
+    fontWeight: workspaceUi.sectionTitle.fontWeight,
     textAlign: 'center',
   },
   modalSub: {
@@ -1741,7 +1742,7 @@ const styles = StyleSheet.create({
   modalBtn: {
     flex: 1,
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: workspaceUi.controlRadius,
     alignItems: 'center',
     justifyContent: 'center',
   },

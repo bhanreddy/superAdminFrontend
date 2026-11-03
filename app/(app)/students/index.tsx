@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../../src/constants/layout';
 import { brandColors, experienceColors } from '../../../src/constants/experienceColors';
 import React, { useCallback, useEffect, useState, useMemo, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable, Platform,  Easing, ScrollView, useWindowDimensions } from 'react-native';
@@ -459,9 +460,9 @@ const st = StyleSheet.create({
     fontWeight: '600',
   },
   iconButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
+    width: 44,
+    height: 44,
+    borderRadius: workspaceUi.controlRadius,
     alignItems: 'center',
     justifyContent: 'center',
   },

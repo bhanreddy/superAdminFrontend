@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../constants/layout';
 import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, RefreshControl } from 'react-native';
@@ -26,9 +27,9 @@ export default function FieldPerformanceScreen() {
   const t = data?.today?.totals || {};
   const cards = [
     ['Schools Visited', t.visited ?? 0, brandColors.red],
-    ['Distance (KM)', t.distance_km ?? 0, '#64D2FF'],
+    ['Distance (KM)', t.distance_km ?? 0, colors.info],
     ['Qualified Leads', t.qualified ?? 0, '#335F90'],
-    ['Follow-ups Breached', t.followups_breached ?? 0, '#FF453A'],
+    ['Follow-ups Breached', t.followups_breached ?? 0, colors.error],
   ];
 
   return (
@@ -60,7 +61,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 24, fontWeight: '800' },
   sub: { fontSize: 12.5, marginTop: 2, marginBottom: 14, lineHeight: 17 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  card: { flex: 1, minWidth: 150, padding: 16 },
+  card: { flex: 1, minWidth: 150, padding: workspaceUi.cardPadding },
   val: { fontSize: 26, fontWeight: '800' },
   label: { fontSize: 11.5, marginTop: 4, fontWeight: '600' },
   funnel: { padding: 16, marginTop: 12 },

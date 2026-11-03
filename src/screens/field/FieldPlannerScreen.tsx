@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../constants/layout';
 import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, TextInput, Alert } from 'react-native';
@@ -196,8 +197,8 @@ export default function FieldPlannerScreen() {
           <View style={styles.chips}>
             {['HIGH', 'MEDIUM', 'LOW'].map((level) => (
               <Pressable accessibilityRole="button" key={level} onPress={() => setPriority(level)}
-                style={[styles.chip, { borderColor: priority === level ? '#FF9F0A' : 'rgba(150,150,160,0.35)' }]}>
-                <Text style={{ color: priority === level ? '#FF9F0A' : colors.textSecondary, fontWeight: '700', fontSize: 12 }}>{level}</Text>
+                style={[styles.chip, { borderColor: priority === level ? colors.warning : 'rgba(150,150,160,0.35)' }]}>
+                <Text style={{ color: priority === level ? colors.warning : colors.textSecondary, fontWeight: '700', fontSize: 12 }}>{level}</Text>
               </Pressable>
             ))}
           </View>
@@ -208,7 +209,7 @@ export default function FieldPlannerScreen() {
             style={({ pressed }) => [styles.saveBtn, (pressed || saving) && { opacity: 0.72 }]}>
             <Text style={styles.primaryText}>{saving ? 'Saving…' : 'Save to plan'}</Text>
           </Pressable>
-          {formMessage ? <Text style={[styles.meta, { color: '#FF453A', marginTop: 8 }]}>{formMessage}</Text> : null}
+          {formMessage ? <Text style={[styles.meta, { color: colors.error, marginTop: 8 }]}>{formMessage}</Text> : null}
           {searching ? <SkeletonActionList count={2} /> : null}
           {!searching && searched && results.length === 0 ? (
             <Text style={[styles.meta, { color: colors.textSecondary, marginTop: 12 }]}>No school matches that search. Try a shorter name or a district.</Text>
@@ -248,7 +249,7 @@ export default function FieldPlannerScreen() {
                 {stop.research_note ? <Text style={[styles.meta, { color: colors.textPrimary }]}>{stop.research_note}</Text> : null}
               </View>
               <Pressable accessibilityLabel="Remove planned stop" accessibilityRole="button" onPress={() => remove(stop.id)} style={styles.removeBtn}>
-                <X size={16} color="#FF453A" />
+                <X size={16} color={colors.error} />
               </Pressable>
             </View>
           </GlassCard>
@@ -267,23 +268,23 @@ const styles = StyleSheet.create({
   title: { fontSize: 24, fontWeight: '800' },
   sub: { fontSize: 13, lineHeight: 18, marginTop: 6, marginBottom: 12 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 8 },
-  chip: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, borderWidth: 1.5 },
-  card: { padding: 16, marginBottom: 16 },
+  chip: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: workspaceUi.chipRadius, borderWidth: 1.5 },
+  card: { padding: workspaceUi.cardPadding, marginBottom: 16 },
   h: { fontSize: 15, fontWeight: '700' },
   label: { fontSize: 12, fontWeight: '600', marginTop: 10, marginBottom: 6 },
   searchRow: { flexDirection: 'row', gap: 8, marginTop: 10 },
-  input: { flex: 1, borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 12, fontSize: 14 },
-  searchBtn: { width: 46, borderRadius: 12, backgroundColor: brandColors.red, alignItems: 'center', justifyContent: 'center' },
+  input: { flex: 1, borderWidth: 1, borderRadius: workspaceUi.controlRadius, paddingHorizontal: 12, paddingVertical: 12, fontSize: 16 },
+  searchBtn: { width: 46, borderRadius: workspaceUi.controlRadius, backgroundColor: brandColors.red, alignItems: 'center', justifyContent: 'center' },
   result: { flexDirection: 'row', alignItems: 'center', gap: 10, borderTopWidth: 1, paddingTop: 12, marginTop: 12 },
   name: { fontSize: 14.5, fontWeight: '700' },
   meta: { fontSize: 12, marginTop: 2, lineHeight: 16 },
-  addBtn: { width: 36, height: 36, borderRadius: 10, backgroundColor: '#335F90', alignItems: 'center', justifyContent: 'center' },
+  addBtn: { width: 44, height: 44, borderRadius: workspaceUi.controlRadius, backgroundColor: '#335F90', alignItems: 'center', justifyContent: 'center' },
   empty: { padding: 18, marginBottom: 12 },
   stop: { padding: 14, marginBottom: 10 },
   stopTop: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
   index: { fontSize: 16, fontWeight: '800', width: 18 },
-  removeBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
-  saveBtn: { backgroundColor: brandColors.red, padding: 14, borderRadius: 14, alignItems: 'center', marginTop: 14 },
+  removeBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
+  saveBtn: { backgroundColor: brandColors.red, padding: 14, borderRadius: workspaceUi.controlRadius, alignItems: 'center', marginTop: 14 },
   primary: { backgroundColor: brandColors.red, padding: 14, borderRadius: 14, alignItems: 'center', marginTop: 8 },
   primaryText: { color: '#fff', fontWeight: '700' },
 });

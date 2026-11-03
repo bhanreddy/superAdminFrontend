@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../constants/layout';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -76,7 +77,7 @@ export default function CrmScreen() {
         <ScreenHeader title="CRM Command Center" subtitle="Pipeline, customers, work and automation" />
 
         <LinearGradient
-          colors={isDark ? [`${colors.primary}30`, `${colors.accent}14`, 'rgba(255,255,255,0.02)'] : [`${colors.primary}18`, `${colors.accent}0D`, 'rgba(255,255,255,0.82)']}
+          colors={[colors.card, colors.headerGradientStart]}
           style={[st.hero, { borderColor: colors.clayBorderColor }, clayStyle(clayShadows.clayElevated)]}
         >
           <View style={{ flexGrow: 1, flexBasis: desktop ? 360 : '100%', minWidth: 0 }}>
@@ -219,8 +220,8 @@ function SectionTitle({ title, action, onPress }: { title: string; action?: stri
 
 const st = StyleSheet.create({
   content: { paddingBottom: 60, width: '100%', maxWidth: '100%' },
-  hero: { borderWidth: 1, borderRadius: 28, padding: 24, flexDirection: 'row', flexWrap: 'wrap', gap: 20, alignItems: 'center', overflow: 'hidden', width: '100%' },
-  eyebrow: { fontSize: 10, fontWeight: '800', letterSpacing: 1.4 }, heroTitle: { fontSize: 27, lineHeight: 34, fontWeight: '850' as any, letterSpacing: -0.8, maxWidth: 620, marginTop: 7 }, heroSub: { fontSize: 13, marginTop: 7 },
+  hero: { borderWidth: 1, borderRadius: workspaceUi.cardRadius, padding: workspaceUi.cardPadding, flexDirection: 'row', flexWrap: 'wrap', gap: 20, alignItems: 'center', overflow: 'hidden', width: '100%' },
+  eyebrow: { fontSize: 10, fontWeight: '800', letterSpacing: 1.4 }, heroTitle: { fontSize: workspaceUi.pageTitle.fontSize, lineHeight: workspaceUi.pageTitle.lineHeight, fontWeight: workspaceUi.pageTitle.fontWeight, letterSpacing: -0.8, maxWidth: 620, marginTop: 7 }, heroSub: { fontSize: 13, marginTop: 7 },
   valuePill: { minWidth: 190, flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 18, borderWidth: 1 }, valueLabel: { fontSize: 10 }, valueText: { fontSize: 18, fontWeight: '800', marginTop: 2 },
   metricGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginTop: 18, width: '100%' }, metricCard: { flexGrow: 1, flexShrink: 1, flexBasis: 160, minWidth: 150, maxWidth: '100%' }, icon: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginBottom: 14 }, metricValue: { fontSize: 27, fontWeight: '800', letterSpacing: -0.7 }, metricLabel: { fontSize: 12, marginTop: 3 },
   linkRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 14 },

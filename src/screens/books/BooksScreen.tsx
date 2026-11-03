@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../constants/layout';
 import { MotionPressable as Pressable } from '../../components/ui/MotionPressable';
 import { MotionSection } from '../../components/ui/MotionSection';
 import { Skeleton } from '../../components/ui/Skeleton';
@@ -1386,6 +1387,6 @@ const st = StyleSheet.create({
   nav: { width: 208, maxWidth: 208, flexGrow: 0, flexShrink: 0, minHeight: 0, borderRightWidth: 1 },
   content: { flex: 1, minHeight: 0, minWidth: 0 },
   moduleHeader: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 14 },
-  moduleTitle: { fontSize: 26, fontWeight: '700', letterSpacing: -0.7, lineHeight: 32 },
+  moduleTitle: { fontSize: workspaceUi.pageTitle.fontSize, fontWeight: workspaceUi.pageTitle.fontWeight, letterSpacing: -0.7, lineHeight: workspaceUi.pageTitle.lineHeight },
   navToggle: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderRadius: 8 },
 });

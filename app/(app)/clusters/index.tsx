@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../../src/constants/layout';
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, RefreshControl, Pressable, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -230,12 +231,12 @@ const styles = StyleSheet.create({
   addBtn: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 8,
+    borderRadius: workspaceUi.controlRadius,
   },
   addBtnText: { color: '#FFF', fontWeight: '600', fontSize: 14 },
   content: { paddingVertical: 20, paddingHorizontal: 0, gap: 16 },
   card: {
-    borderRadius: 16,
+    borderRadius: workspaceUi.cardRadius,
     borderWidth: 1,
     overflow: 'hidden',
   },
@@ -252,7 +253,7 @@ const styles = StyleSheet.create({
   statusText: { fontSize: 11, fontWeight: '600', textTransform: 'uppercase' },
   cardId: { fontSize: 12, marginTop: 4 },
   actions: { flexDirection: 'row', gap: 8 },
-  iconBtn: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  iconBtn: { width: 44, height: 44, borderRadius: workspaceUi.controlRadius, alignItems: 'center', justifyContent: 'center' },
   cardBody: {
     paddingHorizontal: 16,
     paddingVertical: 12,

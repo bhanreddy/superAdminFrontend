@@ -11,10 +11,13 @@ import {
 import { ChevronLeft } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../../contexts/ThemeContext';
-import { borderRadius } from '../../constants/theme';
+import { borderRadius, workspaceUi } from '../../constants/theme';
+import { getCardTone } from '../../constants/experienceColors';
+import { workspaceTones } from '../../constants/workspaceDesign';
 
 interface ScreenHeaderProps {
   title: string;
+  eyebrow?: string;
   subtitle?: string;
   /** Override default tertiary subtitle color for better contrast on dense screens. */
   subtitleColor?: string;
@@ -25,13 +28,15 @@ interface ScreenHeaderProps {
 
 export const ScreenHeader = React.memo(function ScreenHeader({
   title,
+  eyebrow,
   subtitle,
   subtitleColor,
   showBack = false,
   rightAction,
 }: ScreenHeaderProps) {
   const router = useRouter();
-  const { colors } = useTheme();
+  const { colors, isDark, workspaceModule = 'overview' } = useTheme();
+  const paint = getCardTone(workspaceTones[workspaceModule], isDark);
   const { width: winW } = useWindowDimensions();
   const compact = winW < 420;
   const stackActions = winW < 520;
@@ -84,15 +89,18 @@ export const ScreenHeader = React.memo(function ScreenHeader({
         <View
           style={[
             styles.titleBlock,
-            { minWidth: 0, borderLeftColor: colors.primary },
+            { minWidth: 0, borderLeftColor: paint.accent },
           ]}
         >
+          {eyebrow && (
+            <Text style={[styles.eyebrow, { color: paint.accent }]}>{eyebrow}</Text>
+          )}
           <Text
             accessibilityRole="header"
             style={[
               styles.title,
               { color: colors.textPrimary },
-              compact && { fontSize: 21, lineHeight: 26 },
+              compact && workspaceUi.phoneTitle,
             ]}
             numberOfLines={2}
           >
@@ -131,8 +139,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 28,
-    paddingTop: 6,
+    marginBottom: workspaceUi.sectionGap,
+    paddingTop: 0,
   },
   containerStacked: {
     flexDirection: 'column',
@@ -140,8 +148,7 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   containerCompact: {
-    marginBottom: 16,
-    paddingTop: 2,
+    marginBottom: workspaceUi.sectionGap,
   },
   left: {
     flexDirection: 'row',
@@ -161,17 +168,24 @@ const styles = StyleSheet.create({
   },
   titleBlock: {
     flex: 1,
+    borderLeftWidth: 3,
+    paddingLeft: 12,
   },
   title: {
-    fontSize: 30,
-    fontWeight: '700',
-    letterSpacing: -0.5,
+    ...workspaceUi.pageTitle,
+  },
+  eyebrow: {
+    ...workspaceUi.caption,
+    fontSize: 10,
+    fontWeight: '600',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    marginBottom: 4,
   },
   subtitle: {
-    fontSize: 15,
+    ...workspaceUi.body,
     fontWeight: '400',
-    marginTop: 7,
-    lineHeight: 22,
+    marginTop: 4,
   },
   right: {
     flexDirection: 'row',

@@ -1,3 +1,4 @@
+import { borderRadius } from './layout';
 // NexSyrus workspace design system. Calm surfaces, purposeful colour and clear type.
 // Legacy clay token names remain compatible with existing screens.
 
@@ -180,16 +181,7 @@ const spacing = {
 };
 
 // ─── Border Radius (large & smooth for clay) ────────────────────────────────
-export const borderRadius = {
-  xs: 8,
-  sm: 12,
-  md: 16,
-  lg: 20,
-  xl: 24,
-  '2xl': 28,
-  '3xl': 32,
-  full: 9999,
-};
+export { borderRadius, workspaceUi } from './layout';
 
 // ─── Claymorphism Shadow Helpers ────────────────────────────────────────────
 // Each shadow set contains both native RN props and a web boxShadow string.

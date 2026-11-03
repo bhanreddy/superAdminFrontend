@@ -1,3 +1,4 @@
+import { workspaceUi } from '../src/constants/layout';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -81,7 +82,7 @@ const styles = StyleSheet.create({
   icon: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   title: { fontSize: 30, fontWeight: '700', letterSpacing: -0.5 },
   subtitle: { fontSize: 16, lineHeight: 24, marginBottom: 12 },
-  card: { flexDirection: 'row', alignItems: 'center', gap: 18, padding: 24, borderWidth: 1, borderRadius: 16, minHeight: 112 },
+  card: { flexDirection: 'row', alignItems: 'center', gap: 18, padding: workspaceUi.cardPadding, borderWidth: 1, borderRadius: workspaceUi.cardRadius, minHeight: 112 },
   label: { fontSize: 18, fontWeight: '600' },
   empty: { padding: 24, borderWidth: 1, borderRadius: 16, gap: 18 },
 });

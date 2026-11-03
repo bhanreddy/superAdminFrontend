@@ -22,8 +22,8 @@ export function Kpis({ report: r }: { report: apiDashboardReport }) {
         { label: 'CASH & BANK', value: r.cash, note: `As of ${date(r.to)}`, tone: 'honey', Icon: Landmark },
         { label: 'NET PROFIT', value: r.profit, note: `${date(r.from)} — ${date(r.to)}`, tone: 'lavender', Icon: TrendingUp },
       ].map(k => {
-        const tone = getCardTone(k.tone as CardTone, isDark);
-        return <Panel key={k.label} tone={k.tone as CardTone} material="soft" style={{ flex: 1, minWidth: 185, padding: 20, gap: 14 }}>
+        const tone = getCardTone('honey', isDark);
+        return <Panel key={k.label} tone="honey" style={{ flex: 1, minWidth: 185, padding: 16, gap: 14 }}>
           <View style={[ui.row, { justifyContent: 'space-between' }]}>
             <Text style={{ color: tone.accent, fontSize: 10, fontWeight: '700', letterSpacing: 0.8, flex: 1 }}>{k.label}</Text>
             <View style={{ width: 38, height: 38, borderRadius: 13, backgroundColor: tone.cover, alignItems: 'center', justifyContent: 'center' }}><k.Icon size={19} color={tone.accent} /></View>

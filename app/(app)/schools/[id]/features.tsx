@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../../../src/constants/layout';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -344,15 +345,15 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   sectionTitle: {
-    fontSize: 12,
-    fontWeight: '700',
+    fontSize: workspaceUi.sectionTitle.fontSize,
+    fontWeight: workspaceUi.sectionTitle.fontWeight,
     letterSpacing: 0.8,
     textTransform: 'uppercase',
     marginBottom: 10,
     marginLeft: 4,
   },
   card: {
-    borderRadius: 14,
+    borderRadius: workspaceUi.cardRadius,
     borderWidth: 1,
     overflow: 'hidden',
   },

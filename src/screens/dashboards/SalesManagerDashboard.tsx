@@ -1,3 +1,7 @@
+import type { ThemeColors } from '../../constants/theme';
+import { workspaceUi } from '../../constants/layout';
+import { ScreenHeader } from '../../components/ui/ScreenHeader';
+import { Button } from '../../components/ui/Button';
 import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
@@ -43,6 +47,7 @@ interface ExecutiveUser {
 
 export default function SalesManagerDashboard() {
   const { colors, isDark } = useTheme();
+  const styles = React.useMemo(() => createStyles(colors), [colors]);
   const { user, employeeId } = useAuth();
   const router = useRouter();
 
@@ -96,32 +101,17 @@ export default function SalesManagerDashboard() {
         }
       >
         {/* Hero Header */}
-        <View style={styles.heroSection}>
-          <View>
-            <View style={styles.badgeRow}>
-              <View style={styles.roleTag}>
-                <Sparkles size={12} color={brandColors.red} />
-                <Text style={styles.roleTagText}>Sales Management Console</Text>
-              </View>
-              {employeeId && (
-                <View style={styles.empBadge}>
-                  <Text style={styles.empBadgeText}>{employeeId}</Text>
-                </View>
-              )}
-            </View>
-            <Text style={[styles.heroTitle, { color: colors.textPrimary }]}>
-              Sales Pipeline & Team Performance
-            </Text>
-            <Text style={[styles.heroSubtitle, { color: colors.textSecondary }]}>
-              Monitor sales executives, territory onboarding progress, and pipeline readiness.
-            </Text>
-          </View>
-        </View>
+        <ScreenHeader
+          eyebrow={['Sales Manager', employeeId].filter(Boolean).join(' · ')}
+          title="Sales Pipeline & Team Performance"
+          subtitle="Monitor your team, territory coverage, and school pipeline readiness."
+
+        />
 
         {/* Operational Metrics Cards */}
         <View style={styles.statGrid}>
           <GlassCard style={styles.statCard}>
-            <View style={[styles.statIcon, { backgroundColor: 'rgba(10, 132, 255, 0.12)' }]}>
+            <View style={[styles.statIcon, { backgroundColor: colors.infoDim }]}>
               <School size={20} color={brandColors.red} />
             </View>
             <Text style={[styles.statVal, { color: colors.textPrimary }]}>{schools.length}</Text>
@@ -129,23 +119,23 @@ export default function SalesManagerDashboard() {
           </GlassCard>
 
           <GlassCard style={styles.statCard}>
-            <View style={[styles.statIcon, { backgroundColor: 'rgba(100, 210, 255, 0.12)' }]}>
-              <Users size={20} color="#64D2FF" />
+            <View style={[styles.statIcon, { backgroundColor: colors.infoDim }]}>
+              <Users size={20} color={colors.info} />
             </View>
             <Text style={[styles.statVal, { color: colors.textPrimary }]}>{executives.length}</Text>
             <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Sales Executives</Text>
           </GlassCard>
 
           <GlassCard style={styles.statCard}>
-            <View style={[styles.statIcon, { backgroundColor: 'rgba(255, 159, 10, 0.12)' }]}>
-              <Clock size={20} color="#FF9F0A" />
+            <View style={[styles.statIcon, { backgroundColor: colors.warningDim }]}>
+              <Clock size={20} color={colors.warning} />
             </View>
             <Text style={[styles.statVal, { color: colors.textPrimary }]}>{pendingDataSchools}</Text>
             <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Awaiting Data</Text>
           </GlassCard>
 
           <GlassCard style={styles.statCard}>
-            <View style={[styles.statIcon, { backgroundColor: 'rgba(51, 95, 144, 0.12)' }]}>
+            <View style={[styles.statIcon, { backgroundColor: colors.infoDim }]}>
               <CheckCircle2 size={20} color="#335F90" />
             </View>
             <Text style={[styles.statVal, { color: colors.textPrimary }]}>{liveSchools + buildReadySchools}</Text>
@@ -263,56 +253,7 @@ export default function SalesManagerDashboard() {
   );
 }
 
-const styles = StyleSheet.create({
-  heroSection: {
-    marginBottom: 24,
-    marginTop: 8,
-  },
-  badgeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 8,
-  },
-  roleTag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: 8,
-    backgroundColor: 'rgba(10, 132, 255, 0.12)',
-    borderWidth: 1,
-    borderColor: 'rgba(10, 132, 255, 0.25)',
-  },
-  roleTagText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: brandColors.red,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  empBadge: {
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-  },
-  empBadgeText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: 'rgba(245, 245, 247, 0.7)',
-  },
-  heroTitle: {
-    fontSize: 26,
-    fontWeight: '800',
-    letterSpacing: -0.5,
-  },
-  heroSubtitle: {
-    fontSize: 13,
-    marginTop: 4,
-    lineHeight: 18,
-  },
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
 
   statGrid: {
     flexDirection: 'row',
@@ -323,7 +264,7 @@ const styles = StyleSheet.create({
   statCard: {
     flex: 1,
     minWidth: 130,
-    padding: 16,
+    padding: workspaceUi.cardPadding,
   },
   statIcon: {
     width: 36,
@@ -351,8 +292,8 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: workspaceUi.sectionTitle.fontSize,
+    fontWeight: workspaceUi.sectionTitle.fontWeight,
   },
 
   execRow: {
@@ -365,14 +306,14 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: 'rgba(10, 132, 255, 0.15)',
+    backgroundColor: colors.infoDim,
     alignItems: 'center',
     justifyContent: 'center',
   },
   execAvatarText: {
     fontSize: 14,
     fontWeight: '700',
-    color: brandColors.red,
+    color: colors.primary,
   },
   execName: {
     fontSize: 14.5,
@@ -387,7 +328,7 @@ const styles = StyleSheet.create({
   idTagText: {
     fontSize: 10,
     fontWeight: '700',
-    color: '#64D2FF',
+    color: colors.info,
   },
   execMeta: {
     fontSize: 11.5,
@@ -400,12 +341,12 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 8,
     borderRadius: 8,
-    backgroundColor: 'rgba(10, 132, 255, 0.08)',
+    backgroundColor: colors.infoDim,
   },
   countText: {
     fontSize: 11.5,
     fontWeight: '700',
-    color: brandColors.red,
+    color: colors.primary,
   },
 
   reqRow: {
@@ -426,11 +367,11 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 10,
     borderRadius: 8,
-    backgroundColor: 'rgba(255, 159, 10, 0.12)',
+    backgroundColor: colors.warningDim,
   },
   reqStatusText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#FF9F0A',
+    color: colors.warning,
   },
 });

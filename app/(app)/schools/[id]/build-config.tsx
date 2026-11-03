@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../../../src/constants/layout';
 import { brandColors, experienceColors } from '../../../../src/constants/experienceColors';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Alert, Pressable, Platform } from 'react-native';
@@ -482,10 +483,10 @@ function CodeBlock({ title, body, colors }: { title: string; body: string; color
 const styles = StyleSheet.create({
   content: { padding: 16, gap: 12, paddingBottom: 40 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  card: { borderWidth: 1, borderRadius: 20, padding: 16, gap: 10 },
+  card: { borderWidth: 1, borderRadius: workspaceUi.cardRadius, padding: workspaceUi.cardPadding, gap: 10 },
   cardTitle: { fontSize: 16, fontWeight: '800' },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
+  chip: { borderWidth: 1, borderRadius: workspaceUi.chipRadius, paddingHorizontal: 12, paddingVertical: 8 },
   letterhead: { borderRadius: 16, padding: 16, gap: 4 },
   letterheadTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: '800' },
   letterheadSub: { color: 'rgba(255,255,255,0.92)', fontSize: 13 },

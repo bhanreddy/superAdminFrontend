@@ -174,13 +174,15 @@ export function useTheme() {
 /** Screen accents are presentation only; permissions and status colours are unchanged. */
 export function WorkspaceThemeProvider({
   path,
+  module,
   children,
 }: {
   path: string;
+  module?: WorkspaceModule;
   children: React.ReactNode;
 }) {
   const base = useTheme();
-  const workspaceModule = getWorkspaceModule(path);
+  const workspaceModule = module || getWorkspaceModule(path);
   const value = useMemo(() => {
     const palette = workspaceModules[workspaceModule];
     const tint = base.isDark ? palette.night : palette.tint;

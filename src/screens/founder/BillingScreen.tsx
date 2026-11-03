@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../constants/layout';
 import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -150,7 +151,7 @@ function DetailMetric({ label, value }: { label: string; value: string }) {
 function HeroMetric({ icon: Icon, label, value, tone, compact }: { icon: any; label: string; value: string; tone: string; compact: boolean }) {
   const { colors, isDark } = useTheme();
   return (
-    <View style={[st.heroMetric, compact && st.heroMetricCompact, { backgroundColor: isDark ? 'rgba(255,255,255,0.055)' : 'rgba(255,255,255,0.72)', borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(103,86,187,0.12)' }]}>
+    <View style={[st.heroMetric, compact && st.heroMetricCompact, { backgroundColor: isDark ? 'rgba(255,255,255,0.055)' : 'rgba(255,255,255,0.72)', borderColor: isDark ? 'rgba(255,255,255,0.08)' : colors.infoDim }]}>
       <View style={[st.metricIcon, { backgroundColor: `${tone}20` }]}><Icon size={17} color={tone} /></View>
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text style={[st.metricLabel, { color: colors.textSecondary }]}>{label}</Text>
@@ -297,10 +298,10 @@ export default function BillingScreen() {
 
         <Animated.View entering={FadeInDown.duration(500)} style={st.heroShell}>
           <LinearGradient
-            colors={isDark ? ['#28243A', '#171625'] : ['#FFFFFF', '#EEEAFE']}
+            colors={[colors.card, colors.headerGradientStart]}
             start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={st.heroGradient}
           >
-            <View style={[st.heroOrb, { backgroundColor: isDark ? 'rgba(124,111,255,0.22)' : 'rgba(124,111,255,0.16)' }]} />
+            <View style={[st.heroOrb, { backgroundColor: isDark ? colors.infoDim : colors.infoDim }]} />
             <View style={[st.heroTop, compact && { flexDirection: 'column', alignItems: 'stretch' }]}>
               <View style={{ flex: 1 }}>
                 <View style={st.heroKickerRow}>
@@ -317,8 +318,8 @@ export default function BillingScreen() {
             <View style={[st.metricGrid, compact && st.metricGridCompact]}>
               <HeroMetric icon={Building2} label="Active clients" value={String(activeClients.length)} tone={brandColors.violet} compact={compact} />
               <HeroMetric icon={IndianRupee} label="Monthly recurring" value={money(monthlyRevenue)} tone={brandColors.blue} compact={compact} />
-              <HeroMetric icon={CheckCircle2} label="Plans configured" value={`${configuredClients.length}/${clients.length}`} tone="#38BDF8" compact={compact} />
-              <HeroMetric icon={ReceiptText} label="Issued value" value={money(issuedRevenue)} tone="#F59E0B" compact={compact} />
+              <HeroMetric icon={CheckCircle2} label="Plans configured" value={`${configuredClients.length}/${clients.length}`} tone={colors.info} compact={compact} />
+              <HeroMetric icon={ReceiptText} label="Issued value" value={money(issuedRevenue)} tone={colors.warning} compact={compact} />
             </View>
           </LinearGradient>
         </Animated.View>
@@ -339,9 +340,9 @@ export default function BillingScreen() {
           </GlassCard>
         )}
 
-        <View style={[st.sectionSwitch, { backgroundColor: isDark ? 'rgba(255,255,255,0.045)' : 'rgba(102,84,200,0.07)', borderColor: colors.clayBorderColor }]}>
+        <View style={[st.sectionSwitch, { backgroundColor: isDark ? 'rgba(255,255,255,0.045)' : colors.infoDim, borderColor: colors.clayBorderColor }]}>
           {(['subscriptions', 'documents', 'collections'] as const).map((key) => (
-            <Pressable accessibilityRole="button" key={key} onPress={() => setSection(key)} style={[st.sectionSwitchBtn, section === key && { backgroundColor: isDark ? 'rgba(124,111,255,0.22)' : '#FFFFFF' }]}>
+            <Pressable accessibilityRole="button" key={key} onPress={() => setSection(key)} style={[st.sectionSwitchBtn, section === key && { backgroundColor: isDark ? colors.infoDim : '#FFFFFF' }]}>
               {key === 'subscriptions' ? <Building2 size={16} color={section === key ? colors.primary : colors.textSecondary} /> : key === 'documents' ? <ReceiptText size={16} color={section === key ? colors.primary : colors.textSecondary} /> : <WalletCards size={16} color={section === key ? colors.primary : colors.textSecondary} />}
               <Text style={{ color: section === key ? colors.textPrimary : colors.textSecondary, fontWeight: '800', fontSize: 13 }}>{key === 'subscriptions' ? 'Subscriptions' : key === 'documents' ? 'Documents' : 'Collections'}</Text>
             </Pressable>
@@ -351,7 +352,7 @@ export default function BillingScreen() {
         {section === 'subscriptions' && <>
         <View style={st.sectionHeadingRow}>
           <View><Text style={[st.sectionHeading, { color: colors.textPrimary }]}>Client subscriptions</Text><Text style={[st.sectionSub, { color: colors.textSecondary }]}>{schoolCount} schools · {medicalCount} medical shops</Text></View>
-          <Badge label={`${clients.length} clients`} color={brandColors.violet} bg="rgba(124,111,255,0.14)" />
+          <Badge label={`${clients.length} clients`} color={brandColors.violet} bg={colors.infoDim} />
         </View>
         <View style={[st.searchShell, { borderColor: colors.clayBorderColor, backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : '#FFFFFF' }]}>
           <Search size={17} color={colors.textSecondary} />
@@ -556,7 +557,7 @@ function SubscriptionClientCard({ client, onChanged, compact }: { client: Billin
   return (
     <View style={[st.clientCard, { borderColor: colors.clayBorderColor, backgroundColor: isDark ? 'rgba(34,32,48,0.88)' : '#F8F6FC' }, Platform.OS === 'web' ? { boxShadow: clayShadows.clayElevated.web } as any : null]}>
       <Pressable accessibilityRole="button" onPress={() => setExpanded((value) => !value)} style={({ pressed }) => [st.clientSummary, { opacity: pressed ? 0.82 : 1 }]}>
-        <View style={[st.schoolAvatar, { backgroundColor: client.kind === 'medical' ? 'rgba(51, 95, 144, 0.14)' : client.is_active ? 'rgba(124,111,255,0.16)' : 'rgba(148,163,184,0.14)' }]}>
+        <View style={[st.schoolAvatar, { backgroundColor: client.kind === 'medical' ? colors.infoDim : client.is_active ? colors.infoDim : colors.infoDim }]}>
           {client.kind === 'medical' ? <Stethoscope size={20} color={brandColors.blue} /> : <Text style={{ color: client.is_active ? brandColors.violet : colors.textSecondary, fontSize: 17, fontWeight: '900' }}>{client.name.slice(0, 2).toUpperCase()}</Text>}
         </View>
         <View style={{ flex: 1, minWidth: 0 }}>
@@ -564,7 +565,7 @@ function SubscriptionClientCard({ client, onChanged, compact }: { client: Billin
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 3 }}><Text style={{ color: client.kind === 'medical' ? brandColors.blue : colors.textSecondary, fontSize: 11, fontWeight: '700' }}>{client.kind === 'medical' ? 'Medical shop' : 'School'}</Text><View style={[st.metaDot, { backgroundColor: colors.textSecondary }]} /><Text style={{ color: colors.textSecondary, fontSize: 11 }} numberOfLines={1}>{client.code || 'No code'} · {client.cluster_id}</Text></View>
         </View>
         {!compact && <View style={{ alignItems: 'flex-end' }}><Text style={[st.feeValue, { color: colors.textPrimary }]}>{money(client.monthly_fee)}</Text><Text style={{ color: colors.textSecondary, fontSize: 10 }}>per month</Text></View>}
-        <Badge label={client.is_active ? 'Active' : 'Inactive'} color={client.is_active ? '#335F90' : brandColors.rose} bg={client.is_active ? 'rgba(51, 95, 144, 0.15)' : 'rgba(244,63,94,0.15)'} />
+        <Badge label={client.is_active ? 'Active' : 'Inactive'} color={client.is_active ? '#335F90' : brandColors.rose} bg={client.is_active ? colors.infoDim : colors.errorDim} />
         <View style={[st.chevron, { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : '#FFFFFF' }]}><ChevronDown size={16} color={colors.textSecondary} style={{ transform: [{ rotate: expanded ? '180deg' : '0deg' }] }} /></View>
       </Pressable>
       {compact && <View style={[st.mobileFeeStrip, { borderColor: colors.border }]}><Text style={{ color: colors.textSecondary, fontSize: 11 }}>Monthly plan</Text><Text style={[st.feeValue, { color: colors.textPrimary }]}>{money(client.monthly_fee)}</Text></View>}
@@ -576,15 +577,15 @@ function SubscriptionClientCard({ client, onChanged, compact }: { client: Billin
           <Input containerStyle={compact ? { width: '100%' } : { flex: 0.8, minWidth: 160 }} label="Next due date" value={dueDate} onChangeText={setDueDate} placeholder="YYYY-MM-DD" />
         </View>
         <Text style={[st.miniLabel, { color: colors.textSecondary }]}>BILLING CYCLE</Text>
-        <View style={st.choiceRow}>{(['monthly', 'quarterly', 'annual', 'custom'] as const).map((value) => <Pressable accessibilityRole="button" key={value} onPress={() => setCycle(value)} style={[st.choiceChip, { borderColor: cycle === value ? colors.primary : colors.border, backgroundColor: cycle === value ? 'rgba(124,111,255,0.15)' : 'transparent' }]}><Text style={{ color: cycle === value ? colors.primary : colors.textSecondary, fontSize: 11, fontWeight: '800', textTransform: 'capitalize' }}>{value}</Text></Pressable>)}</View>
+        <View style={st.choiceRow}>{(['monthly', 'quarterly', 'annual', 'custom'] as const).map((value) => <Pressable accessibilityRole="button" key={value} onPress={() => setCycle(value)} style={[st.choiceChip, { borderColor: cycle === value ? colors.primary : colors.border, backgroundColor: cycle === value ? colors.infoDim : 'transparent' }]}><Text style={{ color: cycle === value ? colors.primary : colors.textSecondary, fontSize: 11, fontWeight: '800', textTransform: 'capitalize' }}>{value}</Text></Pressable>)}</View>
         <Text style={[st.miniLabel, { color: colors.textSecondary }]}>SUBSCRIPTION STATUS</Text>
-        <View style={st.choiceRow}>{(['trial', 'active', 'past_due', 'paused', 'cancelled'] as const).map((value) => <Pressable accessibilityRole="button" key={value} onPress={() => setStatus(value)} style={[st.choiceChip, { borderColor: status === value ? colors.primary : colors.border, backgroundColor: status === value ? 'rgba(124,111,255,0.15)' : 'transparent' }]}><Text style={{ color: status === value ? colors.primary : colors.textSecondary, fontSize: 11, fontWeight: '800', textTransform: 'capitalize' }}>{value.replace('_', ' ')}</Text></Pressable>)}</View>
+        <View style={st.choiceRow}>{(['trial', 'active', 'past_due', 'paused', 'cancelled'] as const).map((value) => <Pressable accessibilityRole="button" key={value} onPress={() => setStatus(value)} style={[st.choiceChip, { borderColor: status === value ? colors.primary : colors.border, backgroundColor: status === value ? colors.infoDim : 'transparent' }]}><Text style={{ color: status === value ? colors.primary : colors.textSecondary, fontSize: 11, fontWeight: '800', textTransform: 'capitalize' }}>{value.replace('_', ' ')}</Text></Pressable>)}</View>
         <View style={[st.clientFields, compact && { flexDirection: 'column' }]}>
           <Input containerStyle={compact ? { width: '100%' } : { flex: 0.7, minWidth: 150 }} label="Monthly fee (₹)" keyboardType="decimal-pad" value={fee} onChangeText={setFee} placeholder="Set fee" />
           <Input containerStyle={compact ? { width: '100%' } : { flex: 1.3, minWidth: 240 }} label="Secure payment link" autoCapitalize="none" value={link} onChangeText={setLink} placeholder="https://..." />
         </View>
         {client.kind === 'school' && <View style={[st.reminderEditor, { borderColor: colors.border }]}>
-          <View style={st.reminderToggleRow}><View style={{ flex: 1 }}><Text style={{ color: colors.textPrimary, fontSize: 13, fontWeight: '800' }}>Show payment reminder</Text><Text style={{ color: colors.textSecondary, fontSize: 11, marginTop: 3 }}>Displays a gentle notice on the school admin dashboard and billing portal.</Text></View><Switch value={reminderEnabled} onValueChange={setReminderEnabled} trackColor={{ false: '#94A3B8', true: colors.primary }} /></View>
+          <View style={st.reminderToggleRow}><View style={{ flex: 1 }}><Text style={{ color: colors.textPrimary, fontSize: 13, fontWeight: '800' }}>Show payment reminder</Text><Text style={{ color: colors.textSecondary, fontSize: 11, marginTop: 3 }}>Displays a gentle notice on the school admin dashboard and billing portal.</Text></View><Switch value={reminderEnabled} onValueChange={setReminderEnabled} trackColor={{ false: colors.textSecondary, true: colors.primary }} /></View>
           {reminderEnabled && <Input label="Respectful reminder message" value={reminderMessage} onChangeText={setReminderMessage} placeholder="When convenient, please review the subscription amount due. Thank you." multiline />}
         </View>}
         <View style={[st.cardActions, compact && { flexDirection: 'column-reverse' }]}>
@@ -592,7 +593,7 @@ function SubscriptionClientCard({ client, onChanged, compact }: { client: Billin
             <Save size={15} color={colors.textSecondary} /><Text style={{ color: colors.textSecondary, fontWeight: '700' }}>{busy === 'save' ? 'Saving…' : 'Save changes'}</Text>
           </Pressable>
           {client.kind === 'school' && <Pressable accessibilityRole="button" disabled={busy !== null} onPress={send} style={[st.sendBtn, compact && { width: '100%' }, { opacity: busy ? 0.6 : 1 }]}>
-            <LinearGradient colors={['#8B7CFF', '#6554E8']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+            <LinearGradient colors={[colors.primaryFill, colors.primaryFill]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
             <Send size={15} color="#FFF" /><Text style={{ color: '#FFF', fontWeight: '800' }}>{busy === 'send' ? 'Sending…' : 'Send payment link'}</Text>
           </Pressable>}
         </View>
@@ -982,12 +983,12 @@ function CreateDocumentModal({
                             {
                               backgroundColor: active
                                 ? isDark
-                                  ? 'rgba(124,111,255,0.18)'
-                                  : 'rgba(124,111,255,0.10)'
+                                  ? colors.infoDim
+                                  : colors.infoDim
                                 : pressed
                                   ? isDark
                                     ? 'rgba(255,255,255,0.05)'
-                                    : 'rgba(103,86,187,0.06)'
+                                    : colors.infoDim
                                   : 'transparent',
                             },
                             Platform.OS === 'web' ? ({ cursor: 'pointer' } as any) : null,
@@ -998,7 +999,7 @@ function CreateDocumentModal({
                               st.suggestAvatar,
                               {
                                 backgroundColor:
-                                  client.kind === 'medical' ? 'rgba(51, 95, 144, 0.14)' : 'rgba(124,111,255,0.16)',
+                                  client.kind === 'medical' ? colors.infoDim : colors.infoDim,
                               },
                             ]}
                           >
@@ -1257,7 +1258,7 @@ function DocumentDetailModal({
           </View>
 
           <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
-            <View style={[st.billHero, { borderColor: colors.border, backgroundColor: isDark ? 'rgba(124,111,255,0.16)' : '#F7F5FF' }]}>
+            <View style={[st.billHero, { borderColor: colors.border, backgroundColor: isDark ? colors.infoDim : '#F7F5FF' }]}>
               <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14 }}>
                 <View style={{ flex: 1, minWidth: 0 }}>
                   <View style={[st.billIcon, { backgroundColor: typeMeta.bg }]}>
@@ -1365,11 +1366,11 @@ const st = StyleSheet.create({
   heroOrb: { position: 'absolute', width: 220, height: 220, borderRadius: 110, right: -60, top: -90 },
   heroTop: { flexDirection: 'row', alignItems: 'flex-start', gap: 18 },
   heroKickerRow: { flexDirection: 'row', alignItems: 'center', gap: 9, marginBottom: 12 },
-  heroIcon: { width: 34, height: 34, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: '#7567F1', shadowColor: '#6554E8', shadowOpacity: 0.35, shadowRadius: 12, shadowOffset: { width: 0, height: 5 } },
+  heroIcon: { width: 34, height: 34, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: brandColors.amber, shadowColor: brandColors.ink, shadowOpacity: 0.35, shadowRadius: 12, shadowOffset: { width: 0, height: 5 } },
   heroKicker: { fontSize: 10, fontWeight: '900', letterSpacing: 1.1 },
-  heroTitle: { fontSize: 24, lineHeight: 30, fontWeight: '900', letterSpacing: -0.7, maxWidth: 580 },
+  heroTitle: { fontSize: workspaceUi.pageTitle.fontSize, lineHeight: workspaceUi.pageTitle.lineHeight, fontWeight: workspaceUi.pageTitle.fontWeight, letterSpacing: -0.7, maxWidth: 580 },
   heroSubtitle: { fontSize: 13, lineHeight: 19, marginTop: 7, maxWidth: 570 },
-  heroAction: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#6F5FEA', borderRadius: 15, paddingHorizontal: 16, paddingVertical: 13, overflow: 'hidden' },
+  heroAction: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: brandColors.red, borderRadius: 15, paddingHorizontal: 16, paddingVertical: 13, overflow: 'hidden' },
   heroActionText: { color: '#FFFFFF', fontSize: 13, fontWeight: '900' },
   metricGrid: { flexDirection: 'row', gap: 10, marginTop: 24 },
   metricGridCompact: { flexWrap: 'wrap', marginTop: 20 },
@@ -1379,13 +1380,13 @@ const st = StyleSheet.create({
   metricLabel: { fontSize: 9, fontWeight: '800', letterSpacing: 0.3, textTransform: 'uppercase' },
   metricValue: { fontSize: 15, fontWeight: '900', letterSpacing: -0.25, marginTop: 2 },
   sectionSwitch: { flexDirection: 'row', padding: 4, borderWidth: 1, borderRadius: 16, marginBottom: 22, gap: 4 },
-  sectionSwitchBtn: { flex: 1, minHeight: 44, borderRadius: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  sectionSwitchBtn: { flex: 1, minHeight: 44, borderRadius: workspaceUi.controlRadius, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   sectionHeadingRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
   sectionHeading: { fontSize: 19, fontWeight: '900', letterSpacing: -0.45 },
   sectionSub: { fontSize: 12, marginTop: 3 },
   searchShell: { height: 48, borderRadius: 15, borderWidth: 1, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, gap: 10, marginBottom: 14 },
   searchInput: { flex: 1, height: '100%', fontSize: 14, outlineStyle: 'none' } as any,
-  clientCard: { borderWidth: 1, borderRadius: 20, overflow: 'hidden' },
+  clientCard: { borderWidth: 1, borderRadius: workspaceUi.cardRadius, overflow: 'hidden' },
   clientSummary: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 },
   schoolAvatar: { width: 46, height: 46, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
   schoolName: { fontSize: 15, fontWeight: '900', letterSpacing: -0.2 },
@@ -1402,11 +1403,11 @@ const st = StyleSheet.create({
   reminderEditor: { borderWidth: 1, borderRadius: 16, padding: 12, marginTop: 14, gap: 10 },
   reminderToggleRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   cardActions: { flexDirection: 'row', gap: 8, justifyContent: 'flex-end', marginTop: 2 },
-  sendBtn: { position: 'relative', overflow: 'hidden', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 13, borderRadius: 14 },
+  sendBtn: { position: 'relative', overflow: 'hidden', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 13, borderRadius: workspaceUi.controlRadius },
   badge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
   badgeText: { fontSize: 10, fontWeight: '800', letterSpacing: 0.3, textTransform: 'uppercase' },
   segWrap: { flexDirection: 'row', borderWidth: 1, borderRadius: 12, padding: 3, gap: 3 },
-  segBtn: { flex: 1, paddingVertical: 9, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
+  segBtn: { flex: 1, paddingVertical: 9, borderRadius: workspaceUi.controlRadius, alignItems: 'center', justifyContent: 'center' },
   segText: { fontSize: 12, fontWeight: '700' },
   kvRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 4 },
   kvLabel: { fontSize: 13 },
@@ -1425,11 +1426,11 @@ const st = StyleSheet.create({
   billHeroTotal: { borderTopWidth: 1, marginTop: 16, paddingTop: 14, alignItems: 'flex-end' },
   billHeroTotalLabel: { fontSize: 10, fontWeight: '900', letterSpacing: 1, textTransform: 'uppercase' },
   billHeroAmount: { fontSize: 28, fontWeight: '900', letterSpacing: -0.8, marginTop: 3 },
-  partyPanel: { borderWidth: 1, borderRadius: 18, padding: 16, marginTop: 14 },
+  partyPanel: { borderWidth: 1, borderRadius: workspaceUi.cardRadius, padding: workspaceUi.cardPadding, marginTop: 14 },
   gstinChip: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6, marginTop: 12 },
   lineItemPremium: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderRadius: 16, padding: 12, marginBottom: 9 },
   lineItemIndex: { width: 28, height: 28, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-  totalPanel: { borderWidth: 1, borderRadius: 18, padding: 14 },
+  totalPanel: { borderWidth: 1, borderRadius: workspaceUi.cardRadius, padding: 14 },
   totalDivider: { height: 1, marginVertical: 8 },
   modalRoot: { flex: 1, justifyContent: 'flex-end' },
   modalBackdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.55)' },
@@ -1449,11 +1450,11 @@ const st = StyleSheet.create({
     padding: 18,
     borderBottomWidth: 1,
   },
-  modalTitle: { fontSize: 18, fontWeight: '800', letterSpacing: -0.3 },
+  modalTitle: { fontSize: workspaceUi.sectionTitle.fontSize, fontWeight: workspaceUi.sectionTitle.fontWeight, letterSpacing: -0.3 },
   fieldLabel: { fontSize: 12, fontWeight: '700', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
   suggestPanel: {
     borderWidth: 1,
-    borderRadius: 14,
+    borderRadius: workspaceUi.cardRadius,
     overflow: 'hidden',
     marginBottom: 16,
     maxHeight: 260,
@@ -1488,23 +1489,23 @@ const st = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 10,
     paddingVertical: 5,
-    borderRadius: 8,
+    borderRadius: workspaceUi.controlRadius,
     borderWidth: 1,
   },
-  itemCard: { borderWidth: 1, borderRadius: 14, padding: 12, marginBottom: 10, gap: 2 },
+  itemCard: { borderWidth: 1, borderRadius: workspaceUi.cardRadius, padding: 12, marginBottom: 10, gap: 2 },
   outlineBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
     paddingVertical: 13,
-    borderRadius: 14,
+    borderRadius: workspaceUi.controlRadius,
     borderWidth: 1.5,
   },
   iconBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
+    width: 44,
+    height: 44,
+    borderRadius: workspaceUi.controlRadius,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',

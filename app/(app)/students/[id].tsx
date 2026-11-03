@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../../src/constants/layout';
 import React, { useEffect, useState, useMemo } from 'react';
 import {
   View,
@@ -309,7 +310,7 @@ const createStyles = (P: ReturnType<typeof palette>) => StyleSheet.create({
   },
   card: {
     backgroundColor: P.surface,
-    borderRadius: D.radius.lg,
+    borderRadius: workspaceUi.cardRadius,
     borderWidth: 1,
     borderColor: P.border,
     overflow: 'hidden',

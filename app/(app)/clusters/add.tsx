@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../../src/constants/layout';
 import { navigateBack } from '../../../src/utils/navigation';
 import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, TextInput, ScrollView, Pressable, ActivityIndicator, Alert } from 'react-native';
@@ -297,11 +298,11 @@ const styles = StyleSheet.create({
   label: { fontSize: 14, fontWeight: '600', marginBottom: 8, marginTop: 8 },
   input: {
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: workspaceUi.controlRadius,
     paddingHorizontal: 12,
     paddingVertical: 10,
     marginBottom: 8,
-    fontSize: 15,
+    fontSize: 16,
   },
   testSection: {
     marginVertical: 20,
@@ -309,14 +310,14 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
   },
-  sectionTitle: { fontSize: 16, fontWeight: '700', marginBottom: 4 },
+  sectionTitle: { fontSize: workspaceUi.sectionTitle.fontSize, fontWeight: workspaceUi.sectionTitle.fontWeight, marginBottom: 4 },
   sectionDesc: { fontSize: 13, marginBottom: 16 },
   testResults: { marginBottom: 16, padding: 12, backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: 8 },
-  testBtn: { padding: 12, borderRadius: 8, alignItems: 'center' },
+  testBtn: { padding: 12, borderRadius: workspaceUi.controlRadius, alignItems: 'center' },
   testBtnText: { fontWeight: '600' },
   saveBtn: {
     padding: 16,
-    borderRadius: 12,
+    borderRadius: workspaceUi.controlRadius,
     alignItems: 'center',
     marginTop: 30,
     marginBottom: 50,

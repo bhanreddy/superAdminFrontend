@@ -2,6 +2,7 @@ import { MotionPressable } from './MotionPressable';
 import React from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { getCardTone, type CardTone } from '../../constants/experienceColors';
+import { workspaceTones } from '../../constants/workspaceDesign';
 import { View, StyleSheet, ViewProps, Pressable, Platform } from 'react-native';
 import { useTheme, clayStyle } from '../../contexts/ThemeContext';
 import { borderRadius, theme } from '../../constants/theme';
@@ -21,11 +22,12 @@ export const Card = React.memo(function Card({
   onPress,
   noPadding = false,
   tone,
-  material = 'soft',
+  material = 'neutral',
   ...props
 }: CardProps) {
-  const { colors, clayShadows, isDark } = useTheme();
-  const paint = tone ? getCardTone(tone, isDark) : undefined;
+  const { colors, clayShadows, isDark, workspaceModule = 'overview' } = useTheme();
+  const resolvedTone = tone || (material === 'neutral' ? workspaceTones[workspaceModule] : undefined);
+  const paint = resolvedTone ? getCardTone(resolvedTone, isDark) : undefined;
   const materialStyle = paint && material !== 'neutral' && {
     backgroundColor: material === 'panel' ? paint.panel : paint.surface,
     borderColor: paint.border,

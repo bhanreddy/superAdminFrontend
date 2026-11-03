@@ -1,3 +1,4 @@
+import { workspaceUi } from '../../../../src/constants/layout';
 import { navigateBack } from '../../../../src/utils/navigation';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
@@ -1134,7 +1135,7 @@ const styles = StyleSheet.create({
   // Header actions
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   iconBtn: {
-    width: 36, height: 36, borderRadius: 10,
+    width: 44, height: 44, borderRadius: workspaceUi.controlRadius,
     alignItems: 'center', justifyContent: 'center', borderWidth: 1,
   },
   menuDropdown: {
@@ -1207,7 +1208,7 @@ const styles = StyleSheet.create({
 
   // Chips
   chipRow: { flexDirection: 'row', gap: 8, marginTop: 8, flexWrap: 'wrap' },
-  chip: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8, borderWidth: 1 },
+  chip: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: workspaceUi.chipRadius, borderWidth: 1 },
   chipText: { fontSize: 11, fontWeight: '700' },
 
   // Note block
@@ -1235,7 +1236,7 @@ const styles = StyleSheet.create({
 
   // Reference card
   refCard: {
-    borderRadius: 20, borderWidth: 1, overflow: 'hidden', marginTop: 8,
+    borderRadius: workspaceUi.cardRadius, borderWidth: 1, overflow: 'hidden', marginTop: 8,
   },
   refCardHeader: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
@@ -1253,7 +1254,7 @@ const styles = StyleSheet.create({
   copyValue: { fontSize: 12, fontFamily: 'monospace', fontWeight: '700', maxWidth: width * 0.45 },
   copyIcon: { width: 26, height: 26, borderRadius: 7, alignItems: 'center', justifyContent: 'center' },
   viewDetailsBtn: {
-    margin: 14, marginTop: 10, padding: 14, borderRadius: 14, borderWidth: 1,
+    margin: 14, marginTop: 10, padding: 14, borderRadius: workspaceUi.controlRadius, borderWidth: 1,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
   },
   viewDetailsText: { fontSize: 14, fontWeight: '700' },

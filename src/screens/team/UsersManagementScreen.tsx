@@ -1,3 +1,6 @@
+import { ScreenHeader } from '../../components/ui/ScreenHeader';
+import { Button } from '../../components/ui/Button';
+import { workspaceUi } from '../../constants/layout';
 import { brandColors, experienceColors } from '../../constants/experienceColors';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
@@ -479,32 +482,11 @@ export default function UsersManagementScreen() {
       <View style={[styles.root, { backgroundColor: colors.background }]}>
         <ScrollView contentContainerStyle={[styles.content, { paddingBottom: bottomTabPad }]}>
           {/* Header */}
-          <View style={styles.topHeader}>
-            <View style={{ flexGrow: 1, flexShrink: 1, flexBasis: 300, minWidth: 0 }}>
-              <View style={styles.titleBadgeRow}>
-                <View
-                  style={[
-                    styles.badge,
-                    { backgroundColor: 'rgba(99, 102, 241, 0.12)', borderColor: 'rgba(99, 102, 241, 0.3)' },
-                  ]}
-                >
-                  <Users size={14} color={brandColors.violet} />
-                  <Text style={[styles.badgeText, { color: brandColors.violet }]}>OPERATIONAL DELEGATION & TEAM</Text>
-                </View>
-              </View>
-              <Text style={[styles.pageTitle, { color: colors.textPrimary }]}>Employee Hierarchy & Accountability</Text>
-              <Text style={[styles.pageSub, { color: colors.textSecondary }]}>
-                Supervise teams, assign routine responsibilities, prevent orphaning of work, and enforce clear reporting lines.
-              </Text>
-            </View>
-
-            {can(PERMISSIONS.USERS_CREATE) && (
-              <Pressable accessibilityRole="button" style={[styles.createBtn, { backgroundColor: colors.primaryFill }]} onPress={openCreateUser}>
-                <UserPlus size={16} color="#FFFFFF" />
-                <Text style={styles.createBtnText}>Add Employee</Text>
-              </Pressable>
-            )}
-          </View>
+          <ScreenHeader
+            title="Employee Hierarchy & Accountability"
+            subtitle="Manage people, reporting lines, and delegated responsibilities."
+            rightAction={can(PERMISSIONS.USERS_CREATE) && <Button title="Add Employee" onPress={openCreateUser} />}
+          />
 
           {/* View Mode Switcher: Directory vs Hierarchy */}
           <View style={styles.tabSwitcher}>
@@ -639,7 +621,7 @@ export default function UsersManagementScreen() {
                             style={[
                               styles.statusBadge,
                               {
-                                backgroundColor: isActive ? 'rgba(51, 95, 144, 0.12)' : 'rgba(239, 68, 68, 0.12)',
+                                backgroundColor: isActive ? colors.infoDim : colors.errorDim,
                               },
                             ]}
                           >
@@ -745,8 +727,8 @@ export default function UsersManagementScreen() {
                                 {
                                   borderColor: colors.border,
                                   backgroundColor: isActive
-                                    ? 'rgba(239, 68, 68, 0.08)'
-                                    : 'rgba(51, 95, 144, 0.08)',
+                                    ? colors.errorDim
+                                    : colors.infoDim,
                                 },
                               ]}
                               onPress={() => {
@@ -781,10 +763,10 @@ export default function UsersManagementScreen() {
             <View style={styles.hierarchyContainer}>
               {/* Legacy Unassigned Alert Banner */}
               {hierarchyData?.legacyUnmanagedCount > 0 && (
-                <View style={[styles.alertBanner, { backgroundColor: 'rgba(255, 159, 10, 0.12)', borderColor: 'rgba(255, 159, 10, 0.3)' }]}>
-                  <AlertTriangle size={20} color="#FF9F0A" />
+                <View style={[styles.alertBanner, { backgroundColor: colors.warningDim, borderColor: colors.warningDim }]}>
+                  <AlertTriangle size={20} color={colors.warning} />
                   <View style={{ flex: 1 }}>
-                    <Text style={[styles.alertTitle, { color: '#FF9F0A' }]}>
+                    <Text style={[styles.alertTitle, { color: colors.warning }]}>
                       {hierarchyData.legacyUnmanagedCount} Legacy Employee(s) Without Reporting Manager
                     </Text>
                     <Text style={[styles.alertSub, { color: colors.textSecondary }]}>
@@ -822,7 +804,7 @@ export default function UsersManagementScreen() {
                             {f.employee_id} {f.job_title ? `• ${f.job_title}` : '• Founder / Executive'}
                           </Text>
                         </View>
-                        <View style={[styles.statusBadge, { backgroundColor: 'rgba(255, 45, 85, 0.12)' }]}>
+                        <View style={[styles.statusBadge, { backgroundColor: colors.errorDim }]}>
                           <Text style={[styles.statusText, { color: '#FF2D55' }]}>ROOT</Text>
                         </View>
                       </View>
@@ -873,7 +855,7 @@ export default function UsersManagementScreen() {
                               {mgr.employee_id} • {mgr.job_title || ROLE_LABELS[mgr.role as Role] || mgr.role}
                             </Text>
                           </View>
-                          <View style={[styles.teamCountBadge, { backgroundColor: 'rgba(10, 132, 255, 0.12)' }]}>
+                          <View style={[styles.teamCountBadge, { backgroundColor: colors.infoDim }]}>
                             <Text style={[styles.teamCountText, { color: brandColors.red }]}>
                               {subordinates.length} Direct Report{subordinates.length === 1 ? '' : 's'}
                             </Text>
@@ -897,7 +879,7 @@ export default function UsersManagementScreen() {
                                 onPress={() => openUserDetails(sub)}
                               >
                                 <View style={styles.subLeft}>
-                                  <ArrowRight size={14} color="#64D2FF" />
+                                  <ArrowRight size={14} color={colors.info} />
                                   <View>
                                     <Text style={[styles.subName, { color: colors.textPrimary }]}>{sub.full_name}</Text>
                                     <Text style={[styles.subMeta, { color: colors.textSecondary }]}>
@@ -906,7 +888,7 @@ export default function UsersManagementScreen() {
                                   </View>
                                 </View>
                                 <View style={styles.subRight}>
-                                  <View style={[styles.schoolPill, { backgroundColor: 'rgba(99, 102, 241, 0.1)' }]}>
+                                  <View style={[styles.schoolPill, { backgroundColor: colors.infoDim }]}>
                                     <School size={11} color={brandColors.violet} />
                                     <Text style={[styles.schoolPillText, { color: brandColors.violet }]}>
                                       {sub.assigned_schools_count || 0} School{sub.assigned_schools_count === 1 ? '' : 's'}
@@ -968,8 +950,8 @@ export default function UsersManagementScreen() {
               {(hierarchyData?.unassignedExecutives || []).length > 0 && (
                 <View style={styles.hierarchySection}>
                   <View style={styles.sectionHeaderRow}>
-                    <AlertTriangle size={18} color="#FF9F0A" />
-                    <Text style={[styles.sectionTitle, { color: '#FF9F0A' }]}>
+                    <AlertTriangle size={18} color={colors.warning} />
+                    <Text style={[styles.sectionTitle, { color: colors.warning }]}>
                       Unassigned Employees ({hierarchyData.unassignedExecutives.length})
                     </Text>
                   </View>
@@ -979,11 +961,11 @@ export default function UsersManagementScreen() {
                         key={sub.id}
                         style={[
                           styles.treeNodeCard,
-                          { backgroundColor: isDark ? 'rgba(255, 159, 10, 0.05)' : '#FFFBEB', borderColor: '#FF9F0A' },
+                          { backgroundColor: isDark ? colors.warningDim : '#FFFBEB', borderColor: colors.warning },
                         ]}
                       >
                         <View style={styles.treeNodeTop}>
-                          <View style={[styles.avatarWrap, { backgroundColor: '#FF9F0A' }]}>
+                          <View style={[styles.avatarWrap, { backgroundColor: colors.warning }]}>
                             <Text style={styles.avatarText}>{(sub.full_name || 'U').slice(0, 2).toUpperCase()}</Text>
                           </View>
                           <View style={{ flex: 1 }}>
@@ -1152,7 +1134,7 @@ export default function UsersManagementScreen() {
                     ))}
                   </View>
                   {eligibleManagers.length === 0 && formRole !== 'FOUNDER' && formRole !== 'SUPER_ADMIN' && (
-                    <Text style={{ fontSize: 11, color: '#FF9F0A', marginTop: 4 }}>
+                    <Text style={{ fontSize: 11, color: colors.warning, marginTop: 4 }}>
                       ⚠️ No eligible active managers found for this role. Create or activate a {formRole.replace('_EXECUTIVE', '_MANAGER')} or select Founder.
                     </Text>
                   )}
@@ -1283,7 +1265,7 @@ export default function UsersManagementScreen() {
                   </Text>
                   <View style={styles.permissionChipsWrap}>
                     {effectivePermissions.map((perm) => (
-                      <View key={perm} style={[styles.permChip, { borderColor: colors.border, backgroundColor: isDark ? 'rgba(99, 102, 241, 0.1)' : '#EEF2FF' }]}>
+                      <View key={perm} style={[styles.permChip, { borderColor: colors.border, backgroundColor: isDark ? colors.infoDim : '#EEF2FF' }]}>
                         <CheckSquare size={12} color={brandColors.violet} />
                         <Text style={styles.permChipText}>{perm}</Text>
                       </View>
@@ -1335,7 +1317,7 @@ export default function UsersManagementScreen() {
                   ) : (
                     <>
                       {/* Impact Warning */}
-                      <View style={[styles.impactBox, { backgroundColor: 'rgba(239, 68, 68, 0.08)', borderColor: 'rgba(239, 68, 68, 0.2)' }]}>
+                      <View style={[styles.impactBox, { backgroundColor: colors.errorDim, borderColor: colors.errorDim }]}>
                         <AlertTriangle size={20} color={brandColors.red} />
                         <View style={{ flex: 1 }}>
                           <Text style={[styles.impactTitle, { color: brandColors.red }]}>
@@ -1517,7 +1499,7 @@ export default function UsersManagementScreen() {
                         style={[
                           styles.schoolCheckRow,
                           isChecked && {
-                            backgroundColor: isDark ? 'rgba(99, 102, 241, 0.15)' : '#e0e7ff',
+                            backgroundColor: isDark ? colors.infoDim : '#e0e7ff',
                             borderColor: colors.primary,
                           },
                           !isChecked && { borderColor: colors.border },
@@ -1728,7 +1710,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   badgeText: { fontSize: 11, fontWeight: '700', letterSpacing: 0.5 },
-  pageTitle: { fontSize: 24, fontWeight: '800', letterSpacing: -0.5, marginBottom: 4 },
+  pageTitle: { fontSize: workspaceUi.pageTitle.fontSize, fontWeight: workspaceUi.pageTitle.fontWeight, letterSpacing: -0.5, marginBottom: 4 },
   pageSub: { fontSize: 13, lineHeight: 18, maxWidth: 580 },
   createBtn: {
     flexDirection: 'row',
@@ -1736,7 +1718,7 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingHorizontal: 16,
     paddingVertical: 10,
-    borderRadius: 12,
+    borderRadius: workspaceUi.controlRadius,
   },
   createBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
 
@@ -1751,7 +1733,7 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingHorizontal: 16,
     paddingVertical: 10,
-    borderRadius: 12,
+    borderRadius: workspaceUi.controlRadius,
     borderWidth: 1,
   },
   tabBtnText: { fontSize: 13, fontWeight: '700' },
@@ -1779,7 +1761,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     height: 40,
   },
-  searchInput: { flex: 1, fontSize: 13 },
+  searchInput: { flex: 1, fontSize: 16 },
   filterPills: { flexDirection: 'row', gap: 8 },
   filterPill: {
     paddingHorizontal: 12,
@@ -1809,9 +1791,9 @@ const styles = StyleSheet.create({
     width: Platform.OS === 'web' ? '32%' : '100%',
     minWidth: 290,
     flexGrow: 1,
-    borderRadius: 18,
+    borderRadius: workspaceUi.cardRadius,
     borderWidth: 1,
-    padding: 16,
+    padding: workspaceUi.cardPadding,
   },
   userCardTop: {
     flexDirection: 'row',
@@ -1874,7 +1856,7 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingVertical: 6,
     paddingHorizontal: 8,
-    borderRadius: 8,
+    borderRadius: workspaceUi.controlRadius,
     borderWidth: 1,
   },
   cardActionText: { fontSize: 11, fontWeight: '700' },
@@ -1883,22 +1865,22 @@ const styles = StyleSheet.create({
   hierarchyContainer: { gap: 24 },
   hierarchySection: { gap: 12 },
   sectionHeaderRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
-  sectionTitle: { fontSize: 16, fontWeight: '800' },
+  sectionTitle: { fontSize: workspaceUi.sectionTitle.fontSize, fontWeight: workspaceUi.sectionTitle.fontWeight },
   hierarchyGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },
   treeNodeCard: {
     width: Platform.OS === 'web' ? '32%' : '100%',
     minWidth: 280,
     flexGrow: 1,
-    borderRadius: 16,
+    borderRadius: workspaceUi.cardRadius,
     borderWidth: 1.5,
-    padding: 16,
+    padding: workspaceUi.cardPadding,
   },
   treeNodeTop: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 8 },
   treeScopeText: { fontSize: 12, lineHeight: 16 },
   managerTreeCard: {
-    borderRadius: 18,
+    borderRadius: workspaceUi.cardRadius,
     borderWidth: 1,
-    padding: 18,
+    padding: workspaceUi.cardPadding,
     gap: 14,
     marginBottom: 12,
   },
@@ -1916,7 +1898,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 12,
-    borderRadius: 12,
+    borderRadius: workspaceUi.cardRadius,
     borderWidth: 1,
   },
   subLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
@@ -1939,7 +1921,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 6,
     paddingVertical: 8,
-    borderRadius: 8,
+    borderRadius: workspaceUi.controlRadius,
     marginTop: 10,
   },
   assignManagerQuickBtnText: { color: '#FFFFFF', fontSize: 11.5, fontWeight: '700' },
@@ -1958,8 +1940,8 @@ const styles = StyleSheet.create({
 
   // Details Modal styles
   detailsCard: {
-    padding: 16,
-    borderRadius: 12,
+    padding: workspaceUi.cardPadding,
+    borderRadius: workspaceUi.cardRadius,
     borderWidth: 1,
     gap: 10,
   },
@@ -1995,7 +1977,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     padding: 10,
-    borderRadius: 10,
+    borderRadius: workspaceUi.cardRadius,
     borderWidth: 1,
   },
   impactCountNum: { fontSize: 18, fontWeight: '800' },
@@ -2013,7 +1995,7 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 540,
     maxHeight: '90%',
-    borderRadius: 20,
+    borderRadius: workspaceUi.cardRadius,
     borderWidth: 1,
     overflow: 'hidden',
   },
@@ -2025,16 +2007,16 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.08)',
   },
-  modalTitle: { fontSize: 18, fontWeight: '800' },
+  modalTitle: { fontSize: workspaceUi.sectionTitle.fontSize, fontWeight: workspaceUi.sectionTitle.fontWeight },
   modalSub: { fontSize: 12, marginTop: 2 },
   modalForm: { padding: 20 },
   formLabel: { fontSize: 12, fontWeight: '700', marginBottom: 6, marginTop: 12 },
   formInput: {
     height: 42,
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: workspaceUi.controlRadius,
     paddingHorizontal: 12,
-    fontSize: 13,
+    fontSize: 16,
   },
   rolePickerWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4 },
   roleOption: {
@@ -2055,14 +2037,14 @@ const styles = StyleSheet.create({
   cancelBtn: {
     paddingHorizontal: 16,
     paddingVertical: 10,
-    borderRadius: 10,
+    borderRadius: workspaceUi.controlRadius,
     borderWidth: 1,
   },
   cancelBtnText: { fontSize: 13, fontWeight: '600' },
   submitBtn: {
     paddingHorizontal: 20,
     paddingVertical: 10,
-    borderRadius: 10,
+    borderRadius: workspaceUi.controlRadius,
   },
   submitBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
 
