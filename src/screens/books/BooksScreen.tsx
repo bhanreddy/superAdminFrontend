@@ -9,8 +9,6 @@ import {
   Text,
   ScrollView,
   StyleSheet,
-  Platform,
-  Share,
   useWindowDimensions,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -36,6 +34,7 @@ import {
 import { useBooksAccess as useAuth } from './BooksCompanyContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import BooksDateFilter from './BooksDateFilter';
+import BankMatchDialog from './BankMatchDialog';
 import * as api from '../../api/books';
 import {
   Action,
@@ -55,7 +54,7 @@ import EntityEditor, { EntityType, JournalEditor } from './EntityEditor';
 import FinanceConnections from './FinanceConnections';
 import ReportsView, { Kpis, CashChart } from './ReportsView';
 import LedgerView from './LedgerView';
-import { toCsv } from './csv';
+import { saveCsvText } from './export';
 const groups = [
   { label: 'OVERVIEW', items: [['home', 'Dashboard', BookOpen]] },
   {
@@ -127,7 +126,7 @@ const descriptions: Record<string, string> = {
   vendors: 'The people and businesses you purchase from.',
   items: 'Products, services, prices, and stock on hand.',
   payments: 'Recorded receipts and payments across your books.',
-  banking: 'Import a statement and match recorded payments.',
+  banking: 'Import statements and match them to posted entries.',
   accounts: 'A single ledger behind every posted transaction.',
   journals: 'Post balanced accounting adjustments.',
   reports: 'Understand earnings, cash, taxes, and outstanding balances.',
@@ -167,7 +166,6 @@ export default function BooksScreen() {
     [contacts, setContacts] = useState<api.Contact[]>([]),
     [items, setItems] = useState<api.Item[]>([]),
     [accounts, setAccounts] = useState<api.Account[]>([]),
-    [payments, setPayments] = useState<api.Payment[]>([]),
     [projects, setProjects] = useState<any[]>([]);
   const [rows, setRows] = useState<any[]>([]),
     [total, setTotal] = useState(0),
@@ -179,6 +177,9 @@ export default function BooksScreen() {
     [search, setSearch] = useState(''),
     [status, setStatus] = useState('');
   const [dates, setDates] = useState({ from: financialStart(), to: api.today() });
+  const [statementDates, setStatementDates] = useState({ from: '', to: '' });
+  const [statementAccount, setStatementAccount] = useState('');
+  const [bankMatch, setBankMatch] = useState<api.BankTransaction | null>(null);
   const [editor, setEditor] = useState<{
       kind: api.DocumentKind;
       document?: api.BookDocument;
@@ -196,6 +197,8 @@ export default function BooksScreen() {
     run: () => Promise<any>;
   } | null>(null);
   const [transactionType, setTransactionType] = useState('all');
+  const [exporting, setExporting] = useState(false);
+  const exportLock = useRef(false);
   const [journalDetail, setJournalDetail] = useState<any>(null);
   const sequence = useRef(0);
   const cache = useRef<any>(null);
@@ -204,6 +207,8 @@ export default function BooksScreen() {
       groups.flatMap((g) => g.items).find((a) => a[0] === module)?.[1] ||
         'Books',
     );
+  const isBanking = module === 'banking';
+  const paged = isDoc || isBanking;
   const load = useCallback(async () => {
     const seq = ++sequence.current;
     if (!allowedModules.includes(module)) { setRows([]); setReport(null); setLoading(false); return; }
@@ -228,6 +233,15 @@ export default function BooksScreen() {
         }>('/documents', { kind: module, search, status, page });
         list = result.data;
         count = result.total;
+      } else if (isBanking) {
+        const result = await api.get<{ data: api.BankTransaction[]; total: number }>('/bank-transactions', {
+          page, search, status, account_code: statementAccount, ...statementDates,
+        });
+        if (seq !== sequence.current) return;
+        const lastPage = Math.max(1, Math.ceil(result.total / 50));
+        if (page > lastPage) { setPage(lastPage); return; }
+        list = result.data;
+        count = result.total;
       } else if (['home', 'reports'].includes(module))
         newReport = await api.get<api.Report | api.DashboardReport>(module === 'home' ? '/dashboard' : '/reports', dates);
       else if (module === 'customers' || module === 'vendors')
@@ -246,7 +260,6 @@ export default function BooksScreen() {
       setContacts(cs);
       setItems(its);
       setAccounts(acs);
-      setPayments(pays);
       setProjects(projs);
       setRows(list);
       setTotal(count);
@@ -256,11 +269,12 @@ export default function BooksScreen() {
     } finally {
       if (seq === sequence.current) setLoading(false);
     }
-  }, [module, isDoc, search, status, page, dates, grantKey]);
+  }, [module, isDoc, isBanking, search, status, page, dates, statementDates, statementAccount, grantKey]);
   useEffect(() => {
     sequence.current++; cache.current = null;
     setRows([]); setReport(null); setBootstrap(null);
-    setContacts([]); setItems([]); setAccounts([]); setPayments([]); setProjects([]);
+    setContacts([]); setItems([]); setAccounts([]); setProjects([]);
+    setBankMatch(null); setStatementAccount('');
     setDetail(null); setEditor(null); setEntity(null); setJournal(false); setLedger(null); setJournalDetail(null); setConfirm(null);
     if (!allowedModules.includes(module)) setModule(allowedModules[0] || '');
   }, [grantKey]);
@@ -329,38 +343,22 @@ export default function BooksScreen() {
     }
   }
   async function exportCsv() {
+    if (exportLock.current || !allowed('data', 'export') || !allowed(module)) return;
+    exportLock.current = true;
+    setExporting(true); setError(''); setNotice('');
     try {
-      const data = isDoc
-        ? rows.map((d) => ({
-            number: d.number,
-            type: d.kind,
-            date: d.date,
-            status: d.status,
-            contact: d.contact_snapshot.name,
-            subtotal_inr: api.decimal(d.subtotal),
-            tax_inr: api.decimal(d.tax),
-            total_inr: api.decimal(d.total),
-            balance_inr: api.decimal(d.balance),
-          }))
-        : module === 'accounts' ? filtered.map(a => ({
-            organization: bootstrap?.settings.organization_name, currency: 'INR', code: a.code, name: a.name, type: a.type, from: dates.from, to: dates.to,
-            opening_inr: api.decimal(a.opening_balance), period_debit_inr: api.decimal(a.period_debit),
-            period_credit_inr: api.decimal(a.period_credit), closing_inr: api.decimal(a.balance),
-          })) : filtered;
-      if (!data.length) throw new Error('There are no rows to export.');
-      const csv = toCsv(data);
-      if (Platform.OS === 'web') {
-        const url = URL.createObjectURL(
-          new Blob([csv], { type: 'text/csv;charset=utf-8' }),
-        );
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `books-${module}-${api.today()}.csv`;
-        a.click();
-        URL.revokeObjectURL(url);
-      } else await Share.share({ message: csv, title: `Books ${title}` });
+      const csv = await api.exportCsv({ module, search,
+        ...(paged ? { status } : {}),
+        ...(['payments', 'recurring'].includes(module) ? { transaction_type: transactionType } : {}),
+        ...(module === 'accounts' ? dates : {}),
+        ...(isBanking ? { ...statementDates, account_code: statementAccount } : {}),
+      });
+      await saveCsvText(csv, `books-${booksCompany?.code || 'company'}-${module}-${api.today()}.csv`);
+      setNotice(`${title} CSV prepared. All matching records are included across every page.`);
     } catch (e) {
       setError(api.message(e));
+    } finally {
+      exportLock.current = false; setExporting(false);
     }
   }
   const value = (v: unknown) => (
@@ -373,7 +371,7 @@ export default function BooksScreen() {
       {String(v || '—').slice(0, 10)}
     </Text>
   );
-  const filtered = isDoc
+  const filtered = paged
     ? rows
     : rows
         .filter(
@@ -591,30 +589,29 @@ export default function BooksScreen() {
       {
         key: 'status',
         label: 'Status',
-        render: (r: any) => (
-          <Badge value={r.matched_payment_id ? 'matched' : 'unmatched'} />
-        ),
+        render: (r: api.BankTransaction) => <Badge value={r.status} />,
       },
       {
         key: 'action',
         label: 'Action',
         width: 180,
-        render: (r: any) => (
+        render: (r: api.BankTransaction) => (
           <Action
             secondary
-            disabled={!allowed('banking', 'manage') || (!r.matched_payment_id && !allowed('payments'))}
-            label={r.matched_payment_id ? 'Unmatch' : 'Match payment'}
+            disabled={busy || !allowed('banking', 'manage') || (r.status === 'unmatched' && !allowed('payments') && !allowed('journals'))}
+            label={r.status === 'matched' ? 'Unmatch' : 'Find match'}
             onPress={() =>
-              r.matched_payment_id
+              r.status === 'matched'
                 ? setConfirm({
                     label: 'Unmatch transaction',
-                    text: 'Remove the link to the recorded payment. The payment and bank statement row will remain.',
+                    text: 'Remove the link between this statement row and the posted entry?',
                     run: () =>
                       api.put(`/bank-transactions/${r.id}/match`, {
                         payment_id: null,
+                        match_revision: r.match_revision,
                       }),
                   })
-                : setEntity({ type: 'match', initial: r })
+                : setBankMatch(r)
             }
           />
         ),
@@ -800,9 +797,9 @@ export default function BooksScreen() {
             {(isFounder || role === 'CA_LEAD') && <Action label={role === 'CA_LEAD' ? 'CA team' : 'CA access'} secondary onPress={() => router.push('/(app)/books/access' as any)} />}
             {allowed('data', 'export') && !['home', 'settings', 'documents', 'connections', 'reports'].includes(module) && (
               <Action
-                label="Export CSV"
+                label={exporting ? 'Preparing CSV…' : 'Export CSV'}
                 secondary
-                disabled={loading}
+                disabled={loading || busy || exporting}
                 icon={<Download size={14} color={colors.textSecondary} />}
                 onPress={exportCsv}
               />
@@ -994,12 +991,16 @@ export default function BooksScreen() {
                 <Action
                   label="Import statement CSV"
                   disabled={!allowed('banking', 'manage')}
-                  onPress={() => setEntity({ type: 'bank' })}
+                  onPress={() => setEntity({ type: 'bank', initial: statementAccount ? { account_code: statementAccount } : undefined })}
                 />
-                <Text style={{ color: colors.textSecondary, fontSize: 12 }}>
-                  Match statement rows to recorded payments.
-                </Text>
               </View>
+              <BooksDateFilter
+                statement
+                value={statementDates}
+                fiscalStart={financialStart(bootstrap.settings.fiscal_year_month)}
+                today={api.today()}
+                onChange={value => { setStatementDates(value); setPage(1); }}
+              />
             </>
           )}
           {module === 'recurring' && (
@@ -1033,9 +1034,24 @@ export default function BooksScreen() {
                       setSearch(v);
                       setPage(1);
                     }}
-                    placeholder="Name, number, or reference…"
+                    placeholder={isBanking ? 'Description, reference, or transaction ID…' : 'Name, number, or reference…'}
+                    maxLength={isBanking ? 100 : undefined}
                   />
                 </View>
+                {isBanking && <>
+                  <View style={{ width: 200, maxWidth: '100%' }}><Select
+                    label="Statement account"
+                    value={statementAccount}
+                    options={[{ value: '', label: 'All accounts' }, ...accounts.filter(account => account.is_cash).map(account => ({ value: account.code, label: account.name }))]}
+                    onChange={value => { setStatementAccount(value); setPage(1); }}
+                  /></View>
+                  <View style={{ width: 170, maxWidth: '100%' }}><Select
+                    label="Match status"
+                    value={status}
+                    options={[{ value: '', label: 'All statuses' }, { value: 'unmatched', label: 'Unmatched' }, { value: 'matched', label: 'Matched' }]}
+                    onChange={value => { setStatus(value); setPage(1); }}
+                  /></View>
+                </>}
                 {['payments', 'recurring'].includes(module) && (
                   <View style={{ width: 200, maxWidth: '100%' }}><Select
                     label="Transaction type"
@@ -1095,12 +1111,12 @@ export default function BooksScreen() {
                 rows={filtered}
                 onRow={onRow}
                 empty={
-                  search
+                  isBanking ? 'No statement rows match these filters.' : search
                     ? 'No matching records.'
                     : 'No records yet. Create your first record to get started.'
                 }
               />
-              {isDoc && (
+              {paged && (
                 <View style={[ui.row, { justifyContent: 'space-between' }]}>
                   <Text style={{ color: colors.textSecondary, fontSize: 12 }}>
                     {total} records · Page {page} · 50 per page
@@ -1121,14 +1137,14 @@ export default function BooksScreen() {
                   </View>
                 </View>
               )}
-              {!isDoc && (
+              {!paged && (
                 <Text style={{ color: colors.textTertiary, fontSize: 11 }}>
                   Showing {filtered.length} records
                   {['payments', 'journals'].includes(module)
                     ? ' (up to the latest 500)'
                     : module === 'activity'
                       ? ' (latest 200)'
-                      : module === 'banking' || module === 'time'
+                      : module === 'time'
                         ? ' (up to the latest 1,000)'
                         : ''}
                   .
@@ -1300,7 +1316,6 @@ export default function BooksScreen() {
           contacts={contacts}
           items={items}
           accounts={accounts}
-          payments={payments}
           projects={projects}
           document={detail || undefined}
           onClose={() => setEntity(null)}
@@ -1311,6 +1326,16 @@ export default function BooksScreen() {
           }}
         />
       )}
+      {bankMatch && <BankMatchDialog
+        key={bankMatch.id}
+        row={bankMatch}
+        onClose={() => setBankMatch(null)}
+        onSaved={() => {
+          setBankMatch(null);
+          setNotice('Statement row matched.');
+          void load();
+        }}
+      />}
       {journal && (
         <JournalEditor
           accounts={accounts}

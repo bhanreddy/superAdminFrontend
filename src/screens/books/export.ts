@@ -1,15 +1,36 @@
-import { Platform, Share } from 'react-native';
+import { Platform } from 'react-native';
 import type { Report } from '../../api/books';
 import { decimal } from '../../api/books';
 import { toCsv } from './csv';
 export async function saveCsv(rows: Record<string, unknown>[], filename: string) {
-  const csv = toCsv(rows);
+  return saveCsvText(toCsv(rows), filename);
+}
+export async function saveCsvText(csv: string, filename: string) {
+  const safeName = filename.replace(/[^a-zA-Z0-9._-]/g, '-');
+  const content = csv.startsWith('\uFEFF') ? csv : '\uFEFF' + csv;
   if (Platform.OS === 'web') {
-    const url = URL.createObjectURL(new Blob(['\uFEFF', csv], { type: 'text/csv;charset=utf-8' }));
+    const url = URL.createObjectURL(new Blob([content], { type: 'text/csv;charset=utf-8' }));
     try {
-      const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
-    } finally { URL.revokeObjectURL(url); }
-  } else await Share.share({ message: csv, title: filename });
+      const a = document.createElement('a'); a.href = url; a.download = safeName;
+      document.body.appendChild(a);
+      try { a.click(); } finally { a.remove(); }
+    } finally {
+      // Give the browser time to consume the URL before releasing it.
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+  } else {
+    const FileSystem: typeof import('expo-file-system') = require('expo-file-system');
+    const Sharing: typeof import('expo-sharing') = require('expo-sharing');
+    if (!FileSystem.cacheDirectory || !(await Sharing.isAvailableAsync()))
+      throw new Error('File sharing is unavailable on this device. Use Books in a browser to download the CSV.');
+    const directory = `${FileSystem.cacheDirectory}books-export-${Date.now()}-${Math.random().toString(36).slice(2)}/`;
+    try {
+      await FileSystem.makeDirectoryAsync(directory, { intermediates: true });
+      const uri = directory + safeName;
+      await FileSystem.writeAsStringAsync(uri, content, { encoding: FileSystem.EncodingType.UTF8 });
+      await Sharing.shareAsync(uri, { mimeType: 'text/csv', UTI: 'public.comma-separated-values-text', dialogTitle: 'Save or share Books CSV' });
+    } finally { await FileSystem.deleteAsync(directory, { idempotent: true }).catch(() => {}); }
+  }
 }
 export function reportRows(r: Report, tab: string): Record<string, unknown>[] {
   const context = { organization: r.organization_name, report: tab, from: r.from, to: r.to, basis: tab === 'Cash flow' ? 'Cash · direct method' : 'Accrual', currency: 'INR' };

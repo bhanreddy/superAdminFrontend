@@ -18,8 +18,7 @@ export type EntityType =
   | 'bank'
   | 'recurring'
   | 'payment'
-  | 'credit'
-  | 'match';
+  | 'credit';
 interface Props {
   type: EntityType;
   initial?: any;
@@ -27,7 +26,6 @@ interface Props {
   items: api.Item[];
   accounts: api.Account[];
   projects: any[];
-  payments: api.Payment[];
   document?: api.BookDocument;
   onClose: () => void;
   onSaved: () => void;
@@ -44,7 +42,6 @@ const titles: Record<EntityType, string> = {
   recurring: 'Recurring transaction',
   payment: 'Record payment',
   credit: 'Apply credit',
-  match: 'Match bank transaction',
 };
 export default function EntityEditor(p: Props) {
   const { colors } = useTheme();
@@ -92,7 +89,6 @@ export default function EntityEditor(p: Props) {
       document_id: p.document?.id || '',
       payment_kind: p.document?.kind === 'bill' || (!can('books.invoice.view') && can('books.bill.view')) ? 'bill' : 'invoice',
       credit_id: '',
-      payment_id: '',
       organization_name: '',
       fiscal_year_month: '4',
       active: true,
@@ -198,10 +194,6 @@ export default function EntityEditor(p: Props) {
         await api.post('/bank-transactions/import', {
           account_code: form.account_code,
           rows: parseStatement(form.csv),
-        });
-      else if (p.type === 'match')
-        await api.put(`/bank-transactions/${p.initial.id}/match`, {
-          payment_id: form.payment_id || null,
         });
       else {
         const path = paths[p.type]!;
@@ -396,7 +388,7 @@ export default function EntityEditor(p: Props) {
           {select('account_code', 'Statement account', cash)}
           <Notice
             text={
-              'Paste CSV with headers: date,description,amount,reference,external_key. Use YYYY-MM-DD dates, positive deposits and negative withdrawals. external_key must be the bank’s unique transaction ID. Imports do not create accounting entries; match them to recorded payments.'
+              'Paste CSV with headers date, description, amount, reference, external_key. Use YYYY-MM-DD dates, positive deposits and negative withdrawals. Use the bank’s unique transaction ID for external_key. After importing, match the rows to posted entries.'
             }
           />
           <Action
@@ -525,29 +517,6 @@ export default function EntityEditor(p: Props) {
             ])}
             {field('next_date', 'Next date (YYYY-MM-DD)')}
           </FormRow>
-        </>
-      )}
-      {p.type === 'match' && (
-        <>
-          <Notice
-            text={`${p.initial.description} · ${api.money(p.initial.amount)}. Select a recorded payment with the same account, direction and amount.`}
-          />
-          {select(
-            'payment_id',
-            'Payment',
-            p.payments
-              .filter(
-                (pay) =>
-                  pay.status === 'posted' &&
-                  pay.account_code === p.initial.account_code &&
-                  Number(p.initial.amount) ===
-                    (pay.kind === 'invoice' ? 1 : -1) * Number(pay.amount),
-              )
-              .map((pay) => ({
-                value: pay.id,
-                label: `${pay.number} · ${api.money(pay.amount)} · ${pay.reference || pay.date.slice(0, 10)}`,
-              })),
-          )}
         </>
       )}
     </Dialog>

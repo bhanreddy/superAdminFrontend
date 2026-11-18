@@ -126,12 +126,14 @@ export function Field({
   value,
   onChange,
   placeholder,
+  maxLength,
   multiline = false,
 }: {
   label: string;
   value: unknown;
   onChange: (v: string) => void;
   placeholder?: string;
+  maxLength?: number;
   multiline?: boolean;
 }) {
   const { colors } = useTheme();
@@ -143,6 +145,7 @@ export function Field({
         value={String(value ?? '')}
         onChangeText={onChange}
         placeholder={placeholder}
+        maxLength={maxLength}
         placeholderTextColor={colors.textTertiary}
         multiline={multiline}
         containerStyle={{ marginBottom: 0 }}

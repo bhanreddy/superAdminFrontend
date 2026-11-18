@@ -17,8 +17,8 @@ function formatDate(value: string) {
     day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC',
   });
 }
-export default function BooksDateFilter({ value, fiscalStart, today, onChange }: {
-  value: ReportDates; fiscalStart: string; today: string; onChange: (dates: ReportDates) => void;
+export default function BooksDateFilter({ value, fiscalStart, today, onChange, statement = false }: {
+  value: ReportDates; fiscalStart: string; today: string; onChange: (dates: ReportDates) => void; statement?: boolean;
 }) {
   const { colors } = useTheme();
   const { width } = useWindowDimensions();
@@ -26,6 +26,7 @@ export default function BooksDateFilter({ value, fiscalStart, today, onChange }:
   const [draft, setDraft] = useState(value);
   const [error, setError] = useState('');
   const isFinancialYear = value.from === fiscalStart && value.to === today;
+  const allDates = statement && !value.from && !value.to;
   const apply = () => {
     if (!validDate(draft.from) || !validDate(draft.to)) {
       setError('Enter valid dates in YYYY-MM-DD format.'); return;
@@ -38,25 +39,28 @@ export default function BooksDateFilter({ value, fiscalStart, today, onChange }:
       <View style={st.summary}>
         <View style={[st.icon, { backgroundColor: colors.primary + '12' }]}><CalendarDays size={17} color={colors.primary} /></View>
         <View style={{ gap: 2, flexShrink: 1 }}>
-          <Text style={{ color: colors.textSecondary, fontSize: 10, fontWeight: '600' }}>{isFinancialYear ? 'THIS FINANCIAL YEAR' : 'REPORTING PERIOD'}</Text>
-          <Text selectable style={{ color: colors.textPrimary, fontSize: 13, fontWeight: '600', lineHeight: 20 }}>{formatDate(value.from)} – {formatDate(value.to)}</Text>
+          <Text style={{ color: colors.textSecondary, fontSize: 10, fontWeight: '600' }}>{statement ? 'STATEMENT DATES' : isFinancialYear ? 'THIS FINANCIAL YEAR' : 'REPORTING PERIOD'}</Text>
+          <Text selectable style={{ color: colors.textPrimary, fontSize: 13, fontWeight: '600', lineHeight: 20 }}>{allDates ? 'All dates' : `${formatDate(value.from)} – ${formatDate(value.to)}`}</Text>
         </View>
       </View>
       <Pressable accessibilityRole="button" accessibilityLabel="Change dates" onPress={() => { setDraft(value); setError(''); setOpen(true); }} style={({ pressed }) => [st.changeButton, { borderColor: colors.border, backgroundColor: colors.background, opacity: pressed ? 0.7 : 1 }]}>
         <Text style={{ color: colors.textPrimary, fontSize: 12, fontWeight: '600' }}>{width < 600 ? 'Dates' : 'Change dates'}</Text>
       </Pressable>
     </View>
-    {open && <Dialog title="Reporting period" onClose={() => setOpen(false)} maxWidth={540} footer={<>
+    {open && <Dialog title={statement ? 'Statement dates' : 'Reporting period'} onClose={() => setOpen(false)} maxWidth={540} footer={<>
       <Action label="Cancel" secondary onPress={() => setOpen(false)} />
       <Action label="Apply dates" onPress={apply} />
     </>}>
-      <Text style={{ color: colors.textSecondary, fontSize: 13, lineHeight: 22 }}>Choose the dates used for your dashboard and reports.</Text>
+      <Text style={{ color: colors.textSecondary, fontSize: 13, lineHeight: 22 }}>{statement ? 'Filter by the dates on the imported bank statement.' : 'Choose the dates used for your dashboard and reports.'}</Text>
       <FormRow>
         <Field label="From (YYYY-MM-DD)" value={draft.from} onChange={from => setDraft(current => ({ ...current, from }))} />
         <Field label="To (YYYY-MM-DD)" value={draft.to} onChange={to => setDraft(current => ({ ...current, to }))} />
       </FormRow>
       {!!error && <Notice error text={error} />}
-      <View style={ui.row}><Action label="This financial year" secondary onPress={() => { setDraft({ from: fiscalStart, to: today }); setError(''); }} /></View>
+      <View style={ui.wrap}>
+        <Action label="This financial year" secondary onPress={() => { setDraft({ from: fiscalStart, to: today }); setError(''); }} />
+        {statement && <Action label="Show all dates" secondary onPress={() => { onChange({ from: '', to: '' }); setOpen(false); }} />}
+      </View>
     </Dialog>}
   </>;
 }

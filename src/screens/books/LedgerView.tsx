@@ -3,7 +3,7 @@ import { Text, View } from 'react-native';
 import * as api from '../../api/books';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Action, Dialog, Notice, Panel, Select, Table, ui } from './BooksUi';
-import { saveCsv } from './export';
+import { saveCsvText } from './export';
 export default function LedgerView({ account, dates, canExport, canManage = false, onChanged, onClose }: {
   account: Pick<api.Account, 'code' | 'name'>; dates: { from: string; to: string }; canExport: boolean; canManage?: boolean; onChanged?: () => void; onClose: () => void;
 }) {
@@ -32,26 +32,11 @@ export default function LedgerView({ account, dates, canExport, canManage = fals
   }
   const value = (v: unknown) => <Text style={{ color: colors.textPrimary }}>{api.money(v)}</Text>;
   async function exportLedger() {
+    if (exporting || !canExport) return;
     setExporting(true); setError('');
     try {
-      const rows: Record<string, unknown>[] = [];
-      let first: api.LedgerReport | null = null;
-      for (let p = 1; ; p++) {
-        const r = await api.get<api.LedgerReport>(`/accounts/${encodeURIComponent(account.code)}/ledger`, { ...dates, page: p, page_size: 500 });
-        first ||= r;
-        // Do not silently export page sets changed by a concurrent posting.
-        if (r.total !== first.total || r.opening_balance !== first.opening_balance || r.period_debit !== first.period_debit || r.period_credit !== first.period_credit)
-          throw new Error('Ledger changed during export. Retry the export.');
-        rows.push(...r.data.map(l => ({ organization: r.organization_name, currency: r.currency, account: account.code, name: account.name, from: dates.from, to: dates.to,
-          date: l.date, reference: l.reference, source: l.source, journal_id: l.journal_id, notes: l.notes,
-          debit_inr: api.decimal(l.debit), credit_inr: api.decimal(l.credit), balance_inr: api.decimal(l.running_balance) })));
-        if (p * r.page_size >= r.total) break;
-      }
-      await saveCsv([
-        { organization: first!.organization_name, currency: first!.currency, account: account.code, name: account.name, from: dates.from, to: dates.to, reference: 'Opening balance', balance_inr: api.decimal(first!.opening_balance) },
-        ...rows,
-        { organization: first!.organization_name, currency: first!.currency, account: account.code, reference: 'Closing balance', debit_inr: api.decimal(first!.period_debit), credit_inr: api.decimal(first!.period_credit), balance_inr: api.decimal(first!.closing_balance) },
-      ], `books-ledger-${account.code}-${dates.from}-${dates.to}.csv`);
+      const csv = await api.exportCsv({ module: 'ledger', account_code: account.code, ...dates });
+      await saveCsvText(csv, `books-ledger-${account.code}-${dates.from}-${dates.to}.csv`);
     } catch (e) { setError(api.message(e)); }
     finally { setExporting(false); }
   }

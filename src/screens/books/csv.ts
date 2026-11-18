@@ -43,7 +43,8 @@ export function toCsv(rows: Record<string, unknown>[]) {
       typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v ?? '');
     // Signed decimal amounts must stay numeric when opened in a spreadsheet.
     // Other formula prefixes still need neutralizing, including malicious -expressions.
-    if (/^[=+@\t\r\n-]/.test(s) && !/^-?\d+(?:\.\d+)?$/.test(s)) s = "'" + s;
+    // eslint-disable-next-line no-control-regex
+    if ((/^[\s\u0000-\u001f]*[=+@-]/.test(s) || /^[\t\r\n]/.test(s)) && !/^-?\d+(?:\.\d+)?$/.test(s)) s = "'" + s;
     return '"' + s.replaceAll('"', '""') + '"';
   };
   return [

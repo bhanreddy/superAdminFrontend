@@ -119,6 +119,62 @@ test('statement CSV handles quoted commas, rejects malformed rows, and neutraliz
   );
   assert.match(toCsv([{ name: '=HYPERLINK("bad")' }]), /'=HYPERLINK/);
 });
+test('banking paginates statement rows, requests ledger candidates and retries an explicit match', async () => {
+  const pages = [], matchAttempts = [], candidatePages = [];
+  const row = {
+    id: 'cash-row', account_code: '1010', account_name: 'Bank', amount: -150000,
+    date: '2026-10-26', description: 'Staff payout', reference: 'Bank reference', status: 'unmatched', match_revision: '7',
+  };
+  const env = environment({
+    get: async (url, params) => {
+      if (url === '/bootstrap') return { settings: { organization_name: 'Company' }, stats: {} };
+      if (url === '/lookups') return { contacts: [], items: [], accounts: [{ code: '1010', name: 'Bank', is_cash: true }], payments: [], projects: [] };
+      if (url === '/bank-transactions') {
+        pages.push(params);
+        return { data: params.page === 2 ? [row] : [], total: 51 };
+      }
+      if (url === '/bank-transactions/cash-row/candidates') {
+        candidatePages.push(params.page);
+        return params.page === 1 ? { data: [], has_more: true } : {
+          data: [{ id: '9007199254740999', date: row.date, reference: 'Net salaries', source: 'platform_payroll_payment', payment_reference: '' }],
+          has_more: false,
+        };
+      }
+      assert.fail(`Unexpected request ${url}`);
+    },
+    put: async (url, body) => {
+      matchAttempts.push({ url, body });
+      if (matchAttempts.length === 1) throw new Error('Could not save. Try again.');
+    },
+    mocks: {
+      'expo-router': { useRouter: () => ({ setParams() {} }), useLocalSearchParams: () => ({ module: 'banking' }) },
+      'expo-sharing': {},
+      [p('src/api/superAdminClient.ts')]: { superAdminClient: {} },
+    },
+  });
+  const Screen = env.load(p('src/screens/books/BooksScreen.tsx')).default;
+  let tree;
+  try {
+    await act(async () => { tree = create(React.createElement(Screen)); });
+    await act(async () => new Promise(resolve => setTimeout(resolve, 20)));
+    await press(tree, 'Next');
+    await act(async () => new Promise(resolve => setTimeout(resolve, 20)));
+    assert.equal(pages.at(-1).page, 2);
+    await press(tree, 'Find match');
+    await press(tree, 'Next entries');
+    assert.deepEqual(candidatePages, [1, 2]);
+    await press(tree, 'Posted entry');
+    const entry = tree.root.findAllByType('Pressable').find(button => textOf(button).includes('Net salaries') && textOf(button).includes('Line 9007199254740999'));
+    assert.ok(entry);
+    await act(async () => entry.props.onPress());
+    await press(tree, 'Save match');
+    assert.match(textOf(tree.toJSON()), /Could not save/);
+    await press(tree, 'Save match');
+    assert.deepEqual(matchAttempts[0], matchAttempts[1]);
+    assert.deepEqual(matchAttempts[0], { url: '/bank-transactions/cash-row/match', body: { journal_line_id: '9007199254740999', match_revision: '7' } });
+    assert.match(textOf(tree.toJSON()), /Statement row matched/);
+  } finally { await act(async () => tree?.unmount()); }
+});
 test('invoice editor selects a contact and preserves decimals in saved draft input', async () => {
   const env = environment();
   const Editor = env.load(p('src/screens/books/DocumentEditor.tsx')).default;
@@ -631,15 +687,15 @@ test('report exports escape formulas and include report dates, totals and negati
   assert.match(toCsv(rows),/"-0.01"/);assert.doesNotMatch(toCsv(rows),/"'-0.01"/);
   assert.match(toCsv([{name:'-SUM(1,2)'}]),/"'-SUM/);
 });
-test('ledger paginates, recovers from failed pages and exports every row with opening and closing totals', async () => {
+test('ledger paginates, recovers from failed pages and saves the server snapshot export', async () => {
   const calls=[],exports=[]; let fail=true;
-  const env=environment({get:async(url,params)=>{
+  const env=environment({exportCsv:async params=>{calls.push(params);return 'full ledger CSV';},get:async(url,params)=>{
     calls.push({url,...params});
     if(params.page===2 && params.page_size!==500 && fail){fail=false;throw new Error('Ledger temporarily unavailable');}
     const total=params.page_size===500?501:201, count=params.page_size===500?(params.page===1?500:1):1;
     return {account:{code:'1010',name:'Bank',type:'asset',is_cash:true},...params,page_size:params.page_size||100,total,opening_balance:1000,period_debit:501,period_credit:0,closing_balance:1501,
       data:Array.from({length:count},(_,i)=>({id:`${params.page}-${i}`,date:'2026-04-01',reference:`Entry ${params.page}-${i}`,source:'manual',notes:'',debit:'1',credit:'0',running_balance:1001+i}))};
-  },mocks:{[p('src/screens/books/export.ts')]:{saveCsv:async(rows,filename)=>exports.push({rows,filename})}}});
+  },mocks:{[p('src/screens/books/export.ts')]:{saveCsvText:async(csv,filename)=>exports.push({csv,filename})}}});
   const Ledger=env.load(p('src/screens/books/LedgerView.tsx')).default;
   let tree;try{
     await act(async()=>{tree=create(React.createElement(Ledger,{account:{code:'1010',name:'Bank'},dates:{from:'2026-04-01',to:'2026-04-30'},canExport:true,onClose(){}}));});
@@ -647,13 +703,14 @@ test('ledger paginates, recovers from failed pages and exports every row with op
     await press(tree,'Next ledger page');assert.match(textOf(tree.toJSON()),/temporarily unavailable/);
     await press(tree,'Retry ledger');assert.match(textOf(tree.toJSON()),/Page 2 of 3/);
     await press(tree,'Previous ledger page');assert.match(textOf(tree.toJSON()),/Page 1 of 3/);
-    await press(tree,'Export full ledger');assert.equal(exports[0].rows.length,503);
-    assert.equal(exports[0].rows[0].balance_inr,'10.00');assert.equal(exports[0].rows.at(-1).balance_inr,'15.01');
-    assert.equal(calls.filter(c=>c.page_size===500).length,2);
+    await press(tree,'Export full ledger');assert.equal(exports[0].csv,'full ledger CSV');
+    assert.equal(exports[0].filename,'books-ledger-1010-2026-04-01-2026-04-30.csv');
+    assert.deepEqual(calls.find(c=>c.module==='ledger'),{module:'ledger',account_code:'1010',from:'2026-04-01',to:'2026-04-30'});
+    assert.equal(calls.filter(c=>c.page_size===500).length,0);
   }finally{await act(async()=>tree?.unmount());}
 });
-test('ledger hides export and classification actions without grants, rejects changing data during export', async () => {
-  let requests=0;const env=environment({get:async(url,params)=>{requests++;return{account:{code:'1010',is_cash:true},...params,page_size:params.page_size||100,total:requests===3?502:501,opening_balance:0,period_debit:501,period_credit:0,closing_balance:501,data:[]};},mocks:{[p('src/screens/books/export.ts')]:{saveCsv:async()=>assert.fail('Changed ledger must not export')}}});
+test('ledger hides export and classification actions without grants, surfaces failed server exports', async () => {
+  let requests=0;const env=environment({exportCsv:async()=>{throw new Error('Export unavailable. Retry.');},get:async(url,params)=>{requests++;return{account:{code:'1010',is_cash:true},...params,page_size:params.page_size||100,total:501,opening_balance:0,period_debit:501,period_credit:0,closing_balance:501,data:[]};},mocks:{[p('src/screens/books/export.ts')]:{saveCsvText:async()=>assert.fail('Failed export must not save')}}});
   const Ledger=env.load(p('src/screens/books/LedgerView.tsx')).default;
   let tree;try{
     const props={account:{code:'1010',name:'Bank'},dates:{from:'2026-04-01',to:'2026-04-30'},canExport:false,onClose(){}};
@@ -661,7 +718,7 @@ test('ledger hides export and classification actions without grants, rejects cha
     assert.equal(tree.root.findAllByType('Pressable').some(b=>b.props.accessibilityLabel==='Export full ledger'),false);
     assert.equal(tree.root.findAllByType('Pressable').some(b=>b.props.accessibilityLabel==='Save cash flow classification'),false);
     await act(async()=>tree.update(React.createElement(Ledger,{...props,canExport:true})));
-    await press(tree,'Export full ledger');assert.match(textOf(tree.toJSON()),/Ledger changed during export/);
+    await press(tree,'Export full ledger');assert.match(textOf(tree.toJSON()),/Export unavailable. Retry./);
   }finally{await act(async()=>tree?.unmount());}
 });
 test('account managers can retry classification changes without losing their selected activity', async () => {
@@ -686,4 +743,77 @@ test('INR formatting preserves every paisa for large totals and negative balance
   assert.equal(money(-123456789),'₹-12,34,567.89');assert.equal(money(-1),'₹-0.01');
   assert.equal(money('00001'),'₹0.01');assert.equal(money(0),'₹0.00');assert.equal(decimal(null),'0.00');
   assert.equal(money('invalid'),'—');assert.throws(()=>decimal('1.5'),/integer paise/);
+});
+
+test('workspace exports active filters through the server and retries errors without saving partial rows', async () => {
+  const calls = [], saved = []; let fail = true;
+  const env = environment({
+    exportCsv: async params => { calls.push(params); if (fail) throw new Error('Export failed. Retry.'); return 'all 120 invoices'; },
+    get: async url => {
+      if (url === '/bootstrap') return { settings: { organization_name: 'Company' }, stats: {} };
+      if (url === '/lookups') return { contacts: [], items: [], accounts: [], payments: [], projects: [] };
+      if (url === '/documents') return { data: [], total: 120 };
+      return [];
+    },
+    mocks: {
+      'expo-router': { useRouter: () => ({ setParams() {} }), useLocalSearchParams: () => ({ module: 'invoice' }) },
+      'expo-sharing': {},
+      [p('src/screens/books/export.ts')]: { saveCsvText: async (csv, filename) => saved.push({ csv, filename }) },
+      [p('src/api/superAdminClient.ts')]: { superAdminClient: {} },
+    },
+  });
+  const Screen = env.load(p('src/screens/books/BooksScreen.tsx')).default;
+  let tree;
+  try {
+    await act(async () => { tree = create(React.createElement(Screen)); });
+    await act(async () => new Promise(r => setTimeout(r, 20)));
+    await press(tree, 'Export CSV');
+    assert.match(textOf(tree.toJSON()), /Export failed. Retry./); assert.equal(saved.length, 0);
+    fail = false; await press(tree, 'Export CSV');
+    assert.equal(saved[0].csv, 'all 120 invoices');
+    assert.deepEqual(calls[1], { module: 'invoice', search: '', status: '' });
+    assert.match(textOf(tree.toJSON()), /All matching records are included across every page/);
+  } finally { await act(async () => tree?.unmount()); }
+});
+
+test('web export saves a UTF-8 CSV file with one BOM and releases its download URL', async () => {
+  const previous = { document: global.document, create: URL.createObjectURL, revoke: URL.revokeObjectURL, timer: global.setTimeout };
+  let blob, clicked = 0, removed = 0, released, cleanup, anchor;
+  try {
+    global.document = { createElement: () => (anchor = { click() { clicked++; }, remove() { removed++; } }), body: { appendChild() {} } };
+    URL.createObjectURL = value => { blob = value; return 'blob:books'; };
+    URL.revokeObjectURL = value => { released = value; };
+    global.setTimeout = fn => { cleanup = fn; };
+    const { saveCsvText } = environment().load(p('src/screens/books/export.ts'));
+    await saveCsvText('\uFEFF"name"\r\n"తెలుగు"', '../books.csv');
+    assert.equal(Buffer.from(await blob.arrayBuffer()).toString('utf8'), '\uFEFF"name"\r\n"తెలుగు"');
+    assert.equal(blob.type, 'text/csv;charset=utf-8'); assert.equal(clicked, 1); assert.equal(removed, 1);
+    assert.equal(anchor.download, '..-books.csv'); assert.equal(released, undefined);
+    cleanup(); assert.equal(released, 'blob:books');
+  } finally {
+    global.document = previous.document; URL.createObjectURL = previous.create; URL.revokeObjectURL = previous.revoke; global.setTimeout = previous.timer;
+  }
+});
+
+test('mobile export shares an actual CSV file and removes the temporary file after success or failure', async () => {
+  for (const fails of [false, true]) {
+    const writes = [], shares = [], deleted = [];
+    const load = loader({
+      'react-native': { Platform: { OS: 'android' } },
+      [p('src/api/books.ts')]: { decimal: n => String(n) },
+      'expo-file-system': {
+        cacheDirectory: 'file:///cache/', EncodingType: { UTF8: 'utf8' },
+        makeDirectoryAsync: async () => {},
+        writeAsStringAsync: async (...args) => writes.push(args),
+        deleteAsync: async (...args) => deleted.push(args),
+      },
+      'expo-sharing': { isAvailableAsync: async () => true, shareAsync: async (...args) => { shares.push(args); if (fails) throw new Error('Sharing failed'); } },
+    });
+    const { saveCsvText } = load(p('src/screens/books/export.ts'));
+    if (fails) await assert.rejects(saveCsvText('a,b', 'books.csv'), /Sharing failed/);
+    else await saveCsvText('a,b', 'books.csv');
+    assert.match(writes[0][0], /^file:\/\/\/cache\/books-export-.*\/books.csv$/);
+    assert.equal(writes[0][1], '\uFEFFa,b'); assert.equal(shares[0][0], writes[0][0]);
+    assert.equal(shares[0][1].mimeType, 'text/csv'); assert.equal(deleted.length, 1);
+  }
 });

@@ -82,6 +82,24 @@ export interface Payment {
   kind?: string;
   contact_name?: string;
 }
+export interface BankTransaction {
+  id: string;
+  date: string;
+  description: string;
+  amount: string | number;
+  account_code: string;
+  account_name: string;
+  reference: string;
+  status: 'matched' | 'unmatched';
+  match_revision: string;
+}
+export interface BankMatchCandidate {
+  id: string;
+  date: string;
+  reference: string;
+  source: string;
+  payment_reference: string;
+}
 export interface BookDocument {
   id: string;
   kind: DocumentKind;
@@ -235,6 +253,17 @@ export const message = (e: any) =>
   e?.response?.data?.details || e?.message || 'Unable to complete this action.';
 export const get = async <T = any>(path: string, params?: object): Promise<T> =>
   (await client.get(`${BOOKS_BASE}${path}`, { params })).data;
+export async function exportCsv(params: { module: string; search?: string; status?: string; transaction_type?: string; from?: string; to?: string; account_code?: string }): Promise<string> {
+  try {
+    return (await client.get(`${BOOKS_BASE}/export`, { params, responseType: 'text' })).data;
+  } catch (error: any) {
+    // Text downloads also receive JSON validation/permission errors as text.
+    if (typeof error.response?.data === 'string') {
+      try { error.response.data = JSON.parse(error.response.data); } catch {}
+    }
+    throw error;
+  }
+}
 export const post = async <T = any>(
   path: string,
   body: unknown = {},
