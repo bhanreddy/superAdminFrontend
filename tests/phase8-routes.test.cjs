@@ -26,7 +26,7 @@ test('every discovered protected route renders its guard for every role; unknown
       act(() => { screen = create(React.createElement(AppRouteGuard, null, React.createElement('Text', null, 'AUTHORIZED_CONTENT'))); });
       const content = textOf(screen.root);
       assert.ok(content.includes('AUTHORIZED_CONTENT') || content.includes('Access Restricted'), `${role} ${pathname}`);
-      if ((role === 'CA' || role === 'CA_LEAD') && !/^\/books(?:\/|$)|^\/connect$|^\/$/.test(pathname)) assert.match(content, /Access Restricted/, `${role} ${pathname}`);
+      if ((role === 'CA' || role === 'CA_LEAD') && !/^\/books(?:\/|$)|^\/(?:connect|notifications)$|^\/$/.test(pathname)) assert.match(content, /Access Restricted/, `${role} ${pathname}`);
       if (role === 'FOUNDER') assert.match(content, /AUTHORIZED_CONTENT/, pathname);
       act(() => screen.unmount());
     }

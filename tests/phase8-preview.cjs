@@ -50,6 +50,7 @@ const mocks = new Map([
   ['src/api/crmClient.ts', `export {superAdminClient as crmClient} from './src/api/superAdminClient';export const getCrmBaseUrl=()=>location.origin;`],
   ['src/api/tokens.ts', `export const getStoredAccessToken=async()=>null,getStoredRefreshToken=async()=>null,storeTokens=async()=>{},clearTokens=async()=>{},setTokenClusterPrefix=()=>{};export const TokenStore={};`],
   ['src/hooks/useAuth.ts', auth],
+  ['src/contexts/NotificationContext.tsx', `const data={channels:[],unread:0,registered_devices:0,capabilities:{email:false,push:false,sms:false}};export const useNotifications=()=>({data,error:null,refreshing:false,revision:0,refresh:async()=>{},changed:async()=>{}});export const NotificationProvider=({children})=>children;`],
   ['src/contexts/AuthContext.tsx', auth],
   ['src/contexts/ClusterContext.tsx', `const c={cluster_id:'101',label:'QA local cluster',status:'active',school_count:1,max_schools:40,school_db:{backend_url:location.origin},medical_db:{backend_url:location.origin}};export const useCluster=()=>({selectedCluster:c,clusters:[c],setSelectedCluster:async()=>{},refreshClusters:async()=>{},isClusterReady:true});`],
   ['src/services/authService.ts', `export const authService={signIn:async()=>({error:{message:'QA fixture: sign-in is intentionally unavailable.'}}),signInCA:async()=>({error:{message:'QA fixture: sign-in is intentionally unavailable.'}}),changePassword:async()=>{throw Error('QA fixture: no credential changes.')}};`],

@@ -6,7 +6,14 @@ import { Student } from '../types/student';
 export interface SchoolFeature {
   key: string;
   label: string;
-  group: 'drawer' | 'quick_actions' | 'topbar' | 'home' | 'bottom_nav';
+  group: 'modules' | 'drawer' | 'quick_actions' | 'topbar' | 'home' | 'bottom_nav';
+  scope?: 'school' | 'portal';
+  description?: string;
+  category?: string;
+  available?: boolean;
+  parent_key?: string;
+  blocked_by?: string;
+  configured_enabled?: boolean;
   default_enabled: boolean;
   data_bearing: boolean;
   toggleable: boolean;
@@ -86,8 +93,13 @@ export const superAdminApi = {
   },
 
   // --- STUDENT FEATURE FLAGS ---
-  getSchoolFeatures: async (schoolId: number): Promise<{ school_id: number; features: SchoolFeature[] }> => {
+  getSchoolFeatures: async (schoolId: number): Promise<{ school_id: number; school?: Pick<School, 'id' | 'name' | 'code'>; features: SchoolFeature[] }> => {
     const response = await superAdminClient.get(`/api/super-admin/schools/${schoolId}/features`);
+    return response.data;
+  },
+
+  updateAllSchoolFeatures: async (schoolId: number, enabled: boolean): Promise<{ features: SchoolFeature[] }> => {
+    const response = await superAdminClient.put(`/api/super-admin/schools/${schoolId}/features`, { enabled });
     return response.data;
   },
 
@@ -95,7 +107,7 @@ export const superAdminApi = {
     schoolId: number,
     featureKey: string,
     enabled: boolean,
-  ): Promise<{ school_id: number; feature_key: string; enabled: boolean; source: string }> => {
+  ): Promise<{ school_id: number; feature_key: string; enabled: boolean; source: string; features: SchoolFeature[] }> => {
     const response = await superAdminClient.put(
       `/api/super-admin/schools/${schoolId}/features/${encodeURIComponent(featureKey)}`,
       { enabled },
@@ -106,7 +118,7 @@ export const superAdminApi = {
   resetSchoolFeature: async (
     schoolId: number,
     featureKey: string,
-  ): Promise<{ school_id: number; feature_key: string; enabled: boolean; source: string }> => {
+  ): Promise<{ school_id: number; feature_key: string; enabled: boolean; source: string; features: SchoolFeature[] }> => {
     const response = await superAdminClient.delete(
       `/api/super-admin/schools/${schoolId}/features/${encodeURIComponent(featureKey)}`,
     );

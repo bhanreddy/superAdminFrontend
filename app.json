@@ -37,7 +37,9 @@
       "expo-secure-store",
       [
         "expo-local-authentication",
-        { "faceIDPermission": "Allow NexSyrus Super Admin to verify your identity when unlocking the app." }
+        {
+          "faceIDPermission": "Allow NexSyrus Super Admin to verify your identity when unlocking the app."
+        }
       ],
       [
         "expo-build-properties",
@@ -48,7 +50,8 @@
             "kotlinVersion": "1.9.24"
           }
         }
-      ]
+      ],
+      "expo-notifications"
     ],
     "experiments": {
       "typedRoutes": true

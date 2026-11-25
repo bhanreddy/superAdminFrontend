@@ -1,0 +1,40 @@
+{
+  "checks": [
+    {
+      "width": 1440,
+      "dark": false,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "dark": false,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "dark": false,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "dark": true,
+      "overflow": false
+    },
+    {
+      "singleToggleReset": true
+    },
+    {
+      "bulkAndCancellation": true
+    },
+    {
+      "searchEmptyStateAndSaveFailure": true
+    },
+    {
+      "approverReadOnly": true
+    },
+    {
+      "loadFailureRetry": true
+    }
+  ],
+  "errors": []
+}

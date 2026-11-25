@@ -1,3 +1,4 @@
+import { useNotifications } from '../../contexts/NotificationContext';
 import { MotionPressable } from '../ui/MotionPressable';
 import React from 'react';
 import {
@@ -51,6 +52,7 @@ export const TopBar = React.memo(function TopBar({
   const { selectedCluster } = useCluster();
   const router = useRouter();
   const { width } = useWindowDimensions();
+  const { data: notifications, error: notificationError } = useNotifications();
   const compact = width < 600;
   const name = currentAdmin?.full_name || founder?.full_name || 'Team member';
   const module = workspaceModules[workspaceModule];
@@ -154,14 +156,16 @@ export const TopBar = React.memo(function TopBar({
             <Moon size={19} color={colors.textSecondary} />
           )}
         </MotionPressable>
-        {isFounder && !compact && (
+        {(
           <MotionPressable
             accessibilityRole="button"
-            accessibilityLabel="Open notifications"
-            onPress={() => router.push('/(app)/console/notifications' as any)}
+            accessibilityLabel={`Notifications${notifications?.unread ? `, ${notifications.unread} unread` : ""}${notificationError ? ", connection unavailable" : ""}`}
+            onPress={() => router.push('/(app)/notifications' as any)}
             style={iconStyle}
           >
             <Bell size={19} color={colors.textSecondary} />
+            {!!notifications?.unread && <View style={[styles.badge, { backgroundColor: colors.primaryFill }]}><Text style={{ color: colors.onPrimary, fontSize: 9, fontWeight: '700' }}>{notifications.unread > 99 ? '99+' : notifications.unread}</Text></View>}
+            {notificationError && <View style={[styles.connectionDot, { backgroundColor: colors.warning }]} />}
           </MotionPressable>
         )}
         {!compact && (
@@ -212,6 +216,8 @@ export const TopBar = React.memo(function TopBar({
   );
 });
 const styles = StyleSheet.create({
+  badge: { position: 'absolute', top: 1, right: 0, minWidth: 18, height: 18, borderRadius: 9, paddingHorizontal: 3, alignItems: 'center', justifyContent: 'center' },
+  connectionDot: { position: 'absolute', bottom: 5, right: 5, width: 6, height: 6, borderRadius: 3 },
   topbar: {
     minHeight: 72,
     borderBottomWidth: 1,

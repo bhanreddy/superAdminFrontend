@@ -18,6 +18,8 @@ type RoutePolicy =
  * fail closed to Founder access until a policy is explicitly added.
  */
 const ROUTE_POLICIES: RoutePolicy[] = [
+  {pattern:/^\/question-bank(?:\/.*)?$/,permission:PERMISSIONS.QUESTION_BANK_READ},
+  { pattern: /^\/notifications\/?$/, allowedRoles: Object.values(ROLES) },
   { pattern: /^\/connect\/?$/, allowedRoles: Object.values(ROLES) },
   {pattern:/^\/media-qr\/?$/,founderOnly:true},
   { pattern: /^\/field(?:\/.*)?$/, allowedRoles: [...SALES_ROLES] },

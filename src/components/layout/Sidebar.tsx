@@ -30,6 +30,7 @@ import {
   FileText,
   Sparkles,
   ContactRound,
+  Bell,
   MessageCircle,
   Network,
   Database,
@@ -827,7 +828,7 @@ function organizeFounderNavigation(groups: NavGroup[]): NavGroup[] {
     },
     {
       title: 'Content & learning',
-      keys: ['media-qr', 'content-studio', 'festival-posters'],
+      keys: ['question-bank', 'media-qr', 'content-studio', 'festival-posters'],
     },
     {
       title: 'Platform & security',
@@ -894,6 +895,12 @@ export const Sidebar = React.memo(function Sidebar({
       groups.splice(1, 0, {
         items: [
           {
+            key: 'notifications',
+            label: 'Notifications',
+            icon: (c, s) => <Bell size={s} color={c} />,
+            route: '/(app)/notifications',
+          },
+          {
             key: 'connect',
             label: 'NexSyrus Connect',
             icon: (c, s) => <MessageCircle size={s} color={c} />,
@@ -920,6 +927,7 @@ export const Sidebar = React.memo(function Sidebar({
         ],
       });
     // Keep frequent destinations visible; every other permitted route belongs to
+    if(can('curriculum.questions.read'))groups.push({title:'QUESTION BANK',items:[{key:'question-bank',label:'Question Bank',icon:(c,s)=><BookOpen size={s} color={c}/>,route:'/(app)/question-bank'}]});
     // one searchable domain. This changes presentation, never role authorization.
     const organized = isFounder ? organizeFounderNavigation(groups) : groups;
     return organized.map((group) => ({

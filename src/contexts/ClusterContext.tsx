@@ -26,14 +26,14 @@ interface ClusterContextValue {
   selectedCluster: ClusterConfig | null;
   /** Select a cluster — clears auth if switching to a different one. */
   setSelectedCluster: (cluster: ClusterConfig) => Promise<void>;
-  
-  /** 
+
+  /**
    * Refresh clusters list from the server.
-   * CONTRACT: Must be called by screens after successful createCluster or updateCluster 
+   * CONTRACT: Must be called by screens after successful createCluster or updateCluster
    * to ensure the global cluster state is synchronized.
    */
   refreshClusters: () => Promise<void>;
-  
+
   /** False until the persisted cluster has been read from AsyncStorage. */
   isClusterReady: boolean;
 }

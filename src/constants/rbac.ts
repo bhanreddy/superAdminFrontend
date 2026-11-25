@@ -112,6 +112,11 @@ export const PERMISSIONS = {
   CURRICULUM_AUTHOR: 'curriculum.author',
   CURRICULUM_REVIEW: 'curriculum.review',
   CURRICULUM_PUBLISH: 'curriculum.publish',
+  QUESTION_BANK_READ: 'curriculum.questions.read',
+  QUESTION_BANK_AUTHOR: 'curriculum.questions.author',
+  QUESTION_BANK_IMPORT: 'curriculum.questions.import',
+  QUESTION_BANK_REVIEW: 'curriculum.questions.review',
+  QUESTION_BANK_APPROVE: 'curriculum.questions.approve',
 } as const;
 
 export function isFounderOrSuperAdmin(role: string | null | undefined): boolean {
