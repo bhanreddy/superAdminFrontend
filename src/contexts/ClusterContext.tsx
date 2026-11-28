@@ -8,7 +8,7 @@ import React, {
   useState,
 } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ClusterConfig } from '../config/clusters';
+import { CLUSTERS, ClusterConfig } from '../config/clusters';
 import { setGlobalBackendUrl } from '../api/superAdminClient';
 import { clearTokens, setTokenClusterPrefix } from '../api/tokens';
 import { loadClusters, invalidateClusterCache } from '../services/clusterConfigService';
@@ -61,7 +61,12 @@ export function ClusterProvider({ children }: { children: React.ReactNode }) {
    * and update React state.
    */
   const applyCluster = useCallback((cluster: ClusterConfig) => {
-    const backendUrl = cluster.school_db.backend_url;
+    const [primaryCluster] = CLUSTERS;
+    // The primary registry row can point to the school app. Use the console's
+    // configured gateway for its session, profile, and workspace requests.
+    const backendUrl = cluster.cluster_id === primaryCluster.cluster_id
+      ? primaryCluster.school_db.backend_url || cluster.school_db.backend_url
+      : cluster.school_db.backend_url;
     if (!backendUrl) {
       throw new Error(
         `[ClusterContext] backend_url is empty for cluster "${cluster.cluster_id}". ` +
